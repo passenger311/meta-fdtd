@@ -1,0 +1,19 @@
+
+ifeq ($(MPI),)
+
+F90 = gfortran 
+CC= gcc
+CXX= g++
+
+else
+ 
+F90 = mpif90 
+CC= mpicc
+CXX= mpicxx
+
+endif
+
+F90FLAGS= -O3
+CXXFLAGS=
+CCFLAGS=
+LDFLAGS=

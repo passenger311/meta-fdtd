@@ -13,7 +13,7 @@
 
 program max3d
 
-#ifdef MPI
+#if MPI
   use mpistart
 #endif /* MPI */
   use config
@@ -33,7 +33,7 @@ program max3d
 
   ! --- comms time measurement
 
-#ifdef MPI
+#if MPI
   double precision :: tt
   double precision :: time_waited (2)
   time_waited = 0
@@ -43,13 +43,13 @@ program max3d
 
   ! --- startup MPI
 
-#ifdef MPI
+#if MPI
      call MPIinit
 #endif /* MPI */
 
   ! --- init grid
 
-#ifdef MPE_LOG
+#if MPE_LOG
 
   if (myrank .eq. 0) then
 
@@ -72,7 +72,7 @@ program max3d
   end if
 #endif /* MPE_LOG */
 
-#ifdef MPI
+#if MPI
   do l=0, numproc-1  ! sort output
 
      call MPI_BARRIER(MPI_COMM_WORLD,mpierr)
@@ -99,13 +99,13 @@ program max3d
         write(6,*) '* -> InitSource '
         call InitSource()
 
-#ifdef MPI
+#if MPI
      end if
 
   end do
 #endif /* MPI */
 
-#ifdef MPI
+#if MPI
 
   mpisize=(IMAX-IMIN+1)*(JMAX-JMIN+1)  ! set mpi mpiet size
  
@@ -122,7 +122,7 @@ program max3d
         str = i2str(NCYCMAX)
         write(6,*) '* time steps = ', str 
 
-#ifdef MPI
+#if MPI
         
      end if
      
@@ -145,13 +145,13 @@ program max3d
 
 ! ------------------------------ StepH --------------------------------
 
-#ifdef MPE_LOG
+#if MPE_LOG
      call MPE_LOG_EVENT(7,"StepH",mpierr)
 #endif /* MPE_LOG */
 
      call StepH()
 
-#ifdef MPE_LOG
+#if MPE_LOG
      call MPE_LOG_EVENT(8,"StepH",mpierr)
 #endif /* MPE_LOG */
 
@@ -161,13 +161,13 @@ program max3d
 
 ! ------------------------------ PMLH ---------------------------------
 
-#ifdef MPE_LOG
+#if MPE_LOG
      call MPE_LOG_EVENT(9,"PMLH",mpierr) 
 #endif /* MPE_LOG */
 
      call PMLH()
 
-#ifdef MPE_LOG
+#if MPE_LOG
      call MPE_LOG_EVENT(10,"PMLH",mpierr)
 #endif /* MPE_LOG */
 
@@ -179,12 +179,12 @@ program max3d
 
 ! 1. send tangential H fields to right
 
-#ifdef MPI
+#if MPI
 
      if ( myrank .ne. numproc-1 ) then
         ides= myrank+1
 
-#ifdef MPE_LOG
+#if MPE_LOG
         call MPE_LOG_EVENT(1,"ISEND",mpierr)
 #endif /* MPE_LOG */
 
@@ -193,7 +193,7 @@ program max3d
         call MPI_ISEND( Hy(IMIN,JMIN,KEND),mpisize,mpitype,ides, &
              ytag,mpicomm,ireqs(2),mpierr )
         
-#ifdef MPE_LOG
+#if MPE_LOG
         call MPE_LOG_EVENT(2,"ISEND",mpierr)
 #endif /* MPE_LOG */
 
@@ -204,7 +204,7 @@ program max3d
      if ( myrank .ne. 0 ) then
         isrc= myrank-1
 
-#ifdef MPE_LOG
+#if MPE_LOG
         call MPE_LOG_EVENT(3,"IRECV",mpierr) 
 #endif /* MPE_LOG */
 
@@ -213,7 +213,7 @@ program max3d
         call MPI_IRECV( Hy(IMIN,JMIN,KMIN),mpisize,mpitype,isrc, &
              ytag,mpicomm,ireqr(2),mpierr )
 
-#ifdef MPE_LOG
+#if MPE_LOG
         call MPE_LOG_EVENT(4,"IRECV",mpierr) 
 #endif /* MPE_LOG */
 
@@ -227,18 +227,18 @@ program max3d
 
 ! wait for pending comms to finish
 
-#ifdef MPI
+#if MPI
 
      if ( myrank .ne. 0 ) then
 
-#ifdef MPE_LOG
+#if MPE_LOG
         call MPE_LOG_EVENT(5,"WAIT",mpierr)
 #endif /* MPE_LOG */
 
         call MPI_WAIT(ireqr(2),mpistatus, mpierr )
         call MPI_WAIT(ireqr(1),mpistatus, mpierr )
 
-#ifdef MPE_LOG
+#if MPE_LOG
         call MPE_LOG_EVENT(6,"WAIT",mpierr)
 #endif /* MPE_LOG */
 
@@ -246,14 +246,14 @@ program max3d
 
      if ( myrank .ne. numproc-1 ) then
 
-#ifdef MPE_LOG
+#if MPE_LOG
         call MPE_LOG_EVENT(5,"WAIT",mpierr)
 #endif /* MPE_LOG */
 
         call MPI_WAIT(ireqs(2),mpistatus, mpierr )
         call MPI_WAIT(ireqs(1),mpistatus, mpierr )
  
-#ifdef MPE_LOG
+#if MPE_LOG
         call MPE_LOG_EVENT(6,"WAIT",mpierr)
 #endif /* MPE_LOG */
 
@@ -270,13 +270,13 @@ program max3d
 
 ! ---------------------------- StepE ----------------------------------
 
-#ifdef MPE_LOG
+#if MPE_LOG
      call MPE_LOG_EVENT(11,"StepE",mpierr)
 #endif /* MPE_LOG */
 
      call StepE()
 
-#ifdef MPE_LOG
+#if MPE_LOG
      call MPE_LOG_EVENT(12,"StepE",mpierr)
 #endif /* MPE_LOG */
 
@@ -286,13 +286,13 @@ program max3d
 
 ! ---------------------------- PMLE -----------------------------------
 
-#ifdef MPE_LOG
+#if MPE_LOG
      call MPE_LOG_EVENT(13,"PMLE",mpierr)
 #endif /* MPE_LOG */
 
      call PMLE() 
 
-#ifdef MPE_LOG
+#if MPE_LOG
      call MPE_LOG_EVENT(14,"PMLE",mpierr)
 #endif /* MPE_LOG */
 
@@ -302,13 +302,13 @@ program max3d
 
 ! ---------------------------- PEC ------------------------------------
 
-#ifdef MPE_LOG
+#if MPE_LOG
      call MPE_LOG_EVENT(15,"PEC",mpierr) 
 #endif /* MPE_LOG */
 
      call PEC()
 
-#ifdef MPE_LOG
+#if MPE_LOG
      call MPE_LOG_EVENT(16,"PEC",mpierr) 
 #endif /* MPE_LOG */
 
@@ -321,7 +321,7 @@ program max3d
      if ( myrank .ne. 0 ) then
         ides = myrank-1
 
-#ifdef MPE_LOG
+#if MPE_LOG
         call MPE_LOG_EVENT(1,"ISEND",mpierr)
 #endif /* MPE_LOG */
 
@@ -330,7 +330,7 @@ program max3d
         call MPI_ISEND( Ey(IMIN,JMIN,KBEG),mpisize,mpitype,ides, &
              ytag,mpicomm,ireqs(2),mpierr )
 
-#ifdef MPE_LOG
+#if MPE_LOG
         call MPE_LOG_EVENT(2,"ISEND",mpierr)
 #endif /* MPE_LOG */
 
@@ -341,7 +341,7 @@ program max3d
      if ( myrank .ne. numproc-1 ) then
         isrc = myrank+1
 
-#ifdef MPE_LOG
+#if MPE_LOG
         call MPE_LOG_EVENT(3,"IRECV",mpierr)
 #endif /* MPE_LOG */
 
@@ -350,7 +350,7 @@ program max3d
         call MPI_IRECV( Ey(IMIN,JMIN,KMAX),mpisize,mpitype,isrc, &
              ytag,mpicomm,ireqr(2),mpierr )
 
-#ifdef MPE_LOG
+#if MPE_LOG
         call MPE_LOG_EVENT(4,"IRECV",mpierr)
 #endif /* MPE_LOG */
 
@@ -362,18 +362,18 @@ program max3d
 
 ! --------------------------- WAIT E ----------------------------------
 
-#ifdef MPI
+#if MPI
 
      if ( myrank .ne. numproc-1 ) then
 
-#ifdef MPE_LOG
+#if MPE_LOG
         call MPE_LOG_EVENT(5,"WAIT",mpierr) 
 #endif /* MPE_LOG */
 
         call MPI_WAIT(ireqr(2),mpistatus, mpierr )
         call MPI_WAIT(ireqr(1),mpistatus, mpierr )
 
-#ifdef MPE_LOG
+#if MPE_LOG
         call MPE_LOG_EVENT(6,"WAIT",mpierr) 
 #endif /* MPE_LOG */
 
@@ -382,14 +382,14 @@ program max3d
 
      if ( myrank .ne. 0 ) then
 
-#ifdef MPE_LOG
+#if MPE_LOG
         call MPE_LOG_EVENT(5,"WAIT",mpierr) 
 #endif /* MPE_LOG */
 
         call MPI_WAIT(ireqs(2),mpistatus, mpierr )
         call MPI_WAIT(ireqs(1),mpistatus, mpierr )
 
-#ifdef MPE_LOG
+#if MPE_LOG
         call MPE_LOG_EVENT(6,"WAIT",mpierr) 
 #endif /* MPE_LOG */
 
@@ -406,13 +406,13 @@ program max3d
 
 ! ------------------------------ PzDFT --------------------------------
 
-#ifdef MPE_LOG
+#if MPE_LOG
      call MPE_LOG_EVENT(17,"PzDFT",mpierr)  
 #endif /* MPE_LOG */
 
      call PzDFT(ncyc)
 
-#ifdef MPE_LOG
+#if MPE_LOG
      call MPE_LOG_EVENT(18,"PzDFT",mpierr)  
 #endif /* MPE_LOG */
 
@@ -459,17 +459,17 @@ program max3d
 
 ! --- terminate logging
 
-#ifdef MPI
+#if MPI
   call MPI_BARRIER(MPI_COMM_WORLD,mpierr)
 #endif /* MPI */
 
-#ifdef MPE_LOG
+#if MPE_LOG
   call MPE_Finish_log("max3d.log") !
 #endif /* MPE_LOG */
 
 ! --- terminate MPI
 
-#ifdef MPI
+#if MPI
   call MPIfinalise
 
   if (myrank .eq. 0) then
@@ -477,7 +477,7 @@ program max3d
 
      write(6,*) '* --------- max3d end'
 
-#ifdef MPI
+#if MPI
   end if
 #endif /* MPI */
   

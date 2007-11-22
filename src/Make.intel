@@ -1,0 +1,16 @@
+
+ifeq ($(MPI),)
+
+F90 =  
+CC= 
+
+else
+ 
+F90 = mpif90 
+CC= mpicc
+
+endif
+
+F90FLAGS= -g -fpp -O3 -tpp7 -xW -r8
+LDFLAGS= -g -O3 -xW -r8
+CCFLAGS=
