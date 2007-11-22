@@ -78,5 +78,5 @@ clean:
 	 rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod
 
 proper: clean
-	 rm -f $(EXE) *.o 
+	 rm -f $(EXE) $(PREEXE) *.o *.in *.out 
 

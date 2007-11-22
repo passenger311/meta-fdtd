@@ -13,9 +13,7 @@
 
 program max3d
 
-#if MPI
   use mpistart
-#endif /* MPI */
   use config
   use constant
   use grid
@@ -43,9 +41,7 @@ program max3d
 
   ! --- startup MPI
 
-#if MPI
-     call MPIinit
-#endif /* MPI */
+  call MPIinit
 
   ! --- init grid
 
@@ -72,15 +68,15 @@ program max3d
   end if
 #endif /* MPE_LOG */
 
-#if MPI
   do l=0, numproc-1  ! sort output
 
+#if MPI
      call MPI_BARRIER(MPI_COMM_WORLD,mpierr)
+#endif
 
      if (myrank .eq. l) then
 
         write(6,*) '* initialising for process = ',ranklbl
-#endif /* MPI */
 
         write(6,*) '* -> ReadConfig'
         call ReadConfig(mpi_sfxin)        ! read config files
@@ -99,36 +95,29 @@ program max3d
         write(6,*) '* -> InitSource '
         call InitSource()
 
-#if MPI
      end if
 
   end do
-#endif /* MPI */
-
-#if MPI
 
   mpisize=(IMAX-IMIN+1)*(JMAX-JMIN+1)  ! set mpi mpiet size
  
   do l=0, numproc-1  ! sort output
 
+#if MPI
      call MPI_BARRIER(MPI_COMM_WORLD,mpierr)
+#endif /* MPI */
 
      if (myrank .eq. l) then
                 
         write(6,*) '* process entering loop, rank = ',ranklbl 
 
-#endif /* MPI */
 
         str = i2str(NCYCMAX)
         write(6,*) '* time steps = ', str 
 
-#if MPI
-        
      end if
      
   end do
-
-#endif /* MPI */
   
 
 ! ============================ TIMELOOP ===============================
@@ -430,15 +419,15 @@ program max3d
   call MPI_BARRIER(MPI_COMM_WORLD,mpierr)
 #endif /* MPI */
 
-#if MPI
   do l=0, numproc-1  ! sort output
 
+#if MPI
      call MPI_BARRIER(MPI_COMM_WORLD,mpierr)
+#endif /* MPI */
 
      if (myrank .eq. l) then
  
         write(6,*) '* process finalising, rank = ', ranklbl
-#endif /* MPI */
 
         write(6,*) '* -> OutPzDFTn'
         call OutPzDFT()
@@ -452,10 +441,11 @@ program max3d
 #if MPI
         write(6,*) ranklbl, "* time for Comms H = ", time_waited(1)
         write(6,*) ranklbl, "* time for Comms E = ", time_waited(2)
+#endif /* MPI */
+
      end if
 
   end do
-#endif /* MPI */
 
 ! --- terminate logging
 
@@ -469,17 +459,13 @@ program max3d
 
 ! --- terminate MPI
 
-#if MPI
   call MPIfinalise
 
   if (myrank .eq. 0) then
-#endif /* MPI */
 
      write(6,*) '* --------- max3d end'
 
-#if MPI
   end if
-#endif /* MPI */
   
 end program max3d
 

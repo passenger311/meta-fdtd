@@ -22,6 +22,7 @@ module mpistart
   integer :: mpi_started = 0
   character(len=255) :: mpi_sfxin, mpi_sfxout
   character(len=20)   :: ranklbl
+  integer :: mpisize
 
 #ifdef MPI
   integer :: mpicomm
@@ -30,7 +31,6 @@ module mpistart
   integer, parameter :: xtag = 1
   integer, parameter :: ytag = 2
   integer :: ireqs(2), ireqr(2)
-  integer :: mpisize                     ! elements of 8 bytes (double)
   integer :: mpitype 
 #endif /* MPI */
 
