@@ -1,0 +1,92 @@
+#!/usr/bin/perl
+# -*- perl -*-
+
+# ----------------------------------------------------------------
+#
+# stitch output files together:
+#
+#   stitch-out <name>.0.out 
+#
+#   produces <name>.out from all <name>.<n>.out files
+# 
+# ----------------------------------------------------------------
+
+$file = $ARGV[0];
+
+$outfile = $file;
+$outfile=~ s/\.(\d+)\.out/.out/;
+if ( ( $outfile eq $file ) or ! (-f $file) ) {
+    die("usage: stitch-out <name>.0.out\n");
+} 
+$num=0;
+while (1) {
+    $f = $file;
+    $f =~ s/\.(\d+)\.out/.$num.out/;
+    if ( -f $f ) {
+	$files[$num] = $f; 
+    } else { last; }
+    $num++;
+}
+
+print "stitching: ( @files ) -> $outfile\n";
+
+# processing header
+
+read_header($files[0],\@HEAD,\@N,\@I,\@J,\@K);
+$kmin = $K[0];
+read_header($files[$#files],\@HEAD,\@N,\@I,\@J,\@K);
+$K[0] = $kmin;
+print @HEAD;
+write_header($outfile,\@HEAD,\@N,\@I,\@J,\@K);
+
+
+
+
+
+
+sub read_header {
+    
+    my ( $file, $head, $N, $I, $J, $K ) = @_; 
+
+    open(FH,"$file");
+
+    $i = 0;
+    while(<FH>){
+	if ( /^\s*\#/ ) {
+	    $head[$i++] = $_;  # contains header lines
+	} else { last; }
+    }
+    close (FH);
+
+    $i = 8;  # skip these
+    $$head[$i] =~ /\#\s*(\d+)\s*(\d+)\s*(\d+)/; @$N = ( $1, $2, $3 ); 
+    $i = $i + 2;
+    $$head[$i] =~ /\#\s*(\d+)\s*(\d+)\s*(\d+)/; @$I = ( $1, $2, $3 );
+    $i = $i + 2;
+    $$head[$i] =~ /\#\s*(\d+)\s*(\d+)\s*(\d+)/; @$J = ( $1, $2, $3 );
+    $i = $i + 2;
+    $$head[$i] =~ /\#\s*(\d+)\s*(\d+)\s*(\d+)/; @$K = ( $1, $2, $3 );
+
+}
+
+sub write_header {
+    my ( $file, $head, $N, $I, $J, $K ) = @_;
+
+    $i = 8; 
+    $$head[$i] = "\# @$N\n";
+    $i = $i + 2;
+    $$head[$i] = "\# @$I\n";
+    $i = $i + 2;
+    $$head[$i] = "\# @$J\n";
+    $i = $i + 2;
+    $$head[$i] = "\# @$K\n";
+
+    open(FH,"> $file");
+    foreach $l (@$head) {
+	print FH $l;
+    }
+    close(FH);
+ 
+    
+
+}
