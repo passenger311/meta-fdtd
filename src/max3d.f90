@@ -3,15 +3,19 @@
 !  program: max3d / max3d
 !
 !  main program.
-! 
-!
 !
 !----------------------------------------------------------------------
+
+#ifndef MPI
+#undef MPE_LOG
+#endif
 
 
 program max3d
 
+#ifdef MPI
   use mpistart
+#endif /* MPI */
   use config
   use constant
   use grid
@@ -20,81 +24,116 @@ program max3d
   use bound
   use output
   use tfsf
+  use pointsource
 
   implicit none
 
   integer :: ncyc, error, l, ides, isrc
   character(len=12) :: str
 
-  ! --- time measurment
+  ! --- comms time measurement
 
+#ifdef MPI
   double precision :: tt
   double precision :: time_waited (2)
-  double precision :: mysecond
-  external mysecond
-
   time_waited = 0
-  
+#endif /* MPI */
+
+! =========================== INITIALIZATION ==========================
+
   ! --- startup MPI
 
-  call MPIinit
+#ifdef MPI
+     call MPIinit
+#endif /* MPI */
 
   ! --- init grid
+
+#ifdef MPE_LOG
 
   if (myrank .eq. 0) then
 
      write(6,*) '* --------- max3d start'
 
-  end if
+  ! --- init logging
 
+     call MPE_INIT_LOG() !*
+
+     call MPE_Describe_state(1,2,"ISEND","red:gray0")
+     call MPE_Describe_state(3,4,"IRECV","blue:gray1")
+     call MPE_Describe_state(5,6,"WAIT","green:gray2")
+     call MPE_Describe_state(7,8,"StepH","yellow:gray3")
+     call MPE_Describe_state(9,10,"PMLH","violet:gray4")
+     call MPE_Describe_state(11,12,"StepE","orange1:gray5")
+     call MPE_Describe_state(13,14,"PMLE","snow:gray6")
+     call MPE_Describe_state(15,16,"PEC","pink1:gray7")
+     call MPE_Describe_state(17,18,"PzDFT","chocolate:gray8")
+
+  end if
+#endif /* MPE_LOG */
+
+#ifdef MPI
   do l=0, numproc-1  ! sort output
 
      call MPI_BARRIER(MPI_COMM_WORLD,mpierr)
 
      if (myrank .eq. l) then
 
-        write(6,*) '* initialising for ',ranklbl
-        write(6,*) '* ... ReadConfig'
-        call ReadConfig(mpi_sfxin)        ! read config files
-        write(6,*) '* ... InitGrid'
-        call InitGrid()                   ! initialize grid, allocate fields
-        write(6,*) '* ... ReadEpsilon'
-        call ReadEpsilon
-        write(6,*) '* ... InitPML'
-        call InitPML()
-        write(6,*) '* ... InitTFSF '
-        call InitTFSF()
-        write(6,*) '* ... InitOutput '
-        call InitOutput()
-        write(6,*) '* ... InitPzDFT '
-        call InitPzDFT()
+        write(6,*) '* initialising for process = ',ranklbl
+#endif /* MPI */
 
+        write(6,*) '* -> ReadConfig'
+        call ReadConfig(mpi_sfxin)        ! read config files
+        write(6,*) '* -> InitGrid'
+        call InitGrid()                   ! initialize grid, allocate fields
+        write(6,*) '* -> ReadEpsilon'
+        call ReadEpsilon
+        write(6,*) '* -> InitPML'
+        call InitPML()
+        write(6,*) '* -> InitTFSF '
+        call InitTFSF()
+        write(6,*) '* -> InitOutput '
+        call InitOutput()
+        write(6,*) '* -> InitPzDFT '
+        call InitPzDFT()
+        write(6,*) '* -> InitSource '
+        call InitSource()
+
+#ifdef MPI
      end if
 
   end do
+#endif /* MPI */
+
+#ifdef MPI
 
   mpisize=(IMAX-IMIN+1)*(JMAX-JMIN+1)  ! set mpi mpiet size
  
   do l=0, numproc-1  ! sort output
 
+     call MPI_BARRIER(MPI_COMM_WORLD,mpierr)
+
      if (myrank .eq. l) then
-        
-        call MPI_BARRIER(MPI_COMM_WORLD,mpierr)
-        
+                
+        write(6,*) '* process entering loop, rank = ',ranklbl 
+
+#endif /* MPI */
+
         str = i2str(NCYCMAX)
-        write(6,*) '* entering time loop ',ranklbl 
-        write(6,*) '* ... steps = ', str 
+        write(6,*) '* time steps = ', str 
+
+#ifdef MPI
         
      end if
      
   end do
+
+#endif /* MPI */
   
-!  call MSGexchangeE
-!  call MSGexchangeH
-  
+
+! ============================ TIMELOOP ===============================
 
   ncyc = 0
-
   do ncyc = 1, NCYCMAX
 
      if (myrank .eq. 0 .and. mod(ncyc*10000/NCYCMAX,100) .eq. 0  ) then
@@ -104,192 +143,346 @@ program max3d
 
      end if
 
+! ------------------------------ StepH --------------------------------
+
+#ifdef MPE_LOG
+     call MPE_LOG_EVENT(7,"StepH",mpierr)
+#endif /* MPE_LOG */
+
      call StepH()
+
+#ifdef MPE_LOG
+     call MPE_LOG_EVENT(8,"StepH",mpierr)
+#endif /* MPE_LOG */
+
+! ----------------------------- SourceHy ------------------------------
+
+!     call SourceHy(ncyc)
+
+! ------------------------------ PMLH ---------------------------------
+
+#ifdef MPE_LOG
+     call MPE_LOG_EVENT(9,"PMLH",mpierr) 
+#endif /* MPE_LOG */
+
      call PMLH()
+
+#ifdef MPE_LOG
+     call MPE_LOG_EVENT(10,"PMLH",mpierr)
+#endif /* MPE_LOG */
+
+! ---------------------------- TFSFH -------------------------------
+
 !     call NewTFSF_H()
 
-! ** send tangential H fields to right
+! -------------------------- COMMS H -------------------------------
+
+! 1. send tangential H fields to right
+
+#ifdef MPI
 
      if ( myrank .ne. numproc-1 ) then
         ides= myrank+1
+
+#ifdef MPE_LOG
+        call MPE_LOG_EVENT(1,"ISEND",mpierr)
+#endif /* MPE_LOG */
+
         call MPI_ISEND( Hx(IMIN,JMIN,KEND),mpisize,mpitype,ides, &
              xtag,mpicomm,ireqs(1),mpierr )
         call MPI_ISEND( Hy(IMIN,JMIN,KEND),mpisize,mpitype,ides, &
              ytag,mpicomm,ireqs(2),mpierr )
+        
+#ifdef MPE_LOG
+        call MPE_LOG_EVENT(2,"ISEND",mpierr)
+#endif /* MPE_LOG */
+
      endif
 
-! receive tangential H fields from left
+! 2. receive tangential H fields from left
 
      if ( myrank .ne. 0 ) then
         isrc= myrank-1
+
+#ifdef MPE_LOG
+        call MPE_LOG_EVENT(3,"IRECV",mpierr) 
+#endif /* MPE_LOG */
+
         call MPI_IRECV( Hx(IMIN,JMIN,KMIN),mpisize,mpitype,isrc, &
              xtag,mpicomm,ireqr(1),mpierr )
         call MPI_IRECV( Hy(IMIN,JMIN,KMIN),mpisize,mpitype,isrc, &
              ytag,mpicomm,ireqr(2),mpierr )
+
+#ifdef MPE_LOG
+        call MPE_LOG_EVENT(4,"IRECV",mpierr) 
+#endif /* MPE_LOG */
+
      endif
 
-     tt = mysecond()
+     tt = MPI_WTIME()
 
-! and wait ...
+#endif /* MPI */
+
+! ---------------------------- WAIT H ---------------------------------
+
+! wait for pending comms to finish
+
+#ifdef MPI
 
      if ( myrank .ne. 0 ) then
+
+#ifdef MPE_LOG
+        call MPE_LOG_EVENT(5,"WAIT",mpierr)
+#endif /* MPE_LOG */
+
         call MPI_WAIT(ireqr(2),mpistatus, mpierr )
         call MPI_WAIT(ireqr(1),mpistatus, mpierr )
+
+#ifdef MPE_LOG
+        call MPE_LOG_EVENT(6,"WAIT",mpierr)
+#endif /* MPE_LOG */
+
      endif
 
      if ( myrank .ne. numproc-1 ) then
+
+#ifdef MPE_LOG
+        call MPE_LOG_EVENT(5,"WAIT",mpierr)
+#endif /* MPE_LOG */
+
         call MPI_WAIT(ireqs(2),mpistatus, mpierr )
         call MPI_WAIT(ireqs(1),mpistatus, mpierr )
+ 
+#ifdef MPE_LOG
+        call MPE_LOG_EVENT(6,"WAIT",mpierr)
+#endif /* MPE_LOG */
+
      endif
 
-     tt = mysecond() - tt
+     tt = MPI_WTIME() - tt
      time_waited(1) = time_waited(1) + tt
 
-! ** finished tangential H comm
+#endif /* MPI */
 
+! ---------------------------- OUTPUT ---------------------------------
 
-!     call DataPrepOutput(ncyc)
+     call DataPrepOutput(ncyc)
+
+! ---------------------------- StepE ----------------------------------
+
+#ifdef MPE_LOG
+     call MPE_LOG_EVENT(11,"StepE",mpierr)
+#endif /* MPE_LOG */
+
      call StepE()
+
+#ifdef MPE_LOG
+     call MPE_LOG_EVENT(12,"StepE",mpierr)
+#endif /* MPE_LOG */
+
+! -------------------------- SourceEy ---------------------------------
+
+     call SourceEy(ncyc)
+
+! ---------------------------- PMLE -----------------------------------
+
+#ifdef MPE_LOG
+     call MPE_LOG_EVENT(13,"PMLE",mpierr)
+#endif /* MPE_LOG */
+
      call PMLE() 
+
+#ifdef MPE_LOG
+     call MPE_LOG_EVENT(14,"PMLE",mpierr)
+#endif /* MPE_LOG */
+
+! --------------------------- TFSFE -----------------------------------
+
 !     call NewTFSF_E()
+
+! ---------------------------- PEC ------------------------------------
+
+#ifdef MPE_LOG
+     call MPE_LOG_EVENT(15,"PEC",mpierr) 
+#endif /* MPE_LOG */
+
      call PEC()
 
+#ifdef MPE_LOG
+     call MPE_LOG_EVENT(16,"PEC",mpierr) 
+#endif /* MPE_LOG */
 
-! ** send tangential E fields to left
+! -------------------------- COMMS E ----------------------------------
+
+#if MPI 
+
+! 1. send tangential E fields to the left
 
      if ( myrank .ne. 0 ) then
         ides = myrank-1
+
+#ifdef MPE_LOG
+        call MPE_LOG_EVENT(1,"ISEND",mpierr)
+#endif /* MPE_LOG */
+
         call MPI_ISEND( Ex(IMIN,JMIN,KBEG),mpisize,mpitype,ides, &
              xtag,mpicomm,ireqs(1),mpierr )
         call MPI_ISEND( Ey(IMIN,JMIN,KBEG),mpisize,mpitype,ides, &
              ytag,mpicomm,ireqs(2),mpierr )
+
+#ifdef MPE_LOG
+        call MPE_LOG_EVENT(2,"ISEND",mpierr)
+#endif /* MPE_LOG */
+
      endif
 
-! receive tangential E fields from right
+! 2. receive tangential E fields from right
 
      if ( myrank .ne. numproc-1 ) then
         isrc = myrank+1
+
+#ifdef MPE_LOG
+        call MPE_LOG_EVENT(3,"IRECV",mpierr)
+#endif /* MPE_LOG */
+
         call MPI_IRECV( Ex(IMIN,JMIN,KMAX),mpisize,mpitype,isrc, &
              xtag,mpicomm,ireqr(1),mpierr )
         call MPI_IRECV( Ey(IMIN,JMIN,KMAX),mpisize,mpitype,isrc, &
              ytag,mpicomm,ireqr(2),mpierr )
+
+#ifdef MPE_LOG
+        call MPE_LOG_EVENT(4,"IRECV",mpierr)
+#endif /* MPE_LOG */
+
      endif
 
-     tt = mysecond()
+     tt = MPI_WTIME()
 
-! and wait ...
+#endif /* MPI */
+
+! --------------------------- WAIT E ----------------------------------
+
+#ifdef MPI
 
      if ( myrank .ne. numproc-1 ) then
+
+#ifdef MPE_LOG
+        call MPE_LOG_EVENT(5,"WAIT",mpierr) 
+#endif /* MPE_LOG */
+
         call MPI_WAIT(ireqr(2),mpistatus, mpierr )
         call MPI_WAIT(ireqr(1),mpistatus, mpierr )
+
+#ifdef MPE_LOG
+        call MPE_LOG_EVENT(6,"WAIT",mpierr) 
+#endif /* MPE_LOG */
+
      endif
 
 
      if ( myrank .ne. 0 ) then
+
+#ifdef MPE_LOG
+        call MPE_LOG_EVENT(5,"WAIT",mpierr) 
+#endif /* MPE_LOG */
+
         call MPI_WAIT(ireqs(2),mpistatus, mpierr )
         call MPI_WAIT(ireqs(1),mpistatus, mpierr )
+
+#ifdef MPE_LOG
+        call MPE_LOG_EVENT(6,"WAIT",mpierr) 
+#endif /* MPE_LOG */
+
      endif
 
-     tt = mysecond() - tt
+     tt = MPI_WTIME() - tt
      time_waited(2) = time_waited(2) + tt
 
-! ** finished tangential H comm
+#endif /* MPI */
     
+! ----------------------------- OUTPUT --------------------------------
 
-!     call DataOutGPL(ncyc)
+     call DataOutGPL(ncyc)
+
+! ------------------------------ PzDFT --------------------------------
+
+#ifdef MPE_LOG
+     call MPE_LOG_EVENT(17,"PzDFT",mpierr)  
+#endif /* MPE_LOG */
+
      call PzDFT(ncyc)
+
+#ifdef MPE_LOG
+     call MPE_LOG_EVENT(18,"PzDFT",mpierr)  
+#endif /* MPE_LOG */
+
+! ---------------------------------------------------------------------
 
      GT = GT + DT
 
   end do
 
-  call MPI_BARRIER(MPI_COMM_WORLD,mpierr)
+! =========================== FINALIZING ==============================
 
+! end of time loop.
+
+#if MPI
+  call MPI_BARRIER(MPI_COMM_WORLD,mpierr)
+#endif /* MPI */
+
+#if MPI
   do l=0, numproc-1  ! sort output
+
+     call MPI_BARRIER(MPI_COMM_WORLD,mpierr)
 
      if (myrank .eq. l) then
  
-        write(6,*) '* finalising ', ranklbl
+        write(6,*) '* process finalising, rank = ', ranklbl
+#endif /* MPI */
 
+        write(6,*) '* -> OutPzDFTn'
         call OutPzDFT()
+        write(6,*) '* -> FinaliseOutput'
         call FinaliseOutput()
+        write(6,*) '* -> FinalisePML'
         call FinalisePML()
+        write(6,*) '* -> FinaliseGrid'
         call FinaliseGrid()
 
-        write(6,*) ranklbl, "Time spent in H-field communication", time_waited(1)
-        write(6,*) ranklbl, "Time spent in E-field communication", time_waited(2)
+#if MPI
+        write(6,*) ranklbl, "* time for Comms H = ", time_waited(1)
+        write(6,*) ranklbl, "* time for Comms E = ", time_waited(2)
      end if
 
   end do
+#endif /* MPI */
+
+! --- terminate logging
+
+#ifdef MPI
+  call MPI_BARRIER(MPI_COMM_WORLD,mpierr)
+#endif /* MPI */
+
+#ifdef MPE_LOG
+  call MPE_Finish_log("max3d.log") !
+#endif /* MPE_LOG */
 
 ! --- terminate MPI
 
-  call MPI_BARRIER(MPI_COMM_WORLD,mpierr)
-
+#ifdef MPI
   call MPIfinalise
 
-
   if (myrank .eq. 0) then
+#endif /* MPI */
 
      write(6,*) '* --------- max3d end'
 
+#ifdef MPI
   end if
-
-
-contains
-  ! From the stream benchmark as the second_wall.c function mysecond
-
-  ! A semi-portable way to determine the clock granularity
-  ! Adapted from a code by John Henning of Digital Equipment Corporation
-
-  INTEGER FUNCTION checktick()
-    IMPLICIT NONE
-                                                                               
-    !     .. Parameters ..
-    integer, parameter :: n = 20
-
-    !     .. Local Scalars ..
-    DOUBLE PRECISION :: t1, t2
-    INTEGER :: i,j,jmin
-
-    !     .. Local Arrays ..
-    DOUBLE PRECISION :: timesfound(n)
-
-    !     .. External Functions ..
-    DOUBLE PRECISION :: mysecond
-    EXTERNAL mysecond
-
-    !     .. Intrinsic Functions ..
-    INTRINSIC :: max,min,nint
-
-    do i = 0, n-1
-       t2 = mysecond()
-       
-       do while (t2.ne.t1)
-          t2 = mysecond()
-       end do
-       
-       t1 = t2
-       timesfound(i) = t1
-       
-    end do
-    
-    jmin = 1000000
-    do i = 2,n
-       j = nint((timesfound(i)-timesfound(i-1))*1d6)
-       jmin = min(jmin,max(j,0))
-    end do
-       
-    if (jmin.GT.0) then
-       checktick = jmin
-    else
-       write(6,*) 'Your clock granularity appears to be less ', \
-       'than one microsecond'
-       checktick = 1
-    end if
-    return
-    
-  end function checktick
-
+#endif /* MPI */
   
 end program max3d
+
+
+!----------------------------------------------------------------------
+!----------------------------------------------------------------------
