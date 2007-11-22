@@ -21,7 +21,7 @@ config.f90\
 output-r.f90\
 tfsf-r.f90\
 pre-obj-1.f90\
-second_wall.c\
+pointsource.f90\
 mpistart.F90\
 max3d.F90
 
@@ -34,8 +34,8 @@ fdtd3d-r.o\
 upml-r.o\
 config.o\
 output-r.o\
+pointsource.o\
 tfsf-r.o\
-second_wall.o\
 max3d.o
 
 PREOBJ= strings.o\
@@ -66,7 +66,7 @@ default: $(PREEXE) $(EXE)
 
 
 $(EXE) : $(FOBJ)
-	$(F90) $(LDFLAGS) $(FOBJ) -o $(EXE) second_wall.o
+	$(F90) $(LDFLAGS) $(FOBJ) -o $(EXE)
 
 $(PREEXE) : $(PREOBJ)
 	$(F90) $(LDFLAGS) $(PREOBJ) -o $(PREEXE)

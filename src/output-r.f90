@@ -665,7 +665,9 @@ contains
           do j=yoff, JMAX-yoff
              do i=xoff, IMAX-xoff
 
-                pzt(m)=pzt(m)+Ext_r(i,j,m)*Hyt_r(i,j,m)+Ext_i(i,j,m)*Hyt_i(i,j,m)-Eyt_r(i,j,m)*Hxt_r(i,j,m)-Eyt_i(i,j,m)*Hxt_i(i,j,m)
+                pzt(m)=pzt(m)+Ext_r(i,j,m)*Hyt_r(i,j,m)+ & 
+                     Ext_i(i,j,m)*Hyt_i(i,j,m)-Eyt_r(i,j,m)*Hxt_r(i,j,m)- &
+                     Eyt_i(i,j,m)*Hxt_i(i,j,m)
 
              end do
           end do
