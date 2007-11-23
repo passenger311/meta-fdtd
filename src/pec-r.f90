@@ -4,19 +4,42 @@
 !
 !  set metallic boundary conditions.
 !
+!  subs:
+!
+!  CreatePEC
+!  DestroyPEC
+!  SetPEC
+!
 !----------------------------------------------------------------------
  
-module bound
+module pec
  
-  use grid
   use constant
-  use mpistart
+  use mpiworld
+  use grid
+  use fdtd
+
   implicit none
   save
   
+
 contains
 
-  subroutine PEC
+
+  subroutine CreatePEC
+
+    implicit none
+
+  end subroutine CreatePEC
+
+  subroutine DestroyPEC
+
+    implicit none
+
+  end subroutine DestroyPEC
+
+
+  subroutine SetPEC
     
     implicit none
  
@@ -67,6 +90,6 @@ contains
     
     endif
 
-  end subroutine PEC
+  end subroutine SetPEC
 
-end module bound
+end module pec

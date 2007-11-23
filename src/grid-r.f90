@@ -4,17 +4,31 @@
 !
 !  grid definition and field allocation.
 !
+!  subs:
+!
+!    CreateGrid
+!      ReadConfig
+!      Initialize
+!    DestroyGrid
+!    EchoGrid
+!
 !----------------------------------------------------------------------
 
 
 module grid
 
-  use mpistart
   use constant
+  use strings
+  use mpiworld
+
   implicit none
   save
 
-  ! Variables, Defaults  
+  ! --- Constants
+
+  character(len=255), parameter :: pfxgrid = 'grid'
+
+  ! --- Variables  
 
   integer :: IBEG, IEND
   integer :: JBEG, JEND
@@ -34,10 +48,6 @@ module grid
   real(8) :: SY  = 1.0
   real(8) :: SZ  = 1.0
 
-  real(8), allocatable, dimension(:, :, :) :: Ex, Ey, Ez
-  real(8), allocatable, dimension(:, :, :) :: Hx, Hy, Hz
-  real(8), allocatable, dimension(:, :, :) :: EPSINV
-
   integer :: NCYCMAX = 0
   real(8) :: GT  = 0.0
   real(8) :: DT  = 0.577
@@ -46,75 +56,85 @@ module grid
 
 contains
 
-  subroutine InitGrid()
+  subroutine CreateGrid(sfx)
 
     implicit none
 
-    ! Data is being read from file FNCFG (defined in constant)
-    ! Dataflag: #GRID
+    character(len=*) :: sfx
 
-    ! Variables
-    integer :: error = 0  
-    integer :: ios
-    character(len=STRLNG) :: str
-    integer :: err
+    call ReadConfig(sfx)
+    call Initialize()
 
-    ! Inner ranges are [IBEG,IEND] etc., outer ranges [IMIN,IMAX]
-    ! these are calculated in config.f90/ReadGrid
+    contains
 
-    allocate(Ex(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
-    if(err .ne. 0) then
-       write(STDERR,*) "Allocation of Ex failed."
-       stop
-    endif
-    allocate(Ey(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
-    if(err .ne. 0) then
-       write(STDERR,*) "Allocation of Ey failed."
-       stop
-    endif
-    allocate(Ez(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
-    if(err .ne. 0) then
-       write(STDERR,*) "Allocation of Ez failed." 
-       stop
-    endif
+      subroutine ReadConfig(sfx)
 
-    allocate(Hx(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
-    if(err .ne. 0) then
-       write(STDERR,*) "Allocation of Hx failed."
-       stop
-    endif
-    allocate(Hy(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
-    if(err .ne. 0) then
-       write(STDERR,*) "Allocation of Hy failed."
-       stop
-    endif
-    allocate(Hz(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
-    if(err .ne. 0) then
-       write(STDERR,*) "Allocation of Hz failed." 
-       stop
-    endif
+        implicit none
 
-    allocate(EPSINV(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
-    if(err .ne. 0) then
-       write(STDERR,*) "Allocation of EPSINV failed." 
-       stop
-    endif
+        character(len=*) :: sfx
 
-    Ex = 0.0
-    Ey = 0.0
-    Ez = 0.0
- 
-    Hx = 0.0
-    Hy = 0.0
-    Hz = 0.0
+        character(len=255) :: file 
+        integer :: err, i
 
-    EPSINV = 1.0
+        file = cat2(pfxgrid,sfx)
 
-  end subroutine InitGrid
+        open(UNITTMP,FILE=file,STATUS='unknown')
+        read(UNITTMP,*) PARTITIONS
+        read(UNITTMP,*) NCYCMAX
+        read(UNITTMP,*) DT
+        read(UNITTMP,*) IBEG, IEND    ! from ... to ranges
+        read(UNITTMP,*) JBEG, JEND
+        read(UNITTMP,*) KBEG, KEND
+
+        close(UNITTMP) 
+
+        if ( PARTITIONS .ne. numproc .and. mpi_started .ne. 0 ) then
+           write(6,*) "config: number of read in parititons does not match mpi numproc"
+           stop
+        end if
+
+        ! Inner ranges are [IBEG,IEND] etc., outer ranges [IMIN,IMAX]
+
+        IMIN = IBEG-1          
+        IMAX = IEND+1
+        JMIN = JBEG-1
+        JMAX = JEND+1
+        KMIN = KBEG-1
+        KMAX = KEND+1
+
+       ! Ranges for PML sheaths [ISIG,IEIG]
+
+        ISIG=IBEG
+        IEIG=IMAX
+        JSIG=IBEG
+        JEIG=JMAX
+        KSIG=KBEG
+        KEIG=KMAX
+
+      end subroutine ReadConfig
+
+      subroutine Initialize() 
+
+        implicit none
+
+
+      end subroutine Initialize
+
+  end subroutine CreateGrid
+
+
+
+  subroutine DestroyGrid()
+
+    implicit none
+
+  end subroutine DestroyGrid
+
+
 
   subroutine EchoGrid
-    
-    ! Bildschirmausgabe der Grid Daten
+
+    implicit none
     
     write(6,*) 
     write(6,*) '------------ EchoGrid() -----------'
@@ -129,44 +149,6 @@ contains
 
   end subroutine EchoGrid
 
-
-  subroutine FinaliseGrid ()
-    implicit none
-
-    deallocate(Hz)
-    deallocate(Hy)
-    deallocate(Hx)
-    deallocate(Ez)
-    deallocate(Ey)
-    deallocate(Ex)
-    deallocate(EPSINV)
-
-  end subroutine FinaliseGrid
-
-
-  subroutine ReadEpsilon
-
-    implicit none
-
-    integer :: ios, i, j, k
-    character(len=255) :: file
-    real(8) :: val
-
-    file = cat2(pfxepsilon,mpi_sfxin)
-
-    open(UNITTMP, FILE=file, STATUS='unknown')
-    do k=KBEG,KEND+1
-       do j=JBEG,JEND+1
-          do i=IBEG, IEND+1
-             read(UNITTMP,*) val
-             EPSINV(i,j,k)=1.0/val
-          end do
-       end do
-    end do
-    close(UNITTMP)
-  
-
-  end subroutine ReadEpsilon
 
 end module grid
 

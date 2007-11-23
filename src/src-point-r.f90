@@ -1,17 +1,18 @@
 !----------------------------------------------------------------------
 !
-!   module: pointsource
+!   module: src_point
 !
-!  grid definition and field allocation.
+!   electromagnetic point source
 !
 !----------------------------------------------------------------------
 
 
-module pointsource
+module src_point
 
-  use mpistart
   use constant
+  use mpiworld
   use grid
+  use fdtd
 
   implicit none
   save
@@ -99,4 +100,4 @@ contains
 
   end subroutine SourceHy
 
-end module pointsource
+end module src_point

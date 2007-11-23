@@ -1,8 +1,8 @@
-!----------------------------------------------------------------------
+!-*- F90 -*------------------------------------------------------------
 !
-!  program: max3d / max3d
+!  program: max3d
 !
-!  main program.
+!  main program
 !
 !----------------------------------------------------------------------
 
@@ -13,16 +13,16 @@
 
 program max3d
 
-  use mpistart
-  use config
   use constant
+  use strings
+  use mpiworld
   use grid
-  use fdtd3d
+  use fdtd
+  use pec
   use upml
-  use bound
-  use output
   use tfsf
-  use pointsource
+  use fdtd_out
+  use src_point
 
   implicit none
 
@@ -41,7 +41,7 @@ program max3d
 
   ! --- startup MPI
 
-  call MPIinit
+  call CreateMPIWorld
 
   ! --- init grid
 
@@ -53,7 +53,7 @@ program max3d
 
   ! --- init logging
 
-     call MPE_INIT_LOG() !*
+     call MPE_INIT_LOG() 
 
      call MPE_Describe_state(1,2,"ISEND","red:gray0")
      call MPE_Describe_state(3,4,"IRECV","blue:gray1")
@@ -76,24 +76,22 @@ program max3d
 
      if (myrank .eq. l) then
 
-        write(6,*) '* initialising for process = ',ranklbl
+        write(6,*) '* initialising modules: ',ranklbl
 
-        write(6,*) '* -> ReadConfig'
-        call ReadConfig(mpi_sfxin)        ! read config files
-        write(6,*) '* -> InitGrid'
-        call InitGrid()                   ! initialize grid, allocate fields
-        write(6,*) '* -> ReadEpsilon'
-        call ReadEpsilon
-        write(6,*) '* -> InitPML'
-        call InitPML()
-        write(6,*) '* -> InitTFSF '
-        call InitTFSF()
-        write(6,*) '* -> InitOutput '
-        call InitOutput()
-        write(6,*) '* -> InitPzDFT '
-        call InitPzDFT()
-        write(6,*) '* -> InitSource '
-        call InitSource()
+        write(6,*) '* -> CreateGrid'
+        call CreateGrid(mpi_sfxin)
+        write(6,*) '* -> CreateFDTD'
+        call CreateFDTD(mpi_sfxin)  
+        write(6,*) '* -> CreateUPML'
+        call CreateUPML
+        write(6,*) '* -> CreateTFSF'
+        call CreateTFSF
+        write(6,*) '* -> CreateOutFDTD'
+        call CreateOutFDTD
+        write(6,*) '* -> CreatePzDFT '
+        call CreatePzDFT
+        write(6,*) '* -> CreateSource '
+        call CreateSource
 
      end if
 
@@ -295,7 +293,7 @@ program max3d
      call MPE_LOG_EVENT(15,"PEC",mpierr) 
 #endif /* MPE_LOG */
 
-     call PEC()
+     call SetPEC()
 
 #if MPE_LOG
      call MPE_LOG_EVENT(16,"PEC",mpierr) 
@@ -430,13 +428,15 @@ program max3d
         write(6,*) '* process finalising, rank = ', ranklbl
 
         write(6,*) '* -> OutPzDFTn'
-        call OutPzDFT()
-        write(6,*) '* -> FinaliseOutput'
-        call FinaliseOutput()
-        write(6,*) '* -> FinalisePML'
-        call FinalisePML()
-        write(6,*) '* -> FinaliseGrid'
-        call FinaliseGrid()
+        call OutPzDFT
+        write(6,*) '* -> DestroyOutFDTD'
+        call DestroyOutFDTD
+        write(6,*) '* -> DestroyUPML'
+        call DestroyUPML
+        write(6,*) '* -> DestroyFDTD'
+        call DestroyFDTD
+        write(6,*) '* -> DestroyGrid'
+        call DestroyGrid
 
 #if MPI
         write(6,*) ranklbl, "* time for Comms H = ", time_waited(1)
@@ -454,12 +454,12 @@ program max3d
 #endif /* MPI */
 
 #if MPE_LOG
-  call MPE_Finish_log("max3d.log") !
+  call MPE_FINISH_LOG("max3d.log") !
 #endif /* MPE_LOG */
 
 ! --- terminate MPI
 
-  call MPIfinalise
+  call DestroyMPIWorld
 
   if (myrank .eq. 0) then
 

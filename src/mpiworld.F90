@@ -1,13 +1,18 @@
-!----------------------------------------------------------------------
+!-*- F90 -*------------------------------------------------------------
 !
-!  module: mpistart / max3d
+!  module: mpiworld / max3d
 !
-!  initialise and finalise mpi. 
+!  create mpi world 
+!
+!  subs:
+!
+!  CreateMPIWorld
+!  DestroyMPIWorld
 !
 !----------------------------------------------------------------------
 
 
-module mpistart
+module mpiworld
 
   use strings
   implicit none
@@ -37,7 +42,7 @@ module mpistart
 
 contains
 
-  subroutine mpiinit
+  subroutine CreateMPIWorld
 
     implicit none      
 
@@ -69,10 +74,10 @@ contains
 #endif /* MPI */
 
 
-  end subroutine mpiinit
+  end subroutine CreateMPIWorld
  
   
-  subroutine mpifinalise
+  subroutine DestroyMPIWorld
 
     implicit none      
 
@@ -82,11 +87,10 @@ contains
 
 #endif /* MPI */
 
-  end subroutine mpifinalise
+  end subroutine DestroyMPIWorld
 
 
-end module mpistart
-
+end module mpiworld
 
 
 

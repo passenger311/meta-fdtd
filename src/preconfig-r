@@ -147,7 +147,7 @@ $dt = $time{dt};
 
 # ----- create grid.<n>.in files
 
-print "pre-config: writes grid.in\n";
+print "pre-config: writes grid config files\n";
 
 open (FH,"> grid.in");
     
@@ -157,19 +157,10 @@ print FH "$dt\t\t! dt\n";
 print FH "0 $iend\t\t! irange\n";
 print FH "0 $jend\t\t! jrange\n";
 print FH "0 $kend\t\t! krange\n";
-$pmlk = $pml{k0} + $pml{k1};
-print FH "$pmlk\t\t! this is a k-pml partition\n";
-print FH "$pml{i0} $pml{i1} $pml{j0} $pml{j1} $pml{k0} $pml{k1}\t! active pmls\n";
-print FH "$pml{cells}\t\t! pml cells\n";
-print FH "$pml{pot}\t\t! pml pot parameter\n";
-print FH "$pml{sigma}\t\t! pml sigma parameter\n";
-print FH "$pml{kappa}\t\t! pml kappa parameter\n";
  
 close(FH);
   
 $kstart = 0;
-
-print "pre-config: writes grid.<n>.in\n";
 
 for ($kp=0; $kp<$nproc; $kp++ ) { # loop over paritions
 
@@ -183,6 +174,33 @@ for ($kp=0; $kp<$nproc; $kp++ ) { # loop over paritions
     print FH "0 $iend\t\t! irange\n";
     print FH "0 $jend\t\t! jrange\n";
     print FH "$kstart $kend\t\t! krange\n";
+
+    $kstart = $kend + 1;
+    
+    close(FH);
+}
+
+
+# ----- create pml.in file
+
+print "pre-config: writes pml config files\n";
+
+open (FH,"> pml.in");
+
+$pmlk = $pml{k0} + $pml{k1};
+print FH "$pmlk\t\t! this is a k-pml partition\n";
+print FH "$pml{i0} $pml{i1} $pml{j0} $pml{j1} $pml{k0} $pml{k1}\t! active pmls\n";
+print FH "$pml{cells}\t\t! pml cells\n";
+print FH "$pml{pot}\t\t! pml pot parameter\n";
+print FH "$pml{sigma}\t\t! pml sigma parameter\n";
+print FH "$pml{kappa}\t\t! pml kappa parameter\n";
+
+$kstart = 0;
+
+for ($kp=0; $kp<$nproc; $kp++ ) { # loop over paritions
+
+    open (FH,"> pml.$kp.in");
+    
     $pmlk0 = 0;
     $pmlk1 = 0;
     if ( $kp eq 0 and $pml{k0} eq 1 ) { 
@@ -194,10 +212,8 @@ for ($kp=0; $kp<$nproc; $kp++ ) { # loop over paritions
     $pmlk = $pmlk0 + $pmlk1 ;
     if ( $pmlk > 0 ) {
 	print FH "$pmlk\t\t! this is a k-pml partition\n";
-	print "$kp: * $kstart $kend\n";
     } else {
 	print FH "0\t\t! this is a non k-pml partition\n";
-	print "$kp:   $kstart $kend\n";
     }
     print FH "$pml{i0} $pml{i1} $pml{j0} $pml{j1} $pmlk0 $pmlk1\t! active pmls\n";
     print FH "$pml{cells}\t\t! pml cells\n";
@@ -208,6 +224,7 @@ for ($kp=0; $kp<$nproc; $kp++ ) { # loop over paritions
     
     close(FH);
 }
+
 
 
 # ----- create epsilon.in file

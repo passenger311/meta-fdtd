@@ -16,10 +16,6 @@ module constant
   integer, parameter :: STRLNG=80                  ! max. Stringlength
   integer, parameter :: STDERR=0                   ! auf Himiko 6, sonst 0
 
-  character(len=255), parameter :: pfxoutput = 'output'
-  character(len=255), parameter :: pfxgrid = 'grid'
-  character(len=255), parameter :: pfxepsilon = 'epsilon'
-
   character(len=255), parameter :: sfxin = '.in'
   character(len=255), parameter :: sfxout = '.out'
 

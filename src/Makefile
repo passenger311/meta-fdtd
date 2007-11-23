@@ -11,39 +11,41 @@ else
 include Make.$(ARCH)
 endif 
 
+ifeq ($(ENGINE),)
+ENGINE=r
+endif
+
+
 SRC= strings.f90\
 constant.f90\
-grid-r.f90\
-bound-r.f90\
-fdtd3d-r.f90\
-upml-r.f90\
-config.f90\
-output-r.f90\
-tfsf-r.f90\
+mpiworld.F90\
+grid-$(ENGINE).f90\
+fdtd-$(ENGINE).f90\
+pec-$(ENGINE).f90\
+upml-$(ENGINE).f90\
+fdtd-out-$(ENGINE).f90\
+tfsf-$(ENGINE).f90\
+src-point-$(ENGINE).f90\
 pre-obj-1.f90\
-pointsource.f90\
-mpistart.F90\
 max3d.F90
 
 FOBJ= strings.o\
 constant.o\
-mpistart.o\
-grid-r.o\
-bound-r.o\
-fdtd3d-r.o\
-upml-r.o\
-config.o\
-output-r.o\
-pointsource.o\
-tfsf-r.o\
+mpiworld.o\
+grid-$(ENGINE).o\
+fdtd-$(ENGINE).o\
+pec-$(ENGINE).o\
+upml-$(ENGINE).o\
+fdtd-out-$(ENGINE).o\
+src-point-$(ENGINE).o\
+tfsf-$(ENGINE).o\
 max3d.o
 
 PREOBJ= strings.o\
 constant.o\
-mpistart.o\
-grid-r.o\
-upml-r.o\
-config.o\
+mpiworld.o\
+grid-$(ENGINE).o\
+fdtd-$(ENGINE).o\
 pre-obj-1.o
 
 PREEXE = pre-obj-1

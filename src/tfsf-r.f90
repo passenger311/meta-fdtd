@@ -1,28 +1,38 @@
 !----------------------------------------------------------------------
 !
-!  module: tfsf(-r) / max3d
+!  module: tfsf
 !
 !  field sources using total-field scattered-field.
 !
 !----------------------------------------------------------------------
 
 
-module TFSF
+module tfsf
 
   use constant
   use grid  
+  use fdtd
 
   implicit none
   save
 
+  ! --- Constants
+
+  character(len=STRLNG) :: pfxtfsf = "tfsf"
+
+  ! --- Variables
+
   integer :: k_inc
   integer :: j, ioffset, joffset, ilength, jlength
-  real(8), allocatable :: Hy_inc(:,:), Ex_inc(:,:), Hx_inc(:,:), Ey_inc(:,:)
   real(8) :: om, t0, sig, latcon
+
+  ! --- Fields
+
+  real(8), allocatable :: Hy_inc(:,:), Ex_inc(:,:), Hx_inc(:,:), Ey_inc(:,:)
 
 contains
 
-  subroutine InitTFSF()
+  subroutine CreateTFSF()
 
     implicit none
 
@@ -34,7 +44,7 @@ contains
 
     ! Read input parameters and file
 
-    file = cat2(pfxoutput,sfxin)
+    file = cat2(pfxtfsf,sfxin)
     
     open(UNITTMP,FILE=file,STATUS='unknown')
     do
@@ -150,7 +160,7 @@ contains
 
     close(UNITTMP)
 
-  end subroutine InitTFSF
+  end subroutine CreateTFSF
 
 
   subroutine NewTFSF_E()
@@ -194,7 +204,7 @@ contains
   end subroutine NewTFSF_H
 
 
-  subroutine FinaliseTFSF()
+  subroutine DestroyTFSF
 
     implicit none
 
@@ -205,7 +215,7 @@ contains
     deallocate(Ey_inc)
     deallocate(Hx_inc)
 
-  end subroutine FinaliseTFSF
+  end subroutine DestroyTFSF
 
 
 end module tfsf

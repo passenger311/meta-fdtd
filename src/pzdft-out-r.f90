@@ -1,89 +1,70 @@
 !----------------------------------------------------------------------
 !
-!  module: output(-r) / max3d
+!  module: pzdft-out-r
 !
-!  ascii output module.
+!  dft output module.
+!
+!  subs:
+!
+!  
 !
 !----------------------------------------------------------------------
 
-! ---------------------------------------------------------------------
-!     Supported Data: Ex, Ey, Ez, Hx, Hy, Hz, Di, Px, Py, Pz, En
-! ---------------------------------------------------------------------
-!     Contained Subroutines:
-!
-!     InitOutputParameters
-!     WriteOutputHeader
-!     InitOutput             used in max3d.f90
-!     Output(ncyc)           used in max3d.f90
-!            WriteEH
-!            WriteComp
-!            WriteDi
-!            WriteData
-!     DataPrepOutput(ncyc)   used in max3d.f90 (between StepH and StepE)
-!     LoadPx
-!     LoadPy
-!     LoadPz
 
-! ---------------------------------------------------------------------
+module pzdft_out
 
-!  output mode 'abcd':
-!  ab = component(s) 'Ex', 'Ey', 'Ez', 'Hx', 'Hy','Hz','EH','Di',
-!                     'En', 'Px', 'Py', oder 'Pz'
-!  c = 'E':  one file (for all time steps)
-!  c = 'M':  multiple files
-!  d = 'R':  spatially resolved output
-!  d = 'S':  spatially integrated output
-
-!  Spatial and temporal localization of the components in (i,j,k,ncyc):
-!  Ex-Ez: (i+1/2,j,k,GT) - (i,j,k+1/2,GT)  
-!  Hx-Hz: (i,j+1/2,k+1/2,GT-0.5*DT) - (i+1/2,j+1/2,k,GT-0.5*DT)
-!  EH = (Ex,Ey,Ez,Hx,Hy,Hz): as above
-!  Di = diectric constant: (i,j,k)
-!  Energy En:  electric part EnE: (i,j,k,GT)
-!              magnetic part EnM: (i,j,k,GT-0.5*DT)
-!              En = EnE + EnM
-!  Px-Pz:  (i+1/2,j,k,GT-0.5*DT) - (i,j,k+1/2,GT-0.5*DT)  
-! ---------------------------------------------------------------------
-
-
-module output
-
+  use constant
   use strings
-  use mpistart
+  use mpiworld
   use grid  
+  use fdtd
 
   implicit none
   save
 
-    ! Types
+  ! --- Constants
+
+  character(len=255), parameter :: pfxoutput = 'output'
+  integer, parameter :: PARTSMAXGPL = 100
+
+  ! --- Types
 
   type T_OUTBAS 
 
-     ! Ausgabe File:
+     ! Output files:
      character(STRLNG) fn
 
-     ! Ausgabe Modus:
+     ! Output mode:
      character(len=10) :: Mode
 
-     ! Raumzeitlicher Ausgabe Bereich
+     ! Spatial area
      integer ns, ne, dn
      integer is, ie, di
      integer js, je, dj
      integer ks, ke, dk
 
-     ! Sonstige Variablen
-     integer AnzNodes
-
+     ! Other
+     integer NumNodes
 
   end type T_OUTBAS
 
-  integer, parameter :: PARTSMAXGPL = 100
+  ! --- Variables
 
-  ! Variables
   type(T_OutBas) :: gpl(PARTSMAXGPL)
   integer  partsgpl
   real(8), allocatable :: DataGpl(:)
   integer DataIndxGpl(PARTSMAXGPL+1)
+
+  integer :: xoff, yoff 
+  integer :: kt
+  integer :: ndf  
+  real(8) :: fl      
+  real(8) :: fu      
+  real(8) :: latcon  
+
+  character(STRLNG) :: pztfn
+
+  ! --- Fields
 
   real(8), allocatable :: Eyt_r(:,:,:)
   real(8), allocatable :: Eyt_i(:,:,:)
@@ -95,163 +76,181 @@ module output
   real(8), allocatable :: Hyt_r(:,:,:)
   real(8), allocatable :: Hyt_i(:,:,:)
 
-  integer :: xoff, yoff 
-  integer :: kt
-  integer :: ndf  
-  real(8) :: fl      
-  real(8) :: fu      
-  real(8) :: latcon  
-  character(STRLNG) :: pztfn
 
 contains
 
-  ! ****************************************************************** !
-  subroutine InitOutputParameters(this, funit)
 
-    ! Initialisiert Modul OutBas	
-    implicit none
+  subroutine CreateFDTDOut
 
-    type (T_OUTBAS) :: this
-    integer funit, isteps, jsteps, ksteps
-
-    ! Read Modul (Type) Data
-    read(funit,*) this%fn, this%Mode
-    read(funit,*) this%ns, this%ne, this%dn
-    read(funit,*) this%is, this%ie, this%di
-    read(funit,*) this%js, this%je, this%dj
-    read(funit,*) this%ks, this%ke, this%dk
-
-    this%fn = cat2(this%fn, mpi_sfxout)
-
-    ! check ranges	
-    this%is = max(IBEG, this%is); 
-    this%ie = min(IEND, this%ie);
-
-    this%js = max(JBEG, this%js); 
-    this%je = min(JEND, this%je);
-
-    this%ks = max(KBEG, this%ks); 
-!    this%ks = max(KMIN, this%ks); ! >>>DEBUG 
-    this%ke = min(KEND, this%ke);
-!    this%ke = min(Kmax, this%ke); ! >>>DEBUG
-
-    isteps = max(int((this%ie-this%is+this%di)/this%di),0)
-    jsteps = max(int((this%je-this%js+this%dj)/this%dj),0)
-    jsteps = max(int((this%ke-this%ks+this%dk)/this%dk),0)
-    this%AnzNodes = isteps*jsteps*ksteps
-
-  end subroutine InitOutputParameters
-
-
-  ! ****************************************************************** !
-  subroutine WriteOutputHeader(this,funit, TitleStr)
-    use grid
-    implicit none
-    type (T_OUTBAS) :: this
-    integer :: funit
-    character(len=*) :: TitleStr
-    real(8) :: ts,te,xs,xe,ys,ye,zs,ze
-
-    ! Do some Preparations
-    ts = this%ns*DT+GT
-    te = this%ne*DT+GT
-    xs = this%is*SX
-    xe = this%ie*SX
-    ys = this%js*SY
-    ye = this%je*SY
-    zs = this%ks*SZ
-    ze = this%ke*SZ
-
-    ! Write Data in File Header
-    write(funit,'(A1,A30)') '#',TitleStr
-    write(funit,'(A1,A30)') '#','label1'
-    write(funit,'(A1,A30)') '#','label2'
-    write(funit,'(A1,A30)') '#','label3'
-    write(funit,'(A1,A30)') '#','label4'
-    write(funit,'(A1,A30)') '#','label5'
-    write(funit,'(A1,A30)') '#','label6'
-    write(funit,'(A1,A30,A4)') '#',this%fn(1:27),this%Mode
-    write(funit,'(A1,3I8)') '#',this%ns,this%ne,this%dn
-    write(funit,'(A1,2E15.6E3)') '#',ts,te
-    write(funit,'(A1,3I8)') '#',this%is,this%ie,this%di
-    write(funit,'(A1,2E15.6E3)') '#',xs,xe
-    write(funit,'(A1,3I8)') '#',this%js,this%je,this%dj
-    write(funit,'(A1,2E15.6E3)') '#',ys,ye
-    write(funit,'(A1,3I8)') '#',this%ks,this%ke,this%dk
-    write(funit,'(A1,2E15.6E3)') '#',zs,ze
-
-  end subroutine WriteOutputHeader
-
-  subroutine InitOutput()
-    ! Initialized module output
     use constant
     implicit none
 
-    ! Variables
     integer ::  ios,n,i,err
     character(len=STRLNG) :: file, str
 
-    file=cat2(pfxoutput,sfxin)
+    call ReadConfig
+    call Initialize
+    call WriteHeader
+    
 
-    ! Read Data
-    open(UNITTMP,FILE=file,STATUS='unknown')
-    n = 0
-    do
-       read(UNITTMP,IOSTAT=ios,FMT=*) str
-       if(ios .ne. 0) exit
-       if(str(1:4).eq. '#GPL') then
-          n = n+1
-          call InitOutputParameters(gpl(n),UNITTMP)
-          if(n .ge. PARTSMAXGPL) exit
-       endif
-    enddo
-    close(UNITTMP)
-    PARTSGPL=n  
+  contains
+  
+    subroutine ReadConfig
+      
+      implicit none
 
-    ! Do Some Settings	 
-    do n=1, PARTSGPL
-      open(UNITTMP,FILE=gpl(n)%fn,STATUS='unknown')      
-      call WriteOutputHeader(gpl(n),UNITTMP,'Produced by DataOutGpl()')
-      close(UNITTMP)           
-    enddo
+      character(len=STRLNG) :: file
 
-    ! Alloc. Data Field in Case of ab = 'En' or 'Px', 'Pz', 'Pz'
-    i = 1
-    DataIndxGpl(1)=1
-    do n=1, PARTSGPL
-       if( gpl(n)%Mode(1:2) .eq. 'En' .or. &
-           gpl(n)%Mode(1:2) .eq. 'Px' .or. &
-           gpl(n)%Mode(1:2) .eq. 'Py' .or. &
-           gpl(n)%Mode(1:2) .eq. 'Pz' ) then
-           i = i + gpl(n)%AnzNodes               
-       endif
-       DataIndxGpl(n+1)=i
-    enddo
-    allocate(DataGpl(1:i),STAT=err)
-    if(err .ne. 0) then
-       write(6,*) 'Error 1 in InitOutGpl()'
-       stop
-    endif
+      file=cat2(pfxoutput,sfxin)
+      
+      open(UNITTMP,FILE=file,STATUS='unknown')
+      n = 0
+      do
+         read(UNITTMP,IOSTAT=ios,FMT=*) str
+         if(ios .ne. 0) exit
+         if(str(1:4).eq. '#GPL') then
+            n = n+1
+            call ReadConfigObject(gpl(n),UNITTMP)
+            if(n .ge. PARTSMAXGPL) exit
+         endif
+      enddo
+      close(UNITTMP)
+      PARTSGPL=n  
+      
+    end subroutine ReadConfig
 
-  end subroutine InitOutput
 
-  subroutine FinaliseOutput ()
+    subroutine WriteHeader
+
+      implicit none
+
+      do n=1, PARTSGPL
+         open(UNITTMP,FILE=gpl(n)%fn,STATUS='unknown')      
+         call WriteHeaderObject(gpl(n),UNITTMP,'Produced by DataOutGpl()')
+         close(UNITTMP)           
+      enddo
+
+    end subroutine WriteHeader
+
+    subroutine Initialize
+
+      implicit none
+
+      i = 1
+      DataIndxGpl(1)=1
+      do n=1, PARTSGPL
+         if( gpl(n)%Mode(1:2) .eq. 'En' .or. &
+              gpl(n)%Mode(1:2) .eq. 'Px' .or. &
+              gpl(n)%Mode(1:2) .eq. 'Py' .or. &
+              gpl(n)%Mode(1:2) .eq. 'Pz' ) then
+            i = i + gpl(n)%NumNodes               
+         endif
+         DataIndxGpl(n+1)=i
+      enddo
+      allocate(DataGpl(1:i),STAT=err)
+      if(err .ne. 0) then
+         write(6,*) 'Error 1 in InitOutGpl()'
+         stop
+         
+      endif
+
+    end subroutine Initialize
+
+
+    subroutine ReadConfigObject(this, funit)
+
+      ! Initialisiert Modul OutBas	
+      implicit none
+      
+      type (T_OUTBAS) :: this
+      integer funit, isteps, jsteps, ksteps
+
+      ! Read Modul (Type) Data
+      read(funit,*) this%fn, this%Mode
+      read(funit,*) this%ns, this%ne, this%dn
+      read(funit,*) this%is, this%ie, this%di
+      read(funit,*) this%js, this%je, this%dj
+      read(funit,*) this%ks, this%ke, this%dk
+      
+      this%fn = cat2(this%fn, mpi_sfxout)
+      
+      ! check ranges	
+      this%is = max(IBEG, this%is); 
+      this%ie = min(IEND, this%ie);
+      
+      this%js = max(JBEG, this%js); 
+      this%je = min(JEND, this%je);
+      
+      this%ks = max(KBEG, this%ks); 
+      !    this%ks = max(KMIN, this%ks); ! >>>DEBUG 
+      this%ke = min(KEND, this%ke);
+      !    this%ke = min(Kmax, this%ke); ! >>>DEBUG
+      
+      isteps = max(int((this%ie-this%is+this%di)/this%di),0)
+      jsteps = max(int((this%je-this%js+this%dj)/this%dj),0)
+      jsteps = max(int((this%ke-this%ks+this%dk)/this%dk),0)
+      this%NumNodes = isteps*jsteps*ksteps
+      
+    end subroutine ReadConfigObject
+
+    subroutine WriteHeaderObject(this,funit, TitleStr)
+      
+      implicit none
+      
+      type (T_OUTBAS) :: this
+      integer :: funit
+      character(len=*) :: TitleStr
+      real(8) :: ts,te,xs,xe,ys,ye,zs,ze
+      
+      ! Do some Preparations
+      ts = this%ns*DT+GT
+      te = this%ne*DT+GT
+      xs = this%is*SX
+      xe = this%ie*SX
+      ys = this%js*SY
+      ye = this%je*SY
+      zs = this%ks*SZ
+      ze = this%ke*SZ
+      
+      ! Write Data in File Header
+      write(funit,'(A1,A30)') '#',TitleStr
+      write(funit,'(A1,A30)') '#','label1'
+      write(funit,'(A1,A30)') '#','label2'
+      write(funit,'(A1,A30)') '#','label3'
+      write(funit,'(A1,A30)') '#','label4'
+      write(funit,'(A1,A30)') '#','label5'
+      write(funit,'(A1,A30)') '#','label6'
+      write(funit,'(A1,A30,A4)') '#',this%fn(1:27),this%Mode
+      write(funit,'(A1,3I8)') '#',this%ns,this%ne,this%dn
+      write(funit,'(A1,2E15.6E3)') '#',ts,te
+      write(funit,'(A1,3I8)') '#',this%is,this%ie,this%di
+      write(funit,'(A1,2E15.6E3)') '#',xs,xe
+      write(funit,'(A1,3I8)') '#',this%js,this%je,this%dj
+      write(funit,'(A1,2E15.6E3)') '#',ys,ye
+      write(funit,'(A1,3I8)') '#',this%ks,this%ke,this%dk
+      write(funit,'(A1,2E15.6E3)') '#',zs,ze
+
+    end subroutine WriteHeaderObject
+
+
+  end subroutine CreateFDTDOut
+
+
+  subroutine DestroyFDTDOut
     implicit none
 
     deallocate(DataGpl)
 
-  end subroutine FinaliseOutput
+  end subroutine DestroyFDTDOut
 
 
-  subroutine DataOutGPL(ncyc)
-    ! Main output frame routine
+  subroutine WriteDataFDTDOut(ncyc)
+
     implicit none
     
-    ! Variables
     integer ncyc, n, ios
     character(STRLNG) fn, fnh
     
-    ! Loop over all output units
     do n=1, PARTSGPL
        
        ! output ?
@@ -308,6 +307,7 @@ contains
     enddo
        
   contains
+
     ! **************************************************************** !   
     subroutine WriteEH(funit)
       ! output of all field commponents
@@ -401,10 +401,12 @@ contains
          enddo
       endif
     end subroutine WriteData
-  end subroutine DataOutGPL
+
+  end subroutine WriteDataFDTDOut
 
 
   ! ***************************************************************** !
+
   subroutine DataPrepOutput(ncyc)
     ! Prepare data for correct output of Px, Py and Pz
     implicit none
