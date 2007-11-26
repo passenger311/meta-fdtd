@@ -6,10 +6,10 @@
 !
 !  subs:
 !
-!  CreateFDTD
+!  InitializeFdtd
 !    AllocateFields
 !    ReadEpsilonField
-!  DestroyFDTD
+!  FinalizeFdtd
 !  StepE
 !  StepH
 !
@@ -37,7 +37,7 @@ module fdtd
   
 contains
 
-  subroutine CreateFDTD(sfx)
+  subroutine InitializeFdtd(sfx)
 
     implicit none
 
@@ -133,10 +133,10 @@ contains
       end subroutine ReadEpsilonField
 
 
-  end subroutine CreateFDTD
+  end subroutine InitializeFdtd
 
 
-  subroutine DestroyFDTD
+  subroutine FinalizeFdtd
 
     implicit none
 
@@ -148,7 +148,7 @@ contains
     deallocate(Ex)
     deallocate(EPSINV)
 
-  end subroutine DestroyFDTD
+  end subroutine FinalizeFdtd
 
 
   subroutine StepH

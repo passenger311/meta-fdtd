@@ -80,7 +80,7 @@ module pzdft_out
 contains
 
 
-  subroutine CreateFDTDOut
+  subroutine InitializeFdtdOut
 
     use constant
     implicit none
@@ -233,18 +233,18 @@ contains
     end subroutine WriteHeaderObject
 
 
-  end subroutine CreateFDTDOut
+  end subroutine InitializeFdtdOut
 
 
-  subroutine DestroyFDTDOut
+  subroutine FinalizeFdtdOut
     implicit none
 
     deallocate(DataGpl)
 
-  end subroutine DestroyFDTDOut
+  end subroutine FinalizeFdtdOut
 
 
-  subroutine WriteDataFDTDOut(ncyc)
+  subroutine WriteDataFdtdOut(ncyc)
 
     implicit none
     
@@ -402,7 +402,7 @@ contains
       endif
     end subroutine WriteData
 
-  end subroutine WriteDataFDTDOut
+  end subroutine WriteDataFdtdOut
 
 
   ! ***************************************************************** !

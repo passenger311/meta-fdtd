@@ -6,10 +6,10 @@
 !
 !  subs:
 !
-!    CreateGrid
+!    InitializeGrid
 !      ReadConfig
 !      Initialize
-!    DestroyGrid
+!    FinalizeGrid
 !    EchoGrid
 !
 !----------------------------------------------------------------------
@@ -56,7 +56,7 @@ module grid
 
 contains
 
-  subroutine CreateGrid(sfx)
+  subroutine InitializeGrid(sfx)
 
     implicit none
 
@@ -120,15 +120,15 @@ contains
 
       end subroutine Initialize
 
-  end subroutine CreateGrid
+  end subroutine InitializeGrid
 
 
 
-  subroutine DestroyGrid()
+  subroutine FinalizeGrid()
 
     implicit none
 
-  end subroutine DestroyGrid
+  end subroutine FinalizeGrid
 
 
 

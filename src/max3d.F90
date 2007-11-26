@@ -17,11 +17,12 @@ program max3d
   use strings
   use mpiworld
   use grid
+  use outasc
   use fdtd
   use pec
   use upml
   use tfsf
-  use fdtd_out
+  use fdtd_outasc
   use src_point
 
   implicit none
@@ -41,7 +42,7 @@ program max3d
 
   ! --- startup MPI
 
-  call CreateMPIWorld
+  call InitializeMPIWorld
 
   ! --- init grid
 
@@ -78,20 +79,22 @@ program max3d
 
         write(6,*) '* initialising modules: ',ranklbl
 
-        write(6,*) '* -> CreateGrid'
-        call CreateGrid(mpi_sfxin)
-        write(6,*) '* -> CreateFDTD'
-        call CreateFDTD(mpi_sfxin)  
-        write(6,*) '* -> CreateUPML'
-        call CreateUPML
-        write(6,*) '* -> CreateTFSF'
-        call CreateTFSF
-        write(6,*) '* -> CreateOutFDTD'
-        call CreateOutFDTD
-        write(6,*) '* -> CreatePzDFT '
-        call CreatePzDFT
-        write(6,*) '* -> CreateSource '
-        call CreateSource
+        write(6,*) '* -> InitializeGrid'
+        call InitializeGrid(mpi_sfxin)
+        write(6,*) '* -> InitializeFdtd'
+        call InitializeFdtd(mpi_sfxin)  
+        write(6,*) '* -> InitializeUPML'
+        call InitializeUPML
+        write(6,*) '* -> InitializeTFSF'
+        call InitializeTFSF
+        write(6,*) '* -> InitializeOutAsc'
+        call InitializeOutAsc
+        write(6,*) '* -> InitializeFdtdOutAsc'
+        call InitializeFdtdOutAsc
+        write(6,*) '* -> InitializePzDFT '
+        call InitializePzDFT
+        write(6,*) '* -> InitializeSource '
+        call InitializeSource
 
      end if
 
@@ -149,13 +152,13 @@ program max3d
 ! ------------------------------ PMLH ---------------------------------
 
 #if MPE_LOG
-     call MPE_LOG_EVENT(9,"PMLH",mpierr) 
+     call MPE_LOG_EVENT(9,"StepUPMLH",mpierr) 
 #endif /* MPE_LOG */
 
-     call PMLH()
+     call StepUPMLH()
 
 #if MPE_LOG
-     call MPE_LOG_EVENT(10,"PMLH",mpierr)
+     call MPE_LOG_EVENT(10,"StepUPMLH",mpierr)
 #endif /* MPE_LOG */
 
 ! ---------------------------- TFSFH -------------------------------
@@ -274,13 +277,13 @@ program max3d
 ! ---------------------------- PMLE -----------------------------------
 
 #if MPE_LOG
-     call MPE_LOG_EVENT(13,"PMLE",mpierr)
+     call MPE_LOG_EVENT(13,"StepUPMLE",mpierr)
 #endif /* MPE_LOG */
 
-     call PMLE() 
+     call StepUPMLE() 
 
 #if MPE_LOG
-     call MPE_LOG_EVENT(14,"PMLE",mpierr)
+     call MPE_LOG_EVENT(14,"StepUPMLE",mpierr)
 #endif /* MPE_LOG */
 
 ! --------------------------- TFSFE -----------------------------------
@@ -429,14 +432,16 @@ program max3d
 
         write(6,*) '* -> OutPzDFTn'
         call OutPzDFT
-        write(6,*) '* -> DestroyOutFDTD'
-        call DestroyOutFDTD
-        write(6,*) '* -> DestroyUPML'
-        call DestroyUPML
-        write(6,*) '* -> DestroyFDTD'
-        call DestroyFDTD
-        write(6,*) '* -> DestroyGrid'
-        call DestroyGrid
+        write(6,*) '* -> FinalizeUPML'
+        call FinalizeUPML
+        write(6,*) '* -> FinalizeFdtd'
+        call FinalizeFdtd
+        write(6,*) '* -> FinalizeOutAsc'
+        call FinalizeOutAsc
+        write(6,*) '* -> FinalizeFdtdOutAsc'
+        call FinalizeFdtdOutAsc
+        write(6,*) '* -> FinalizeGrid'
+        call FinalizeGrid
 
 #if MPI
         write(6,*) ranklbl, "* time for Comms H = ", time_waited(1)
@@ -459,7 +464,7 @@ program max3d
 
 ! --- terminate MPI
 
-  call DestroyMPIWorld
+  call FinalizeMPIWorld
 
   if (myrank .eq. 0) then
 

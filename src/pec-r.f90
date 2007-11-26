@@ -6,8 +6,8 @@
 !
 !  subs:
 !
-!  CreatePEC
-!  DestroyPEC
+!  InitializePEC
+!  FinalizePEC
 !  SetPEC
 !
 !----------------------------------------------------------------------
@@ -26,17 +26,17 @@ module pec
 contains
 
 
-  subroutine CreatePEC
+  subroutine InitializePEC
 
     implicit none
 
-  end subroutine CreatePEC
+  end subroutine InitializePEC
 
-  subroutine DestroyPEC
+  subroutine FinalizePEC
 
     implicit none
 
-  end subroutine DestroyPEC
+  end subroutine FinalizePEC
 
 
   subroutine SetPEC

@@ -22,7 +22,7 @@ program preobj1
 
 
   write(6,*) "ReadGrid"
-  call CreateGrid(sfxin)
+  call InitializeGrid(sfxin)
 !  call EchoGrid
   write(6,*) "InitEpsilon"
   call InitEpsilon
@@ -369,7 +369,7 @@ contains
 
     file = cat2(pfxepsilon,sfx)
 
-    call CreateGrid(sfx)
+    call InitializeGrid(sfx)
 
     open(unit,FILE=file,STATUS='unknown')
     
@@ -387,7 +387,7 @@ contains
     
     close(unit)
 
-    call CreateGrid(sfxin)
+    call InitializeGrid(sfxin)
 
   end subroutine WriteEpsilon
 

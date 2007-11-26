@@ -6,12 +6,12 @@
 !
 !  subs:
 !
-!    CreateUPML
+!    InitializeUPML
 !      ReadConfig
 !      Initialize
 !      AllocateFields
 !      CalcCoefficients
-!    DestroyUPML 
+!    FinalizeUPML 
 !    StepUPMLH 
 !      DoStepUPMLH
 !    StepUPMLE
@@ -60,7 +60,7 @@ module upml
 contains
 
 
-  subroutine CreateUPML
+  subroutine InitializeUPML
 
     implicit none
 
@@ -335,10 +335,10 @@ contains
 
       end subroutine CalcCoefficients
 
-  end subroutine CreateUPML
+  end subroutine InitializeUPML
 
 
-  subroutine DestroyUPML
+  subroutine FinalizeUPML
 
     deallocate(DE6)
     deallocate(BE6)
@@ -360,7 +360,7 @@ contains
     deallocate(ceypml)
     deallocate(cexpml)
 
-  end subroutine DestroyUPML
+  end subroutine FinalizeUPML
 
 
   ! update the H-fields of all UPML layers

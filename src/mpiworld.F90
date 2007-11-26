@@ -6,8 +6,8 @@
 !
 !  subs:
 !
-!  CreateMPIWorld
-!  DestroyMPIWorld
+!  InitializeMPIWorld
+!  FinalizeMPIWorld
 !
 !----------------------------------------------------------------------
 
@@ -42,7 +42,7 @@ module mpiworld
 
 contains
 
-  subroutine CreateMPIWorld
+  subroutine InitializeMPIWorld
 
     implicit none      
 
@@ -74,10 +74,10 @@ contains
 #endif /* MPI */
 
 
-  end subroutine CreateMPIWorld
+  end subroutine InitializeMPIWorld
  
   
-  subroutine DestroyMPIWorld
+  subroutine FinalizeMPIWorld
 
     implicit none      
 
@@ -87,7 +87,7 @@ contains
 
 #endif /* MPI */
 
-  end subroutine DestroyMPIWorld
+  end subroutine FinalizeMPIWorld
 
 
 end module mpiworld

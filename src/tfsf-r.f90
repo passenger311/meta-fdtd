@@ -32,7 +32,7 @@ module tfsf
 
 contains
 
-  subroutine CreateTFSF()
+  subroutine InitializeTFSF()
 
     implicit none
 
@@ -160,7 +160,7 @@ contains
 
     close(UNITTMP)
 
-  end subroutine CreateTFSF
+  end subroutine InitializeTFSF
 
 
   subroutine NewTFSF_E()
@@ -204,7 +204,7 @@ contains
   end subroutine NewTFSF_H
 
 
-  subroutine DestroyTFSF
+  subroutine FinalizeTFSF
 
     implicit none
 
@@ -215,7 +215,7 @@ contains
     deallocate(Ey_inc)
     deallocate(Hx_inc)
 
-  end subroutine DestroyTFSF
+  end subroutine FinalizeTFSF
 
 
 end module tfsf

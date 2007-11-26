@@ -1,6 +1,6 @@
 !----------------------------------------------------------------------
 !
-!  module: fdtd-out-r
+!  module: fdtd-outasc-r
 !
 !  ascii output module.
 !
@@ -50,58 +50,23 @@
 ! ---------------------------------------------------------------------
 
 
-module fdtd_out
+module fdtd_outasc
 
   use constant
   use strings
   use mpiworld
   use grid  
+  use outasc
   use fdtd
 
   implicit none
   save
 
-  ! --- Constants
-
-  character(len=255), parameter :: pfxoutput = 'output'
-  integer, parameter :: PARTSMAXGPL = 100
-
-  ! --- Types
-
-  type T_OUTBAS 
-
-     ! Output files:
-     character(STRLNG) fn
-
-     ! Output mode:
-     character(len=10) :: Mode
-
-     ! Spatial area
-     integer ns, ne, dn
-     integer is, ie, di
-     integer js, je, dj
-     integer ks, ke, dk
-
-     ! Other
-     integer NumNodes
-
-  end type T_OUTBAS
 
   ! --- Variables
 
-  type(T_OutBas) :: gpl(PARTSMAXGPL)
-  integer  partsgpl
   real(8), allocatable :: DataGpl(:)
   integer DataIndxGpl(PARTSMAXGPL+1)
-
-  integer :: xoff, yoff 
-  integer :: kt
-  integer :: ndf  
-  real(8) :: fl      
-  real(8) :: fu      
-  real(8) :: latcon  
-
-  character(STRLNG) :: pztfn
 
   ! --- Fields
 
@@ -119,61 +84,20 @@ module fdtd_out
 contains
 
 
-  subroutine CreateOutFDTD
+  subroutine InitializeFdtdOutAsc
 
-    use constant
     implicit none
 
-    integer ::  ios,n,i,err
-    character(len=STRLNG) :: file, str
-
-    call ReadConfig
-    call Initialize
-    call WriteHeader
-    
+    call Initialize    
 
   contains
   
-    subroutine ReadConfig
-      
-      implicit none
-
-      character(len=STRLNG) :: file
-
-      file=cat2(pfxoutput,sfxin)
-      
-      open(UNITTMP,FILE=file,STATUS='unknown')
-      n = 0
-      do
-         read(UNITTMP,IOSTAT=ios,FMT=*) str
-         if(ios .ne. 0) exit
-         if(str(1:4).eq. '#GPL') then
-            n = n+1
-            call ReadConfigObject(gpl(n),UNITTMP)
-            if(n .ge. PARTSMAXGPL) exit
-         endif
-      enddo
-      close(UNITTMP)
-      PARTSGPL=n  
-      
-    end subroutine ReadConfig
-
-
-    subroutine WriteHeader
-
-      implicit none
-
-      do n=1, PARTSGPL
-         open(UNITTMP,FILE=gpl(n)%fn,STATUS='unknown')      
-         call WriteHeaderObject(gpl(n),UNITTMP,'Produced by DataOutGpl()')
-         close(UNITTMP)           
-      enddo
-
-    end subroutine WriteHeader
 
     subroutine Initialize
 
       implicit none
+
+      integer :: i, n, err
 
       i = 1
       DataIndxGpl(1)=1
@@ -196,118 +120,31 @@ contains
     end subroutine Initialize
 
 
-    subroutine ReadConfigObject(this, funit)
-
-      ! Initialisiert Modul OutBas	
-      implicit none
-      
-      type (T_OUTBAS) :: this
-      integer funit, isteps, jsteps, ksteps
-
-      ! Read Modul (Type) Data
-      read(funit,*) this%fn, this%Mode
-      read(funit,*) this%ns, this%ne, this%dn
-      read(funit,*) this%is, this%ie, this%di
-      read(funit,*) this%js, this%je, this%dj
-      read(funit,*) this%ks, this%ke, this%dk
-      
-      this%fn = cat2(this%fn, mpi_sfxout)
-      
-      ! check ranges	
-      this%is = max(IBEG, this%is); 
-      this%ie = min(IEND, this%ie);
-      
-      this%js = max(JBEG, this%js); 
-      this%je = min(JEND, this%je);
-      
-      this%ks = max(KBEG, this%ks); 
-      !    this%ks = max(KMIN, this%ks); ! >>>DEBUG 
-      this%ke = min(KEND, this%ke);
-      !    this%ke = min(Kmax, this%ke); ! >>>DEBUG
-      
-      isteps = max(int((this%ie-this%is+this%di)/this%di),0)
-      jsteps = max(int((this%je-this%js+this%dj)/this%dj),0)
-      jsteps = max(int((this%ke-this%ks+this%dk)/this%dk),0)
-      this%NumNodes = isteps*jsteps*ksteps
-      
-    end subroutine ReadConfigObject
-
-    subroutine WriteHeaderObject(this,funit, TitleStr)
-      
-      implicit none
-      
-      type (T_OUTBAS) :: this
-      integer :: funit
-      character(len=*) :: TitleStr
-      real(8) :: ts,te,xs,xe,ys,ye,zs,ze
-      
-      ! Do some Preparations
-      ts = this%ns*DT+GT
-      te = this%ne*DT+GT
-      xs = this%is*SX
-      xe = this%ie*SX
-      ys = this%js*SY
-      ye = this%je*SY
-      zs = this%ks*SZ
-      ze = this%ke*SZ
-      
-      ! Write Data in File Header
-      write(funit,'(A1,A30)') '#',TitleStr
-      write(funit,'(A1,A30)') '#','label1'
-      write(funit,'(A1,A30)') '#','label2'
-      write(funit,'(A1,A30)') '#','label3'
-      write(funit,'(A1,A30)') '#','label4'
-      write(funit,'(A1,A30)') '#','label5'
-      write(funit,'(A1,A30)') '#','label6'
-      write(funit,'(A1,A30,A4)') '#',this%fn(1:27),this%Mode
-      write(funit,'(A1,3I8)') '#',this%ns,this%ne,this%dn
-      write(funit,'(A1,2E15.6E3)') '#',ts,te
-      write(funit,'(A1,3I8)') '#',this%is,this%ie,this%di
-      write(funit,'(A1,2E15.6E3)') '#',xs,xe
-      write(funit,'(A1,3I8)') '#',this%js,this%je,this%dj
-      write(funit,'(A1,2E15.6E3)') '#',ys,ye
-      write(funit,'(A1,3I8)') '#',this%ks,this%ke,this%dk
-      write(funit,'(A1,2E15.6E3)') '#',zs,ze
-
-    end subroutine WriteHeaderObject
+  end subroutine InitializeFdtdOutAsc
 
 
-  end subroutine CreateOutFDTD
-
-
-  subroutine DestroyOutFDTD
+  subroutine FinalizeFdtdOutAsc
     implicit none
 
     deallocate(DataGpl)
 
-  end subroutine DestroyOutFDTD
+  end subroutine FinalizeFdtdOutAsc
 
 
-  subroutine WriteOutFDTD(ncyc)
+  subroutine WritFdtdOutAsc(ncyc)
 
     implicit none
     
-    integer ncyc, n, ios
-    character(STRLNG) fn, fnh
+    integer :: ncyc
+    integer :: n
+    logical :: ret
+
     
     do n=1, PARTSGPL
        
-       ! output ?
-       if(mod(ncyc, gpl(n)%dn) .eq. 0 .and. &
-            ncyc .ge. gpl(n)%ns       .and. &
-            ncyc .le. gpl(n)%ne ) then
-          
-          ! open file
-          if( gpl(n)%Mode(3:3) .eq. 'M') then
-             fn = gpl(n)%fn
-             write(fnh,*) ncyc     
-             fnh=adjustl(fnh)
-             fn((len_trim(fn)+1):STRLNG) = fnh         
-             open(UNITTMP,IOSTAT=ios, FILE=fn) 
-          else
-             fn = gpl(n)%fn
-             open(UNITTMP,IOSTAT=ios,POSITION= "APPEND", FILE=fn) 
-          endif
+       call WriteOutAsc(n, ncyc, ret)
+       
+       if ( ret ) then
 
           ! output
           select case (gpl(n)%Mode(1:2))
@@ -341,7 +178,7 @@ contains
              call WriteDi(UNITTMP)
           end select
 
-          close(UNITTMP)
+          call CloseOutAsc
        endif
     enddo
        
@@ -441,12 +278,12 @@ contains
       endif
     end subroutine WriteData
 
-  end subroutine WriteOutFDTD
+  end subroutine WritFdtdOutAsc
 
 
   ! ***************************************************************** !
 
-  subroutine PrepareOutFDTD(ncyc)
+  subroutine PrepareOutFdtd(ncyc)
 
     implicit none
 
@@ -476,7 +313,7 @@ contains
           
        endif
     enddo
-  end subroutine PrepareOutFDTD
+  end subroutine PrepareOutFdtd
 
 
   subroutine LoadPx(n)
@@ -588,4 +425,4 @@ contains
     enddo
   end subroutine LoadEn
 
-end module fdtd_out
+end module fdtd_outasc
