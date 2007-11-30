@@ -18,13 +18,14 @@ endif
 
 SRC= strings.f90\
 constant.f90\
+region.f90\
 mpiworld.F90\
-outasc.f90\
+output.f90\
 grid-$(ENGINE).f90\
 fdtd-$(ENGINE).f90\
 pec-$(ENGINE).f90\
 upml-$(ENGINE).f90\
-fdtd-outasc-$(ENGINE).f90\
+fdtd-output-$(ENGINE).f90\
 tfsf-$(ENGINE).f90\
 src-point-$(ENGINE).f90\
 pre-obj-1.f90\
@@ -32,13 +33,14 @@ max3d.F90
 
 FOBJ= strings.o\
 constant.o\
+region.o\
 mpiworld.o\
-outasc.o\
+output.o\
 grid-$(ENGINE).o\
 fdtd-$(ENGINE).o\
 pec-$(ENGINE).o\
 upml-$(ENGINE).o\
-fdtd-outasc-$(ENGINE).o\
+fdtd-output-$(ENGINE).o\
 src-point-$(ENGINE).o\
 tfsf-$(ENGINE).o\
 max3d.o
@@ -52,7 +54,7 @@ pre-obj-1.o
 
 PREEXE = pre-obj-1
 
-EXE = max3d
+EXE = max3d-$(ENGINE)
 
 #
 default: $(PREEXE) $(EXE)

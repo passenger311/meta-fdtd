@@ -1,6 +1,6 @@
 !----------------------------------------------------------------------
 !
-!  module: fdtd-outasc-r
+!  module: fdtd-output-r
 !
 !  ascii output module.
 !
@@ -50,13 +50,13 @@
 ! ---------------------------------------------------------------------
 
 
-module fdtd_outasc
+module fdtd_output
 
   use constant
   use strings
   use mpiworld
   use grid  
-  use outasc
+  use output
   use fdtd
 
   implicit none
@@ -84,7 +84,7 @@ module fdtd_outasc
 contains
 
 
-  subroutine InitializeFdtdOutAsc
+  subroutine InitializeFdtdOutput
 
     implicit none
 
@@ -120,216 +120,234 @@ contains
     end subroutine Initialize
 
 
-  end subroutine InitializeFdtdOutAsc
+  end subroutine InitializeFdtdOutput
 
 
-  subroutine FinalizeFdtdOutAsc
+  subroutine FinalizeFdtdOutput
     implicit none
 
     deallocate(DataGpl)
 
-  end subroutine FinalizeFdtdOutAsc
+  end subroutine FinalizeFdtdOutput
 
 
-  subroutine WritFdtdOutAsc(ncyc)
+  subroutine WritFdtdOutput(ncyc)
 
     implicit none
     
     integer :: ncyc
+    type (T_OUTBAS) :: this
     integer :: n
     logical :: ret
 
     
     do n=1, PARTSGPL
        
-       call WriteOutAsc(n, ncyc, ret)
+       this = gpl(n)
+
+       call OpenOutput(this, ncyc, ret)
        
        if ( ret ) then
 
           ! output
-          select case (gpl(n)%Mode(1:2))
+          select case (this%Mode(1:2))
           case('Px')
-             call LoadPx(n)
-             call WriteData(n,UNITTMP) 
+             call LoadPx(this)
+             call WriteData(this) 
           case('Py')
-             call LoadPy(n)
-             call WriteData(n,UNITTMP) 
+             call LoadPy(this)
+             call WriteData(this) 
           case('Pz')
-             call LoadPz(n)
-             call WriteData(n,UNITTMP) 
+             call LoadPz(this)
+             call WriteData(this) 
           case('En')
-             call LoadEn(n)
-             call WriteData(n,UNITTMP) 
+             call LoadEn(this)
+             call WriteData(this) 
           case('EH')
-             call WriteEH(UNITTMP)
+             call WriteEH(this)
           case('Ex')
-             call WriteComp(Ex,UNITTMP)
+             call WriteComp(this,Ex)
           case('Ey')
-             call WriteComp(Ey,UNITTMP)
+             call WriteComp(this,Ey)
           case('Ez')
-             call WriteComp(Ez,UNITTMP)
+             call WriteComp(this,Ez)
           case('Hx')
-             call WriteComp(Hx,UNITTMP)
+             call WriteComp(this,Hx)
           case('Hy')
-             call WriteComp(Hy,UNITTMP)
+             call WriteComp(this,Hy)
           case('Hz')
-             call WriteComp(Hz,UNITTMP)
+             call WriteComp(this,Hz)
           case('Di')         
-             call WriteDi(UNITTMP)
+             call WriteDi(this)
           end select
+          ! skip all the others
 
-          call CloseOutAsc
+          call CloseOutput
+
        endif
+
     enddo
        
   contains
 
     ! **************************************************************** !   
-    subroutine WriteEH(funit)
-      ! output of all field commponents
+
+    subroutine WriteEH(this)
+
       implicit none
-      integer funit,i,j,k
-      ! Start Code
-      do k=gpl(n)%ks, gpl(n)%ke, gpl(n)%dk  
-         do j=gpl(n)%js, gpl(n)%je, gpl(n)%dj      
-            do i=gpl(n)%is, gpl(n)%ie, gpl(n)%di 
-               write(funit,'(6E15.6E3))') Ex(i,j,k),  Ey(i,j,k), &
+      type (T_OUTBAS) :: this
+      integer i,j,k
+
+      do k=this%ks, this%ke, this%dk  
+         do j=this%js, this%je, this%dj      
+            do i=this%is, this%ie, this%di 
+               write(UNITTMP,'(6E15.6E3))') Ex(i,j,k),  Ey(i,j,k), &
                     Ez(i,j,k), Hx(i,j,k), Hy(i,j,k), Hz(i,j,k)
             enddo
-            if(gpl(n)%is .ne. gpl(n)%ie) write(funit,*)
+            if(this%is .ne. this%ie) write(UNITTMP,*)
          enddo
-         if(gpl(n)%js .ne. gpl(n)%je) write(funit,*)
+         if(this%js .ne. this%je) write(UNITTMP,*)
       enddo
     end subroutine WriteEH
 
 
     ! **************************************************************** !
-    subroutine WriteComp(Comp,funit)
-      ! output of a single field component
+
+    subroutine WriteComp(this,Comp)
+
       implicit none
+
+      type (T_OUTBAS) :: this
       real(8), dimension(IMIN:KMAX,JMIN:KMAX,KMIN:KMAX) :: Comp
-      integer funit,i,j,k
-      ! Start Code
-      do k=gpl(n)%ks, gpl(n)%ke, gpl(n)%dk  
-         do j=gpl(n)%js, gpl(n)%je, gpl(n)%dj      
-            do i=gpl(n)%is, gpl(n)%ie, gpl(n)%di 
-               write(funit,'(E15.6))') Comp(i,j,k)
+      integer i,j,k
+
+      do k=this%ks, this%ke, this%dk  
+         do j=this%js, this%je, this%dj      
+            do i=this%is, this%ie, this%di 
+               write(UNITTMP,'(E15.6))') Comp(i,j,k)
             enddo
-            if(gpl(n)%is .ne. gpl(n)%ie) write(funit,*) 
+            if(this%is .ne. this%ie) write(UNITTMP,*) 
          enddo
-         if(gpl(n)%js .ne. gpl(n)%je) write(funit,*)
+         if(this%js .ne. this%je) write(UNITTMP,*)
       enddo
 
     end subroutine WriteComp
 
 
     ! **************************************************************** !
-    subroutine WriteDi(funit)
-      ! output of the dielectric constant
+
+    subroutine WriteDi(this)
+
       implicit none
-      integer funit,i,j,k
-      ! Start Code
-      write(6,*) gpl(n)%is, gpl(n)%ie
-      write(6,*) gpl(n)%js, gpl(n)%je
-      write(6,*) gpl(n)%ks, gpl(n)%ke 
-      do k=gpl(n)%ks, gpl(n)%ke, gpl(n)%dk
-         do j=gpl(n)%js, gpl(n)%je, gpl(n)%dj      
-            do i=gpl(n)%is, gpl(n)%ie, gpl(n)%di 
-               write(funit,'(E15.6E3))') 1.0/epsinv(i,j,k)
+
+      type (T_OUTBAS) :: this
+      integer i,j,k
+
+      write(6,*) this%is, this%ie
+      write(6,*) this%js, this%je
+      write(6,*) this%ks, this%ke 
+      do k=this%ks, this%ke, this%dk
+         do j=this%js, this%je, this%dj      
+            do i=this%is, this%ie, this%di 
+               write(UNITTMP,'(E15.6E3))') 1.0/epsinv(i,j,k)
             enddo
-            if(gpl(n)%is .ne. gpl(n)%ie) write(funit,*)
+            if(this%is .ne. this%ie) write(UNITTMP,*)
          enddo
-         if(gpl(n)%js .ne. gpl(n)%je) write(funit,*)
+         if(this%js .ne. this%je) write(UNITTMP,*)
       enddo
       
     end subroutine WriteDi 
 
 
     ! **************************************************************** !
-    subroutine WriteData(n,funit)
-      ! output of data from field DataGpl 
+
+    subroutine WriteData(this)
+
       implicit none
-      integer :: funit,i,j,k,n,m
+  
+      type (T_OUTBAS) :: this
+      integer :: i,j,k,n,m
       real(8) :: sum
-      ! Start Code 
+  
       sum = 0.0
-      m = DataIndxGpl(n)
-      if( gpl(n)%Mode(4:4) .eq. 'S' ) then      ! integration 	
-         do k=gpl(n)%ks, gpl(n)%ke, gpl(n)%dk  
-            do j=gpl(n)%js, gpl(n)%je, gpl(n)%dj      
-               do i=gpl(n)%is, gpl(n)%ie, gpl(n)%di 
+      m = DataIndxGpl(this%idx)
+      if( this%Mode(4:4) .eq. 'S' ) then      ! integration 	
+         do k=this%ks, this%ke, this%dk  
+            do j=this%js, this%je, this%dj      
+               do i=this%is, this%ie, this%di 
                   sum = sum+DataGpl(m)
                   m = m+1
                enddo
             enddo
          enddo
-         write(funit,*) sum
+         write(UNITTMP,*) sum
       else                                     ! direct output
-         do k=gpl(n)%ks, gpl(n)%ke, gpl(n)%dk  
-            do j=gpl(n)%js, gpl(n)%je, gpl(n)%dj      
-               do i=gpl(n)%is, gpl(n)%ie, gpl(n)%di 
-                  write(funit,'(E15.6E3))') DataGpl(m)
+         do k=this%ks, this%ke, this%dk  
+            do j=this%js, this%je, this%dj      
+               do i=this%is, this%ie, this%di 
+                  write(UNITTMP,'(E15.6E3))') DataGpl(m)
                   m = m+1
                enddo
-               if(gpl(n)%is .ne. gpl(n)%ie) write(funit,*)
+               if(this%is .ne. this%ie) write(UNITTMP,*)
             enddo
-            if(gpl(n)%js .ne. gpl(n)%je) write(funit,*)
+            if(this%js .ne. this%je) write(UNITTMP,*)
          enddo
       endif
     end subroutine WriteData
 
-  end subroutine WritFdtdOutAsc
+  end subroutine WritFdtdOutput
 
 
   ! ***************************************************************** !
 
-  subroutine PrepareOutFdtd(ncyc)
+  subroutine PrepareFdtdOutput(ncyc)
 
     implicit none
 
-    ! Variables
     integer ncyc, n, i
+    type (T_OUTBAS) :: this
 
     ! Loop over all output units
     do n=1, PARTSGPL
 
+       this = gpl(n)
+
        ! output ?
-       if(mod(ncyc, gpl(n)%dn) .eq. 0 .and. &
-            ncyc .ge. gpl(n)%ns       .and. &
-            ncyc .le. gpl(n)%ne ) then
+       if(mod(ncyc, this%dn) .eq. 0 .and. &
+            ncyc .ge. this%ns       .and. &
+            ncyc .le. this%ne ) then
 
           ! First part of Px,y,z calculation
-          select case (gpl(n)%Mode(1:2))
+          select case (this%Mode(1:2))
           case('Px')
-             DataGpl(DataIndxGpl(n):DataIndxGpl(n+1))=0.0
-             call LoadPx(n)
+             DataGpl(DataIndxGpl(this%idx):DataIndxGpl(this%idx+1))=0.0
+             call LoadPx(this)
           case('Py')
-             DataGpl(DataIndxGpl(n):DataIndxGpl(n+1))=0.0
-             call LoadPy(n)
+             DataGpl(DataIndxGpl(this%idx):DataIndxGpl(this%idx+1))=0.0
+             call LoadPy(this)
           case('Pz')
-             DataGpl(DataIndxGpl(n):DataIndxGpl(n+1))=0.0
-             call LoadPz(n)
+             DataGpl(DataIndxGpl(this%idx):DataIndxGpl(this%idx+1))=0.0
+             call LoadPz(this)
           end select
           
        endif
     enddo
-  end subroutine PrepareOutFdtd
+  end subroutine PrepareFdtdOutput
 
 
-  subroutine LoadPx(n)
+  subroutine LoadPx(this)
     ! Calculates x-component of the Poynting vector P
     ! Stores result in DataGpl
     ! Localization: Px[i,j,k] = Px(i+1/2,j,k)
-    use constant
-    use grid
     implicit none
+    type (T_OUTBAS) :: this
     integer :: i,j,k,n,m
     real(8) :: val
     ! Code
-    m = DataIndxGpl(n)
-    do k=gpl(n)%ks, gpl(n)%ke, gpl(n)%dk 
-       do j=gpl(n)%js, gpl(n)%je, gpl(n)%dj 
-          do i=gpl(n)%is, gpl(n)%ie, gpl(n)%di
+    m = DataIndxGpl(this%idx)
+    do k=this%ks, this%ke, this%dk 
+       do j=this%js, this%je, this%dj 
+          do i=this%is, this%ie, this%di
              val = 0.125*((Ey(i,j,k)+Ey(i+1,j,k))*Hz(i,j,k) &
                   + (Ey(i,j-1,k)+Ey(i+1,j-1,k))* Hz(i,j-1,k) &
                   - (Ez(i,j,k)+Ez(i+1,j,k))*Hy(i,j,k) &
@@ -342,20 +360,19 @@ contains
   end subroutine LoadPx
 
 
-  subroutine LoadPy(n)
+  subroutine LoadPy(this)
     ! Calculates y-component of the Poynting vector P
     ! Stores result in DataGpl
     ! Localization: Py[i,j,k] = Py(i,j+1/2,k)
-    use constant
-    use grid
     implicit none
+    type (T_OUTBAS) :: this
     integer :: i,j,k,n,m
     real(8) :: val
     ! Code
-    m = DataIndxGpl(n)
-    do k=gpl(n)%ks, gpl(n)%ke, gpl(n)%dk
-       do j=gpl(n)%js, gpl(n)%je, gpl(n)%dj
-          do i=gpl(n)%is, gpl(n)%ie, gpl(n)%di
+    m = DataIndxGpl(this%idx)
+    do k=this%ks, this%ke, this%dk
+       do j=this%js, this%je, this%dj
+          do i=this%is, this%ie, this%di
                val = 0.125*( (Ez(i,j,k)+Ez(i,j+1,k))*Hx(i,j,k) &
                     + (Ez(i,j,k-1)+Ez(i,j+1,k-1))*Hx(i,j,k-1) &
                     - (Ex(i,j,k)+Ex(i,j+1,k))*Hz(i,j,k) &
@@ -368,20 +385,19 @@ contains
   end subroutine LoadPy
 
 
-  subroutine LoadPz(n)
+  subroutine LoadPz(this)
     ! Calculates z-component of the Poynting vector P
     ! Stores result in DataGpl
     ! Localization: Pz[i,j,k] = Pz(i,j,k+1/2)
-    use constant
-    use grid
     implicit none
+    type (T_OUTBAS) :: this
     integer :: i,j,k,n, m
     real(8) :: val
     ! Code
-    m = DataIndxGpl(n)
-    do k=gpl(n)%ks, gpl(n)%ke, gpl(n)%dk
-       do j=gpl(n)%js, gpl(n)%je, gpl(n)%dj
-          do i=gpl(n)%is, gpl(n)%ie, gpl(n)%di
+    m = DataIndxGpl(this%idx)
+    do k=this%ks, this%ke, this%dk
+       do j=this%js, this%je, this%dj
+          do i=this%is, this%ie, this%di
              val = 0.125*( (Ex(i,j,k)+Ex(i,j,k+1))*Hy(i,j,k) &
                   +(Ex(i-1,j,k)+Ex(i-1,j,k+1))*Hy(i-1,j,k) &
                   - (Ey(i,j,k)+Ey(i,j,k+1))*Hx(i,j,k) &
@@ -394,20 +410,19 @@ contains
   end subroutine LoadPz
 
 
-  subroutine LoadEn(n)
+  subroutine LoadEn(this)
     ! Calculates energy density En
     ! Stores result in DataGpl
     ! Localization: En[i,j,k] = En(i,j,k)
-    use constant
-    use grid
     implicit none
+    type (T_OUTBAS) :: this
     integer :: i,j,k,n,m
     real(8) :: EEx,EEy,EEz,EHx,EHy,EHz,eps
     ! Start Code
-    m = DataIndxGpl(n)
-    do k=gpl(n)%ks, gpl(n)%ke, gpl(n)%dk
-       do j=gpl(n)%js, gpl(n)%je, gpl(n)%dj
-          do i=gpl(n)%is, gpl(n)%ie, gpl(n)%di
+    m = DataIndxGpl(this%idx)
+    do k=this%ks, this%ke, this%dk
+       do j=this%js, this%je, this%dj
+          do i=this%is, this%ie, this%di
              eps = 1.0/epsinv(i,j,k)
              EEx = 0.5*eps*(Ex(i,j,k)**2+Ex(i-1,j,k)**2)
              EEy = 0.5*eps*(Ey(i,j,k)**2+Ey(i,j-1,k)**2)
@@ -425,4 +440,4 @@ contains
     enddo
   end subroutine LoadEn
 
-end module fdtd_outasc
+end module fdtd_output

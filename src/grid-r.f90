@@ -33,6 +33,7 @@ module grid
   integer :: IBEG, IEND
   integer :: JBEG, JEND
   integer :: KBEG, KEND
+  integer :: GRIDSIZE
 
   integer :: IMIN = -1, IMAX = 2
   integer :: JMIN = -1, JMAX = 2   
@@ -88,6 +89,13 @@ contains
 
         close(UNITTMP) 
 
+
+      end subroutine ReadConfig
+
+      subroutine Initialize() 
+
+        implicit none
+
         if ( PARTITIONS .ne. numproc .and. mpi_started .ne. 0 ) then
            write(6,*) "config: number of read in parititons does not match mpi numproc"
            stop
@@ -111,12 +119,7 @@ contains
         KSIG=KBEG
         KEIG=KMAX
 
-      end subroutine ReadConfig
-
-      subroutine Initialize() 
-
-        implicit none
-
+        GRIDSIZE = (IEND - IBEG)*(JEND - JBEG)*(KEND - KBEG)
 
       end subroutine Initialize
 

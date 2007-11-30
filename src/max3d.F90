@@ -17,12 +17,12 @@ program max3d
   use strings
   use mpiworld
   use grid
-  use outasc
+  use output
   use fdtd
   use pec
   use upml
   use tfsf
-  use fdtd_outasc
+  use fdtd_output
   use src_point
 
   implicit none
@@ -89,8 +89,8 @@ program max3d
         call InitializeTFSF
         write(6,*) '* -> InitializeOutAsc'
         call InitializeOutAsc
-        write(6,*) '* -> InitializeFdtdOutAsc'
-        call InitializeFdtdOutAsc
+        write(6,*) '* -> InitializeFdtdOutput'
+        call InitializeFdtdOutput
         write(6,*) '* -> InitializePzDFT '
         call InitializePzDFT
         write(6,*) '* -> InitializeSource '
@@ -436,10 +436,10 @@ program max3d
         call FinalizeUPML
         write(6,*) '* -> FinalizeFdtd'
         call FinalizeFdtd
-        write(6,*) '* -> FinalizeOutAsc'
+        write(6,*) '* -> FinalizeOutput'
         call FinalizeOutAsc
-        write(6,*) '* -> FinalizeFdtdOutAsc'
-        call FinalizeFdtdOutAsc
+        write(6,*) '* -> FinalizeFdtdOutput'
+        call FinalizeFdtdOutput
         write(6,*) '* -> FinalizeGrid'
         call FinalizeGrid
 
