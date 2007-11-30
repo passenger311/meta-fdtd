@@ -6,6 +6,14 @@
 !
 !  subs:
 !
+!    InitializeRegion
+!    FinalizeRegion
+!
+!    reg = CreateObjRegion
+!    DestroyObjRegion
+!    ReadObjRegion
+!    SetPointObjRegion 
+!    SetBoxObjRegion
 !
 !----------------------------------------------------------------------
 
@@ -35,7 +43,6 @@
 !  is allocated within a bounding box (is,js,ks)(ie,je,ke).
 
 
-
 module region
 
   use constant
@@ -47,7 +54,7 @@ module region
 
   ! --- Constants
 
-  integer, parameter :: MAXREGIONS = 1000
+  integer, parameter :: MAXOBJREGION = 1000
 
   ! --- Types
 
@@ -72,12 +79,11 @@ module region
 
   end type T_REGION
 
-  ! --- Variables  
-
-  type(T_REGION) :: regions(MAXREGIONS) 
-  integer :: numregions
 
   ! --- Fields
+
+  type(T_REGION) :: objregion(MAXOBJREGION) 
+  integer :: numobjregion
 
   integer, allocatable, dimension(:,:) :: tmpregpoints
   real*8, allocatable, dimension(:) :: tmpregvalues
@@ -89,7 +95,7 @@ contains
 
     integer :: err
 
-    numregions = 0
+    numobjregion = 0
 
   end subroutine InitializeRegion
   
@@ -98,8 +104,8 @@ contains
 
     integer :: i
     
-    do i = 1, numregions 
-       call RegionDestroy(regions(i))
+    do i = 1, numobjregion 
+       call DestroyObjRegion(objregion(i))
     end do
 
   end subroutine FinalizeRegion
@@ -145,7 +151,7 @@ contains
              if ( ios .ne. 0 ) then
                 exit
              end if
-             call SetObjRegionPoint(reg, i,j,k, val)
+             call SetPointObjRegion(reg, i,j,k, val)
           end do
        case( "(BOX" ) 
           if ( reg%isbox ) then
@@ -159,7 +165,7 @@ contains
              if ( ios .ne. 0 ) then
                 exit
              end if
-             call SetObjRegionBox(reg, i0, i1, di, j0, j1, dj, k0, k1, dk, val)
+             call SetBoxObjRegion(reg, i0, i1, di, j0, j1, dj, k0, k1, dk, val)
           end do
        case( "(VBOX" ) 
           reg%isbox = .false.
@@ -168,7 +174,7 @@ contains
              if ( ios .ne. 0 ) then
                 exit
              end if
-             call SetObjRegionBox(reg, i0, i1, di, j0, j1, dj, k0, k1, dk, val)
+             call SetBoxObjRegion(reg, i0, i1, di, j0, j1, dj, k0, k1, dk, val)
           end do
        case( "(VPOINTS" ) 
           reg%isbox = .false.
@@ -177,7 +183,7 @@ contains
              if ( ios .ne. 0 ) then
                 exit
              end if
-             call SetObjRegionPoint(reg, i,j,k, val)
+             call SetPointObjRegion(reg, i,j,k, val)
           end do
        case("MASKED")
           reg%ismask = .true.
@@ -233,23 +239,23 @@ contains
 
   type(T_REGION) function CreateObjRegion
 
-    numregions = numregions + 1
-    regions(numregions)%idx = numregions
+    numobjregion = numobjregion + 1
+    objregion(numobjregion)%idx = numobjregion
     
-    regions(numregions)%di = 0
-    regions(numregions)%dj = 0
-    regions(numregions)%dk = 0
+    objregion(numobjregion)%di = 0
+    objregion(numobjregion)%dj = 0
+    objregion(numobjregion)%dk = 0
 
-    regions(numregions)%isbox = .false.
-    regions(numregions)%ismask = .false.
+    objregion(numobjregion)%isbox = .false.
+    objregion(numobjregion)%ismask = .false.
 
-    CreateObjRegion = regions(numregions)
+    CreateObjRegion = objregion(numobjregion)
    
   end function CreateObjRegion
 
 
 
-  subroutine SetObjRegionBox(reg, i0,i1,di, j0,j1,dj, k0,k1,dk, val)
+  subroutine SetBoxObjRegion(reg, i0,i1,di, j0,j1,dj, k0,k1,dk, val)
 
     type(T_REGION) :: reg
     integer :: i0, i1, di, j0, j1, dj, k0, k1, dk
@@ -294,9 +300,9 @@ contains
        end do
     end do
 
-  end subroutine SetObjRegionBox
+  end subroutine SetBoxObjRegion
 
-  subroutine SetObjRegionPoint(reg, i,j,k, val)
+  subroutine SetPointObjRegion(reg, i,j,k, val)
 
     type(T_REGION) :: reg
     integer :: i,j,k
@@ -326,7 +332,7 @@ contains
     tmpregpoints(numtmpregpoints,3) = k
     tmpregvalues(numtmpregpoints) = val
 
-  end subroutine SetObjRegionPoint
+  end subroutine SetPointObjRegion
 
 
   subroutine DestroyObjRegion(reg)

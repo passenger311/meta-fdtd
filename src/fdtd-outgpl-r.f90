@@ -66,7 +66,7 @@ module fdtd_outgpl
   ! --- Variables
 
   real(8), allocatable :: DataGpl(:)
-  integer DataIndxGpl(PARTSMAXGPL+1)
+  integer DataIndxGpl(MAXOBJGPL+1)
 
   ! --- Fields
 
@@ -101,12 +101,12 @@ contains
 
       i = 1
       DataIndxGpl(1)=1
-      do n=1, PARTSGPL
-         if( gpl(n)%Mode(1:2) .eq. 'En' .or. &
-              gpl(n)%Mode(1:2) .eq. 'Px' .or. &
-              gpl(n)%Mode(1:2) .eq. 'Py' .or. &
-              gpl(n)%Mode(1:2) .eq. 'Pz' ) then
-            i = i + gpl(n)%NumNodes               
+      do n=1, numobjgpl
+         if( objgpl(n)%Mode(1:2) .eq. 'En' .or. &
+              objgpl(n)%Mode(1:2) .eq. 'Px' .or. &
+              objgpl(n)%Mode(1:2) .eq. 'Py' .or. &
+              objgpl(n)%Mode(1:2) .eq. 'Pz' ) then
+            i = i + objgpl(n)%NumNodes               
          endif
          DataIndxGpl(n+1)=i
       enddo
@@ -136,53 +136,53 @@ contains
     implicit none
     
     integer :: ncyc
-    type (T_OUTBAS) :: this
+    type (T_OUTBAS) :: gpl
     integer :: n
     logical :: ret
 
     
-    do n=1, PARTSGPL
+    do n=1, numobjgpl
        
-       this = gpl(n)
+       gpl = objgpl(n)
 
-       call OpenOutgpl(this, ncyc, ret)
+       call OpenObjOutgpl(gpl, ncyc, ret)
        
        if ( ret ) then
 
           ! outgpl
-          select case (this%Mode(1:2))
+          select case (gpl%Mode(1:2))
           case('Px')
-             call LoadPx(this)
-             call WriteData(this) 
+             call LoadPx(gpl)
+             call WriteData(gpl) 
           case('Py')
-             call LoadPy(this)
-             call WriteData(this) 
+             call LoadPy(gpl)
+             call WriteData(gpl) 
           case('Pz')
-             call LoadPz(this)
-             call WriteData(this) 
+             call LoadPz(gpl)
+             call WriteData(gpl) 
           case('En')
-             call LoadEn(this)
-             call WriteData(this) 
+             call LoadEn(gpl)
+             call WriteData(gpl) 
           case('EH')
-             call WriteEH(this)
+             call WriteEH(gpl)
           case('Ex')
-             call WriteComp(this,Ex)
+             call WriteComp(gpl,Ex)
           case('Ey')
-             call WriteComp(this,Ey)
+             call WriteComp(gpl,Ey)
           case('Ez')
-             call WriteComp(this,Ez)
+             call WriteComp(gpl,Ez)
           case('Hx')
-             call WriteComp(this,Hx)
+             call WriteComp(gpl,Hx)
           case('Hy')
-             call WriteComp(this,Hy)
+             call WriteComp(gpl,Hy)
           case('Hz')
-             call WriteComp(this,Hz)
+             call WriteComp(gpl,Hz)
           case('Di')         
-             call WriteDi(this)
+             call WriteDi(gpl)
           end select
           ! skip all the others
 
-          call CloseOutgpl
+          call CloseObjOutgpl
 
        endif
 
@@ -192,43 +192,43 @@ contains
 
     ! **************************************************************** !   
 
-    subroutine WriteEH(this)
+    subroutine WriteEH(gpl)
 
       implicit none
-      type (T_OUTBAS) :: this
+      type (T_OUTBAS) :: gpl
       integer i,j,k
 
-      do k=this%ks, this%ke, this%dk  
-         do j=this%js, this%je, this%dj      
-            do i=this%is, this%ie, this%di 
+      do k=gpl%ks, gpl%ke, gpl%dk  
+         do j=gpl%js, gpl%je, gpl%dj      
+            do i=gpl%is, gpl%ie, gpl%di 
                write(UNITTMP,'(6E15.6E3))') Ex(i,j,k),  Ey(i,j,k), &
                     Ez(i,j,k), Hx(i,j,k), Hy(i,j,k), Hz(i,j,k)
             enddo
-            if(this%is .ne. this%ie) write(UNITTMP,*)
+            if(gpl%is .ne. gpl%ie) write(UNITTMP,*)
          enddo
-         if(this%js .ne. this%je) write(UNITTMP,*)
+         if(gpl%js .ne. gpl%je) write(UNITTMP,*)
       enddo
     end subroutine WriteEH
 
 
     ! **************************************************************** !
 
-    subroutine WriteComp(this,Comp)
+    subroutine WriteComp(gpl,Comp)
 
       implicit none
 
-      type (T_OUTBAS) :: this
+      type (T_OUTBAS) :: gpl
       real(8), dimension(IMIN:KMAX,JMIN:KMAX,KMIN:KMAX) :: Comp
       integer i,j,k
 
-      do k=this%ks, this%ke, this%dk  
-         do j=this%js, this%je, this%dj      
-            do i=this%is, this%ie, this%di 
+      do k=gpl%ks, gpl%ke, gpl%dk  
+         do j=gpl%js, gpl%je, gpl%dj      
+            do i=gpl%is, gpl%ie, gpl%di 
                write(UNITTMP,'(E15.6))') Comp(i,j,k)
             enddo
-            if(this%is .ne. this%ie) write(UNITTMP,*) 
+            if(gpl%is .ne. gpl%ie) write(UNITTMP,*) 
          enddo
-         if(this%js .ne. this%je) write(UNITTMP,*)
+         if(gpl%js .ne. gpl%je) write(UNITTMP,*)
       enddo
 
     end subroutine WriteComp
@@ -236,24 +236,24 @@ contains
 
     ! **************************************************************** !
 
-    subroutine WriteDi(this)
+    subroutine WriteDi(gpl)
 
       implicit none
 
-      type (T_OUTBAS) :: this
+      type (T_OUTBAS) :: gpl
       integer i,j,k
 
-      write(6,*) this%is, this%ie
-      write(6,*) this%js, this%je
-      write(6,*) this%ks, this%ke 
-      do k=this%ks, this%ke, this%dk
-         do j=this%js, this%je, this%dj      
-            do i=this%is, this%ie, this%di 
+      write(6,*) gpl%is, gpl%ie
+      write(6,*) gpl%js, gpl%je
+      write(6,*) gpl%ks, gpl%ke 
+      do k=gpl%ks, gpl%ke, gpl%dk
+         do j=gpl%js, gpl%je, gpl%dj      
+            do i=gpl%is, gpl%ie, gpl%di 
                write(UNITTMP,'(E15.6E3))') 1.0/epsinv(i,j,k)
             enddo
-            if(this%is .ne. this%ie) write(UNITTMP,*)
+            if(gpl%is .ne. gpl%ie) write(UNITTMP,*)
          enddo
-         if(this%js .ne. this%je) write(UNITTMP,*)
+         if(gpl%js .ne. gpl%je) write(UNITTMP,*)
       enddo
       
     end subroutine WriteDi 
@@ -261,20 +261,20 @@ contains
 
     ! **************************************************************** !
 
-    subroutine WriteData(this)
+    subroutine WriteData(gpl)
 
       implicit none
   
-      type (T_OUTBAS) :: this
+      type (T_OUTBAS) :: gpl
       integer :: i,j,k,n,m
       real(8) :: sum
   
       sum = 0.0
-      m = DataIndxGpl(this%idx)
-      if( this%Mode(4:4) .eq. 'S' ) then      ! integration 	
-         do k=this%ks, this%ke, this%dk  
-            do j=this%js, this%je, this%dj      
-               do i=this%is, this%ie, this%di 
+      m = DataIndxGpl(gpl%idx)
+      if( gpl%Mode(4:4) .eq. 'S' ) then      ! integration 	
+         do k=gpl%ks, gpl%ke, gpl%dk  
+            do j=gpl%js, gpl%je, gpl%dj      
+               do i=gpl%is, gpl%ie, gpl%di 
                   sum = sum+DataGpl(m)
                   m = m+1
                enddo
@@ -282,15 +282,15 @@ contains
          enddo
          write(UNITTMP,*) sum
       else                                     ! direct outgpl
-         do k=this%ks, this%ke, this%dk  
-            do j=this%js, this%je, this%dj      
-               do i=this%is, this%ie, this%di 
+         do k=gpl%ks, gpl%ke, gpl%dk  
+            do j=gpl%js, gpl%je, gpl%dj      
+               do i=gpl%is, gpl%ie, gpl%di 
                   write(UNITTMP,'(E15.6E3))') DataGpl(m)
                   m = m+1
                enddo
-               if(this%is .ne. this%ie) write(UNITTMP,*)
+               if(gpl%is .ne. gpl%ie) write(UNITTMP,*)
             enddo
-            if(this%js .ne. this%je) write(UNITTMP,*)
+            if(gpl%js .ne. gpl%je) write(UNITTMP,*)
          enddo
       endif
     end subroutine WriteData
@@ -305,29 +305,29 @@ contains
     implicit none
 
     integer ncyc, n, i
-    type (T_OUTBAS) :: this
+    type (T_OUTBAS) :: gpl
 
     ! Loop over all outgpl units
-    do n=1, PARTSGPL
+    do n=1, numobjgpl
 
-       this = gpl(n)
+       gpl = objgpl(n)
 
        ! outgpl ?
-       if(mod(ncyc, this%dn) .eq. 0 .and. &
-            ncyc .ge. this%ns       .and. &
-            ncyc .le. this%ne ) then
+       if(mod(ncyc, gpl%dn) .eq. 0 .and. &
+            ncyc .ge. gpl%ns       .and. &
+            ncyc .le. gpl%ne ) then
 
           ! First part of Px,y,z calculation
-          select case (this%Mode(1:2))
+          select case (gpl%Mode(1:2))
           case('Px')
-             DataGpl(DataIndxGpl(this%idx):DataIndxGpl(this%idx+1))=0.0
-             call LoadPx(this)
+             DataGpl(DataIndxGpl(gpl%idx):DataIndxGpl(gpl%idx+1))=0.0
+             call LoadPx(gpl)
           case('Py')
-             DataGpl(DataIndxGpl(this%idx):DataIndxGpl(this%idx+1))=0.0
-             call LoadPy(this)
+             DataGpl(DataIndxGpl(gpl%idx):DataIndxGpl(gpl%idx+1))=0.0
+             call LoadPy(gpl)
           case('Pz')
-             DataGpl(DataIndxGpl(this%idx):DataIndxGpl(this%idx+1))=0.0
-             call LoadPz(this)
+             DataGpl(DataIndxGpl(gpl%idx):DataIndxGpl(gpl%idx+1))=0.0
+             call LoadPz(gpl)
           end select
           
        endif
@@ -335,19 +335,19 @@ contains
   end subroutine PrepareFdtdOutgpl
 
 
-  subroutine LoadPx(this)
+  subroutine LoadPx(gpl)
     ! Calculates x-component of the Poynting vector P
     ! Stores result in DataGpl
     ! Localization: Px[i,j,k] = Px(i+1/2,j,k)
     implicit none
-    type (T_OUTBAS) :: this
+    type (T_OUTBAS) :: gpl
     integer :: i,j,k,n,m
     real(8) :: val
     ! Code
-    m = DataIndxGpl(this%idx)
-    do k=this%ks, this%ke, this%dk 
-       do j=this%js, this%je, this%dj 
-          do i=this%is, this%ie, this%di
+    m = DataIndxGpl(gpl%idx)
+    do k=gpl%ks, gpl%ke, gpl%dk 
+       do j=gpl%js, gpl%je, gpl%dj 
+          do i=gpl%is, gpl%ie, gpl%di
              val = 0.125*((Ey(i,j,k)+Ey(i+1,j,k))*Hz(i,j,k) &
                   + (Ey(i,j-1,k)+Ey(i+1,j-1,k))* Hz(i,j-1,k) &
                   - (Ez(i,j,k)+Ez(i+1,j,k))*Hy(i,j,k) &
@@ -360,19 +360,19 @@ contains
   end subroutine LoadPx
 
 
-  subroutine LoadPy(this)
+  subroutine LoadPy(gpl)
     ! Calculates y-component of the Poynting vector P
     ! Stores result in DataGpl
     ! Localization: Py[i,j,k] = Py(i,j+1/2,k)
     implicit none
-    type (T_OUTBAS) :: this
+    type (T_OUTBAS) :: gpl
     integer :: i,j,k,n,m
     real(8) :: val
     ! Code
-    m = DataIndxGpl(this%idx)
-    do k=this%ks, this%ke, this%dk
-       do j=this%js, this%je, this%dj
-          do i=this%is, this%ie, this%di
+    m = DataIndxGpl(gpl%idx)
+    do k=gpl%ks, gpl%ke, gpl%dk
+       do j=gpl%js, gpl%je, gpl%dj
+          do i=gpl%is, gpl%ie, gpl%di
                val = 0.125*( (Ez(i,j,k)+Ez(i,j+1,k))*Hx(i,j,k) &
                     + (Ez(i,j,k-1)+Ez(i,j+1,k-1))*Hx(i,j,k-1) &
                     - (Ex(i,j,k)+Ex(i,j+1,k))*Hz(i,j,k) &
@@ -385,19 +385,19 @@ contains
   end subroutine LoadPy
 
 
-  subroutine LoadPz(this)
+  subroutine LoadPz(gpl)
     ! Calculates z-component of the Poynting vector P
     ! Stores result in DataGpl
     ! Localization: Pz[i,j,k] = Pz(i,j,k+1/2)
     implicit none
-    type (T_OUTBAS) :: this
+    type (T_OUTBAS) :: gpl
     integer :: i,j,k,n, m
     real(8) :: val
     ! Code
-    m = DataIndxGpl(this%idx)
-    do k=this%ks, this%ke, this%dk
-       do j=this%js, this%je, this%dj
-          do i=this%is, this%ie, this%di
+    m = DataIndxGpl(gpl%idx)
+    do k=gpl%ks, gpl%ke, gpl%dk
+       do j=gpl%js, gpl%je, gpl%dj
+          do i=gpl%is, gpl%ie, gpl%di
              val = 0.125*( (Ex(i,j,k)+Ex(i,j,k+1))*Hy(i,j,k) &
                   +(Ex(i-1,j,k)+Ex(i-1,j,k+1))*Hy(i-1,j,k) &
                   - (Ey(i,j,k)+Ey(i,j,k+1))*Hx(i,j,k) &
@@ -410,19 +410,19 @@ contains
   end subroutine LoadPz
 
 
-  subroutine LoadEn(this)
+  subroutine LoadEn(gpl)
     ! Calculates energy density En
     ! Stores result in DataGpl
     ! Localization: En[i,j,k] = En(i,j,k)
     implicit none
-    type (T_OUTBAS) :: this
+    type (T_OUTBAS) :: gpl
     integer :: i,j,k,n,m
     real(8) :: EEx,EEy,EEz,EHx,EHy,EHz,eps
     ! Start Code
-    m = DataIndxGpl(this%idx)
-    do k=this%ks, this%ke, this%dk
-       do j=this%js, this%je, this%dj
-          do i=this%is, this%ie, this%di
+    m = DataIndxGpl(gpl%idx)
+    do k=gpl%ks, gpl%ke, gpl%dk
+       do j=gpl%js, gpl%je, gpl%dj
+          do i=gpl%is, gpl%ie, gpl%di
              eps = 1.0/epsinv(i,j,k)
              EEx = 0.5*eps*(Ex(i,j,k)**2+Ex(i-1,j,k)**2)
              EEy = 0.5*eps*(Ey(i,j,k)**2+Ey(i,j-1,k)**2)
