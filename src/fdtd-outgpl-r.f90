@@ -1,8 +1,8 @@
 !----------------------------------------------------------------------
 !
-!  module: fdtd-output-r
+!  module: fdtd-outgpl-r
 !
-!  ascii output module.
+!  ascii outgpl module.
 !
 !  subs:
 !
@@ -15,28 +15,28 @@
 ! ---------------------------------------------------------------------
 !     Contained Subroutines:
 !
-!     InitOutputParameters
-!     WriteOutputHeader
-!     InitOutput             used in max3d.f90
-!     Output(ncyc)           used in max3d.f90
+!     InitOutgplParameters
+!     WriteOutgplHeader
+!     InitOutgpl             used in max3d.f90
+!     Outgpl(ncyc)           used in max3d.f90
 !            WriteEH
 !            WriteComp
 !            WriteDi
 !            WriteData
-!     DataPrepOutput(ncyc)   used in max3d.f90 (between StepH and StepE)
+!     DataPrepOutgpl(ncyc)   used in max3d.f90 (between StepH and StepE)
 !     LoadPx
 !     LoadPy
 !     LoadPz
 
 ! ---------------------------------------------------------------------
 
-!  output mode 'abcd':
+!  outgpl mode 'abcd':
 !  ab = component(s) 'Ex', 'Ey', 'Ez', 'Hx', 'Hy','Hz','EH','Di',
 !                     'En', 'Px', 'Py', oder 'Pz'
 !  c = 'E':  one file (for all time steps)
 !  c = 'M':  multiple files
-!  d = 'R':  spatially resolved output
-!  d = 'S':  spatially integrated output
+!  d = 'R':  spatially resolved outgpl
+!  d = 'S':  spatially integrated outgpl
 
 !  Spatial and temporal localization of the components in (i,j,k,ncyc):
 !  Ex-Ez: (i+1/2,j,k,GT) - (i,j,k+1/2,GT)  
@@ -50,13 +50,13 @@
 ! ---------------------------------------------------------------------
 
 
-module fdtd_output
+module fdtd_outgpl
 
   use constant
   use strings
   use mpiworld
   use grid  
-  use output
+  use outgpl
   use fdtd
 
   implicit none
@@ -84,7 +84,7 @@ module fdtd_output
 contains
 
 
-  subroutine InitializeFdtdOutput
+  subroutine InitializeFdtdOutgpl
 
     implicit none
 
@@ -120,18 +120,18 @@ contains
     end subroutine Initialize
 
 
-  end subroutine InitializeFdtdOutput
+  end subroutine InitializeFdtdOutgpl
 
 
-  subroutine FinalizeFdtdOutput
+  subroutine FinalizeFdtdOutgpl
     implicit none
 
     deallocate(DataGpl)
 
-  end subroutine FinalizeFdtdOutput
+  end subroutine FinalizeFdtdOutgpl
 
 
-  subroutine WritFdtdOutput(ncyc)
+  subroutine WritFdtdOutgpl(ncyc)
 
     implicit none
     
@@ -145,11 +145,11 @@ contains
        
        this = gpl(n)
 
-       call OpenOutput(this, ncyc, ret)
+       call OpenOutgpl(this, ncyc, ret)
        
        if ( ret ) then
 
-          ! output
+          ! outgpl
           select case (this%Mode(1:2))
           case('Px')
              call LoadPx(this)
@@ -182,7 +182,7 @@ contains
           end select
           ! skip all the others
 
-          call CloseOutput
+          call CloseOutgpl
 
        endif
 
@@ -281,7 +281,7 @@ contains
             enddo
          enddo
          write(UNITTMP,*) sum
-      else                                     ! direct output
+      else                                     ! direct outgpl
          do k=this%ks, this%ke, this%dk  
             do j=this%js, this%je, this%dj      
                do i=this%is, this%ie, this%di 
@@ -295,24 +295,24 @@ contains
       endif
     end subroutine WriteData
 
-  end subroutine WritFdtdOutput
+  end subroutine WritFdtdOutgpl
 
 
   ! ***************************************************************** !
 
-  subroutine PrepareFdtdOutput(ncyc)
+  subroutine PrepareFdtdOutgpl(ncyc)
 
     implicit none
 
     integer ncyc, n, i
     type (T_OUTBAS) :: this
 
-    ! Loop over all output units
+    ! Loop over all outgpl units
     do n=1, PARTSGPL
 
        this = gpl(n)
 
-       ! output ?
+       ! outgpl ?
        if(mod(ncyc, this%dn) .eq. 0 .and. &
             ncyc .ge. this%ns       .and. &
             ncyc .le. this%ne ) then
@@ -332,7 +332,7 @@ contains
           
        endif
     enddo
-  end subroutine PrepareFdtdOutput
+  end subroutine PrepareFdtdOutgpl
 
 
   subroutine LoadPx(this)
@@ -440,4 +440,4 @@ contains
     enddo
   end subroutine LoadEn
 
-end module fdtd_output
+end module fdtd_outgpl

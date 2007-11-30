@@ -17,12 +17,12 @@ program max3d
   use strings
   use mpiworld
   use grid
-  use output
+  use outgpl
   use fdtd
   use pec
   use upml
   use tfsf
-  use fdtd_output
+  use fdtd_outgpl
   use src_point
 
   implicit none
@@ -69,7 +69,7 @@ program max3d
   end if
 #endif /* MPE_LOG */
 
-  do l=0, numproc-1  ! sort output
+  do l=0, numproc-1  ! sort outgpl
 
 #if MPI
      call MPI_BARRIER(MPI_COMM_WORLD,mpierr)
@@ -87,10 +87,10 @@ program max3d
         call InitializeUPML
         write(6,*) '* -> InitializeTFSF'
         call InitializeTFSF
-        write(6,*) '* -> InitializeOutAsc'
-        call InitializeOutAsc
-        write(6,*) '* -> InitializeFdtdOutput'
-        call InitializeFdtdOutput
+        write(6,*) '* -> InitializeOutgpl'
+        call InitializeOutgpl
+        write(6,*) '* -> InitializeFdtdOutgpl'
+        call InitializeFdtdOutgpl
         write(6,*) '* -> InitializePzDFT '
         call InitializePzDFT
         write(6,*) '* -> InitializeSource '
@@ -102,7 +102,7 @@ program max3d
 
   mpisize=(IMAX-IMIN+1)*(JMAX-JMIN+1)  ! set mpi mpiet size
  
-  do l=0, numproc-1  ! sort output
+  do l=0, numproc-1  ! sort outgpl
 
 #if MPI
      call MPI_BARRIER(MPI_COMM_WORLD,mpierr)
@@ -256,7 +256,7 @@ program max3d
 
 ! ---------------------------- OUTPUT ---------------------------------
 
-     call DataPrepOutput(ncyc)
+     call DataPrepOutgpl(ncyc)
 
 ! ---------------------------- StepE ----------------------------------
 
@@ -420,7 +420,7 @@ program max3d
   call MPI_BARRIER(MPI_COMM_WORLD,mpierr)
 #endif /* MPI */
 
-  do l=0, numproc-1  ! sort output
+  do l=0, numproc-1  ! sort outgpl
 
 #if MPI
      call MPI_BARRIER(MPI_COMM_WORLD,mpierr)
@@ -436,10 +436,10 @@ program max3d
         call FinalizeUPML
         write(6,*) '* -> FinalizeFdtd'
         call FinalizeFdtd
-        write(6,*) '* -> FinalizeOutput'
-        call FinalizeOutAsc
-        write(6,*) '* -> FinalizeFdtdOutput'
-        call FinalizeFdtdOutput
+        write(6,*) '* -> FinalizeOutgpl'
+        call FinalizeOutgpl
+        write(6,*) '* -> FinalizeFdtdOutgpl'
+        call FinalizeFdtdOutgpl
         write(6,*) '* -> FinalizeGrid'
         call FinalizeGrid
 

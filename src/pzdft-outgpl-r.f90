@@ -1,8 +1,8 @@
 !----------------------------------------------------------------------
 !
-!  module: pzdft-output-r
+!  module: pzdft-outgpl-r
 !
-!  dft output module.
+!  dft outgpl module.
 !
 !  subs:
 !
@@ -11,12 +11,12 @@
 !----------------------------------------------------------------------
 
 
-module pzdft_output
+module pzdft_outgpl
 
   use constant
   use strings
   use mpiworld
-  use output
+  use outgpl
   use grid  
   use fdtd
 
@@ -25,7 +25,7 @@ module pzdft_output
 
   ! --- Constants
 
-  character(len=255), parameter :: pfxoutput = 'output'
+  character(len=255), parameter :: pfxoutgpl = 'outgpl'
   integer, parameter :: PARTSMAXGPL = 100
 
 
@@ -61,7 +61,7 @@ module pzdft_output
 contains
 
 
-  subroutine InitializePzDftOutput
+  subroutine InitializePzDftOutgpl
 
     implicit none
 
@@ -82,7 +82,7 @@ contains
       
       ndf=-1
       
-      file = cat2(pfxoutput,sfxin)
+      file = cat2(pfxoutgpl,sfxin)
       
       ! Read Data
       open(UNITTMP,FILE=file,STATUS='unknown')
@@ -110,17 +110,17 @@ contains
     end subroutine Initialize
 
 
-  end subroutine InitializePzDftOutput
+  end subroutine InitializePzDftOutgpl
 
 
-  subroutine FinalizePzDftOutput
+  subroutine FinalizePzDftOutgpl
     implicit none
 
 
-  end subroutine FinalizePzDftOutput
+  end subroutine FinalizePzDftOutgpl
 
 
-  subroutine WritePzDftOutput(ncyc)
+  subroutine WritePzDftOutgpl(ncyc)
 
 
     implicit none
@@ -132,11 +132,11 @@ contains
     
     do n=1, PARTSGPL
        
-       call WriteOutput(n, ncyc, ret)
+       call WriteOutgpl(n, ncyc, ret)
        
        if ( ret ) then
 
-          ! output
+          ! outgpl
           select case (gpl(n)%Mode(1:2))
           case('Px')
              call LoadPx(n)
@@ -168,13 +168,13 @@ contains
              call WriteDi(UNITTMP)
           end select
           ! skip all the others
-          call CloseOutput
+          call CloseOutgpl
        endif
     enddo
        
   contains
 
-  end subroutine WritePzDftOutput
+  end subroutine WritePzDftOutgpl
 
 
   subroutine InitPzDFT()
@@ -188,7 +188,7 @@ contains
 
     ndf=-1
 
-    file = cat2(pfxoutput,sfxin)
+    file = cat2(pfxoutgpl,sfxin)
 
     ! Read Data
     open(UNITTMP,FILE=file,STATUS='unknown')
@@ -313,4 +313,4 @@ contains
 
   end subroutine OutPzDFT
 
-end module output
+end module outgpl

@@ -91,7 +91,7 @@ contains
 
 
 ! changed loop order of i and j
-! Changed input/output order from Hy, Hx, Ex, Ey -> Ex, Ey, Hx, Hy
+! Changed input/outgpl order from Hy, Hx, Ex, Ey -> Ex, Ey, Hx, Hy
 
     do j=joffset, joffset+jlength-1
        do i=ioffset, ioffset+ilength-1
@@ -127,7 +127,7 @@ contains
 !    end do
 
 !<<< DEBUG
-    ! Test output 
+    ! Test outgpl 
 
     open(UNITTMP,FILE=cat2(label,'.dat'),STATUS='unknown')
     

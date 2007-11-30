@@ -14,7 +14,7 @@ module strings
 contains
 
 !
-! ---- join <n> strings <strarr> to output string
+! ---- join <n> strings <strarr> to outgpl string
 !
 
   character(len=255) function join(strarr, n)
