@@ -15,15 +15,17 @@ program max3d
 
   use constant
   use strings
+  use region
   use mpiworld
   use grid
   use outgpl
   use fdtd
   use pec
   use upml
+  use mat
   use tfsf
-  use fdtd_outgpl
-  use src_point
+  use outgpl_fdtd
+  use mat_source
 
   implicit none
 
@@ -63,8 +65,8 @@ program max3d
      call MPE_Describe_state(9,10,"PMLH","violet:gray4")
      call MPE_Describe_state(11,12,"StepE","orange1:gray5")
      call MPE_Describe_state(13,14,"PMLE","snow:gray6")
-     call MPE_Describe_state(15,16,"PEC","pink1:gray7")
-     call MPE_Describe_state(17,18,"PzDFT","chocolate:gray8")
+     call MPE_Describe_state(15,16,"StepHMat","pink1:gray7")
+     call MPE_Describe_state(17,18,"StepEMat","chocolate:gray8")
 
   end if
 #endif /* MPE_LOG */
@@ -89,8 +91,10 @@ program max3d
         call InitializeTFSF
         write(6,*) '* -> InitializeOutgpl'
         call InitializeOutgpl
-        write(6,*) '* -> InitializeFdtdOutgpl'
-        call InitializeFdtdOutgpl
+        write(6,*) '* -> InitializeMat'
+        call InitializeMat
+        write(6,*) '* -> InitializeOutgplFdtd'
+        call InitializeOutgplFdtd
         write(6,*) '* -> InitializePzDFT '
         call InitializePzDFT
         write(6,*) '* -> InitializeSource '
@@ -145,9 +149,6 @@ program max3d
      call MPE_LOG_EVENT(8,"StepH",mpierr)
 #endif /* MPE_LOG */
 
-! ----------------------------- SourceHy ------------------------------
-
-!     call SourceHy(ncyc)
 
 ! ------------------------------ PMLH ---------------------------------
 
@@ -161,9 +162,6 @@ program max3d
      call MPE_LOG_EVENT(10,"StepUPMLH",mpierr)
 #endif /* MPE_LOG */
 
-! ---------------------------- TFSFH -------------------------------
-
-!     call NewTFSF_H()
 
 ! -------------------------- COMMS H -------------------------------
 
@@ -213,6 +211,24 @@ program max3d
 
 #endif /* MPI */
 
+
+! -------------------------- StepHMat ---------------------------------
+
+
+#if MPE_LOG
+     call MPE_LOG_EVENT(15,"StepHMat",mpierr) 
+#endif /* MPE_LOG */
+
+     call StepHMat(ncyc)
+!     call NewTFSF_H()               
+!     call DataPrepOutgpl(ncyc)
+
+#if MPE_LOG
+     call MPE_LOG_EVENT(16,"StepHMat",mpierr) 
+#endif /* MPE_LOG */
+
+
+
 ! ---------------------------- WAIT H ---------------------------------
 
 ! wait for pending comms to finish
@@ -254,9 +270,6 @@ program max3d
 
 #endif /* MPI */
 
-! ---------------------------- OUTPUT ---------------------------------
-
-     call DataPrepOutgpl(ncyc)
 
 ! ---------------------------- StepE ----------------------------------
 
@@ -270,9 +283,6 @@ program max3d
      call MPE_LOG_EVENT(12,"StepE",mpierr)
 #endif /* MPE_LOG */
 
-! -------------------------- SourceEy ---------------------------------
-
-     call SourceEy(ncyc)
 
 ! ---------------------------- PMLE -----------------------------------
 
@@ -282,25 +292,12 @@ program max3d
 
      call StepUPMLE() 
 
+     call SetPEC()
+
 #if MPE_LOG
      call MPE_LOG_EVENT(14,"StepUPMLE",mpierr)
 #endif /* MPE_LOG */
 
-! --------------------------- TFSFE -----------------------------------
-
-!     call NewTFSF_E()
-
-! ---------------------------- PEC ------------------------------------
-
-#if MPE_LOG
-     call MPE_LOG_EVENT(15,"PEC",mpierr) 
-#endif /* MPE_LOG */
-
-     call SetPEC()
-
-#if MPE_LOG
-     call MPE_LOG_EVENT(16,"PEC",mpierr) 
-#endif /* MPE_LOG */
 
 ! -------------------------- COMMS E ----------------------------------
 
@@ -350,6 +347,26 @@ program max3d
 
 #endif /* MPI */
 
+
+! -------------------------- StepEMat ---------------------------------
+
+
+#if MPE_LOG
+     call MPE_LOG_EVENT(17,"StepEMat",mpierr) 
+#endif /* MPE_LOG */
+
+     call StepEMat(ncyc)
+
+!    call SourceEy(ncyc)
+!    call NewTFSF_E()
+!    call DataOutGPL(ncyc)
+!    call PzDFT(ncyc)
+
+#if MPE_LOG
+     call MPE_LOG_EVENT(18,"StepEMat",mpierr) 
+#endif /* MPE_LOG */
+
+
 ! --------------------------- WAIT E ----------------------------------
 
 #if MPI
@@ -390,23 +407,9 @@ program max3d
 
 #endif /* MPI */
     
-! ----------------------------- OUTPUT --------------------------------
-
-     call DataOutGPL(ncyc)
-
-! ------------------------------ PzDFT --------------------------------
-
-#if MPE_LOG
-     call MPE_LOG_EVENT(17,"PzDFT",mpierr)  
-#endif /* MPE_LOG */
-
-     call PzDFT(ncyc)
-
-#if MPE_LOG
-     call MPE_LOG_EVENT(18,"PzDFT",mpierr)  
-#endif /* MPE_LOG */
 
 ! ---------------------------------------------------------------------
+
 
      GT = GT + DT
 
@@ -438,8 +441,10 @@ program max3d
         call FinalizeFdtd
         write(6,*) '* -> FinalizeOutgpl'
         call FinalizeOutgpl
-        write(6,*) '* -> FinalizeFdtdOutgpl'
-        call FinalizeFdtdOutgpl
+        write(6,*) '* -> FinalizeMat'
+        call FinalizeMat
+        write(6,*) '* -> FinalizeOutgplFdtd'
+        call FinalizeOutgplFdtd
         write(6,*) '* -> FinalizeGrid'
         call FinalizeGrid
 

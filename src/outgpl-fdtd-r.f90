@@ -50,7 +50,7 @@
 ! ---------------------------------------------------------------------
 
 
-module fdtd_outgpl
+module outgpl_fdtd
 
   use constant
   use strings
@@ -84,7 +84,7 @@ module fdtd_outgpl
 contains
 
 
-  subroutine InitializeFdtdOutgpl
+  subroutine InitializeOutgplFdtd
 
     implicit none
 
@@ -120,18 +120,18 @@ contains
     end subroutine Initialize
 
 
-  end subroutine InitializeFdtdOutgpl
+  end subroutine InitializeOutgplFdtd
 
 
-  subroutine FinalizeFdtdOutgpl
+  subroutine FinalizeOutgplFdtd
     implicit none
 
     deallocate(DataGpl)
 
-  end subroutine FinalizeFdtdOutgpl
+  end subroutine FinalizeOutgplFdtd
 
 
-  subroutine WritFdtdOutgpl(ncyc)
+  subroutine WritOutgplFdtd(ncyc)
 
     implicit none
     
@@ -295,12 +295,12 @@ contains
       endif
     end subroutine WriteData
 
-  end subroutine WritFdtdOutgpl
+  end subroutine WritOutgplFdtd
 
 
   ! ***************************************************************** !
 
-  subroutine PrepareFdtdOutgpl(ncyc)
+  subroutine PrepareOutgplFdtd(ncyc)
 
     implicit none
 
@@ -332,7 +332,7 @@ contains
           
        endif
     enddo
-  end subroutine PrepareFdtdOutgpl
+  end subroutine PrepareOutgplFdtd
 
 
   subroutine LoadPx(gpl)
@@ -440,4 +440,4 @@ contains
     enddo
   end subroutine LoadEn
 
-end module fdtd_outgpl
+end module outgpl_fdtd

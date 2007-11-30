@@ -245,13 +245,13 @@ open(FH,">output.in");
 foreach $label ( %GPL ) {
     $ref = $GPL{$label};
     if ( defined  $$ref{type} ) {
-	print FH "\n#GPL\n";
+	print FH "\n(OUTGPL\n";
 	print FH "$label $$ref{type}\n";
 	print FH "$$ref{n0} $$ref{n1} $$ref{dn}\n";
 	print FH "$$ref{i0} $$ref{i1} $$ref{di}\n";
 	print FH "$$ref{j0} $$ref{j1} $$ref{dj}\n";
 	print FH "$$ref{k0} $$ref{k1} $$ref{dk}\n";
-
+	print FH ")\n";
     }
 }
 
@@ -259,13 +259,14 @@ foreach $label ( %GPL ) {
 foreach $label ( %TFSF ) {
     $ref = $TFSF{$label};
     if ( defined  $$ref{file} ) {
-	print FH "\n#TFSF\n";
+	print FH "\n(TFSF\n";
 	print FH "$label\n";
 	print FH "$$ref{file}\n";
 	print FH "$$ref{i0} $$ref{j0} $$ref{k0}\n";
 	print FH "$$ref{ic} $$ref{jc}\n";
 	print FH "$$ref{latc}\n";
 	print FH "$$ref{om} $$ref{t0} $$ref{gam}\n";
+	print FH ")\n";
     }
 }
 

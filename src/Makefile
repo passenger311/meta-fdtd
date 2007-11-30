@@ -25,10 +25,11 @@ grid-$(ENGINE).f90\
 fdtd-$(ENGINE).f90\
 pec-$(ENGINE).f90\
 upml-$(ENGINE).f90\
-fdtd-outgpl-$(ENGINE).f90\
+outgpl-fdtd-$(ENGINE).f90\
 tfsf-$(ENGINE).f90\
-src-point-$(ENGINE).f90\
+mat-source-$(ENGINE).f90\
 pre-obj-1.f90\
+mat.f90\
 max3d.F90
 
 FOBJ= strings.o\
@@ -40,9 +41,10 @@ grid-$(ENGINE).o\
 fdtd-$(ENGINE).o\
 pec-$(ENGINE).o\
 upml-$(ENGINE).o\
-fdtd-outgpl-$(ENGINE).o\
-src-point-$(ENGINE).o\
+outgpl-fdtd-$(ENGINE).o\
+mat-source-$(ENGINE).o\
 tfsf-$(ENGINE).o\
+mat.o\
 max3d.o
 
 PREOBJ= strings.o\

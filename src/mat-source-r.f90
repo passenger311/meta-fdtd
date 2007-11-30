@@ -1,13 +1,13 @@
 !----------------------------------------------------------------------
 !
-!   module: src_point
+!   module: mat_source
 !
-!   electromagnetic point source
+!   electromagnetic source
 !
 !----------------------------------------------------------------------
 
 
-module src_point
+module mat_source
 
   use constant
   use mpiworld
@@ -100,4 +100,4 @@ contains
 
   end subroutine SourceHy
 
-end module src_point
+end module mat_source
