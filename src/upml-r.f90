@@ -1,6 +1,6 @@
-!----------------------------------------------------------------------
+!-*- F90 -*------------------------------------------------------------
 !
-!  module: upml(-r) / max3d
+!  module: upml / max3d
 !
 !  boundary conditions using uniform perfectly matched layers.
 !
@@ -19,6 +19,11 @@
 !
 !----------------------------------------------------------------------
 
+!======================================================================
+!
+!
+!
+
 module upml
 
   use constant
@@ -35,11 +40,11 @@ module upml
 
   ! --- Variables
 
-  integer :: pmlpart               ! flag (inner/outer partition)
-  integer :: PMLMAX                ! number of PML layers
-  real(8) :: PotPml                ! exponent for sigma and kappa
-  real(8) :: SigmaMax              ! absorption coefficient 
-  real(8) :: KappaMax              ! absorption of evanescent waves 
+  integer :: pmlpart                    ! flag (inner/outer partition)
+  integer :: PMLMAX                     ! number of PML layers
+  real(kind=8) :: PotPml                ! exponent for sigma and kappa
+  real(kind=8) :: SigmaMax              ! absorption coefficient 
+  real(kind=8) :: KappaMax              ! absorption of evanescent waves 
 
   ! do planes 1-6 have a UPML (yes=1, no=0)
 
@@ -47,18 +52,19 @@ module upml
 
   ! numeric UPML coefficients
 
-  real(8),allocatable,dimension(:,:) :: cexpml,ceypml,cezpml
-  real(8),allocatable,dimension(:,:) :: cmxpml,cmypml,cmzpml
+  real(kind=8),allocatable,dimension(:,:) :: cexpml,ceypml,cezpml
+  real(kind=8),allocatable,dimension(:,:) :: cmxpml,cmypml,cmzpml
 
   ! --- Fields
 
   ! auxilliary B and D fields on the 6 planes E1 .. E6
 
-  real(8), allocatable, dimension(:,:,:,:) :: BE1,BE2,BE3,BE4,BE5,BE6 
-  real(8), allocatable, dimension(:,:,:,:) :: DE1,DE2,DE3,DE4,DE5,DE6 
+  real(kind=8), allocatable, dimension(:,:,:,:) :: BE1,BE2,BE3,BE4,BE5,BE6 
+  real(kind=8), allocatable, dimension(:,:,:,:) :: DE1,DE2,DE3,DE4,DE5,DE6 
 
 contains
 
+!----------------------------------------------------------------------
 
   subroutine InitializeUPML
 
@@ -135,32 +141,32 @@ contains
     
         allocate(cexpml(1:4,IBEG:IMAX), STAT=err)
         if(err .ne. 0) then
-           write(6,*) 'Fehler 1 in AllocFields/UPML'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
            stop
         endif
         allocate(ceypml(1:4,JBEG:JMAX), STAT=err)
         if(err .ne. 0) then
-           write(6,*) 'Fehler 1 in AllocFields/UPML'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
            stop
         endif
         allocate(cezpml(1:4,KBEG:KMAX), STAT=err)
         if(err .ne. 0) then
-           write(6,*) 'Fehler 1 in AllocFields/UPML'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
            stop
         endif
         allocate(cmxpml(1:4,IBEG:IMAX), STAT=err)
         if(err .ne. 0) then
-           write(6,*) 'Fehler 1 in AllocFields/UPML'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
            stop
         endif
         allocate(cmypml(1:4,JBEG:JMAX), STAT=err)
         if(err .ne. 0) then
-           write(6,*) 'Fehler 1 in AllocFields/UPML'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
            stop
         endif
         allocate(cmzpml(1:4,KBEG:KMAX), STAT=err)
         if(err .ne. 0) then
-           write(6,*) 'Fehler 1 in AllocFields/UPML'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
            stop
         endif
 
@@ -168,62 +174,62 @@ contains
 
         allocate(BE1(1:3,IBEG:ISIG-1,JBEG:JMAX-1,KBEG:KMAX-1), STAT=err) 
         if(err .ne. 0) then
-           write(6,*) 'Fehler 2 in AllocFields/UPML'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
            stop
         endif
         allocate(DE1(1:3,IBEG:ISIG-1,JBEG:JMAX-1,KBEG:KMAX-1), STAT=err)
         if(err .ne. 0) then
-           write(6,*) 'Fehler 2 in AllocFields/UPML'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
            stop
         endif
         allocate(BE2(1:3,IEIG:IMAX-1,JBEG:JMAX-1,KBEG:KMAX-1), STAT=err)
         if(err .ne. 0) then
-           write(6,*) 'Fehler 2 in AllocFields/UPML'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
            stop
         endif
         allocate(DE2(1:3,IEIG:IMAX-1,JBEG:JMAX-1,KBEG:KMAX-1), STAT=err)
         if(err .ne. 0) then
-           write(6,*) 'Fehler 2 in AllocFields/UPML'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
            stop
         endif
         allocate(BE3(1:3,ISIG:IEIG-1,JBEG:JSIG-1,KBEG:KMAX-1), STAT=err) 
         if(err .ne. 0) then
-           write(6,*) 'Fehler 2 in AllocFields/UPML'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
            stop
         endif
         allocate(DE3(1:3,ISIG:IEIG-1,JBEG:JSIG-1,KBEG:KMAX-1), STAT=err) 
         if(err .ne. 0) then
-           write(6,*) 'Fehler 2 in AllocFields/UPML'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
            stop
         endif
         allocate(BE4(1:3,ISIG:IEIG-1,JEIG:JMAX-1,KBEG:KMAX-1), STAT=err)
         if(err .ne. 0) then
-           write(6,*) 'Fehler 2 in AllocFields/UPML'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
            stop
         endif
         allocate(DE4(1:3,ISIG:IEIG-1,JEIG:JMAX-1,KBEG:KMAX-1), STAT=err)
         if(err .ne. 0) then
-           write(6,*) 'Fehler 2 in AllocFields/UPML'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
            stop
         endif
         allocate(BE5(1:3,ISIG:IEIG-1,JSIG:JEIG-1,KBEG:KSIG-1), STAT=err) 
         if(err .ne. 0) then
-           write(6,*) 'Fehler 2 in AllocFields/UPML'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
            stop
         endif
         allocate(DE5(1:3,ISIG:IEIG-1,JSIG:JEIG-1,KBEG:KSIG-1), STAT=err)
         if(err .ne. 0) then
-           write(6,*) 'Fehler 2 in AllocFields/UPML'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
            stop
         endif
         allocate(BE6(1:3,ISIG:IEIG-1,JSIG:JEIG-1,KEIG:KMAX-1), STAT=err)
         if(err .ne. 0) then
-           write(6,*) 'Fehler 2 in AllocFields/UPML'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
            stop
         endif
         allocate(DE6(1:3,ISIG:IEIG-1,JSIG:JEIG-1,KEIG:KMAX-1), STAT=err)
         if(err .ne. 0) then
-           write(6,*) 'Fehler 2 in AllocFields/UPML'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
            stop
         endif
 
@@ -275,9 +281,9 @@ contains
         implicit none
 
         integer, intent(in) :: lbeg, lmax, ls, le
-        real(8), dimension(1:4,lbeg:lmax), intent(inout) :: ce, cm
-        real(8), dimension(-1:PMLMAX-1) :: val1,val1p,val2,val2p
-        real(8) :: x, sigma, kappa
+        real(kind=8), dimension(1:4,lbeg:lmax), intent(inout) :: ce, cm
+        real(kind=8), dimension(-1:PMLMAX-1) :: val1,val1p,val2,val2p
+        real(kind=8) :: x, sigma, kappa
         integer :: l
 
         ! Hilfsgroessen
@@ -337,6 +343,7 @@ contains
 
   end subroutine InitializeUPML
 
+!----------------------------------------------------------------------
 
   subroutine FinalizeUPML
 
@@ -362,6 +369,7 @@ contains
 
   end subroutine FinalizeUPML
 
+!----------------------------------------------------------------------
 
   ! update the H-fields of all UPML layers
   
@@ -384,10 +392,10 @@ contains
         implicit none
 
           integer is, ie, js, je, ks, ke
-          real(8), dimension(1:3,is:ie,js:je,ks:ke) :: B
+          real(kind=8), dimension(1:3,is:ie,js:je,ks:ke) :: B
           integer i, j, k
-          real(8) Bxo, Byo, Bzo, Exh, Eyh, Ezh
-          real(8) dtx, dty, dtz
+          real(kind=8) Bxo, Byo, Bzo, Exh, Eyh, Ezh
+          real(kind=8) dtx, dty, dtz
 
           dtx = DT/SX
           dty = DT/SY
@@ -436,6 +444,8 @@ contains
 
   end subroutine StepUPMLH
 
+!----------------------------------------------------------------------
+
   ! update the E-fields of all pml layers
 
   subroutine StepUPMLE
@@ -456,12 +466,12 @@ contains
       implicit none
 
       integer is, ie, js, je, ks, ke
-      real(8), dimension(1:3,is:ie,js:je,ks:ke) :: D
+      real(kind=8), dimension(1:3,is:ie,js:je,ks:ke) :: D
 
       integer :: i, j, k
-      real(8) :: dtx, dty, dtz
-      real(8) :: Dxo, Dyo, Dzo, Hxh, Hyh, Hzh    
-      real(8) :: epsinvx, epsinvy, epsinvz
+      real(kind=8) :: dtx, dty, dtz
+      real(kind=8) :: Dxo, Dyo, Dzo, Hxh, Hyh, Hzh    
+      real(kind=8) :: epsinvx, epsinvy, epsinvz
   
       dtx = DT/SX
       dty = DT/SY
@@ -514,4 +524,8 @@ contains
 
   end subroutine StepUPMLE
 
+!----------------------------------------------------------------------
+
 end module upml
+
+!======================================================================

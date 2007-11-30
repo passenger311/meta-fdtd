@@ -1,6 +1,6 @@
-!----------------------------------------------------------------------
+!-*- F90 -*------------------------------------------------------------
 !
-!  module: fdtd(-r) / max3d
+!  module: fdtd / max3d
 !
 !  fdtd core algorithm.
 !
@@ -16,12 +16,16 @@
 !----------------------------------------------------------------------
 
 
+!======================================================================
+!
+!
+
 module fdtd
  
   use constant
   use grid
  
- implicit none
+  implicit none
   save
 
   ! --- Constants
@@ -30,12 +34,14 @@ module fdtd
 
   ! --- Fields
 
-  real(8), allocatable, dimension(:, :, :) :: Ex, Ey, Ez
-  real(8), allocatable, dimension(:, :, :) :: Hx, Hy, Hz
-  real(8), allocatable, dimension(:, :, :) :: EPSINV
+  real(kind=8), allocatable, dimension(:, :, :) :: Ex, Ey, Ez
+  real(kind=8), allocatable, dimension(:, :, :) :: Hx, Hy, Hz
+  real(kind=8), allocatable, dimension(:, :, :) :: EPSINV
 
   
 contains
+
+!----------------------------------------------------------------------
 
   subroutine InitializeFdtd(sfx)
 
@@ -57,39 +63,39 @@ contains
 
         allocate(Ex(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
         if(err .ne. 0) then
-           write(STDERR,*) "Allocation of Ex failed."
+           write(STDERR,*) "!ERROR OUT OF MEMORY: AllocateFields/fdtd"
            stop
         endif
         allocate(Ey(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
         if(err .ne. 0) then
-           write(STDERR,*) "Allocation of Ey failed."
+           write(STDERR,*) "!ERROR OUT OF MEMORY: AllocateFields/fdtd"
            stop
         endif
         allocate(Ez(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
         if(err .ne. 0) then
-           write(STDERR,*) "Allocation of Ez failed." 
+           write(STDERR,*) "!ERROR OUT OF MEMORY: AllocateFields/fdtd"
            stop
         endif
 
         allocate(Hx(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
         if(err .ne. 0) then
-           write(STDERR,*) "Allocation of Hx failed."
+           write(STDERR,*) "!ERROR OUT OF MEMORY: AllocateFields/fdtd"
            stop
         endif
         allocate(Hy(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
         if(err .ne. 0) then
-           write(STDERR,*) "Allocation of Hy failed."
+           write(STDERR,*) "!ERROR OUT OF MEMORY: AllocateFields/fdtd"
            stop
         endif
         allocate(Hz(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
         if(err .ne. 0) then
-           write(STDERR,*) "Allocation of Hz failed." 
+           write(STDERR,*) "!ERROR OUT OF MEMORY: AllocateFields/fdtd"
            stop
         endif
 
         allocate(EPSINV(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
         if(err .ne. 0) then
-           write(STDERR,*) "Allocation of EPSINV failed." 
+           write(STDERR,*) "!ERROR OUT OF MEMORY: AllocateFields/fdtd"
            stop
         endif
 
@@ -113,7 +119,7 @@ contains
         character(len=*) :: sfx
 
         integer :: ios, i, j, k
-        real(8) :: val
+        real(kind=8) :: val
 
         character(len=255) :: file
 
@@ -135,6 +141,7 @@ contains
 
   end subroutine InitializeFdtd
 
+!----------------------------------------------------------------------
 
   subroutine FinalizeFdtd
 
@@ -150,13 +157,14 @@ contains
 
   end subroutine FinalizeFdtd
 
+!----------------------------------------------------------------------
 
   subroutine StepH
 
     implicit none
     
-    real(8) :: dtx, dty, dtz
-    real(8) :: Exh,Eyh,Ezh
+    real(kind=8) :: dtx, dty, dtz
+    real(kind=8) :: Exh,Eyh,Ezh
     integer :: i, j, k
     
     dtx = DT/Sx
@@ -190,14 +198,15 @@ contains
         
   end subroutine StepH
 
+!----------------------------------------------------------------------
 
   subroutine StepE
 
     implicit none
     
-    real(8) :: dtx, dty, dtz
-    real(8) :: Hxh, Hyh, Hzh
-    real(8) :: epsinvx, epsinvy, epsinvz
+    real(kind=8) :: dtx, dty, dtz
+    real(kind=8) :: Hxh, Hyh, Hzh
+    real(kind=8) :: epsinvx, epsinvy, epsinvz
     integer :: i, j, k
     
     dtx = DT/Sx
@@ -233,4 +242,8 @@ contains
     
   end subroutine StepE
 
+!----------------------------------------------------------------------
+
 end module fdtd
+
+!======================================================================
