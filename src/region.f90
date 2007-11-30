@@ -29,7 +29,7 @@
 !     0 10 20 1 6 20 100 1
 !    (VBOX
 !     0 10 20 1 6 20 100 0.25 1
-!    MASKED    
+!    PLIST 
 !    )
 !  )
 !
@@ -38,9 +38,9 @@
 !  weigth to 1.0, while VPOINT and VBOX allow to set a userdefined weight 
 !  value. If only one BOX is defined in a region, then no point lists or
 !  masks will be allocated. Instead the "isbox" value of the region is set
-!  to true. Normally each region would have a list of indirect addressed 
-!  point coordinates, but if MASKED is specified, then a field of values
-!  is allocated within a bounding box (is,js,ks)(ie,je,ke).
+!  to true. Normally each region would have a field of values allocated 
+!  within a bounding box (is,js,ks)(ie,je,ke). If PLIST is set indirect
+!  addressing will be used.
 
 
 module region
@@ -61,7 +61,7 @@ module region
   type T_REGION
 
      ! logical
-     logical :: isbox, ismask
+     logical :: isbox, islist
 
      ! index
      integer :: idx
@@ -76,6 +76,7 @@ module region
      real*8, pointer, dimension(:,:,:) :: mask
      integer, pointer, dimension(:) :: i, j, k
      real*8, pointer, dimension(:) :: val
+     integer :: nump
 
   end type T_REGION
 
@@ -111,7 +112,7 @@ contains
   end subroutine FinalizeRegion
 
 
-  subroutine ReadObjRegion(funit)
+  subroutine ReadObjRegion(reg, funit)
 
     integer :: funit
     type(T_REGION) :: reg
@@ -133,7 +134,7 @@ contains
        allocate(tmpregvalues(GRIDSIZE),stat = err)
     end if
     if ( err .ne. 0 ) then
-       write(6,*) "ALLOCATION ERROR: ReadObjRegion"
+       write(6,*) "!ERROR OUT OF MEMORY: ReadObjRegion"
        stop
     end if
    
@@ -185,8 +186,8 @@ contains
              end if
              call SetPointObjRegion(reg, i,j,k, val)
           end do
-       case("MASKED")
-          reg%ismask = .true.
+       case("PLIST")
+          reg%islist = .true.
        case default
           exit
        end select
@@ -195,11 +196,10 @@ contains
 
     if ( .not. reg%isbox ) then
         
-       if ( reg%ismask ) then
-
+       if ( .not. reg%islist ) then
           allocate(reg%mask(reg%is:reg%ie,reg%js:reg%je,reg%ks:reg%ke), stat = err )
           if ( err .ne. 0 ) then
-             write(6,*) "ALLOCATION ERROR: ReadObjRegion"
+             write(6,*) "!ERROR OUT OF MEMORY: ReadObjRegion"
              stop
           end if
           num = 0
@@ -211,11 +211,13 @@ contains
                 end do
              end do
           end do
+          ! 1 point!
+          reg%nump = 1
        else
-          
+          reg%nump = numtmpregpoints
           allocate(reg%i(numtmpregpoints),reg%j(numtmpregpoints),reg%k(numtmpregpoints),reg%val(numtmpregpoints) , stat = err)
           if ( err .ne. 0 ) then
-             write(6,*) "ALLOCATION ERROR: ReadObjRegion"
+             write(6,*) "!ERROR OUT OF MEMORY: ReadObjRegion"
              stop
           end if
           num = 0
@@ -225,7 +227,10 @@ contains
              reg%k(num) = tmpregpoints(num,3)
              reg%val(num) = tmpregvalues(num)
           end do
-    
+          ! 1 step stepping!
+          reg%di = reg%ie - reg%is + 1
+          reg%dj = reg%je - reg%js + 1
+          reg%dk = reg%ke - reg%ks + 1
        end if
        
     end if
@@ -242,13 +247,15 @@ contains
     numobjregion = numobjregion + 1
     objregion(numobjregion)%idx = numobjregion
     
+    !no points
+    objregion(numobjregion)%nump = 0
+    !no steps
     objregion(numobjregion)%di = 0
     objregion(numobjregion)%dj = 0
     objregion(numobjregion)%dk = 0
 
     objregion(numobjregion)%isbox = .false.
-    objregion(numobjregion)%ismask = .false.
-
+    objregion(numobjregion)%islist = .false.
     CreateObjRegion = objregion(numobjregion)
    
   end function CreateObjRegion
@@ -340,7 +347,7 @@ contains
     type(T_REGION) :: reg
 
     if ( .not. reg%isbox ) then
-       if ( reg%ismask ) then
+       if ( .not. reg%islist ) then
           deallocate(reg%mask)
        else
           deallocate(reg%i, reg%j, reg%k, reg%val)

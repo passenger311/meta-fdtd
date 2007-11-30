@@ -101,13 +101,13 @@ contains
     integer ::  ios,n,i,err
     character(len=STRLNG) :: file, str
 
-    call ReadConfigOutgpl
+    call ReadOutgpl
     call WriteHeaderOutgpl
 
   end subroutine InitializeOutgpl
 
   
-  subroutine ReadConfigOutgpl
+  subroutine ReadOutgpl
     
     character(len=STRLNG) :: file, str
     integer :: n, ios
@@ -121,7 +121,7 @@ contains
        if(ios .ne. 0) exit
        if(str(1:4).eq. '(OUTGPL') then
           n = n+1
-          call ReadConfigObjOutgpl(objgpl(n))
+          call ReadObjOutgpl(objgpl(n))
           objgpl(n)%idx = n  
           if(n .ge. MAXOBJGPL) exit
        endif
@@ -129,7 +129,7 @@ contains
     close(UNITTMP)
     numobjgpl=n  
     
-  end subroutine ReadConfigOutgpl
+  end subroutine ReadOutgpl
   
 
   subroutine WriteHeaderOutgpl
@@ -146,7 +146,7 @@ contains
   end subroutine WriteHeaderOutgpl
   
 
-  subroutine ReadConfigObjOutgpl(gpl)
+  subroutine ReadObjOutgpl(gpl)
     
     type (T_OUTBAS) :: gpl
     integer UNITTMP, isteps, jsteps, ksteps
@@ -175,7 +175,7 @@ contains
     jsteps = max(int((gpl%ke-gpl%ks+gpl%dk)/gpl%dk),0)
     gpl%NumNodes = isteps*jsteps*ksteps
     
-  end subroutine ReadConfigObjOutgpl
+  end subroutine ReadObjOutgpl
   
   subroutine WriteHeaderObjOutgpl(gpl)
     
