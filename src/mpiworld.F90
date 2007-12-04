@@ -19,6 +19,7 @@
 module mpiworld
 
   use strings
+  use constant
   implicit none
   save 
 

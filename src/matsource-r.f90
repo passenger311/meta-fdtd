@@ -27,7 +27,7 @@ module matsource
 
   use constant
   use mpiworld
-  use region
+  use regobj
   use grid
   use fdtd
 
@@ -42,7 +42,7 @@ module matsource
 
   type T_MATSOURCE
 
-     integer :: regidx ! region index
+     integer :: regidx ! regobj index
 
      real(kind=8) :: lambda0    ! vacuum wavelength in units of [dx]
      real(kind=8) :: dlambda0   ! spectral width of vac.wave in units of [dx]
@@ -104,10 +104,10 @@ contains
     read(funit,*) mat%esource     ! electric field source (or magnetic)
     read(funit,*) mat%vec(1),mat%vec(2), mat%vec(3) ! vector components
 
-! read region information
+! read regobj information
     read(funit,*) string
     if ( string .eq. "(REGION" ) then
-       call ReadObjRegion(reg, funit)
+       call ReadObjReg(reg, funit)
        mat%regidx = reg%idx
     else
        write(6,*) "!ERROR NO REGION DEFINED: ReadObjMatSource"
@@ -157,7 +157,7 @@ contains
     integer :: p,i,j,k,il,jl,kl
     real(kind=8) :: es
 
-    reg = objregion(mat%regidx)
+    reg = objregobj(mat%regidx)
 
     es = 1.0
 
@@ -220,7 +220,7 @@ contains
     integer :: p,i,j,k,il,jl,kl
     real(kind=8) :: es
 
-    reg = objregion(mat%regidx)
+    reg = objregobj(mat%regidx)
 
     es = 1.0
 

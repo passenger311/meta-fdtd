@@ -13,8 +13,6 @@
 !  CloseOut
 !  WriteHeaderOut
 !  WriteDataOut
-!  CreateObjOut
-!  SetObjOut
 !
 !----------------------------------------------------------------------
 
@@ -29,7 +27,8 @@ module out
   use strings
   use mpiworld
   use grid
-  use region
+  use regobj
+  use outobj
 ! ** add output modules
 ! 1.
   use outgpl
@@ -38,42 +37,6 @@ module out
 
   implicit none
   save
-
-  integer, parameter :: MAXOBJOUT = 500
-
-  ! --- Types
-
-  type T_OUT 
-
-     ! output format, eg "GPL"
-     character(len=STRLNG) :: fmt
-
-     ! filename
-     character(len=STRLNG) :: filename
-
-     ! output module
-     character(len=STRLNG) :: modl
-
-     ! output function and mode
-     character(len=STRLNG) :: fn
-     character(len=10) :: mode
-
-     ! time slices
-     integer ns, ne, dn
-
-     ! index to spatial region
-     integer :: regidx
-     
-     ! index
-     integer :: idx
-
-  end type T_OUTBAS
-
-  ! --- Variables
-
-  type (T_OUT) :: objgpl(MAXOBJOUT)
-  integer :: numobjout = 0
-
 
 contains
 
@@ -102,75 +65,6 @@ contains
 ! **
 
   end subroutine FinalizeOut
-
-!----------------------------------------------------------------------
-
-  subroutine ReadObjOut(out, funit)
-
-    integer :: funit
-    type(T_OUT) :: out
-    type(T_OUT), external :: CreateObjOut
-    
-    character (len=STRLNG) :: fmt, modl, fn, mode
-    integer :: ns, ne, dn
-    type(T_REGION) :: reg
-    
-
-    out = CreateObjOut()
-    ! read output information
-    read(funit,*) fmt
-    read(funit,*) modl
-    read(funit,*) fn, mode
-    read(funit,*) ns, ne, dn
-    read(funit,*) string
-    ! consume region start string
-    if ( string .ne. "(region" ) then
-       write(STDERR,*) "!ERROR NO REGION DEFINED: ReadObjOut/out"
-       stop
-    end if
-    ! read the region information
-    call ReadObjRegion(reg, funit)
-    ! write output parameters into out object
-    call SetObjOut(out, fn, mode, reg, ns, ne, dn)
-    ! consume the closing ")"
-    read(funit,*) string
-    if ( string .ne. "(region" ) then
-       write(STDERR,*) "!ERROR (OUT LACKS ) TERMINATOR: ReadObjOut/out"
-       stop
-    end if
-
-  end subroutine ReadObjOut
-
-!----------------------------------------------------------------------
-
-  type(T_OUT) function CreateObjOut
-
-    numobjout = numobjout + 1
-    objout(numobjout)%idx = numobjout
-    
-    objout(numobjout)%fn = "none"
-    objout(numobjout)%ns = 0
-    objout(numobjout)%ne = 0
-    objout(numobjout)%dn = 0
-
-    CreateObjOut = objout(numobjout)
-   
-  end function CreateObjOut
-
-!----------------------------------------------------------------------
-
-  subroutine SetObjOut(out, fn, mode, reg, ns, ne, dn) 
-
-    type (T_OUT) :: out
-
-    out%fn = fn
-    out%mode = mode
-    out%regidx = reg%idx
-    out%ns = ns
-    out%ne = ne
-    out%dn = dn
-
-  end subroutine SetObjOut
 
 !----------------------------------------------------------------------
 

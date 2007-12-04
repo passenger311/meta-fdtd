@@ -21,7 +21,7 @@ program max3d
 
   use constant
   use strings
-  use region
+  use regobj
   use mpiworld
   use grid
   use outgpl

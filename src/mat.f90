@@ -23,7 +23,7 @@
 
 module mat
 
-  use region
+  use regobj
 
 ! ** add material modules
 ! 1.

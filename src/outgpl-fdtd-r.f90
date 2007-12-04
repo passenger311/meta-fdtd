@@ -1,8 +1,8 @@
-!----------------------------------------------------------------------
+!-*- F90 -*------------------------------------------------------------
 !
-!  module: fdtd-outgpl-r
+!  module: outgpl-fdtd-r
 !
-!  ascii outgpl module.
+!  this module handles GPL output of data related to the fdtd module.
 !
 !  subs:
 !
@@ -56,7 +56,7 @@ module outgpl_fdtd
   use strings
   use mpiworld
   use grid  
-  use outgpl
+  use outobj
   use fdtd
 
   implicit none
@@ -66,7 +66,7 @@ module outgpl_fdtd
   ! --- Variables
 
   real(8), allocatable :: DataGpl(:)
-  integer DataIndxGpl(MAXOBJGPL+1)
+  integer DataIndxGpl(MAXOBJOUT+1)
 
   ! --- Fields
 
@@ -86,149 +86,114 @@ contains
 
   subroutine InitializeOutgplFdtd
 
-    implicit none
-
-    call Initialize    
-
-  contains
-  
-
-    subroutine Initialize
-
-      implicit none
-
-      integer :: i, n, err
-
-      i = 1
-      DataIndxGpl(1)=1
-      do n=1, numobjgpl
-         if( objgpl(n)%Mode(1:2) .eq. 'En' .or. &
-              objgpl(n)%Mode(1:2) .eq. 'Px' .or. &
-              objgpl(n)%Mode(1:2) .eq. 'Py' .or. &
-              objgpl(n)%Mode(1:2) .eq. 'Pz' ) then
-            i = i + objgpl(n)%NumNodes               
-         endif
-         DataIndxGpl(n+1)=i
-      enddo
-      allocate(DataGpl(1:i),STAT=err)
-      if(err .ne. 0) then
-         write(6,*) 'Error 1 in InitOutGpl()'
-         stop
-         
-      endif
-
-    end subroutine Initialize
-
-
+    integer :: i, n, err
+    
+    i = 1
+    DataIndxGpl(1)=1
+    do n=1, numobjout
+       if( objout(n)%Mode(1:2) .eq. 'En' .or. &
+            objout(n)%Mode(1:2) .eq. 'Px' .or. &
+            objout(n)%Mode(1:2) .eq. 'Py' .or. &
+            objout(n)%Mode(1:2) .eq. 'Pz' ) then
+          i = i + objout(n)%NumNodes               
+       endif
+       DataIndxGpl(n+1)=i
+    enddo
+    allocate(DataGpl(1:i),STAT=err)
+    if(err .ne. 0) then
+       write(6,*) '!ERROR OUT OF MEMORY: InitOutgplFdtd/outgpl-fdtd'
+       stop   
+    endif
+    
   end subroutine InitializeOutgplFdtd
 
 
   subroutine FinalizeOutgplFdtd
-    implicit none
 
-    deallocate(DataGpl)
+    deallocate(DataOut)
 
   end subroutine FinalizeOutgplFdtd
 
 
-  subroutine WritOutgplFdtd(ncyc)
+  subroutine WritDataObjOutgplFdtd(out, ncyc)
 
-    implicit none
-    
+    type (T_OUT) :: out
     integer :: ncyc
-    type (T_OUTBAS) :: gpl
-    integer :: n
+
     logical :: ret
 
+    select case (out%fn)
+    case('Px')
+       call LoadPx(out)
+       call WriteData(out) 
+    case('Py')
+       call LoadPy(out)
+       call WriteData(out) 
+    case('Pz')
+       call LoadPz(out)
+       call WriteData(out) 
+    case('En')
+       call LoadEn(out)
+       call WriteData(out) 
+    case('EH')
+       call WriteEH(out)
+    case('Ex')
+       call WriteComp(out,Ex)
+    case('Ey')
+       call WriteComp(out,Ey)
+    case('Ez')
+       call WriteComp(out,Ez)
+    case('Hx')
+       call WriteComp(out,Hx)
+    case('Hy')
+       call WriteComp(out,Hy)
+    case('Hz')
+       call WriteComp(out,Hz)
+    case('Di')         
+       call WriteDi(out)
+    end select
     
-    do n=1, numobjgpl
-       
-       gpl = objgpl(n)
-
-       call OpenObjOutgpl(gpl, ncyc, ret)
-       
-       if ( ret ) then
-
-          ! outgpl
-          select case (gpl%Mode(1:2))
-          case('Px')
-             call LoadPx(gpl)
-             call WriteData(gpl) 
-          case('Py')
-             call LoadPy(gpl)
-             call WriteData(gpl) 
-          case('Pz')
-             call LoadPz(gpl)
-             call WriteData(gpl) 
-          case('En')
-             call LoadEn(gpl)
-             call WriteData(gpl) 
-          case('EH')
-             call WriteEH(gpl)
-          case('Ex')
-             call WriteComp(gpl,Ex)
-          case('Ey')
-             call WriteComp(gpl,Ey)
-          case('Ez')
-             call WriteComp(gpl,Ez)
-          case('Hx')
-             call WriteComp(gpl,Hx)
-          case('Hy')
-             call WriteComp(gpl,Hy)
-          case('Hz')
-             call WriteComp(gpl,Hz)
-          case('Di')         
-             call WriteDi(gpl)
-          end select
-          ! skip all the others
-
-          call CloseObjOutgpl
-
-       endif
-
-    enddo
-       
   contains
 
     ! **************************************************************** !   
 
-    subroutine WriteEH(gpl)
+    subroutine WriteEH(out)
 
       implicit none
-      type (T_OUTBAS) :: gpl
+      type (T_OUT) :: out
       integer i,j,k
 
-      do k=gpl%ks, gpl%ke, gpl%dk  
-         do j=gpl%js, gpl%je, gpl%dj      
-            do i=gpl%is, gpl%ie, gpl%di 
+      do k=out%ks, out%ke, out%dk  
+         do j=out%js, out%je, out%dj      
+            do i=out%is, out%ie, out%di 
                write(UNITTMP,'(6E15.6E3))') Ex(i,j,k),  Ey(i,j,k), &
                     Ez(i,j,k), Hx(i,j,k), Hy(i,j,k), Hz(i,j,k)
             enddo
-            if(gpl%is .ne. gpl%ie) write(UNITTMP,*)
+            if(out%is .ne. out%ie) write(UNITTMP,*)
          enddo
-         if(gpl%js .ne. gpl%je) write(UNITTMP,*)
+         if(out%js .ne. out%je) write(UNITTMP,*)
       enddo
     end subroutine WriteEH
 
 
     ! **************************************************************** !
 
-    subroutine WriteComp(gpl,Comp)
+    subroutine WriteComp(out,Comp)
 
       implicit none
 
-      type (T_OUTBAS) :: gpl
+      type (T_OUT) :: out
       real(8), dimension(IMIN:KMAX,JMIN:KMAX,KMIN:KMAX) :: Comp
       integer i,j,k
 
-      do k=gpl%ks, gpl%ke, gpl%dk  
-         do j=gpl%js, gpl%je, gpl%dj      
-            do i=gpl%is, gpl%ie, gpl%di 
+      do k=out%ks, out%ke, out%dk  
+         do j=out%js, out%je, out%dj      
+            do i=out%is, out%ie, out%di 
                write(UNITTMP,'(E15.6))') Comp(i,j,k)
             enddo
-            if(gpl%is .ne. gpl%ie) write(UNITTMP,*) 
+            if(out%is .ne. out%ie) write(UNITTMP,*) 
          enddo
-         if(gpl%js .ne. gpl%je) write(UNITTMP,*)
+         if(out%js .ne. out%je) write(UNITTMP,*)
       enddo
 
     end subroutine WriteComp
@@ -236,24 +201,24 @@ contains
 
     ! **************************************************************** !
 
-    subroutine WriteDi(gpl)
+    subroutine WriteDi(out)
 
       implicit none
 
-      type (T_OUTBAS) :: gpl
+      type (T_OUT) :: out
       integer i,j,k
 
-      write(6,*) gpl%is, gpl%ie
-      write(6,*) gpl%js, gpl%je
-      write(6,*) gpl%ks, gpl%ke 
-      do k=gpl%ks, gpl%ke, gpl%dk
-         do j=gpl%js, gpl%je, gpl%dj      
-            do i=gpl%is, gpl%ie, gpl%di 
+      write(6,*) out%is, out%ie
+      write(6,*) out%js, out%je
+      write(6,*) out%ks, out%ke 
+      do k=out%ks, out%ke, out%dk
+         do j=out%js, out%je, out%dj      
+            do i=out%is, out%ie, out%di 
                write(UNITTMP,'(E15.6E3))') 1.0/epsinv(i,j,k)
             enddo
-            if(gpl%is .ne. gpl%ie) write(UNITTMP,*)
+            if(out%is .ne. out%ie) write(UNITTMP,*)
          enddo
-         if(gpl%js .ne. gpl%je) write(UNITTMP,*)
+         if(out%js .ne. out%je) write(UNITTMP,*)
       enddo
       
     end subroutine WriteDi 
@@ -261,36 +226,36 @@ contains
 
     ! **************************************************************** !
 
-    subroutine WriteData(gpl)
+    subroutine WriteData(out)
 
       implicit none
   
-      type (T_OUTBAS) :: gpl
+      type (T_OUT) :: out
       integer :: i,j,k,n,m
       real(8) :: sum
   
       sum = 0.0
-      m = DataIndxGpl(gpl%idx)
-      if( gpl%Mode(4:4) .eq. 'S' ) then      ! integration 	
-         do k=gpl%ks, gpl%ke, gpl%dk  
-            do j=gpl%js, gpl%je, gpl%dj      
-               do i=gpl%is, gpl%ie, gpl%di 
-                  sum = sum+DataGpl(m)
+      m = DataIndxOut(out%idx)
+      if( out%Mode(4:4) .eq. 'S' ) then      ! integration 	
+         do k=out%ks, out%ke, out%dk  
+            do j=out%js, out%je, out%dj      
+               do i=out%is, out%ie, out%di 
+                  sum = sum+DataOut(m)
                   m = m+1
                enddo
             enddo
          enddo
          write(UNITTMP,*) sum
       else                                     ! direct outgpl
-         do k=gpl%ks, gpl%ke, gpl%dk  
-            do j=gpl%js, gpl%je, gpl%dj      
-               do i=gpl%is, gpl%ie, gpl%di 
-                  write(UNITTMP,'(E15.6E3))') DataGpl(m)
+         do k=out%ks, out%ke, out%dk  
+            do j=out%js, out%je, out%dj      
+               do i=out%is, out%ie, out%di 
+                  write(UNITTMP,'(E15.6E3))') DataOut(m)
                   m = m+1
                enddo
-               if(gpl%is .ne. gpl%ie) write(UNITTMP,*)
+               if(out%is .ne. out%ie) write(UNITTMP,*)
             enddo
-            if(gpl%js .ne. gpl%je) write(UNITTMP,*)
+            if(out%js .ne. out%je) write(UNITTMP,*)
          enddo
       endif
     end subroutine WriteData
@@ -305,29 +270,29 @@ contains
     implicit none
 
     integer ncyc, n, i
-    type (T_OUTBAS) :: gpl
+    type (T_OUT) :: out
 
     ! Loop over all outgpl units
-    do n=1, numobjgpl
+    do n=1, numobjout
 
-       gpl = objgpl(n)
+       out = objout(n)
 
        ! outgpl ?
-       if(mod(ncyc, gpl%dn) .eq. 0 .and. &
-            ncyc .ge. gpl%ns       .and. &
-            ncyc .le. gpl%ne ) then
+       if(mod(ncyc, out%dn) .eq. 0 .and. &
+            ncyc .ge. out%ns       .and. &
+            ncyc .le. out%ne ) then
 
           ! First part of Px,y,z calculation
-          select case (gpl%Mode(1:2))
+          select case (out%Mode(1:2))
           case('Px')
-             DataGpl(DataIndxGpl(gpl%idx):DataIndxGpl(gpl%idx+1))=0.0
-             call LoadPx(gpl)
+             DataOut(DataIndxOut(out%idx):DataIndxOut(out%idx+1))=0.0
+             call LoadPx(out)
           case('Py')
-             DataGpl(DataIndxGpl(gpl%idx):DataIndxGpl(gpl%idx+1))=0.0
-             call LoadPy(gpl)
+             DataOut(DataIndxOut(out%idx):DataIndxOut(out%idx+1))=0.0
+             call LoadPy(out)
           case('Pz')
-             DataGpl(DataIndxGpl(gpl%idx):DataIndxGpl(gpl%idx+1))=0.0
-             call LoadPz(gpl)
+             DataOut(DataIndxOut(out%idx):DataIndxOut(out%idx+1))=0.0
+             call LoadPz(out)
           end select
           
        endif
@@ -335,24 +300,24 @@ contains
   end subroutine PrepareOutgplFdtd
 
 
-  subroutine LoadPx(gpl)
+  subroutine LoadPx(out)
     ! Calculates x-component of the Poynting vector P
-    ! Stores result in DataGpl
+    ! Stores result in DataOut
     ! Localization: Px[i,j,k] = Px(i+1/2,j,k)
     implicit none
-    type (T_OUTBAS) :: gpl
+    type (T_OUT) :: out
     integer :: i,j,k,n,m
     real(8) :: val
     ! Code
-    m = DataIndxGpl(gpl%idx)
-    do k=gpl%ks, gpl%ke, gpl%dk 
-       do j=gpl%js, gpl%je, gpl%dj 
-          do i=gpl%is, gpl%ie, gpl%di
+    m = DataIndxOut(out%idx)
+    do k=out%ks, out%ke, out%dk 
+       do j=out%js, out%je, out%dj 
+          do i=out%is, out%ie, out%di
              val = 0.125*((Ey(i,j,k)+Ey(i+1,j,k))*Hz(i,j,k) &
                   + (Ey(i,j-1,k)+Ey(i+1,j-1,k))* Hz(i,j-1,k) &
                   - (Ez(i,j,k)+Ez(i+1,j,k))*Hy(i,j,k) &
                   - (Ez(i,j,k-1)+Ez(i+1,j,k-1))* Hy(i,j,k-1)) 
-             DataGpl(m)=DataGpl(m)+val/(4.0*PI) 
+             DataOut(m)=DataOut(m)+val/(4.0*PI) 
              m = m+1
           enddo
        enddo
@@ -360,24 +325,24 @@ contains
   end subroutine LoadPx
 
 
-  subroutine LoadPy(gpl)
+  subroutine LoadPy(out)
     ! Calculates y-component of the Poynting vector P
-    ! Stores result in DataGpl
+    ! Stores result in DataOut
     ! Localization: Py[i,j,k] = Py(i,j+1/2,k)
     implicit none
-    type (T_OUTBAS) :: gpl
+    type (T_OUT) :: out
     integer :: i,j,k,n,m
     real(8) :: val
     ! Code
-    m = DataIndxGpl(gpl%idx)
-    do k=gpl%ks, gpl%ke, gpl%dk
-       do j=gpl%js, gpl%je, gpl%dj
-          do i=gpl%is, gpl%ie, gpl%di
+    m = DataIndxOut(out%idx)
+    do k=out%ks, out%ke, out%dk
+       do j=out%js, out%je, out%dj
+          do i=out%is, out%ie, out%di
                val = 0.125*( (Ez(i,j,k)+Ez(i,j+1,k))*Hx(i,j,k) &
                     + (Ez(i,j,k-1)+Ez(i,j+1,k-1))*Hx(i,j,k-1) &
                     - (Ex(i,j,k)+Ex(i,j+1,k))*Hz(i,j,k) &
                     - (Ex(i-1,j,k)+Ex(i-1,j+1,k))*Hz(i-1,j,k))
-             DataGpl(m)=DataGpl(m)+val/(4.0*PI)
+             DataOut(m)=DataOut(m)+val/(4.0*PI)
              m = m+1
           enddo
       enddo
@@ -385,24 +350,24 @@ contains
   end subroutine LoadPy
 
 
-  subroutine LoadPz(gpl)
+  subroutine LoadPz(out)
     ! Calculates z-component of the Poynting vector P
-    ! Stores result in DataGpl
+    ! Stores result in DataOut
     ! Localization: Pz[i,j,k] = Pz(i,j,k+1/2)
     implicit none
-    type (T_OUTBAS) :: gpl
+    type (T_OUT) :: out
     integer :: i,j,k,n, m
     real(8) :: val
     ! Code
-    m = DataIndxGpl(gpl%idx)
-    do k=gpl%ks, gpl%ke, gpl%dk
-       do j=gpl%js, gpl%je, gpl%dj
-          do i=gpl%is, gpl%ie, gpl%di
+    m = DataIndxOut(out%idx)
+    do k=out%ks, out%ke, out%dk
+       do j=out%js, out%je, out%dj
+          do i=out%is, out%ie, out%di
              val = 0.125*( (Ex(i,j,k)+Ex(i,j,k+1))*Hy(i,j,k) &
                   +(Ex(i-1,j,k)+Ex(i-1,j,k+1))*Hy(i-1,j,k) &
                   - (Ey(i,j,k)+Ey(i,j,k+1))*Hx(i,j,k) &
                   - (Ey(i,j-1,k)+Ey(i,j-1,k+1))* Hx(i,j-1,k))
-             DataGpl(m)=DataGpl(m)+val/(4.0*PI)
+             DataOut(m)=DataOut(m)+val/(4.0*PI)
              m = m+1
           enddo
       enddo
@@ -410,19 +375,19 @@ contains
   end subroutine LoadPz
 
 
-  subroutine LoadEn(gpl)
+  subroutine LoadEn(out)
     ! Calculates energy density En
-    ! Stores result in DataGpl
+    ! Stores result in DataOut
     ! Localization: En[i,j,k] = En(i,j,k)
     implicit none
-    type (T_OUTBAS) :: gpl
+    type (T_OUT) :: out
     integer :: i,j,k,n,m
     real(8) :: EEx,EEy,EEz,EHx,EHy,EHz,eps
     ! Start Code
-    m = DataIndxGpl(gpl%idx)
-    do k=gpl%ks, gpl%ke, gpl%dk
-       do j=gpl%js, gpl%je, gpl%dj
-          do i=gpl%is, gpl%ie, gpl%di
+    m = DataIndxOut(out%idx)
+    do k=out%ks, out%ke, out%dk
+       do j=out%js, out%je, out%dj
+          do i=out%is, out%ie, out%di
              eps = 1.0/epsinv(i,j,k)
              EEx = 0.5*eps*(Ex(i,j,k)**2+Ex(i-1,j,k)**2)
              EEy = 0.5*eps*(Ey(i,j,k)**2+Ey(i,j-1,k)**2)
@@ -433,7 +398,7 @@ contains
                          Hy(i,j,k-1)**2+Hy(i-1,j,k-1)**2)
              EHz = 0.25*(Hz(i,j,k)**2+Hz(i-1,j,k)**2 + &
                          Hz(i,j-1,k)**2+Hz(i-1,j-1,k)**2)
-             DataGpl(m)=(EEx+EEy+EEz+EHx+EHy+EHz)/(4.0*PI)
+             DataOut(m)=(EEx+EEy+EEz+EHx+EHy+EHz)/(4.0*PI)
              m = m+1
           enddo
        enddo

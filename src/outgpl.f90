@@ -26,7 +26,7 @@ module outgpl
   use strings
   use mpiworld
   use grid  
-  use region
+  use regobj
 ! ** add output modules
 ! 1.
   use outgpl_fdtd
@@ -89,7 +89,7 @@ contains
     type(T_OUT) :: out
 
     type(T_REGION) :: reg
-    reg = objregion(out%regidx)
+    reg = objregobj(out%regidx)
     
     call OpenObjOutgpl(out)
     
