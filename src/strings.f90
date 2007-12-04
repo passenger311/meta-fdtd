@@ -1,11 +1,17 @@
-! -*-F90-*---------------------------------------------------------------
+! -*-F90-*-------------------------------------------------------------
 !
-!       Function: strings.f90
-!       
-!         tools for smarter string handling.
+!  module: strings / max3d
 !
-! -----------------------------------------------------------------------
+!  fortran smart string handling
+!
+! ---------------------------------------------------------------------
  
+
+!======================================================================
+!
+!
+!
+
 module strings
  
   implicit none
@@ -47,7 +53,7 @@ contains
 
 !
 !
-! ---- split string <str> to <elem> substrings  character sc
+! ---- split string <str> to <elem> substrings
 !
 
   subroutine charsplit(sc, str, strarr, n, elem)
@@ -442,4 +448,11 @@ contains
   end function strlen
 
 end module strings
+
+!
+! Authors:  J.Hamm
+! Modified: 4/12/2007
+!
+!======================================================================
+
 

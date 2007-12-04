@@ -1,6 +1,6 @@
-!----------------------------------------------------------------------
+!-*- F90 -*------------------------------------------------------------
 !
-!  module: bound(-r) / max3d
+!  module: pec / max3d
 !
 !  set metallic boundary conditions.
 !
@@ -12,6 +12,10 @@
 !
 !----------------------------------------------------------------------
  
+!======================================================================
+!
+!
+
 module pec
  
   use constant
@@ -25,26 +29,23 @@ module pec
 
 contains
 
+!----------------------------------------------------------------------
 
   subroutine InitializePEC
 
-    implicit none
-
   end subroutine InitializePEC
+
+!----------------------------------------------------------------------
 
   subroutine FinalizePEC
 
-    implicit none
-
   end subroutine FinalizePEC
 
+!----------------------------------------------------------------------
 
   subroutine SetPEC
     
-    implicit none
- 
     integer :: i,j,k
-
 
 ! top, bottom
 
@@ -92,4 +93,12 @@ contains
 
   end subroutine SetPEC
 
+!----------------------------------------------------------------------
+
 end module pec
+
+!
+! Authors:  S.Scholz, A.Klaedtke, J.Hamm 
+! Modified: 4/12/2007
+!
+!======================================================================

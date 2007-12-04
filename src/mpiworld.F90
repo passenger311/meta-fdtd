@@ -11,6 +11,10 @@
 !
 !----------------------------------------------------------------------
 
+!======================================================================
+!
+!
+!
 
 module mpiworld
 
@@ -25,7 +29,7 @@ module mpiworld
   integer :: numproc = 1
   integer :: myrank = 0
   integer :: mpi_started = 0
-  character(len=255) :: mpi_sfxin, mpi_sfxout
+  character(len=STRLNG) :: mpi_sfxin, mpi_sfxout
   character(len=20)   :: ranklbl
   integer :: mpisize
 
@@ -41,6 +45,8 @@ module mpiworld
 
 
 contains
+
+!----------------------------------------------------------------------
 
   subroutine InitializeMPIWorld
 
@@ -73,13 +79,11 @@ contains
 
 #endif /* MPI */
 
-
   end subroutine InitializeMPIWorld
  
-  
-  subroutine FinalizeMPIWorld
+!----------------------------------------------------------------------
 
-    implicit none      
+  subroutine FinalizeMPIWorld
 
 #ifdef MPI
 
@@ -89,10 +93,15 @@ contains
 
   end subroutine FinalizeMPIWorld
 
+!----------------------------------------------------------------------
 
 end module mpiworld
 
-
+!
+! Authors:  J.Hamm, A.Klaedtke
+! Modified: 4/12/2007
+!
+!======================================================================
 
 
 

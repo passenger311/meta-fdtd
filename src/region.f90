@@ -17,6 +17,8 @@
 !
 !----------------------------------------------------------------------
 
+!======================================================================
+!
 !  (REGION 
 !    (POINT
 !     100 20 30 
@@ -92,6 +94,8 @@ module region
 
 contains
 
+!----------------------------------------------------------------------
+
   subroutine InitializeRegion 
 
     integer :: err
@@ -100,7 +104,8 @@ contains
 
   end subroutine InitializeRegion
   
-  
+!----------------------------------------------------------------------
+
   subroutine FinalizeRegion
 
     integer :: i
@@ -111,6 +116,7 @@ contains
 
   end subroutine FinalizeRegion
 
+!----------------------------------------------------------------------
 
   subroutine ReadObjRegion(reg, funit)
 
@@ -134,7 +140,7 @@ contains
        allocate(tmpregvalues(GRIDSIZE),stat = err)
     end if
     if ( err .ne. 0 ) then
-       write(6,*) "!ERROR OUT OF MEMORY: ReadObjRegion"
+       write(STDERR,*) "!ERROR OUT OF MEMORY: ReadObjRegion/region"
        stop
     end if
    
@@ -199,7 +205,7 @@ contains
        if ( .not. reg%islist ) then
           allocate(reg%mask(reg%is:reg%ie,reg%js:reg%je,reg%ks:reg%ke), stat = err )
           if ( err .ne. 0 ) then
-             write(6,*) "!ERROR OUT OF MEMORY: ReadObjRegion"
+             write(STDERR,*) "!ERROR OUT OF MEMORY: ReadObjRegion/region"
              stop
           end if
           num = 0
@@ -217,7 +223,7 @@ contains
           reg%nump = numtmpregpoints
           allocate(reg%i(numtmpregpoints),reg%j(numtmpregpoints),reg%k(numtmpregpoints),reg%val(numtmpregpoints) , stat = err)
           if ( err .ne. 0 ) then
-             write(6,*) "!ERROR OUT OF MEMORY: ReadObjRegion"
+             write(STDERR,*) "!ERROR OUT OF MEMORY: ReadObjRegion/region"
              stop
           end if
           num = 0
@@ -240,7 +246,7 @@ contains
     
   end subroutine ReadObjRegion
 
-
+!----------------------------------------------------------------------
 
   type(T_REGION) function CreateObjRegion
 
@@ -260,7 +266,7 @@ contains
    
   end function CreateObjRegion
 
-
+!----------------------------------------------------------------------
 
   subroutine SetBoxObjRegion(reg, i0,i1,di, j0,j1,dj, k0,k1,dk, val)
 
@@ -309,6 +315,8 @@ contains
 
   end subroutine SetBoxObjRegion
 
+!----------------------------------------------------------------------
+
   subroutine SetPointObjRegion(reg, i,j,k, val)
 
     type(T_REGION) :: reg
@@ -341,6 +349,7 @@ contains
 
   end subroutine SetPointObjRegion
 
+!----------------------------------------------------------------------
 
   subroutine DestroyObjRegion(reg)
 
@@ -356,11 +365,15 @@ contains
     
   end subroutine DestroyObjRegion
 
-
+!----------------------------------------------------------------------
 
 end module region
 
-
+!
+! Authors:  J.Hamm 
+! Modified: 4/12/2007
+! 
+!======================================================================
 
 
 

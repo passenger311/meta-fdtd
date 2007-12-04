@@ -1,8 +1,8 @@
-!----------------------------------------------------------------------
+!-*- F90 -*------------------------------------------------------------
 !
-!  module: grid(-r) / max3d
+!  module: grid / max3d
 !
-!  grid definition and field allocation.
+!  grid definition.
 !
 !  subs:
 !
@@ -14,6 +14,10 @@
 !
 !----------------------------------------------------------------------
 
+!======================================================================
+!
+!
+!
 
 module grid
 
@@ -26,7 +30,7 @@ module grid
 
   ! --- Constants
 
-  character(len=255), parameter :: pfxgrid = 'grid'
+  character(len=STRLNG), parameter :: pfxgrid = 'grid'
 
   ! --- Variables  
 
@@ -57,6 +61,8 @@ module grid
 
 contains
 
+!----------------------------------------------------------------------
+
   subroutine InitializeGrid(sfx)
 
     implicit none
@@ -74,7 +80,7 @@ contains
 
         character(len=*) :: sfx
 
-        character(len=255) :: file 
+        character(len=STRLNG) :: file 
         integer :: err, i
 
         file = cat2(pfxgrid,sfx)
@@ -92,12 +98,12 @@ contains
 
       end subroutine ReadConfig
 
-      subroutine Initialize() 
+      subroutine Initialize
 
         implicit none
 
         if ( PARTITIONS .ne. numproc .and. mpi_started .ne. 0 ) then
-           write(6,*) "config: number of read in parititons does not match mpi numproc"
+           write(STDERR,*) "!ERROR GRID PARTITIONS MISMATCH: InitializeGrid/grid"
            stop
         end if
 
@@ -125,15 +131,14 @@ contains
 
   end subroutine InitializeGrid
 
+!----------------------------------------------------------------------
 
 
-  subroutine FinalizeGrid()
-
-    implicit none
+  subroutine FinalizeGrid
 
   end subroutine FinalizeGrid
 
-
+!----------------------------------------------------------------------
 
   subroutine EchoGrid
 
@@ -152,12 +157,12 @@ contains
 
   end subroutine EchoGrid
 
+!----------------------------------------------------------------------
 
 end module grid
 
-
-
-
-
-
-
+!
+! Authors:  J.Hamm, A.Klaedtke, S.Scholz, 
+! Modified: 4/12/2007
+!
+!======================================================================

@@ -246,4 +246,8 @@ contains
 
 end module fdtd
 
+!
+! Authors:  S.Scholz, A.Klaedtke, J.Hamm 
+! Modified: 4/12/2007
+!
 !======================================================================

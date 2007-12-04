@@ -25,9 +25,9 @@ module mat
 
   use region
 
-! **
+! ** add material modules
 ! 1.
-  use mat_source
+  use matsource
 ! 2.
 ! **
 
@@ -46,7 +46,7 @@ contains
 
     integer :: err
 
-! ** add initialize methods here
+! ** call material initialize methods
 ! 1. 
     call InitializeMatSource
 ! 2.
@@ -58,7 +58,7 @@ contains
 
   subroutine FinalizeMat
 
-! ** add finalize methods here
+! ** call material finalize methods
 ! 1.
     call FinalizeMatSource
 ! 2.
@@ -80,9 +80,9 @@ contains
        read(UNITTMP,*, IOSTAT=ios) string
        if(ios .ne. 0) exit
        select case ( string )
-! ** add config indentifiers here
+! ** call material config indentifiers
 ! 1.
-       case("(MAT-SOURCE")
+       case("(MATSOURCE")
           call ReadObjMatSource(UNITTMP)
 ! 2.
 ! **
@@ -99,7 +99,7 @@ contains
 
     integer :: ncyc
 
-! ** add e-field step methods here
+! ** call material e-field step methods
 ! 1.
     call StepEMatSource(ncyc)
 ! 2.
@@ -113,7 +113,7 @@ contains
 
     integer :: ncyc
 
-! ** add h-field step methods here
+! ** call material h-field step methods
 ! 1.
     call StepHMatSource(ncyc)
 ! 2.

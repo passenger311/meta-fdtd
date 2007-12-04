@@ -1,6 +1,6 @@
 !-*- F90 -*------------------------------------------------------------
 !
-!  module: mat_source / max3d
+!  module: matsource / max3d
 !
 !  field source equations.
 !
@@ -23,7 +23,7 @@
 ! field equations
 
 
-module mat_source
+module matsource
 
   use constant
   use mpiworld
@@ -276,7 +276,7 @@ contains
   
 !----------------------------------------------------------------------
 
-end module mat_source
+end module matsource
 
 ! =====================================================================
 

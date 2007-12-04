@@ -1,4 +1,9 @@
 
+#======================================================================
+#
+# Makefile
+#
+
 .SUFFIXES: .f90 .F90
 
 
@@ -20,31 +25,33 @@ SRC= strings.f90\
 constant.f90\
 region.f90\
 mpiworld.F90\
-outgpl.f90\
 grid-$(ENGINE).f90\
 fdtd-$(ENGINE).f90\
 pec-$(ENGINE).f90\
 upml-$(ENGINE).f90\
 outgpl-fdtd-$(ENGINE).f90\
 tfsf-$(ENGINE).f90\
-mat-source-$(ENGINE).f90\
+matsource-$(ENGINE).f90\
 pre-obj-1.f90\
 mat.f90\
+outgpl.f90\
+out.f90\
 max3d.F90
 
 FOBJ= strings.o\
 constant.o\
 region.o\
 mpiworld.o\
-outgpl.o\
 grid-$(ENGINE).o\
 fdtd-$(ENGINE).o\
 pec-$(ENGINE).o\
 upml-$(ENGINE).o\
 outgpl-fdtd-$(ENGINE).o\
-mat-source-$(ENGINE).o\
+matsource-$(ENGINE).o\
 tfsf-$(ENGINE).o\
 mat.o\
+outgpl.o\
+out.o\
 max3d.o
 
 PREOBJ= strings.o\
@@ -88,3 +95,9 @@ clean:
 proper: clean
 	 rm -f $(EXE) $(PREEXE) *.o *.in *.out 
 
+
+#
+# Authors:  J.Hamm 
+# Modified: 4/12/2007
+#
+#======================================================================
