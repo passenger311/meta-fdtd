@@ -21,7 +21,9 @@ program max3d
 
   use constant
   use strings
-  use regobj
+  use reglist
+  use buflist
+  use outlist
   use mpiworld
   use grid
   use outgpl
@@ -87,24 +89,24 @@ program max3d
 
         write(6,*) '* initialising modules: ',ranklbl
 
+        write(6,*) '* -> InitializeRegList'
+        call InitializeRegList
+        write(6,*) '* -> InitializeBufList'
+        call InitializeBufList
+        write(6,*) '* -> InitializeOutList'
+        call InitializeOutList
         write(6,*) '* -> InitializeGrid'
         call InitializeGrid(mpi_sfxin)
         write(6,*) '* -> InitializeFdtd'
         call InitializeFdtd(mpi_sfxin)  
         write(6,*) '* -> InitializeUPML'
         call InitializeUPML
-        write(6,*) '* -> InitializeTFSF'
-        call InitializeTFSF
-        write(6,*) '* -> InitializeOutgpl'
-        call InitializeOutgpl
         write(6,*) '* -> InitializeMat'
         call InitializeMat
-        write(6,*) '* -> InitializeOutgplFdtd'
-        call InitializeOutgplFdtd
-        write(6,*) '* -> InitializePzDFT '
-        call InitializePzDFT
-        write(6,*) '* -> InitializeSource '
-        call InitializeSource
+        write(6,*) '* -> InitializeOut'
+        call InitializeOut
+        write(6,*) '* -> WriteHeaderOut'
+        call WriteHeaderOut
 
      end if
 
@@ -171,9 +173,11 @@ program max3d
 
 ! -------------------------- COMMS H -------------------------------
 
-! 1. send tangential H fields to right
+! initiate comms
 
 #if MPI
+
+! 1. send tangential H fields to right
 
      if ( myrank .ne. numproc-1 ) then
         ides= myrank+1
@@ -220,19 +224,19 @@ program max3d
 
 ! -------------------------- StepHMat ---------------------------------
 
+! use the time while comms are pending to do some useful stuff
 
 #if MPE_LOG
      call MPE_LOG_EVENT(15,"StepHMat",mpierr) 
 #endif /* MPE_LOG */
 
      call StepHMat(ncyc)
-!     call NewTFSF_H()               
-!     call DataPrepOutgpl(ncyc)
 
 #if MPE_LOG
      call MPE_LOG_EVENT(16,"StepHMat",mpierr) 
 #endif /* MPE_LOG */
 
+     call PrepDataOut(ncyc)
 
 
 ! ---------------------------- WAIT H ---------------------------------
@@ -307,6 +311,8 @@ program max3d
 
 ! -------------------------- COMMS E ----------------------------------
 
+! initiate comms
+
 #if MPI 
 
 ! 1. send tangential E fields to the left
@@ -356,6 +362,7 @@ program max3d
 
 ! -------------------------- StepEMat ---------------------------------
 
+! use the time while comms are pending to do some useful stuff
 
 #if MPE_LOG
      call MPE_LOG_EVENT(17,"StepEMat",mpierr) 
@@ -372,8 +379,11 @@ program max3d
      call MPE_LOG_EVENT(18,"StepEMat",mpierr) 
 #endif /* MPE_LOG */
 
+     call WriteDataOut(ncyc)
 
 ! --------------------------- WAIT E ----------------------------------
+
+! complete comms
 
 #if MPI
 
@@ -437,20 +447,22 @@ program max3d
  
         write(6,*) '* process finalising, rank = ', ranklbl
 
-        write(6,*) '* -> OutPzDFTn'
-        call OutPzDFT
+        write(6,*) '* -> FinalizeOut'
+        call FinalizeOut
+        write(6,*) '* -> FinalizeMat'
+        call FinalizeMat
         write(6,*) '* -> FinalizeUPML'
         call FinalizeUPML
         write(6,*) '* -> FinalizeFdtd'
         call FinalizeFdtd
-        write(6,*) '* -> FinalizeOutgpl'
-        call FinalizeOutgpl
-        write(6,*) '* -> FinalizeMat'
-        call FinalizeMat
-        write(6,*) '* -> FinalizeOutgplFdtd'
-        call FinalizeOutgplFdtd
         write(6,*) '* -> FinalizeGrid'
         call FinalizeGrid
+        write(6,*) '* -> FinalizeOutList'
+        call FinalizeOutList
+        write(6,*) '* -> FinalizeBufList'
+        call FinalizeBufList
+        write(6,*) '* -> FinalizeRegList'
+        call FinalizeRegList
 
 #if MPI
         write(6,*) ranklbl, "* time for Comms H = ", time_waited(1)

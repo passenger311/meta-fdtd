@@ -8,10 +8,11 @@
 !
 !  InitializeOutgpl
 !  FinalizeOutgpl
-!  OpenObjOutgpl
-!  CloseObjOutgpl
-!  WriteHeaderObjOutgpl
-!  WriteDataObjOutgpl
+!  OpenOutObjgpl
+!  CloseOutObjgpl
+!  WriteHeaderOutObjgpl
+!  PrepDataOutObjgpl
+!  WriteDataOutObjgpl
 !  
 !----------------------------------------------------------------------
 
@@ -26,7 +27,8 @@ module outgpl
   use strings
   use mpiworld
   use grid  
-  use regobj
+  use reglist
+  use outlist
 ! ** add output modules
 ! 1.
   use outgpl_fdtd
@@ -64,34 +66,34 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine OpenObjOutgpl(out)
+  subroutine OpenOutObjgpl(out)
 
     type(T_OUT) :: out
 
     open(UNITTMP,FILE=out%filename,STATUS='unknown')
 
-  end subroutine OpenObjOutgpl
+  end subroutine OpenOutObjgpl
 
 !----------------------------------------------------------------------
 
-  subroutine CloseObjOutgpl(out)
+  subroutine CloseOutObjgpl(out)
 
     type(T_OUT) :: out
 
     close(UNITTMP)
 
-  end subroutine CloseObjOutgpl
+  end subroutine CloseOutObjgpl
 
 !----------------------------------------------------------------------
 
-  subroutine WriteHeaderObjOutgpl(out)
+  subroutine WriteHeaderOutObjgpl(out)
 
     type(T_OUT) :: out
 
     type(T_REGION) :: reg
-    reg = objregobj(out%regidx)
+    reg = reglistobj(out%regidx)
     
-    call OpenObjOutgpl(out)
+    call OpenOutObjgpl(out)
     
     write(UNITTMP,*) '# ',out%fmt               ! format
     write(UNITTMP,*) '# ',out%modl              ! module
@@ -102,13 +104,13 @@ contains
     write(UNITTMP,*) '# ',reg%js,reg%je,reg%dj
     write(UNITTMP,*) '# ',reg%ks,reg%ke,reg%dk
 
-    call CloseObjOutgpl(out)
+    call CloseOutObjgpl(out)
 
-  end subroutine WriteHeaderObjOutgpl
+  end subroutine WriteHeaderOutObjgpl
 
 !----------------------------------------------------------------------
 
-  subroutine WriteDataObjOutgpl(out, ncyc)
+  subroutine PrepDataOutObjgpl(out, ncyc)
 
     type(T_OUT) :: out
     integer :: ncyc
@@ -118,21 +120,44 @@ contains
        return
     end if
     
-    call OpenObjOutgpl(out)
+    select case ( out%modl ) 
+! ** call output methods
+! 1.
+    case ("fdtd")
+       call PrepDataOutObjgplFdtd(out,ncyc)
+! 2.
+! **
+    end select
+
+  end subroutine PrepDataOutObjgpl
+
+!----------------------------------------------------------------------
+
+  subroutine WriteDataOutObjgpl(out, ncyc)
+
+    type(T_OUT) :: out
+    integer :: ncyc
+    
+    if ( ncyc .lt. out%ns .or. ncyc .gt. out%ne .or. 
+       mod(ncyc - out%ns, out%dn) .ne. 0 ) then
+       return
+    end if
+    
+    call OpenOutObjgpl(out)
     
     select case ( out%modl ) 
 ! ** call output methods
 ! 1.
     case ("fdtd")
-       call WriteDataObjOutgplFdtd(out,ncyc)
+       call WriteDataOutObjgplFdtd(out,ncyc)
 ! 2.
 ! **
     end select
 
-    call CloseObjOutgpl(out)
+    call CloseOutObjgpl(out)
 
 
-  end subroutine WriteDataObjOutgpl
+  end subroutine WriteDataOutObjgpl
   
 !----------------------------------------------------------------------
 

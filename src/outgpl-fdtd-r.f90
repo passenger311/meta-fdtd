@@ -1,6 +1,6 @@
 !-*- F90 -*------------------------------------------------------------
 !
-!  module: outgpl-fdtd-r
+!  module: outgpl-fdtd / max3d
 !
 !  this module handles GPL output of data related to the fdtd module.
 !
@@ -54,9 +54,12 @@ module outgpl_fdtd
 
   use constant
   use strings
+  use outlist
+  use reglist
+  use buflist
   use mpiworld
   use grid  
-  use outobj
+
   use fdtd
 
   implicit none
@@ -65,20 +68,15 @@ module outgpl_fdtd
 
   ! --- Variables
 
-  real(8), allocatable :: DataGpl(:)
-  integer DataIndxGpl(MAXOBJOUT+1)
+  ! --- Types
+
+  
+  
 
   ! --- Fields
 
-  real(8), allocatable :: Eyt_r(:,:,:)
-  real(8), allocatable :: Eyt_i(:,:,:)
-  real(8), allocatable :: Hxt_r(:,:,:)
-  real(8), allocatable :: Hxt_i(:,:,:)
-
-  real(8), allocatable :: Ext_r(:,:,:)
-  real(8), allocatable :: Ext_i(:,:,:)
-  real(8), allocatable :: Hyt_r(:,:,:)
-  real(8), allocatable :: Hyt_i(:,:,:)
+  real(8), allocatable, dimension(:,:) :: fdtdoutbuf
+  integer DataIndxGpl(MAXOUTLIST+1)
 
 
 contains
@@ -87,15 +85,21 @@ contains
   subroutine InitializeOutgplFdtd
 
     integer :: i, n, err
+
+
+    ! read from file
+
+
+    ! and allocate additional data if necessary
     
     i = 1
     DataIndxGpl(1)=1
-    do n=1, numobjout
-       if( objout(n)%Mode(1:2) .eq. 'En' .or. &
-            objout(n)%Mode(1:2) .eq. 'Px' .or. &
-            objout(n)%Mode(1:2) .eq. 'Py' .or. &
-            objout(n)%Mode(1:2) .eq. 'Pz' ) then
-          i = i + objout(n)%NumNodes               
+    do n=1, numoutlist
+       if( outlist(n)%Mode(1:2) .eq. 'En' .or. &
+            outlist(n)%Mode(1:2) .eq. 'Px' .or. &
+            outlist(n)%Mode(1:2) .eq. 'Py' .or. &
+            outlist(n)%Mode(1:2) .eq. 'Pz' ) then
+          i = i + outlist(n)%NumNodes               
        endif
        DataIndxGpl(n+1)=i
     enddo
@@ -115,7 +119,7 @@ contains
   end subroutine FinalizeOutgplFdtd
 
 
-  subroutine WritDataObjOutgplFdtd(out, ncyc)
+  subroutine WritDataOutObjgplFdtd(out, ncyc)
 
     type (T_OUT) :: out
     integer :: ncyc
@@ -273,9 +277,9 @@ contains
     type (T_OUT) :: out
 
     ! Loop over all outgpl units
-    do n=1, numobjout
+    do n=1, numoutlist
 
-       out = objout(n)
+       out = outlist(n)
 
        ! outgpl ?
        if(mod(ncyc, out%dn) .eq. 0 .and. &

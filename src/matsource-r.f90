@@ -107,7 +107,7 @@ contains
 ! read regobj information
     read(funit,*) string
     if ( string .eq. "(REGION" ) then
-       call ReadObjReg(reg, funit)
+       call ReadRegObj(reg, funit)
        mat%regidx = reg%idx
     else
        write(6,*) "!ERROR NO REGION DEFINED: ReadObjMatSource"
@@ -157,7 +157,7 @@ contains
     integer :: p,i,j,k,il,jl,kl
     real(kind=8) :: es
 
-    reg = objregobj(mat%regidx)
+    reg = reglistobj(mat%regidx)
 
     es = 1.0
 
@@ -220,7 +220,7 @@ contains
     integer :: p,i,j,k,il,jl,kl
     real(kind=8) :: es
 
-    reg = objregobj(mat%regidx)
+    reg = reglistobj(mat%regidx)
 
     es = 1.0
 

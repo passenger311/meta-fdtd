@@ -23,8 +23,9 @@ endif
 
 SRC= strings.f90\
 constant.f90\
-regobj.f90\
-outobj.f90\
+reglist.f90\
+buflist.f90\
+outlist.f90\
 mpiworld.F90\
 grid-$(ENGINE).f90\
 fdtd-$(ENGINE).f90\
@@ -41,8 +42,9 @@ max3d.F90
 
 FOBJ= strings.o\
 constant.o\
-regobj.o\
-outobj.o\
+reglist.o\
+buflist.o\
+outlist.o\
 mpiworld.o\
 grid-$(ENGINE).o\
 fdtd-$(ENGINE).o\
