@@ -34,7 +34,6 @@ module buflist
 
   integer, parameter :: MAXBUFOBJ = 1000
 
-  integer, parameter :: INTEGER_BUF = 1
   integer, parameter :: REAL_BUF = 2
   integer, parameter :: COMPLEX_BUF = 3
 
@@ -49,10 +48,8 @@ module buflist
      integer, pointer, dimension(:) :: idata
      real(kind=8), pointer, dimension(:) :: rdata
      complex(kind=8), pointer, dimension(:) :: cdata
-
      integer :: size
      integer :: regidx
-
      integer :: idx
 
   end type T_BUF
@@ -103,8 +100,8 @@ contains
     numbufobj = numbufobj + 1
     buf = bufobj(numbufobj)
     select case (type) 
-    case(INTEGER_BUF) 
-       allocate(buf%idata(buf%size), stat=err)
+!    case(INTEGER_BUF) 
+!       allocate(buf%idata(buf%size), stat=err)
     case(REAL_BUF) 
        allocate(buf%rdata(buf%size), stat=err)
     case(COMPLEX_BUF) 
@@ -125,8 +122,8 @@ contains
     type(T_BUF) :: buf
 
     select case (buf%type) 
-    case(INTEGER_BUF) 
-       deallocate(buf%idata)
+ !   case(INTEGER_BUF) 
+ !      deallocate(buf%idata)
     case(REAL_BUF) 
        deallocate(buf%rdata)
     case(COMPLEX_BUF) 

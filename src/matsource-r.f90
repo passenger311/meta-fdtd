@@ -8,11 +8,11 @@
 !
 !    InitializeMatSource
 !    FinalizeMatSource
-!    ReadObjMatSource
+!    ReadMatSourceObj
 !    StepEMatSource
 !    StepHMatSource
-!    StepEObjMatSource
-!    StepHObjMatSource
+!    StepEMatSourceObj
+!    StepHMatSourceObj
 !
 !----------------------------------------------------------------------
 
@@ -83,7 +83,7 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine ReadObjMatSource(funit)
+  subroutine ReadMatSourceObj(funit)
 
     integer:: funit
     character(len=STRLNG) :: file, string
@@ -101,10 +101,11 @@ contains
     read(funit,*) mat%a0          ! gaussian start value as fraction of peak
     read(funit,*) mat%ampl        ! amplitude = 1.
     read(funit,*) mat%cw          ! go over to cw after peak
-    read(funit,*) mat%esource     ! electric field source (or magnetic)
+    read(funit,*) mat%esource     ! electric/magnetic field source
     read(funit,*) mat%vec(1),mat%vec(2), mat%vec(3) ! vector components
 
 ! read regobj information
+
     read(funit,*) string
     if ( string .eq. "(REGION" ) then
        call ReadRegObj(reg, funit)
@@ -128,7 +129,7 @@ contains
     mat%npeak =  sqrt ( - log(mat%a0) / mat%gamma**2 )
     mat%nmax = mat%npeak
 
-  end subroutine ReadObjMatSource
+  end subroutine ReadMatSourceObj
 
 !----------------------------------------------------------------------
  
@@ -139,7 +140,7 @@ contains
 
     do n = 1, numobjmatsource
        
-       call StepEObjMatSource(objmatsource(n),ncyc)
+       call StepEMatSourceObj(objmatsource(n),ncyc)
 
     end do
 
@@ -148,15 +149,16 @@ contains
 !----------------------------------------------------------------------
 
 
-  subroutine StepEObjMatSource(mat,ncyc)
+  subroutine StepEMatSourceObj(mat,ncyc)
 
     type(T_MATSOURCE) :: mat
     integer :: ncyc
     
-    type(T_REGION) :: reg
-    integer :: p,i,j,k,il,jl,kl
     real(kind=8) :: es
+    M4_REGLOOP_DECL(reg,p,i,j,k,w)
 
+    if ( .not. mat%esource ) return
+    
     reg = reglistobj(mat%regidx)
 
     es = 1.0
@@ -164,33 +166,15 @@ contains
     if ( mat%cw .and. ncyc .lt. mat%nmax ) then
        es =  exp ( - mat%gamma**2 * ( 1.0 * ncyc - mat%npeak )**2 )
     endif
-    
-    ! *** There is a bit of magic in this loop structure. Note, that either 
-    ! (di,dj,dk) = (ie-is+1, je-js+1, ke-ks+1) or reg%nump = 1. This means,
-    ! that this loop either acts an indirect or a masked loop. ***
-    do il = reg%is, reg%ie, reg%di
-       do jl = reg%js, reg%je, reg%dj
-          do kl = reg%ks, reg%ke, reg%dk
-             do p = 1, reg%nump
-                if ( reg%islist ) then
-                   i = reg%i(p)
-                   j = reg%j(p)
-                   k = reg%k(p)
-                else
-                   i = il
-                   j = jl
-                   k = kl
-                end if
-                Ex(i,j,k) = Ex(i,j,k) + mat%vec(1) * es  * reg%mask(i,j,k) * mat%ampl * cos(mat%omega0*ncyc) * DT
-                Ey(i,j,k) = Ey(i,j,k) + mat%vec(2) * es  * reg%mask(i,j,k) * mat%ampl * cos(mat%omega0*ncyc) * DT
-                Ez(i,j,k) = Ez(i,j,k) + mat%vec(3) * es  * reg%mask(i,j,k) * mat%ampl * cos(mat%omega0*ncyc) * DT
+
+    M4_REGLOOP_EXPR(reg,p,i,j,k,w,
+     
+                Ex(i,j,k) = Ex(i,j,k) + mat%vec(1) * es  * mat%ampl * cos(mat%omega0*ncyc) * DT
+                Ey(i,j,k) = Ey(i,j,k) + mat%vec(2) * es  * mat%ampl * cos(mat%omega0*ncyc) * DT
+                Ez(i,j,k) = Ez(i,j,k) + mat%vec(3) * es  * mat%ampl * cos(mat%omega0*ncyc) * DT
+    )            
                 
-             end do
-          end do
-       end do
-    end do
-       
-  end subroutine StepEObjMatSource
+  end subroutine StepEMatSourceObj
 
 !----------------------------------------------------------------------
 
@@ -201,7 +185,7 @@ contains
 
     do n = 1, numobjmatsource
        
-       call StepHObjMatSource(objmatsource(n),ncyc)
+       call StepHMatSourceObj(objmatsource(n),ncyc)
 
     end do
 
@@ -211,14 +195,15 @@ contains
 !----------------------------------------------------------------------
 
 
-  subroutine StepHObjMatSource(mat,ncyc)
+  subroutine StepHMatSourceObj(mat,ncyc)
 
     type(T_MATSOURCE) :: mat
     integer :: ncyc
     
-    type(T_REGION) :: reg
-    integer :: p,i,j,k,il,jl,kl
     real(kind=8) :: es
+    M4_REGLOOP_DECL(reg,p,i,j,k,w)
+
+    if ( mat%esource ) return
 
     reg = reglistobj(mat%regidx)
 
@@ -228,39 +213,21 @@ contains
        es =  exp ( - mat%gamma**2 * ( 1.0 * ncyc - mat%npeak )**2 )
     endif
     
-    ! *** There is a bit of magic in this loop structure. Note, that either 
-    ! (di,dj,dk) = (ie-is+1, je-js+1, ke-ks+1) or reg%nump = 1. This means,
-    ! that this loop either acts an indirect or a masked loop ***
-    do il = reg%is, reg%ie, reg%di
-       do jl = reg%js, reg%je, reg%dj
-          do kl = reg%ks, reg%ke, reg%dk
-             do p = 1, reg%nump
-                if ( reg%islist ) then
-                   i = reg%i(p)
-                   j = reg%j(p)
-                   k = reg%k(p)
-                else
-                   i = il
-                   j = jl
-                   k = kl
-                end if
+    M4_REGLOOP_EXPR(reg,p,i,j,k,w,
                 
-                Hx(i,j,k) = Hx(i,j,k) + mat%vec(1) * es  * reg%mask(i,j,k) * mat%ampl * cos(mat%omega0*ncyc) * DT
-                Hy(i,j,k) = Hy(i,j,k) + mat%vec(2) * es  * reg%mask(i,j,k) * mat%ampl * cos(mat%omega0*ncyc) * DT
-                Hz(i,j,k) = Hz(i,j,k) + mat%vec(3) * es  * reg%mask(i,j,k) * mat%ampl * cos(mat%omega0*ncyc) * DT
+                Hx(i,j,k) = Hx(i,j,k) + mat%vec(1) * es  * mat%ampl * cos(mat%omega0*ncyc) * DT
+                Hy(i,j,k) = Hy(i,j,k) + mat%vec(2) * es  * mat%ampl * cos(mat%omega0*ncyc) * DT
+                Hz(i,j,k) = Hz(i,j,k) + mat%vec(3) * es  * mat%ampl * cos(mat%omega0*ncyc) * DT
                 
-             end do
-          end do
-       end do
-    end do
-       
-  end subroutine StepHObjMatSource
+    )
+      
+  end subroutine StepHMatSourceObj
 
 
 !----------------------------------------------------------------------
 
 
-  subroutine EchoObjMatSource(mat)
+  subroutine EchoMatSourceObj(mat)
   
     type(T_MATSOURCE) :: mat
 
@@ -272,7 +239,7 @@ contains
     write(6,*) "npeak = ", mat%npeak
     
  
-  end subroutine EchoObjMatSource
+  end subroutine EchoMatSourceObj
   
 !----------------------------------------------------------------------
 

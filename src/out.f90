@@ -80,7 +80,7 @@ contains
 ! ** call output write header methods
 ! 1.
        case ( "GPL" ) 
-          call WriteHeaderOutObjgpl(outlist(n))
+          call WriteHeaderOutgplObj(outlist(n))
 ! 2.
 ! **
        case default
@@ -104,7 +104,7 @@ contains
 ! ** call output write data methods
 ! 1.
        case ( "GPL" ) 
-          call PrepDataOutObjgpl(outlist(n), ncyc)
+          call PrepDataOutgplObj(outlist(n), ncyc)
 ! 2.
 ! **
        case default
@@ -128,7 +128,7 @@ contains
 ! ** call output write data methods
 ! 1.
        case ( "GPL" ) 
-          call WriteDataOutObjgpl(outlist(n), ncyc)
+          call WriteDataOutgplObj(outlist(n), ncyc)
 ! 2.
 ! **
        case default

@@ -32,9 +32,9 @@ else
  $2 = 0
  if ( $1%isbox ) then
   $6 = 1.0
-  do $3 = $1%is, $1%ie, $1%di
+  do $5 = $1%ks, $1%ke, $1%dk
    do $4 = $1%js, $1%je, $1%dj
-    do $5 = $1%ks, $1%ke, $1%dk
+    do $3 = $1%is, $1%ie, $1%di
      $2 = $2 + 1	     
 
      $7
@@ -45,9 +45,9 @@ else
 
  else 
 
-  do $3 = $1%is, $1%ie, $1%di
+  do $5 = $1%ks, $1%ke, $1%dk
    do $4 = $1%js, $1%je, $1%dj
-    do $5 = $1%ks, $1%ke, $1%dk
+    do $3 = $1%is, $1%ie, $1%di
      if ( $1%mask(i,j,k) .gt. 0 ) then
       $6 = $1%val($1%mask(i,j,k)) 
       $2 = $2 + 1	     

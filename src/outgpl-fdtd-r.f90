@@ -10,7 +10,7 @@
 !
 !----------------------------------------------------------------------
 
-! ---------------------------------------------------------------------
+ ! ---------------------------------------------------------------------
 !     Supported Data: Ex, Ey, Ez, Hx, Hy, Hz, Di, Px, Py, Pz, En
 ! ---------------------------------------------------------------------
 !     Contained Subroutines:
@@ -58,68 +58,30 @@ module outgpl_fdtd
   use reglist
   use buflist
   use mpiworld
-  use grid  
-
+  use grid 
   use fdtd
 
   implicit none
   save
 
-
-  ! --- Variables
-
-  ! --- Types
-
-  
-  
-
-  ! --- Fields
-
-  real(8), allocatable, dimension(:,:) :: fdtdoutbuf
-  integer DataIndxGpl(MAXOUTLIST+1)
-
-
 contains
 
+!----------------------------------------------------------------------
 
   subroutine InitializeOutgplFdtd
-
-    integer :: i, n, err
-
-
-    ! read from file
-
-
-    ! and allocate additional data if necessary
-    
-    i = 1
-    DataIndxGpl(1)=1
-    do n=1, numoutlist
-       if( outlist(n)%Mode(1:2) .eq. 'En' .or. &
-            outlist(n)%Mode(1:2) .eq. 'Px' .or. &
-            outlist(n)%Mode(1:2) .eq. 'Py' .or. &
-            outlist(n)%Mode(1:2) .eq. 'Pz' ) then
-          i = i + outlist(n)%NumNodes               
-       endif
-       DataIndxGpl(n+1)=i
-    enddo
-    allocate(DataGpl(1:i),STAT=err)
-    if(err .ne. 0) then
-       write(6,*) '!ERROR OUT OF MEMORY: InitOutgplFdtd/outgpl-fdtd'
-       stop   
-    endif
     
   end subroutine InitializeOutgplFdtd
 
+!----------------------------------------------------------------------
 
   subroutine FinalizeOutgplFdtd
 
-    deallocate(DataOut)
-
   end subroutine FinalizeOutgplFdtd
 
+!----------------------------------------------------------------------
 
-  subroutine WritDataOutObjgplFdtd(out, ncyc)
+
+  subroutine WriteDataOutgplFdtdObj(out, ncyc)
 
     type (T_OUT) :: out
     integer :: ncyc
@@ -410,3 +372,9 @@ contains
   end subroutine LoadEn
 
 end module outgpl_fdtd
+
+!
+! Authors:  J.Hamm 
+! Modified: 4/12/2007
+!
+!======================================================================
