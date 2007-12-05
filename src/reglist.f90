@@ -52,86 +52,9 @@
 !
 !  In AUTO mode (default) either LIST or MASK mode is chosen depending on
 !  which one has the lower memory usage. 
-!
-!  The following hyper - loop structure allows to operate on the points of 
-!  a regobj independent of whether the regobj is in LIST or MASK mode:
-!
-!  do i = reg%is, reg%ie, reg%di
-!    do j = reg%js, reg%je, reg%dj
-!      do k = reg%ks, reg%ke, reg%dk
-!        do p = 1, reg%pe
 ! 
-!        ! load coordinates
-!        if ( reg%islist ) then
-!           x = reg%i(p)
-!           y = reg%j(p)
-!           z = reg%k(p)
-!           wi = p
-!        else
-!           x = i 
-!           y = j
-!           z = k
-!           if ( reg%isbox ) 
-!              wi = 1
-!           else 
-!              wi = reg%mask(i,j,k)
-!           endif
-!        endif
-!
-!        ! load weight
-!        w = reg%val(wi)
-!
-!        if ( wi .gt. 0 ) then
-!
-!           A(x,y,z)  = w * B(x,y,z) ! loop core
-!
-!        endif 
-!
-!        enddo
-!      enddo
-!    enddo
-!   enddo
-!
-! This works because in list mode, the outer coordinate loops contract to
-! a single iteration each. In mask mode the pe=1 and the inner loop
-! collapses to 1 iteration. A good optimizer should remove the "if" statement
-! from inside the loop by creating alternate code paths.
-!
-! Of course, it can be also written as: 
-!
-! if ( reg%islist ) then
-! 
-!   do p = 1, reg%pe
-!
-!     x = reg%i(p)
-!     y = reg%j(p)
-!     z = reg%k(p)
-!     w = reg%val(p)
-!
-!     ! loop core
-!
-!   enddo
-!
-! else 
-!
-!   do x = reg%is, reg%ie, reg%di
-!     do y = reg%js, reg%je, reg%dj
-!       do z = reg%ks, reg%ke, reg%dk
-!
-!          wi = reg%mask(x,y,z) 
-!
-!          if ( wi .gt. 0 ) then
-!
-!            w = reg%val(wi)
-!
-!            ! loop core
-!
-!          endif
-! 
-!        enddo
-!      enddo
-!    enddo
-! endif
+!  A loop over a region should always utilize the M4 macros as defined in
+!  reglist.m4.
 
 
 module reglist
@@ -151,27 +74,17 @@ module reglist
 
   type T_REG
 
-     ! logical
-     logical :: isbox, islist
-
-     ! index
-     integer :: idx
-
-     ! bounding box
-     integer :: is, ie, di
-     integer :: js, je, dj
-     integer :: ks, ke, dk
-
-     ! number of points / nodes
-
-     integer :: numnodes
-
-     ! is the box all filled or do we have a point list?
-
-     integer, pointer, dimension(:,:,:) :: mask
-     integer, pointer, dimension(:) :: i, j, k
-     real*8, pointer, dimension(:) :: val
-     integer :: ps, pe
+     logical :: isbox = .false.                 ! is it a box?
+     logical :: islist = .false.                ! is it a list?
+     integer :: idx = 0                         ! this objects index
+     integer :: is = 0, ie = 0, di = 0          ! bounding box start,end
+     integer :: js = 0, je = 0, dj = 0
+     integer :: ks = 0, ke = 0, dk = 0
+     integer :: numnodes                        ! number of points in region
+     integer, pointer, dimension(:,:,:) :: mask ! mark set points
+     integer, pointer, dimension(:) :: i, j, k  ! coordinate fields
+     real(kind=8), pointer, dimension(:) :: val ! weight field
+     integer :: ps = 0, pe = 0                  ! linear list start, end
 
   end type T_REG
 

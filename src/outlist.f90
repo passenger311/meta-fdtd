@@ -34,30 +34,16 @@ module outlist
 
   type T_OUT 
 
-     ! output format, eg "GPL"
-     character(len=STRLNG) :: fmt
-
-     ! filename
-     character(len=STRLNG) :: filename
-
-     ! output module
-     character(len=STRLNG) :: modl
-
-     ! output function and mode
-     character(len=10) :: fn
-     character(len=10) :: mode
-
-     ! time slices
-     integer ns, ne, dn
-
-     ! index to spatial regobj
-     integer :: regidx
-
-     ! number of points / nodes
-     integer :: numnodes
-
-     ! index
-     integer :: idx
+     character(len=STRLNG) :: fmt      ! output format, eg "GPL"
+     character(len=STRLNG) :: filename ! filename
+     character(len=20) :: modl         ! output module
+     character(len=20) :: fn           ! output function
+     character(len=20) :: mode         ! output mode
+     integer :: ns, ne, dn             ! time frame
+     integer :: numnodes = 0           ! number of points / nodes
+     integer :: regidx = 0             ! region index
+     integer :: bufidx = 0             ! buffer index
+     integer :: idx = 0                ! this objects index
 
   end type T_OUT
 
@@ -71,7 +57,7 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine ReadOutObj(out, funit)
+  subroutine ReadOutObj(out, modl, funit)
 
     integer :: funit
     type(T_OUT) :: out
@@ -84,13 +70,12 @@ contains
 
     out = CreateOutObj()
     ! read output information
-    read(funit,*) fmt, modl        ! format and module
     read(funit,*) filename         ! filename
-    read(funit,*) fn, mode         ! function and mode
+    read(funit,*) fmt, fn, mode    ! format, function and mode
     read(funit,*) ns, ne, dn       ! time frame
     read(funit,*) string
     ! consume regobj start string
-    if ( string .ne. "(regobj" ) then
+    if ( string .ne. "(REG" ) then
        write(STDERR,*) "!ERROR NO REGION DEFINED: ReadOutObj/out"
        stop
     end if
@@ -100,7 +85,7 @@ contains
     call SetOutObj(out, fmt, modl, filename, fn, mode, ns, ne, dn, reg)
     ! consume the closing ")"
     read(funit,*) string
-    if ( string .ne. "(regobj" ) then
+    if ( string .ne. ")" ) then
        write(STDERR,*) "!ERROR (OUT LACKS ) TERMINATOR: ReadOutObj/out"
        stop
     end if

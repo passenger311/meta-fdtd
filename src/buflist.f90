@@ -33,7 +33,6 @@ module buflist
   ! --- Constants
 
   integer, parameter :: MAXBUFOBJ = 1000
-
   integer, parameter :: REAL_BUF = 2
   integer, parameter :: COMPLEX_BUF = 3
 
@@ -43,14 +42,13 @@ module buflist
 
   type T_BUF
 
-     integer :: type
-
-     integer, pointer, dimension(:) :: idata
-     real(kind=8), pointer, dimension(:) :: rdata
-     complex(kind=8), pointer, dimension(:) :: cdata
-     integer :: size
-     integer :: regidx
-     integer :: idx
+     integer :: type = 0                              ! buffer data type
+     integer, pointer, dimension(:) :: idata          ! integer buffer
+     real(kind=8), pointer, dimension(:) :: rdata     ! real buffer
+     complex(kind=8), pointer, dimension(:) :: cdata  ! complex buffer
+     integer :: size = 0                              ! size of buffer
+     integer :: regidx = 0                            ! region index
+     integer :: idx = 0                               ! this objects index
 
   end type T_BUF
 
