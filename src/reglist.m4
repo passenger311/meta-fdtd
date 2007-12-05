@@ -1,4 +1,10 @@
-define(`M4_REG_LOOP',`
+define(`M4_REGLOOP_DECL',`
+ type(T_REG) :: $1
+ integer :: $2,$3,$4,$5
+ real(kind=8) :: $6
+')
+
+define(`M4_REGLOOP_EXPR',`
 ! --- START M4: REG_LOOP
 ! 1 = reg ( T_REG )
 ! 2 = p ( integer )

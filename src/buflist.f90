@@ -142,12 +142,10 @@ contains
     type(T_BUF) :: buf
     real(kind=8), dimension(:,:,:) :: field
 
-    type(T_REG) :: reg
-    integer :: i,j,k,p
-    real(kind=8) :: w
-
-    M4_REG_LOOP(reg,p,i,j,k,w,
-     `buf%rdata(p) = field(i,j,k)'
+    M4_REGLOOP_DECL(reg,p,i,j,k,w)  
+    reg = regobj(buf%regidx)
+    M4_REGLOOP_EXPR(reg,p,i,j,k,w,
+      buf%rdata(p) = field(i,j,k)
     )
 
   end subroutine FillRealBufObj
@@ -159,12 +157,10 @@ contains
     type(T_BUF) :: buf
     complex(kind=8), dimension(:,:,:) :: field
 
-    type(T_REG) :: reg
-    integer :: i,j,k,p
-    real(kind=8) :: w
-
-    M4_REG_LOOP(reg,p,i,j,k,w,
-     `buf%cdata(p) = field(i,j,k)'
+    M4_REGLOOP_DECL(reg,p,i,j,k,w)  
+    reg = regobj(buf%regidx)
+    M4_REGLOOP_EXPR(reg,p,i,j,k,w,
+      buf%cdata(p) = field(i,j,k)
     )
 
   end subroutine FillComplexBufObj
@@ -176,12 +172,10 @@ contains
     type(T_BUF) :: buf
     real(kind=8), dimension(:,:,:) :: field
 
-    type(T_REG) :: reg
-    integer :: i,j,k,p
-    real(kind=8) :: w
-
-    M4_REG_LOOP(reg,p,i,j,k,w,
-     `buf%rdata(p) = buf%rdata(p) + field(i,j,k)'
+    M4_REGLOOP_DECL(reg,p,i,j,k,w)  
+    reg = regobj(buf%regidx)
+    M4_REGLOOP_EXPR(reg,p,i,j,k,w,
+      buf%rdata(p) = buf%rdata(p) + field(i,j,k)
     )
 
   end subroutine AddRealBufObj
@@ -193,12 +187,10 @@ contains
     type(T_BUF) :: buf
     complex(kind=8), dimension(:,:,:) :: field
 
-    type(T_REG) :: reg
-    integer :: i,j,k,p
-    real(kind=8) :: w
-
-    M4_REG_LOOP(reg,p,i,j,k,w,
-     `buf%cdata(p) = buf%cdata(p) + field(i,j,k)'
+    M4_REGLOOP_DECL(reg,p,i,j,k,w)  
+    reg = regobj(buf%regidx)
+    M4_REGLOOP_EXPR(reg,p,i,j,k,w,
+      buf%cdata(p) = buf%cdata(p) + field(i,j,k)
     )
 
   end subroutine AddComplexBufObj
@@ -210,12 +202,10 @@ contains
     type(T_BUF) :: buf
     real(kind=8) :: val
 
-    type(T_REG) :: reg
-    integer :: i,j,k,p
-    real(kind=8) :: w
-
-    M4_REG_LOOP(reg,p,i,j,k,w,
-     `buf%rdata(p) = val'
+    M4_REGLOOP_DECL(reg,p,i,j,k,w)  
+    reg = regobj(buf%regidx)
+    M4_REGLOOP_EXPR(reg,p,i,j,k,w,
+      buf%rdata(p) = val
     )
 
   end subroutine SetRealBufObj
@@ -227,12 +217,10 @@ contains
     type(T_BUF) :: buf
     complex(kind=8) :: val
 
-    type(T_REG) :: reg
-    integer :: i,j,k,p
-    real(kind=8) :: w
-
-    M4_REG_LOOP(reg,p,i,j,k,w,
-     `buf%cdata(p) = val'
+    M4_REGLOOP_DECL(reg,p,i,j,k,w)  
+    reg = regobj(buf%regidx)
+    M4_REGLOOP_EXPR(reg,p,i,j,k,w,
+      buf%cdata(p) = val
     )
 
   end subroutine SetComplexBufObj
