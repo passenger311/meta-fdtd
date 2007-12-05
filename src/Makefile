@@ -21,6 +21,9 @@ ENGINE=r
 endif
 
 
+
+M4= m4 max3d.m4
+
 SRC= strings.f90\
 constant.f90\
 reglist.f90\
@@ -75,10 +78,16 @@ default: $(PREEXE) $(EXE)
 
 
 %.o : %.f90
-	 $(F90) $(F90FLAGS) $(INCLUDE) -c $<
+	@echo $(F90) $(F90FLAGS) $(INCLUDE) -c $<
+	@$(M4) $< >$*_m4.f90 
+	@$(F90) $(F90FLAGS) $(INCLUDE) -c $*_m4.f90 -o $*.o
+	@rm $*_m4.f90
 
 %.o : %.F90
-	 $(F90) $(F90FLAGS) $(INCLUDE) -c $<
+	@echo $(F90) $(F90FLAGS) $(INCLUDE) -c $<
+	@$(M4) $< >$*_m4.F90 
+	@$(F90) $(F90FLAGS) $(INCLUDE) -c $*_m4.F90 -o $*.o
+	@rm $*_m4.F90
 
 %.o : %.c
 	 $(CC) $(CCFLAGS) $(INCLUDE) -c $<
@@ -94,7 +103,7 @@ $(PREEXE) : $(PREOBJ)
 .PHONY: clean proper
 
 clean:
-	 rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod
+	 rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod *_m4.f90 *_m4.F90
 
 proper: clean
 	 rm -f $(EXE) $(PREEXE) *.o *.in *.out 

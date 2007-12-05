@@ -6,7 +6,13 @@
 !
 !  subs:
 !
-!  
+!  InitializeBufList
+!  FinalizeBufList
+!  CreateBufObj  
+!  DestroyBufObj
+!  FillIntegerBufObj
+!  FillRealBufObj
+!  FillComplexBufObj
 !
 !----------------------------------------------------------------------
 
@@ -134,44 +140,102 @@ contains
   subroutine FillRealBufObj(buf, field)
 
     type(T_BUF) :: buf
-    real, dimension(:,:,:) :: field
+    real(kind=8), dimension(:,:,:) :: field
+
     type(T_REG) :: reg
-    integer :: i,j,k,p,wi
-    
-    reg = regobj(buf%regidx)
-    
-    if ( reg%islist ) then
- 
-       do p = reg%ps, reg%pe
-          buf%rdata(p) = field(reg%i(p),reg%j(p),reg%k(p))
-       enddo
-       
-    else 
-       
-       p = 0
-       do i = reg%is, reg%ie, reg%di
-          do j = reg%js, reg%je, reg%dj
-             do k = reg%ks, reg%ke, reg%dk
-                if ( reg%isbox ) then
-                   wi = 1
-                else
-                   wi = reg%mask(i,j,k) 
-                endif
-                
-                if ( wi .gt. 0 ) then
-                   p = p+1
-                   buf%rdata(p) = field(i,j,k)
-                endif
-                
-             enddo
-          enddo
-       enddo
+    integer :: i,j,k,p
+    real(kind=8) :: w
 
-    endif
-
+    M4_REG_LOOP(reg,p,i,j,k,w,
+     `buf%rdata(p) = field(i,j,k)'
+    )
 
   end subroutine FillRealBufObj
 
+!----------------------------------------------------------------------
+
+  subroutine FillComplexBufObj(buf, field)
+
+    type(T_BUF) :: buf
+    complex(kind=8), dimension(:,:,:) :: field
+
+    type(T_REG) :: reg
+    integer :: i,j,k,p
+    real(kind=8) :: w
+
+    M4_REG_LOOP(reg,p,i,j,k,w,
+     `buf%cdata(p) = field(i,j,k)'
+    )
+
+  end subroutine FillComplexBufObj
+
+!----------------------------------------------------------------------
+
+  subroutine AddRealBufObj(buf, field)
+
+    type(T_BUF) :: buf
+    real(kind=8), dimension(:,:,:) :: field
+
+    type(T_REG) :: reg
+    integer :: i,j,k,p
+    real(kind=8) :: w
+
+    M4_REG_LOOP(reg,p,i,j,k,w,
+     `buf%rdata(p) = buf%rdata(p) + field(i,j,k)'
+    )
+
+  end subroutine AddRealBufObj
+
+!----------------------------------------------------------------------
+
+  subroutine AddComplexBufObj(buf, field)
+
+    type(T_BUF) :: buf
+    complex(kind=8), dimension(:,:,:) :: field
+
+    type(T_REG) :: reg
+    integer :: i,j,k,p
+    real(kind=8) :: w
+
+    M4_REG_LOOP(reg,p,i,j,k,w,
+     `buf%cdata(p) = buf%cdata(p) + field(i,j,k)'
+    )
+
+  end subroutine AddComplexBufObj
+
+!----------------------------------------------------------------------
+
+  subroutine SetRealBufObj(buf, val)
+
+    type(T_BUF) :: buf
+    real(kind=8) :: val
+
+    type(T_REG) :: reg
+    integer :: i,j,k,p
+    real(kind=8) :: w
+
+    M4_REG_LOOP(reg,p,i,j,k,w,
+     `buf%rdata(p) = val'
+    )
+
+  end subroutine SetRealBufObj
+
+!----------------------------------------------------------------------
+
+  subroutine SetComplexBufObj(buf, val)
+
+    type(T_BUF) :: buf
+    complex(kind=8) :: val
+
+    type(T_REG) :: reg
+    integer :: i,j,k,p
+    real(kind=8) :: w
+
+    M4_REG_LOOP(reg,p,i,j,k,w,
+     `buf%cdata(p) = val'
+    )
+
+  end subroutine SetComplexBufObj
 
 
 !----------------------------------------------------------------------

@@ -1,0 +1,1 @@
+include(`reglist.m4')
