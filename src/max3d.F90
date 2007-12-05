@@ -1,6 +1,6 @@
 !-*- F90 -*------------------------------------------------------------
 !
-!  program: max3d
+!  program: max3d / max3d
 !
 !  main program
 !
@@ -43,8 +43,8 @@ program max3d
   ! --- comms time measurement
 
 #if MPI
-  double precision :: tt
-  double precision :: time_waited (2)
+  real(kind=8) :: tt
+  real(kind=8) :: time_waited (2)
   time_waited = 0
 #endif /* MPI */
 
@@ -79,7 +79,7 @@ program max3d
   end if
 #endif /* MPE_LOG */
 
-  do l=0, numproc-1  ! sort outgpl
+  do l=0, numproc-1
 
 #if MPI
      call MPI_BARRIER(MPI_COMM_WORLD,mpierr)
@@ -103,7 +103,7 @@ program max3d
         call InitializeUPML
         write(6,*) '* -> InitializeMat'
         call InitializeMat
-        write(6,*) '* -> InitializeOut'
+        write(6,*) '* -> InitializeOut'        !
         call InitializeOut
         write(6,*) '* -> WriteHeaderOut'
         call WriteHeaderOut
@@ -112,9 +112,9 @@ program max3d
 
   end do
 
-  mpisize=(IMAX-IMIN+1)*(JMAX-JMIN+1)  ! set mpi mpiet size
+  mpisize=(IMAX-IMIN+1)*(JMAX-JMIN+1)  ! set mpisize
  
-  do l=0, numproc-1  ! sort outgpl
+  do l=0, numproc-1
 
 #if MPI
      call MPI_BARRIER(MPI_COMM_WORLD,mpierr)
@@ -236,7 +236,7 @@ program max3d
      call MPE_LOG_EVENT(16,"StepHMat",mpierr) 
 #endif /* MPE_LOG */
 
-     call PrepDataOut(ncyc)
+     call LoadDataOut(ncyc) ! buffer output data from this half-step
 
 
 ! ---------------------------- WAIT H ---------------------------------
@@ -379,7 +379,7 @@ program max3d
      call MPE_LOG_EVENT(18,"StepEMat",mpierr) 
 #endif /* MPE_LOG */
 
-     call WriteDataOut(ncyc)
+     call WriteDataOut(ncyc) ! write output data after full-step
 
 ! --------------------------- WAIT E ----------------------------------
 
@@ -437,7 +437,7 @@ program max3d
   call MPI_BARRIER(MPI_COMM_WORLD,mpierr)
 #endif /* MPI */
 
-  do l=0, numproc-1  ! sort outgpl
+  do l=0, numproc-1
 
 #if MPI
      call MPI_BARRIER(MPI_COMM_WORLD,mpierr)

@@ -44,25 +44,48 @@ contains
 
   subroutine InitializeOut
 
-    numoutlist = 0
+    integer :: n
 
-! ** call output initialize methods
+    do n=1, numoutlist
+       
+       select case ( outlist(n)%fmt ) 
+! ** call output buffer preparation
 ! 1.
-    call InitializeOutgpl
+       case ( "GPL" ) 
+          call InitializeOutgplObj(out)
 ! 2.
 ! **
+       case default
+          write(STDERR,*) "!ERROR UNDEFINED OUTPUT FORMAT: CloseOut/out"
+          stop
+       end select
+
+    enddo
 
   end subroutine InitializeOut
+
 
 !----------------------------------------------------------------------
 
   subroutine FinalizeOut
 
-! ** call output finalize methods
+    integer :: n
+
+    do n=1, numoutlist
+       
+       select case ( outlist(n)%fmt ) 
+! ** call output buffer preparation
 ! 1.
-    call FinalizeOutgpl
+       case ( "GPL" ) 
+          call FinalizeOutgplObj(out)
 ! 2.
 ! **
+       case default
+          write(STDERR,*) "!ERROR UNDEFINED OUTPUT FORMAT: CloseOut/out"
+          stop
+       end select
+
+    enddo
 
   end subroutine FinalizeOut
 

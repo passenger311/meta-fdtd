@@ -6,8 +6,8 @@
 !
 !  subs:
 !
-!  InitializeOutgpl
-!  FinalizeOutgpl
+!  InitializeOutgplObj
+!  FinalizeOutgplObj
 !  OpenOutgplObj
 !  CloseOutgplObj
 !  WriteHeaderOutgplObj
@@ -42,27 +42,39 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine InitializeOutgpl
+  subroutine InitializeOutgplObj(out)
 
-! ** call output initialize methods
+    type(T_OUT) :: out
+
+    select case ( out%modl ) 
+! ** call output initialization methods
 ! 1.
-    call InitializeOutgplFdtd
+    case ("fdtd")
+       call  InitializeOutgplFdtdObj(out)
 ! 2.
 ! **
+    end select
 
-  end subroutine InitializeOutgpl
+  end subroutine InitializeOutgplObj
+
 
 !----------------------------------------------------------------------
 
-  subroutine FinalizeOutgpl
+  subroutine FinalizeOutgplObj(out)
 
-! ** call output finalize methods
+    type(T_OUT) :: out
+
+    select case ( out%modl ) 
+! ** call output finalization methods
 ! 1.
-    call InitializeOutgplFdtd
+    case ("fdtd")
+      call FinalizeOutgplFdtdObj(out)
 ! 2.
 ! **
+    end select
 
   end subroutine FinalizeOutgpl
+
 
 !----------------------------------------------------------------------
 
@@ -108,9 +120,10 @@ contains
 
   end subroutine WriteHeaderOutgplObj
 
+
 !----------------------------------------------------------------------
 
-  subroutine PrepDataOutgplObj(out, ncyc)
+  subroutine LoadDataOutgplObj(out, ncyc)
 
     type(T_OUT) :: out
     integer :: ncyc
@@ -124,12 +137,12 @@ contains
 ! ** call output methods
 ! 1.
     case ("fdtd")
-       call PrepDataOutgplFdtdObj(out,ncyc)
+       call LoadDataOutgplFdtdObj(out,ncyc)
 ! 2.
 ! **
     end select
 
-  end subroutine PrepDataOutgplObj
+  end subroutine LoadDataOutgplObj
 
 !----------------------------------------------------------------------
 

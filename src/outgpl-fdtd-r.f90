@@ -6,48 +6,12 @@
 !
 !  subs:
 !
-!  
+!  InitializeOutgplFdtdObj
+!  FinalizeOutgplFdtdObj
+!  LoadDataOutgplFdtdObj
+!  WriteDataOutgplFdtdObj
 !
 !----------------------------------------------------------------------
-
- ! ---------------------------------------------------------------------
-!     Supported Data: Ex, Ey, Ez, Hx, Hy, Hz, Di, Px, Py, Pz, En
-! ---------------------------------------------------------------------
-!     Contained Subroutines:
-!
-!     InitOutgplParameters
-!     WriteOutgplHeader
-!     InitOutgpl             used in max3d.f90
-!     Outgpl(ncyc)           used in max3d.f90
-!            WriteEH
-!            WriteComp
-!            WriteDi
-!            WriteData
-!     DataPrepOutgpl(ncyc)   used in max3d.f90 (between StepH and StepE)
-!     LoadPx
-!     LoadPy
-!     LoadPz
-
-! ---------------------------------------------------------------------
-
-!  outgpl mode 'abcd':
-!  ab = component(s) 'Ex', 'Ey', 'Ez', 'Hx', 'Hy','Hz','EH','Di',
-!                     'En', 'Px', 'Py', oder 'Pz'
-!  c = 'E':  one file (for all time steps)
-!  c = 'M':  multiple files
-!  d = 'R':  spatially resolved outgpl
-!  d = 'S':  spatially integrated outgpl
-
-!  Spatial and temporal localization of the components in (i,j,k,ncyc):
-!  Ex-Ez: (i+1/2,j,k,GT) - (i,j,k+1/2,GT)  
-!  Hx-Hz: (i,j+1/2,k+1/2,GT-0.5*DT) - (i+1/2,j+1/2,k,GT-0.5*DT)
-!  EH = (Ex,Ey,Ez,Hx,Hy,Hz): as above
-!  Di = diectric constant: (i,j,k)
-!  Energy En:  electric part EnE: (i,j,k,GT)
-!              magnetic part EnM: (i,j,k,GT-0.5*DT)
-!              En = EnE + EnM
-!  Px-Pz:  (i+1/2,j,k,GT-0.5*DT) - (i,j,k+1/2,GT-0.5*DT)  
-! ---------------------------------------------------------------------
 
 
 module outgpl_fdtd
@@ -68,15 +32,37 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine InitializeOutgplFdtd
-    
+  subroutine InitializeOutgplFdtdObj(out)
+
+    type (T_OUT) :: out
+
+    if ( out%fn .eq. 'Px' .or. out%fn .eq. 'Py' .or. out%fn .eq. 'Pz' .or. &
+         out%fn .eq. 'En' ) then
+
+
+       ! allocate buffers here
+
+
+    endif
+
   end subroutine InitializeOutgplFdtd
+
 
 !----------------------------------------------------------------------
 
-  subroutine FinalizeOutgplFdtd
+  subroutine FinalizeOutgplFdtdObj
+
+    type (T_OUT) :: out
+
+    if ( out%fn .eq. 'Px' .or. out%fn .eq. 'Py' .or. out%fn .eq. 'Pz' .or. &
+         out%fn .eq. 'En' ) then
+
+       ! destroy buffers here
+
+    endif
 
   end subroutine FinalizeOutgplFdtd
+
 
 !----------------------------------------------------------------------
 
