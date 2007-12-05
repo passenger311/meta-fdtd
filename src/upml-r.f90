@@ -36,7 +36,7 @@ module upml
 
   ! --- Constants
 
-  character(len=255), parameter :: pfxpml = 'pml'
+  character(len=STRLNG), parameter :: pfxpml = 'pml'
 
   ! --- Variables
 
@@ -59,8 +59,8 @@ module upml
 
   ! auxilliary B and D fields on the 6 planes E1 .. E6
 
-  real(kind=8), allocatable, dimension(:,:,:,:) :: BE1,BE2,BE3,BE4,BE5,BE6 
-  real(kind=8), allocatable, dimension(:,:,:,:) :: DE1,DE2,DE3,DE4,DE5,DE6 
+  M4FT, allocatable, dimension(:,:,:,:) :: BE1,BE2,BE3,BE4,BE5,BE6 
+  M4FT, allocatable, dimension(:,:,:,:) :: DE1,DE2,DE3,DE4,DE5,DE6 
 
 contains
 
@@ -392,9 +392,9 @@ contains
         implicit none
 
           integer is, ie, js, je, ks, ke
-          real(kind=8), dimension(1:3,is:ie,js:je,ks:ke) :: B
+          M4FT, dimension(1:3,is:ie,js:je,ks:ke) :: B
           integer i, j, k
-          real(kind=8) Bxo, Byo, Bzo, Exh, Eyh, Ezh
+          M4FT :: Bxo, Byo, Bzo, Exh, Eyh, Ezh
           real(kind=8) dtx, dty, dtz
 
           dtx = DT/SX
@@ -465,12 +465,12 @@ contains
 
       implicit none
 
-      integer is, ie, js, je, ks, ke
-      real(kind=8), dimension(1:3,is:ie,js:je,ks:ke) :: D
+      integer :: is, ie, js, je, ks, ke
+      M4FT, dimension(1:3,is:ie,js:je,ks:ke) :: D
 
       integer :: i, j, k
       real(kind=8) :: dtx, dty, dtz
-      real(kind=8) :: Dxo, Dyo, Dzo, Hxh, Hyh, Hzh    
+      M4FT :: Dxo, Dyo, Dzo, Hxh, Hyh, Hzh    
       real(kind=8) :: epsinvx, epsinvy, epsinvz
   
       dtx = DT/SX
