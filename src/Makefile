@@ -22,12 +22,11 @@ FT=r
 else
 M4FT="complex(kind=8)"
 FT=c
+F90FLAGS+= -DCMPLX
 endif
 
-ENGINE=$(FT)
 
-
-M4= m4 max3d.m4 -DM4FT=$(M4FT) 
+M4= m4 max3d.m4 -DM4_FT=$(M4FT) 
 
 SRC= strings.f90\
 constant.f90\
@@ -35,13 +34,13 @@ reglist.f90\
 buflist.f90\
 outlist.f90\
 mpiworld.F90\
-grid-$(ENGINE).f90\
-fdtd-$(ENGINE).f90\
-pec-$(ENGINE).f90\
-upml-$(ENGINE).f90\
-outgpl-fdtd-$(ENGINE).f90\
-tfsf-$(ENGINE).f90\
-matsource-$(ENGINE).f90\
+grid.f90\
+fdtd.f90\
+pec.f90\
+upml.f90\
+outgpl-fdtd.f90\
+tfsf.f90\
+matsource.f90\
 pre-obj-1.f90\
 mat.f90\
 outgpl.f90\
@@ -54,13 +53,13 @@ reglist.o\
 buflist.o\
 outlist.o\
 mpiworld.o\
-grid-$(ENGINE).o\
-fdtd-$(ENGINE).o\
-pec-$(ENGINE).o\
-upml-$(ENGINE).o\
-outgpl-fdtd-$(ENGINE).o\
-matsource-$(ENGINE).o\
-tfsf-$(ENGINE).o\
+grid.o\
+fdtd.o\
+pec.o\
+upml.o\
+outgpl-fdtd.o\
+matsource.o\
+tfsf.o\
 mat.o\
 outgpl.o\
 out.o\
@@ -69,13 +68,13 @@ max3d.o
 PREOBJ= strings.o\
 constant.o\
 mpiworld.o\
-grid-$(ENGINE).o\
-fdtd-$(ENGINE).o\
+grid.o\
+fdtd.o\
 pre-obj-1.o
 
 PREEXE = pre-obj-1
 
-EXE = max3d-$(ENGINE)
+EXE = max3d
 
 #
 default: $(PREEXE) $(EXE)

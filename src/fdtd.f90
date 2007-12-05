@@ -34,8 +34,8 @@ module fdtd
 
   ! --- Fields
 
-  M4FT, allocatable, dimension(:, :, :) :: Ex, Ey, Ez
-  M4FT, allocatable, dimension(:, :, :) :: Hx, Hy, Hz
+  M4_FT, allocatable, dimension(:, :, :) :: Ex, Ey, Ez
+  M4_FT, allocatable, dimension(:, :, :) :: Hx, Hy, Hz
   real(kind=8), allocatable, dimension(:, :, :) :: EPSINV
 
   
@@ -164,7 +164,7 @@ contains
     implicit none
     
     real(kind=8) :: dtx, dty, dtz
-    M4FT :: Exh,Eyh,Ezh
+    M4_FT :: Exh,Eyh,Ezh
     integer :: i, j, k
     
     dtx = DT/Sx
@@ -205,7 +205,7 @@ contains
     implicit none
     
     real(kind=8) :: dtx, dty, dtz
-    M4FT :: Hxh, Hyh, Hzh
+    M4_FT :: Hxh, Hyh, Hzh
     real(kind=8) :: epsinvx, epsinvy, epsinvz
     integer :: i, j, k
     

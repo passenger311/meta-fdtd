@@ -59,8 +59,8 @@ module upml
 
   ! auxilliary B and D fields on the 6 planes E1 .. E6
 
-  M4FT, allocatable, dimension(:,:,:,:) :: BE1,BE2,BE3,BE4,BE5,BE6 
-  M4FT, allocatable, dimension(:,:,:,:) :: DE1,DE2,DE3,DE4,DE5,DE6 
+  M4_FT, allocatable, dimension(:,:,:,:) :: BE1,BE2,BE3,BE4,BE5,BE6 
+  M4_FT, allocatable, dimension(:,:,:,:) :: DE1,DE2,DE3,DE4,DE5,DE6 
 
 contains
 
@@ -392,9 +392,9 @@ contains
         implicit none
 
           integer is, ie, js, je, ks, ke
-          M4FT, dimension(1:3,is:ie,js:je,ks:ke) :: B
+          M4_FT, dimension(1:3,is:ie,js:je,ks:ke) :: B
           integer i, j, k
-          M4FT :: Bxo, Byo, Bzo, Exh, Eyh, Ezh
+          M4_FT :: Bxo, Byo, Bzo, Exh, Eyh, Ezh
           real(kind=8) dtx, dty, dtz
 
           dtx = DT/SX
@@ -466,11 +466,11 @@ contains
       implicit none
 
       integer :: is, ie, js, je, ks, ke
-      M4FT, dimension(1:3,is:ie,js:je,ks:ke) :: D
+      M4_FT, dimension(1:3,is:ie,js:je,ks:ke) :: D
 
       integer :: i, j, k
       real(kind=8) :: dtx, dty, dtz
-      M4FT :: Dxo, Dyo, Dzo, Hxh, Hyh, Hzh    
+      M4_FT :: Dxo, Dyo, Dzo, Hxh, Hyh, Hzh    
       real(kind=8) :: epsinvx, epsinvy, epsinvz
   
       dtx = DT/SX
