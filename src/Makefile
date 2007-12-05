@@ -16,13 +16,18 @@ else
 include Make.$(ARCH)
 endif 
 
-ifeq ($(ENGINE),)
-ENGINE=r
+ifeq ($(CMPLX),)
+M4FT="real(kind=8)"
+FT=r
+else
+M4FT="complex(kind=8)"
+FT=c
 endif
 
+ENGINE=$(FT)
 
 
-M4= m4 max3d.m4
+M4= m4 max3d.m4 -DM4FT=$(M4FT) 
 
 SRC= strings.f90\
 constant.f90\

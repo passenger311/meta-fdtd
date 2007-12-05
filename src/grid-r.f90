@@ -107,7 +107,7 @@ contains
            stop
         end if
 
-        ! Inner ranges are [IBEG,IEND] etc., outer ranges [IMIN,IMAX]
+        ! inner ranges are [IBEG,IEND] etc., outer ranges [IMIN,IMAX]
 
         IMIN = IBEG-1          
         IMAX = IEND+1
@@ -116,7 +116,7 @@ contains
         KMIN = KBEG-1
         KMAX = KEND+1
 
-       ! Ranges for PML sheaths [ISIG,IEIG]
+       ! ranges for PML sheets [ISIG,IEIG]
 
         ISIG=IBEG
         IEIG=IMAX
