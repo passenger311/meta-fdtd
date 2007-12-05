@@ -57,9 +57,10 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine ReadOutObj(out, modl, funit)
+  subroutine ReadOutObj(out, regdef, modl, funit)
 
     integer :: funit
+    type(T_REG) :: regdef ! default region
     type(T_OUT) :: out
     type(T_OUT), external :: CreateOutObj
     
@@ -75,16 +76,14 @@ contains
     read(funit,*) ns, ne, dn       ! time frame
     read(funit,*) string
     ! consume regobj start string
-    if ( string .ne. "(REG" ) then
-       write(STDERR,*) "!ERROR NO REGION DEFINED: ReadOutObj/out"
-       stop
+    if ( string .eq. "(REG" ) then
+       call ReadRegObj(reg, funit) ! spatial regobj
+       read(funit,*) string
+       call SetOutObj(out, fmt, modl, filename, fn, mode, ns, ne, dn, reg)
+    else
+       call SetOutObj(out, fmt, modl, filename, fn, mode, ns, ne, dn, regdef)  
     end if
-    ! read the regobj information
-    call ReadRegObj(reg, funit) ! spatial regobj
-    ! write output parameters into out object
-    call SetOutObj(out, fmt, modl, filename, fn, mode, ns, ne, dn, reg)
-    ! consume the closing ")"
-    read(funit,*) string
+
     if ( string .ne. ")" ) then
        write(STDERR,*) "!ERROR (OUT LACKS ) TERMINATOR: ReadOutObj/out"
        stop

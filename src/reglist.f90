@@ -19,7 +19,7 @@
 
 !======================================================================
 !
-!  (REGION 
+!  (REG 
 !    (POINT
 !     100 20 30 
 !     100 21 33
@@ -34,7 +34,6 @@
 !    LIST | MASK | AUTO
 !    )
 !  )
-!
 !
 !  A regobj is a set of points with a weight attached. BOX, POINT set the 
 !  weigth to 1.0, while VPOINT and VBOX allow to set a userdefined weight 
@@ -157,7 +156,7 @@ contains
     do
 
        read(funit,*) string
-
+       
        select case ( string ) 
        case( "(POINTS" ) 
           reg%isbox = .false.
