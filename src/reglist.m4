@@ -6,13 +6,7 @@ define(`M4_REGLOOP_DECL',`
 
 define(`M4_REGLOOP_EXPR',`
 ! --- START M4: REG_LOOP
-! 1 = reg ( T_REG )
-! 2 = p ( integer )
-! 3 = i ( integer )
-! 4 = j ( integer ) 
-! 5 = k ( integer )
-! 6 = w ( real*8 )
-! 7 = expr
+! reg,p,i,j,k,w,expr
 
 if ( $1%islist ) then
  
@@ -65,4 +59,14 @@ endif
 
 ! --- END M4: REG_LOOP
 
+')
+
+define(`M4_REGLOOP_WRITE',`
+M4_REGLOOP_EXPR($1,$2,$3,$4,$5,$6,`
+if ( $1%isbox ) then
+write($7,"($8)") $9
+else
+write($7,"(I5,I5,I5,$8)") $3,$4,$5,$9
+endif
+')
 ')

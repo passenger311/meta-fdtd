@@ -16,22 +16,32 @@ else
 include Make.$(ARCH)
 endif 
 
+ifneq ($(MPI),)
+MPI=-mpi
+M4DEFINE+= -DM4_MPI=1
+endif
+
+ifneq ($(OMP),)
+OMP=-omp
+M4DEFINE+= -DM4_OMP=1
+endif
+
 ifneq ($(CMPLX),)
-CT=-ct
+CT=ct
 M4DEFINE+= -DM4_CMPLX=1
 endif
 
 ifneq ($(NGRID),)
-NG=-ng
+NG=ng
 M4DEFINE+=-DM4_NGRID=1
 endif
 
 ifneq ($(TEPS),)
-TE=-te
+TE=te
 M4DEFINE+=-DM4_TEPS=1
 endif
 
-ENGINE=$(CT)$(NG)$(TE)
+ENGINE=$(CT)$(NG)$(TE)$(MPI)$(OMP)
 
 M4= m4 $(M4DEFINE) meta3.m4
 

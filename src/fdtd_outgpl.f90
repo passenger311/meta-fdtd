@@ -35,17 +35,19 @@ contains
   subroutine InitializeFdtdOutgplObj(out)
 
     type (T_OUT) :: out
+    type (T_BUF) :: buf
 
     if ( out%fn .eq. 'Px' .or. out%fn .eq. 'Py' .or. out%fn .eq. 'Pz' .or. &
          out%fn .eq. 'En' ) then
 
+       ! allocate additional buffer for Load functions here
 
-       ! allocate buffers here
-
+       buf = CreateBufObj(objreg(out%regidx))
+       out%bufidx = buf%idx
 
     endif
 
-  end subroutine InitializeFdtdOutgpl
+  end subroutine InitializeFdtdOutgplObj
 
 
 !----------------------------------------------------------------------
@@ -57,11 +59,13 @@ contains
     if ( out%fn .eq. 'Px' .or. out%fn .eq. 'Py' .or. out%fn .eq. 'Pz' .or. &
          out%fn .eq. 'En' ) then
 
-       ! destroy buffers here
+       ! destroy additional buffer for Load functions here
 
+       call DestroyBufObj(objbuf(out%bufidx))
+       
     endif
 
-  end subroutine FinalizeFdtdOutgpl
+  end subroutine FinalizeFdtdOutgplObj
 
 
 !----------------------------------------------------------------------
@@ -72,21 +76,19 @@ contains
     type (T_OUT) :: out
     integer :: ncyc
 
-    logical :: ret
-
     select case (out%fn)
     case('Px')
-       call LoadPx(out)
-       call WriteData(out) 
+       call LoadBufPx(out)
+       call WriteBufData(out) 
     case('Py')
        call LoadPy(out)
-       call WriteData(out) 
+       call WriteBufData(out) 
     case('Pz')
-       call LoadPz(out)
-       call WriteData(out) 
+       call LoadBufPz(out)
+       call WriteBufData(out) 
     case('En')
-       call LoadEn(out)
-       call WriteData(out) 
+       call LoadBufEn(out)
+       call WriteBufData(out) 
     case('EH')
        call WriteEH(out)
     case('Ex')
@@ -107,24 +109,19 @@ contains
     
   contains
 
-    ! **************************************************************** !   
-
     subroutine WriteEH(out)
 
-      implicit none
       type (T_OUT) :: out
-      integer i,j,k
 
-      do k=out%ks, out%ke, out%dk  
-         do j=out%js, out%je, out%dj      
-            do i=out%is, out%ie, out%di 
-               write(UNITTMP,'(6E15.6E3))') Ex(i,j,k),  Ey(i,j,k), &
-                    Ez(i,j,k), Hx(i,j,k), Hy(i,j,k), Hz(i,j,k)
-            enddo
-            if(out%is .ne. out%ie) write(UNITTMP,*)
-         enddo
-         if(out%js .ne. out%je) write(UNITTMP,*)
-      enddo
+      M4_REGLOOP_DECL(reg,p,i,j,k,w)  
+      reg = regobj(out%regidx)
+
+      M4_REGLOOP_WRITE(reg,p,i,j,k,w, 
+
+         UNITTMP,6E15.6E3, `Ex(i,j,k),Ey(i,j,k),Ez(i,j,k),Hx(i,j,k),Hy(i,j,k),Hz(i,j,k)',
+         
+         `')
+
     end subroutine WriteEH
 
 
@@ -132,10 +129,18 @@ contains
 
     subroutine WriteComp(out,Comp)
 
-      implicit none
-
       type (T_OUT) :: out
-      real(8), dimension(IMIN:KMAX,JMIN:KMAX,KMIN:KMAX) :: Comp
+      M4_FTYPE, dimension(IMIN:KMAX,JMIN:KMAX,KMIN:KMAX) :: Comp
+ 
+      M4_REGLOOP_DECL(reg,p,i,j,k,w)  
+      reg = regobj(out%regidx)
+
+      M4_REGLOOP_WRITE(reg,p,i,j,k,w, 
+
+         UNITTMP,E15.6E3, `Comp(i,j,k)',
+         
+         `')
+
       integer i,j,k
 
       do k=out%ks, out%ke, out%dk  

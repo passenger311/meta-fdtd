@@ -64,8 +64,8 @@ module buflist
   ! --- Constants
 
   integer, parameter :: MAXBUFOBJ = 1000
-  integer, parameter :: REAL_BUF = 2
-  integer, parameter :: COMPLEX_BUF = 3
+  integer, parameter :: REAL_BUF = 1
+  integer, parameter :: COMPLEX_BUF = 2
 
   ! --- Types
 
@@ -113,8 +113,20 @@ contains
   end subroutine FinalizeBufList
 
 !----------------------------------------------------------------------
+    
+  type(T_BUF) function CreateBufObj(reg)
+
+    type(T_REG) :: reg
+    type(T_BUF), external :: CreateSomeBufObj
+
+    CreateBufObj = CreateSomeBufObj(M4_FTYPE_NUM,reg)
+
+  end function CreateBufObj
+
+!----------------------------------------------------------------------
  
-  type(T_BUF) function CreateBufObj(type,reg)
+
+  type(T_BUF) function CreateSomeBufObj(type,reg)
 
     integer :: type
     type(T_REG) :: reg
@@ -138,9 +150,9 @@ contains
        write(STDERR,*) "!ERROR OUT OF MEMORY: CreateBufObj/bufobj"
        stop
     endif
-    CreateBufObj = buf
+    CreateSomeBufObj = buf
     
-  end function CreateBufObj
+  end function CreateSomeBufObj
 
 !----------------------------------------------------------------------
  
@@ -163,6 +175,21 @@ contains
     buf%type = 0 
 
   end subroutine DestroyBufObj
+
+!----------------------------------------------------------------------
+
+  subroutine FillBufObj(buf, field)
+
+    type(T_BUF) :: buf
+    M4_FTYPE, dimension(:,:,:) :: field
+
+    M4_REGLOOP_DECL(reg,p,i,j,k,w)  
+    reg = regobj(buf%regidx)
+    M4_REGLOOP_EXPR(reg,p,i,j,k,w,
+      buf%rdata(p) = field(i,j,k)
+    )
+    
+  end subroutine FillBufObj
 
 !----------------------------------------------------------------------
 
@@ -196,6 +223,21 @@ contains
 
 !----------------------------------------------------------------------
 
+  subroutine AddBufObj(buf, field)
+
+    type(T_BUF) :: buf
+    M4_FTYPE, dimension(:,:,:) :: field
+
+    M4_REGLOOP_DECL(reg,p,i,j,k,w)  
+    reg = regobj(buf%regidx)
+    M4_REGLOOP_EXPR(reg,p,i,j,k,w,
+      buf%rdata(p) = buf%rdata(p) + field(i,j,k)
+    )
+    
+  end subroutine AddBufObj
+
+!----------------------------------------------------------------------
+
   subroutine AddRealBufObj(buf, field)
 
     type(T_BUF) :: buf
@@ -223,6 +265,21 @@ contains
     )
 
   end subroutine AddComplexBufObj
+
+!----------------------------------------------------------------------
+
+  subroutine SetBufObj(buf, val)
+
+    type(T_BUF) :: buf
+    M4_FTYPE :: val
+
+    M4_REGLOOP_DECL(reg,p,i,j,k,w)  
+    reg = regobj(buf%regidx)
+    M4_REGLOOP_EXPR(reg,p,i,j,k,w,
+      buf%rdata(p) = val
+    )
+
+  end subroutine SetBufObj
 
 !----------------------------------------------------------------------
 
