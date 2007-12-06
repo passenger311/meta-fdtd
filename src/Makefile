@@ -39,7 +39,7 @@ grid.f90\
 fdtd.f90\
 pec.f90\
 pml.f90\
-outgpl-fdtd.f90\
+fdtd_outgpl.f90\
 tfsf.f90\
 matsource.f90\
 pre-obj-1.f90\
@@ -59,7 +59,7 @@ grid.o\
 fdtd.o\
 pec.o\
 pml.o\
-outgpl-fdtd.o\
+fdtd_outgpl.o\
 matsource.o\
 tfsf.o\
 mat.o\

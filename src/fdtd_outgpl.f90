@@ -1,15 +1,15 @@
 !-*- F90 -*------------------------------------------------------------
 !
-!  module: outgpl-fdtd / max3d
+!  module: fdtd_outgpl / max3d
 !
 !  this module handles GPL output of data related to the fdtd module.
 !
 !  subs:
 !
-!  InitializeOutgplFdtdObj
-!  FinalizeOutgplFdtdObj
-!  LoadDataOutgplFdtdObj
-!  WriteDataOutgplFdtdObj
+!  InitializeFdtdOutgplObj
+!  FinalizeFdtdOutgplObj
+!  LoadDataFdtdOutgplObj
+!  WriteDataFdtdOutgplObj
 !
 !----------------------------------------------------------------------
 
@@ -32,7 +32,7 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine InitializeOutgplFdtdObj(out)
+  subroutine InitializeFdtdOutgplObj(out)
 
     type (T_OUT) :: out
 
@@ -45,12 +45,12 @@ contains
 
     endif
 
-  end subroutine InitializeOutgplFdtd
+  end subroutine InitializeFdtdOutgpl
 
 
 !----------------------------------------------------------------------
 
-  subroutine FinalizeOutgplFdtdObj
+  subroutine FinalizeFdtdOutgplObj
 
     type (T_OUT) :: out
 
@@ -61,13 +61,13 @@ contains
 
     endif
 
-  end subroutine FinalizeOutgplFdtd
+  end subroutine FinalizeFdtdOutgpl
 
 
 !----------------------------------------------------------------------
 
 
-  subroutine WriteDataOutgplFdtdObj(out, ncyc)
+  subroutine WriteDataFdtdOutgplObj(out, ncyc)
 
     type (T_OUT) :: out
     integer :: ncyc
@@ -212,12 +212,12 @@ contains
       endif
     end subroutine WriteData
 
-  end subroutine WritOutgplFdtd
+  end subroutine WritFdtdOutgpl
 
 
   ! ***************************************************************** !
 
-  subroutine PrepareOutgplFdtd(ncyc)
+  subroutine PrepareFdtdOutgpl(ncyc)
 
     implicit none
 
@@ -249,7 +249,7 @@ contains
           
        endif
     enddo
-  end subroutine PrepareOutgplFdtd
+  end subroutine PrepareFdtdOutgpl
 
 
   subroutine LoadPx(out)

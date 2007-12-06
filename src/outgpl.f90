@@ -69,7 +69,7 @@ contains
 ! ** call output initialization methods
 ! 1.
     case ("fdtd")
-       call  InitializeOutgplFdtdObj(out)
+       call  InitializeFdtdOutgplObj(out)
 ! 2.
 ! **
     end select
@@ -87,7 +87,7 @@ contains
 ! ** call output finalization methods
 ! 1.
     case ("fdtd")
-      call FinalizeOutgplFdtdObj(out)
+      call FinalizeFdtdOutgplObj(out)
 ! 2.
 ! **
     end select
@@ -155,7 +155,7 @@ contains
 ! ** call output methods
 ! 1.
     case ("fdtd")
-       call LoadDataOutgplFdtdObj(out,ncyc)
+       call LoadDataFdtdOutgplObj(out,ncyc)
 ! 2.
 ! **
     end select
@@ -180,7 +180,7 @@ contains
 ! ** call output methods
 ! 1.
     case ("fdtd")
-       call WriteDataOutgplFdtdObj(out,ncyc)
+       call WriteDataFdtdOutgplObj(out,ncyc)
 ! 2.
 ! **
     end select
