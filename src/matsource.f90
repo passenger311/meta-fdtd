@@ -9,10 +9,8 @@
 !    InitializeMatSource
 !    FinalizeMatSource
 !    ReadMatSourceObj
-!    StepMatSourceE
-!    StepMatSourceH
-!    StepMatSourceObjE
-!    StepMatSourceObjH
+!    StepEMatSource
+!    StepHMatSource
 !
 !----------------------------------------------------------------------
 
@@ -43,8 +41,8 @@ module matsource
 
   public :: InitializeMatSource
   public :: FinalizeMatSource
-  public :: StepMatSourceE
-  public :: StepMatSourceH
+  public :: StepEMatSource
+  public :: StepHMatSource
 
   ! --- Public Data
 
@@ -144,7 +142,7 @@ contains
 
 !----------------------------------------------------------------------
  
-  subroutine StepMatSourceE(ncyc)
+  subroutine StepEMatSource(ncyc)
 
     integer :: ncyc
     type(T_MATSOURCE) :: mat
@@ -176,12 +174,12 @@ contains
        
     end do
 
-  end subroutine StepMatSourceE
+  end subroutine StepEMatSource
 
 !----------------------------------------------------------------------
 
 
-  subroutine StepMatSourceH(ncyc)
+  subroutine StepHMatSource(ncyc)
 
     integer :: ncyc
     integer :: n
@@ -214,7 +212,7 @@ contains
        
     end do
     
-  end subroutine StepMatSourceH
+  end subroutine StepHMatSource
 
   
 !----------------------------------------------------------------------

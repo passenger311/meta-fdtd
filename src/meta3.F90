@@ -68,9 +68,9 @@ program meta3
      call MPE_Describe_state(3,4,"IRECV","blue:gray1")
      call MPE_Describe_state(5,6,"WAIT","green:gray2")
      call MPE_Describe_state(7,8,"StepH","yellow:gray3")
-     call MPE_Describe_state(9,10,"PMLH","violet:gray4")
+     call MPE_Describe_state(9,10,"PmlH","violet:gray4")
      call MPE_Describe_state(11,12,"StepE","orange1:gray5")
-     call MPE_Describe_state(13,14,"PMLE","snow:gray6")
+     call MPE_Describe_state(13,14,"PmlE","snow:gray6")
      call MPE_Describe_state(15,16,"StepHMat","pink1:gray7")
      call MPE_Describe_state(17,18,"StepEMat","chocolate:gray8")
 
@@ -155,13 +155,13 @@ program meta3
 ! ------------------------------ PMLH ---------------------------------
 
 #if MPE_LOG
-     call MPE_LOG_EVENT(9,"StepPmlH",mpierr) 
+     call MPE_LOG_EVENT(9,"StepHPml",mpierr) 
 #endif /* MPE_LOG */
 
-     call StepPmlH()
+     call StepHPml()
 
 #if MPE_LOG
-     call MPE_LOG_EVENT(10,"StepPmlH",mpierr)
+     call MPE_LOG_EVENT(10,"StepHPml",mpierr)
 #endif /* MPE_LOG */
 
 
@@ -216,7 +216,7 @@ program meta3
 #endif /* MPI */
 
 
-! -------------------------- StepHMat ---------------------------------
+! -------------------------- StepMatH ---------------------------------
 
 ! use the time while comms are pending to do some useful stuff
 
@@ -291,15 +291,15 @@ program meta3
 ! ---------------------------- PMLE -----------------------------------
 
 #if MPE_LOG
-     call MPE_LOG_EVENT(13,"StepPmlE",mpierr)
+     call MPE_LOG_EVENT(13,"StepEPml",mpierr)
 #endif /* MPE_LOG */
 
-     call StepPmlE() 
+     call StepEPml() 
 
-     call SetPEC()
+     call SetPec()
 
 #if MPE_LOG
-     call MPE_LOG_EVENT(14,"StepPmlE",mpierr)
+     call MPE_LOG_EVENT(14,"StepEPml",mpierr)
 #endif /* MPE_LOG */
 
 

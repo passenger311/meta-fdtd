@@ -12,10 +12,10 @@
 !      AllocateFields
 !      CalcCoefficients
 !    FinalizePml 
-!    StepPmlH 
-!      DoStepPmlH
-!    StepPmlE
-!      DoStepPmlE
+!    StepHPml 
+!      DoStepHPml
+!    StepEPml
+!      DoStepEPml
 !
 !----------------------------------------------------------------------
 
@@ -44,8 +44,8 @@ module pml
 
   public :: InitializePml
   public :: FinalizePml
-  public :: StepPmlE
-  public :: StepPmlH
+  public :: StepEPml
+  public :: StepHPml
 
   ! --- Public Data
 
@@ -384,21 +384,21 @@ contains
 
   ! update the H-fields of all Pml layers
   
-  subroutine StepPmlH
+  subroutine StepHPml
 
     implicit none
 
-    call DoStepPmlH(IBEG,ISIG-1,JBEG,JMAX-1,KBEG,KMAX-1,BE1) 
-    call DoStepPmlH(IEIG,IMAX-1,JBEG,JMAX-1,KBEG,KMAX-1,BE2)
-    call DoStepPmlH(ISIG,IEIG-1,JBEG,JSIG-1,KBEG,KMAX-1,BE3)
-    call DoStepPmlH(ISIG,IEIG-1,JEIG,JMAX-1,KBEG,KMAX-1,BE4)
-    call DoStepPmlH(ISIG,IEIG-1,JSIG,JEIG-1,KBEG,KSIG-1,BE5)
-    call DoStepPmlH(ISIG,IEIG-1,JSIG,JEIG-1,KEIG,KMAX-1,BE6)
+    call DoStepHPml(IBEG,ISIG-1,JBEG,JMAX-1,KBEG,KMAX-1,BE1) 
+    call DoStepHPml(IEIG,IMAX-1,JBEG,JMAX-1,KBEG,KMAX-1,BE2)
+    call DoStepHPml(ISIG,IEIG-1,JBEG,JSIG-1,KBEG,KMAX-1,BE3)
+    call DoStepHPml(ISIG,IEIG-1,JEIG,JMAX-1,KBEG,KMAX-1,BE4)
+    call DoStepHPml(ISIG,IEIG-1,JSIG,JEIG-1,KBEG,KSIG-1,BE5)
+    call DoStepHPml(ISIG,IEIG-1,JSIG,JEIG-1,KEIG,KMAX-1,BE6)
 
     contains
     
 
-      subroutine DoStepPmlH(is,ie,js,je,ks,ke,B)
+      subroutine DoStepHPml(is,ie,js,je,ks,ke,B)
 
         implicit none
 
@@ -451,28 +451,28 @@ contains
              enddo
           enddo
 
-        end subroutine DoStepPmlH
+        end subroutine DoStepHPml
 
-  end subroutine StepPmlH
+  end subroutine StepHPml
 
 !----------------------------------------------------------------------
 
   ! update the E-fields of all pml layers
 
-  subroutine StepPmlE
+  subroutine StepEPml
 
     implicit none
 
-    call DoStepPmlE(IBEG,ISIG-1,JBEG,JMAX-1,KBEG,KMAX-1,DE1)
-    call DoStepPmlE(IEIG,IMAX-1,JBEG,JMAX-1,KBEG,KMAX-1,DE2)
-    call DoStepPmlE(ISIG,IEIG-1,JBEG,JSIG-1,KBEG,KMAX-1,DE3)
-    call DoStepPmlE(ISIG,IEIG-1,JEIG,JMAX-1,KBEG,KMAX-1,DE4)
-    call DoStepPmlE(ISIG,IEIG-1,JSIG,JEIG-1,KBEG,KSIG-1,DE5)
-    call DoStepPmlE(ISIG,IEIG-1,JSIG,JEIG-1,KEIG,KMAX-1,DE6)
+    call DoStepEPml(IBEG,ISIG-1,JBEG,JMAX-1,KBEG,KMAX-1,DE1)
+    call DoStepEPml(IEIG,IMAX-1,JBEG,JMAX-1,KBEG,KMAX-1,DE2)
+    call DoStepEPml(ISIG,IEIG-1,JBEG,JSIG-1,KBEG,KMAX-1,DE3)
+    call DoStepEPml(ISIG,IEIG-1,JEIG,JMAX-1,KBEG,KMAX-1,DE4)
+    call DoStepEPml(ISIG,IEIG-1,JSIG,JEIG-1,KBEG,KSIG-1,DE5)
+    call DoStepEPml(ISIG,IEIG-1,JSIG,JEIG-1,KEIG,KMAX-1,DE6)
     
     contains
 
-    subroutine DoStepPmlE(is,ie,js,je,ks,ke,D)
+    subroutine DoStepEPml(is,ie,js,je,ks,ke,D)
 
       implicit none
 
@@ -531,9 +531,9 @@ contains
          enddo
       enddo
 
-    end subroutine DoStepPmlE
+    end subroutine DoStepEPml
 
-  end subroutine StepPmlE
+  end subroutine StepEPml
 
 !----------------------------------------------------------------------
 
