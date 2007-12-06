@@ -1,6 +1,6 @@
 !-*- F90 -*------------------------------------------------------------
 !
-!  module:list / max3d
+!  module:list / meta3
 !
 !  this generic module initializes / finalizes all list modules
 !

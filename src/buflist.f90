@@ -1,6 +1,6 @@
 !-*- F90 -*------------------------------------------------------------
 !
-!  module: buflist / max3d
+!  module: buflist / meta3
 !
 !  this generic module allows to temporarily buffer fields.
 !

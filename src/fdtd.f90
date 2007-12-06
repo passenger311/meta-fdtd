@@ -1,6 +1,6 @@
 !-*- F90 -*------------------------------------------------------------
 !
-!  module: fdtd / max3d
+!  module: fdtd / meta3
 !
 !  fdtd core algorithm.
 !
@@ -19,7 +19,7 @@
 !======================================================================
 !
 ! m4 macro-preprocessor runs over this file and replaces
-! M4 FT -> real(kind=8) or complex(kind=8)
+! M4 FTYPE -> real(kind=8) or complex(kind=8)
 !
 
 module fdtd
@@ -53,8 +53,8 @@ module fdtd
 
   ! --- Data
 
-  M4_FT, allocatable, dimension(:, :, :) :: Ex, Ey, Ez
-  M4_FT, allocatable, dimension(:, :, :) :: Hx, Hy, Hz
+  M4_FTYPE, allocatable, dimension(:, :, :) :: Ex, Ey, Ez
+  M4_FTYPE, allocatable, dimension(:, :, :) :: Hx, Hy, Hz
   real(kind=8), allocatable, dimension(:, :, :) :: EPSINV
 
  
@@ -183,7 +183,7 @@ contains
     implicit none
     
     real(kind=8) :: dtx, dty, dtz
-    M4_FT :: Exh,Eyh,Ezh
+    M4_FTYPE :: Exh,Eyh,Ezh
     integer :: i, j, k
     
     dtx = DT/Sx
@@ -224,7 +224,7 @@ contains
     implicit none
     
     real(kind=8) :: dtx, dty, dtz
-    M4_FT :: Hxh, Hyh, Hzh
+    M4_FTYPE :: Hxh, Hyh, Hzh
     real(kind=8) :: epsinvx, epsinvy, epsinvz
     integer :: i, j, k
     

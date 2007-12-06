@@ -1,6 +1,6 @@
 !-*- F90 -*------------------------------------------------------------
 !
-!  module: pml / max3d
+!  module: pml / meta3
 !
 !  boundary conditions using uniform perfectly matched layers.
 !
@@ -22,7 +22,7 @@
 !======================================================================
 !
 ! m4 macro-preprocessor runs over this file and replaces
-! M4 FT -> real(kind=8) or complex(kind=8)
+! M4 FTYPE -> real(kind=8) or complex(kind=8)
 !
 
 module pml
@@ -70,8 +70,8 @@ module pml
 
   ! auxilliary B and D fields on the 6 planes E1 .. E6
 
-  M4_FT, allocatable, dimension(:,:,:,:) :: BE1,BE2,BE3,BE4,BE5,BE6 
-  M4_FT, allocatable, dimension(:,:,:,:) :: DE1,DE2,DE3,DE4,DE5,DE6 
+  M4_FTYPE, allocatable, dimension(:,:,:,:) :: BE1,BE2,BE3,BE4,BE5,BE6 
+  M4_FTYPE, allocatable, dimension(:,:,:,:) :: DE1,DE2,DE3,DE4,DE5,DE6 
 
 contains
 
@@ -403,9 +403,9 @@ contains
         implicit none
 
           integer is, ie, js, je, ks, ke
-          M4_FT, dimension(1:3,is:ie,js:je,ks:ke) :: B
+          M4_FTYPE, dimension(1:3,is:ie,js:je,ks:ke) :: B
           integer i, j, k
-          M4_FT :: Bxo, Byo, Bzo, Exh, Eyh, Ezh
+          M4_FTYPE :: Bxo, Byo, Bzo, Exh, Eyh, Ezh
           real(kind=8) dtx, dty, dtz
 
           dtx = DT/SX
@@ -477,11 +477,11 @@ contains
       implicit none
 
       integer :: is, ie, js, je, ks, ke
-      M4_FT, dimension(1:3,is:ie,js:je,ks:ke) :: D
+      M4_FTYPE, dimension(1:3,is:ie,js:je,ks:ke) :: D
 
       integer :: i, j, k
       real(kind=8) :: dtx, dty, dtz
-      M4_FT :: Dxo, Dyo, Dzo, Hxh, Hyh, Hzh    
+      M4_FTYPE :: Dxo, Dyo, Dzo, Hxh, Hyh, Hzh    
       real(kind=8) :: epsinvx, epsinvy, epsinvz
   
       dtx = DT/SX

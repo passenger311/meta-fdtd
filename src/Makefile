@@ -16,17 +16,24 @@ else
 include Make.$(ARCH)
 endif 
 
-ifeq ($(CMPLX),)
-M4FT="real(kind=8)"
-FT=r
-else
-M4FT="complex(kind=8)"
-FT=c
-F90FLAGS+= -DCMPLX
+ifneq ($(CMPLX),)
+CT=-ct
+M4DEFINE+= -DM4_CMPLX=1
 endif
 
+ifneq ($(NGRID),)
+NG=-ng
+M4DEFINE+=-DM4_NGRID=1
+endif
 
-M4= m4 max3d.m4 -DM4_FT=$(M4FT) 
+ifneq ($(TEPS),)
+TE=-te
+M4DEFINE+=-DM4_TEPS=1
+endif
+
+ENGINE=$(CT)$(NG)$(TE)
+
+M4= m4 $(M4DEFINE) meta3.m4
 
 SRC= strings.f90\
 constant.f90\
@@ -46,7 +53,7 @@ pre-obj-1.f90\
 mat.f90\
 outgpl.f90\
 out.f90\
-max3d.F90
+meta3.F90
 
 FOBJ= strings.o\
 constant.o\
@@ -65,7 +72,7 @@ tfsf.o\
 mat.o\
 outgpl.o\
 out.o\
-max3d.o
+meta3.o
 
 PREOBJ= strings.o\
 constant.o\
@@ -76,7 +83,7 @@ pre-obj-1.o
 
 PREEXE = pre-obj-1
 
-EXE = max3d
+EXE = meta3-$(ENGINE)
 
 #
 default: $(PREEXE) $(EXE)
@@ -84,14 +91,12 @@ default: $(PREEXE) $(EXE)
 
 
 %.o : %.f90
-	@echo $(F90) $(F90FLAGS) $(INCLUDE) -c $<
-	@$(M4) $< >$*_m4.f90 
-	@$(F90) $(F90FLAGS) $(INCLUDE) -c $*_m4.f90 -o $*.o
+	$(M4) $< >$*_m4.f90 
+	$(F90) $(F90FLAGS) $(INCLUDE) -c $*_m4.f90 -o $*.o
 
 %.o : %.F90
-	@echo $(F90) $(F90FLAGS) $(INCLUDE) -c $<
-	@$(M4) $< >$*_m4.F90 
-	@$(F90) $(F90FLAGS) $(INCLUDE) -c $*_m4.F90 -o $*.o
+	$(M4) $< >$*_m4.F90 
+	$(F90) $(F90FLAGS) $(INCLUDE) -c $*_m4.F90 -o $*.o
 
 %.o : %.c
 	 $(CC) $(CCFLAGS) $(INCLUDE) -c $<

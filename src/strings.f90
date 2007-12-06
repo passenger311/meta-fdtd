@@ -1,6 +1,6 @@
 ! -*-F90-*-------------------------------------------------------------
 !
-!  module: strings / max3d
+!  module: strings / meta3
 !
 !  fortran smart string handling
 !

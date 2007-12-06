@@ -1,6 +1,6 @@
 !-*- F90 -*------------------------------------------------------------
 !
-!  module: matsource / max3d
+!  module: matsource / meta3
 !
 !  field source equations.
 !

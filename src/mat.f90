@@ -1,6 +1,6 @@
 !-*- F90 -*------------------------------------------------------------
 !
-!  module: mat / max3d
+!  module: mat / meta3
 !
 !  material equations.
 !

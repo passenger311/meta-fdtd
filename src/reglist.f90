@@ -1,6 +1,6 @@
 !----------------------------------------------------------------------
 !
-!  module: reglist / max3d
+!  module: reglist / meta3
 !
 !  a spatial box, mask or pointlist 
 !

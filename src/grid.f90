@@ -1,6 +1,6 @@
 !-*- F90 -*------------------------------------------------------------
 !
-!  module: grid / max3d
+!  module: grid / meta3
 !
 !  grid definition.
 !

@@ -1,6 +1,6 @@
 !-*- F90 -*------------------------------------------------------------
 !
-!  module: mpiworld / max3d
+!  module: mpiworld / meta3
 !
 !  create mpi world 
 !

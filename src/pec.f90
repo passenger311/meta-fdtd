@@ -1,6 +1,6 @@
 !-*- F90 -*------------------------------------------------------------
 !
-!  module: pec / max3d
+!  module: pec / meta3
 !
 !  set metallic boundary conditions.
 !

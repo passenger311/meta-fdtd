@@ -1,6 +1,6 @@
 !-*- F90 -*------------------------------------------------------------
 ! 
-!  module: out / max3d
+!  module: out / meta3
 !
 !  this module manages general output functionality independent of the
 !  specific output format.

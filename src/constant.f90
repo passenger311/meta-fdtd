@@ -1,6 +1,6 @@
 !-*- F90 -*------------------------------------------------------------
 !
-!  module: constant / max3d
+!  module: constant / meta3
 !
 !  global parameters.
 !

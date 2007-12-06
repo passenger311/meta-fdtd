@@ -1,6 +1,6 @@
 !-*- F90 -*------------------------------------------------------------
 !
-!  module: fdtd_outgpl / max3d
+!  module: fdtd_outgpl / meta3
 !
 !  this module handles GPL output of data related to the fdtd module.
 !

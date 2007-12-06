@@ -1,6 +1,6 @@
 !-*- F90 -*------------------------------------------------------------
 !
-!  program: max3d / max3d
+!  program: meta3 / meta3
 !
 !  main program
 !
@@ -17,7 +17,7 @@
 #undef MPE_LOG
 #endif
 
-program max3d
+program meta3
 
   use constant
   use strings
@@ -58,7 +58,7 @@ program max3d
 
   if (myrank .eq. 0) then
 
-     write(6,*) '* --------- max3d start'
+     write(6,*) '* --------- meta3 start'
 
   ! --- init logging
 
@@ -470,7 +470,7 @@ program max3d
 #endif /* MPI */
 
 #if MPE_LOG
-  call MPE_FINISH_LOG("max3d.log") !
+  call MPE_FINISH_LOG("meta3.log") !
 #endif /* MPE_LOG */
 
 ! --- terminate MPI
@@ -479,11 +479,11 @@ program max3d
 
   if (myrank .eq. 0) then
 
-     write(6,*) '* --------- max3d end'
+     write(6,*) '* --------- meta3 end'
 
   end if
   
-end program max3d
+end program meta3
 
 ! ---------------------------------------------------------------------
 
