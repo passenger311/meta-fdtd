@@ -87,13 +87,11 @@ default: $(PREEXE) $(EXE)
 	@echo $(F90) $(F90FLAGS) $(INCLUDE) -c $<
 	@$(M4) $< >$*_m4.f90 
 	@$(F90) $(F90FLAGS) $(INCLUDE) -c $*_m4.f90 -o $*.o
-	@rm $*_m4.f90
 
 %.o : %.F90
 	@echo $(F90) $(F90FLAGS) $(INCLUDE) -c $<
 	@$(M4) $< >$*_m4.F90 
 	@$(F90) $(F90FLAGS) $(INCLUDE) -c $*_m4.F90 -o $*.o
-	@rm $*_m4.F90
 
 %.o : %.c
 	 $(CC) $(CCFLAGS) $(INCLUDE) -c $<

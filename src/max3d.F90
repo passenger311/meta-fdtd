@@ -8,10 +8,10 @@
 
 !======================================================================
 !
-! Compile with 
-! -DMPI     : activate parallel MPI code
-! -DMPE_LOG : activate MPE logging
-!
+! Compile with preprocessor 
+! -DMPI     : to activate parallel MPI code
+! -DMPE_LOG : to activate MPE logging
+! 
 
 #ifndef MPI
 #undef MPE_LOG

@@ -21,7 +21,8 @@
 
 !======================================================================
 !
-!
+! m4 macro-preprocessor runs over this file and replaces
+! M4_FT -> real(kind=8) or complex(kind=8)
 !
 
 module pml

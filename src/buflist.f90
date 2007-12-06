@@ -22,6 +22,9 @@
 
 !======================================================================
 !
+! m4 macro-preprocessor runs over this file and replaces
+! M4_REGLOOP_DECL -> variable declarations for loop
+! M4_REGLOOP_EXPR -> loop over region, do expression
 !
 
 module buflist
