@@ -10,9 +10,12 @@
 !  FinalizeBufList
 !  CreateBufObj  
 !  DestroyBufObj
-!  FillIntegerBufObj
 !  FillRealBufObj
 !  FillComplexBufObj
+!  SetRealBufObj
+!  SetComplexBufObj
+!  AddRealBufObj
+!  AddComplexBufObj
 !
 !----------------------------------------------------------------------
 
@@ -28,7 +31,32 @@ module buflist
   use reglist
 
   implicit none
+  private
   save
+
+  ! --- Module Identifier
+
+  character(len=20), parameter :: modname = 'buflist'
+
+  ! --- Public Methods
+
+  public :: InitializeBufList
+  public :: FinalizeBufList
+  public :: CreateBufObj
+  public :: DestroyBufObj
+  public :: FillRealBufObj
+  public :: FillComplexBufObj
+  public :: SetRealBufObj
+  public :: SetComplexBufObj
+  public :: AddRealBufObj
+  public :: AddComplexBufObj
+
+  ! --- Public Data
+
+  public :: bufobj
+  public :: numbufobj
+  public :: T_BUF
+  public :: REAL_BUF, COMPLEX_BUF
 
   ! --- Constants
 
@@ -36,9 +64,7 @@ module buflist
   integer, parameter :: REAL_BUF = 2
   integer, parameter :: COMPLEX_BUF = 3
 
-
   ! --- Types
-
 
   type T_BUF
 
@@ -52,8 +78,7 @@ module buflist
 
   end type T_BUF
 
-
-  ! --- Fields
+  ! --- Data
 
   type(T_BUF) :: bufobj(MAXBUFOBJ) 
   integer :: numbufobj
@@ -72,14 +97,15 @@ contains
 
   subroutine FinalizeBufList
 
-    integer :: n
+    integer :: i
 
-    do n = 1, numbufobj 
+    do i = 1, numbufobj 
        
-       call DestroyBufObj(bufobj(n))
+       call DestroyBufObj(bufobj(i))
 
     end do
 
+    numbufobj = 0
 
   end subroutine FinalizeBufList
 
@@ -128,6 +154,11 @@ contains
        deallocate(buf%cdata)
     end select
     
+    buf%size = 0
+    buf%regidx = 0
+    buf%idx = 0 
+    buf%type = 0 
+
   end subroutine DestroyBufObj
 
 !----------------------------------------------------------------------

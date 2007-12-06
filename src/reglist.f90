@@ -8,8 +8,7 @@
 !
 !    InitializeRegList
 !    FinalizeRegList
-!
-!    reg = CreateRegObj
+!    CreateRegObj
 !    DestroyRegObj
 !    ReadRegObj
 !    SetPointRegObj
@@ -63,7 +62,26 @@ module reglist
   use grid
 
   implicit none
+  private
   save
+
+  ! --- Module Identifier
+
+  character(len=20), parameter :: modname = 'reglist'
+
+  ! --- Public Methods
+
+  public :: InitializeRegList
+  public :: FinalizeRegList
+  public :: CreateRegObj
+  public :: DestroyRegObj
+  public :: ReadRegObj
+
+  ! --- Public Data
+
+  public :: regobj
+  public :: numregobj
+  public :: T_REG
 
   ! --- Constants
 
@@ -87,8 +105,7 @@ module reglist
 
   end type T_REG
 
-
-  ! --- Fields
+  ! --- Data
 
   type(T_REG) :: regobj(MAXREGOBJ) 
   integer :: numregobj
@@ -118,6 +135,8 @@ contains
     do i = 1, numregobj 
        call DestroyRegObj(regobj(i))
     end do
+
+    numregobj = 0
 
   end subroutine FinalizeRegList
 

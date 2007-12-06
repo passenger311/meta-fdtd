@@ -25,10 +25,9 @@ module outgpl
 
   use constant
   use strings
-  use mpiworld
-  use grid  
   use reglist
   use outlist
+
 ! ** add output modules
 ! 1.
   use outgpl_fdtd
@@ -36,7 +35,27 @@ module outgpl
 ! **
 
   implicit none
+  private
   save
+  
+  ! --- Module Identifier
+
+  character(len=STRLNG), parameter :: modname = 'outgpl'
+
+  ! --- Public Methods
+
+  public :: InitializeOutgplObj
+  public :: FinalizeOutgplObj
+  public :: OpenOutgplObj
+  public :: CloseOutgplObj
+  public :: WriteHeaderOutgplObj
+  public :: WriteDataOutgplObj
+
+  ! --- Public Data
+
+  ! --- Constants
+
+  ! --- Data
 
 contains
 
@@ -101,8 +120,7 @@ contains
   subroutine WriteHeaderOutgplObj(out)
 
     type(T_OUT) :: out
-
-    type(T_REGION) :: reg
+    type(T_REG) :: reg
     reg = reglistobj(out%regidx)
     
     call OpenOutgplObj(out)

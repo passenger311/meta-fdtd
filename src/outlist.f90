@@ -21,12 +21,30 @@ module outlist
 
   use constant
   use strings
-  use mpiworld
-  use grid
   use reglist
 
   implicit none
+  private
   save
+
+  ! --- Module Identifier
+
+  character(len=20), parameter :: modname = 'outlist'
+
+  ! --- Public Methods
+
+  public :: InitializeOutList
+  public :: FinalizeOutList
+  public :: CreateOutObj
+  public :: DestroyOutObj
+
+  ! --- Public Data
+
+  public :: outobj
+  public :: numoutobj
+  public :: T_OUT
+
+  ! --- Constants
 
   integer, parameter :: MAXOUTOBJ = 500
 
@@ -34,7 +52,7 @@ module outlist
 
   type T_OUT 
 
-     character(len=STRLNG) :: fmt      ! output format, eg "GPL"
+     character(len=20) :: fmt          ! output format, eg "GPL"
      character(len=STRLNG) :: filename ! filename
      character(len=20) :: modl         ! output module
      character(len=20) :: fn           ! output function
@@ -47,13 +65,34 @@ module outlist
 
   end type T_OUT
 
-  ! --- Variables
+  ! --- Data
 
   type (T_OUT) :: outobj(MAXOUTOBJ)
   integer :: numoutobj = 0
 
-
 contains
+
+!----------------------------------------------------------------------
+
+  subroutine InitializeOutList
+  
+    numoutobj = 0
+
+  end subroutine InitializeOutList
+
+!----------------------------------------------------------------------
+
+  subroutine FinalizeOutList
+  
+    integer :: i
+    
+    do i = 1, numoutobj 
+       call DestroyOutObj(outobj(i))
+    end do
+
+    numoutobj = 0
+
+  end subroutine FinalizeOutList
 
 !----------------------------------------------------------------------
 
@@ -108,6 +147,19 @@ contains
     CreateOutObj = outobj(numoutobj)
    
   end function CreateOutObj
+
+!----------------------------------------------------------------------
+
+  subroutine DestroyOutObj(out)
+
+    type(T_OUT) :: out
+
+    out%numnodes = 0
+    out%regidx = 0  
+    out%bufidx = 0
+    out%idx = 0
+   
+  end subroutine DestroyOutObj
 
 !----------------------------------------------------------------------
 

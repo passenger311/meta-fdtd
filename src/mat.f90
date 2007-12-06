@@ -8,9 +8,8 @@
 !
 !    InitializeMat
 !    FinalizeMat
-!    ReadMat
-!    StepEMat
-!    StepHMat
+!    StepMatE
+!    StepMatH
 !
 !----------------------------------------------------------------------
 
@@ -23,8 +22,6 @@
 
 module mat
 
-  use regobj
-
 ! ** add material modules
 ! 1.
   use matsource
@@ -32,11 +29,29 @@ module mat
 ! **
 
   implicit none
+  private
   save
+
+  ! --- Module Identifier
+
+  character(len=20), private, parameter :: modname = 'mat'
+
+  ! --- Public Methods
+
+  public :: InitializeMat
+  public :: FinalizeMat
+  public :: StepMatE
+  public :: StepMatH
+
+  ! --- Public Data
+
+  public :: pfxmat
 
   ! --- Constants
 
-  character(len=255), parameter :: pfxmat = 'mat'
+  character(len=STRLNG), parameter :: pfxmat = 'mat'
+
+  ! --- Data
 
 contains
 
@@ -46,14 +61,43 @@ contains
 
     integer :: err
 
+    call ReadConfig
+
 ! ** call material initialize methods
 ! 1. 
     call InitializeMatSource
 ! 2.
 ! **
 
+  contains
+    
+    subroutine ReadConfig
+      
+      character(len=STRLNG) :: file, string
+      integer :: ios
+      
+      file=cat2(pfxmat,sfxin)
+        
+      open(UNITTMP,FILE=file,STATUS='unknown')
+      do
+         read(UNITTMP,*, IOSTAT=ios) string
+         if(ios .ne. 0) exit
+         select case ( string )
+! ** read material config sections
+! 1.
+         case("(MATSOURCE")
+            call ReadMatSourceObj(UNITTMP)
+! 2.
+! **
+         end select
+         
+      enddo
+      close(UNITTMP)
+
+    end subroutine ReadConfig
+        
   end subroutine InitializeMat
-  
+    
 !----------------------------------------------------------------------
 
   subroutine FinalizeMat
@@ -67,59 +111,32 @@ contains
   end subroutine FinalizeMat
 
 !----------------------------------------------------------------------
-
-  subroutine ReadMat
-
-    character(len=STRLNG) :: file, string
-    integer :: ios
-    
-    file=cat2(pfxmat,sfxin)
-    
-    open(UNITTMP,FILE=file,STATUS='unknown')
-    do
-       read(UNITTMP,*, IOSTAT=ios) string
-       if(ios .ne. 0) exit
-       select case ( string )
-! ** call material config indentifiers
-! 1.
-       case("(MATSOURCE")
-          call ReadObjMatSource(UNITTMP)
-! 2.
-! **
-       end select
-
-    enddo
-    close(UNITTMP)
-
-  end subroutine ReadMat
-   
-!----------------------------------------------------------------------
  
-  subroutine StepEMat(ncyc)
+  subroutine StepMatE(ncyc)
 
     integer :: ncyc
 
 ! ** call material e-field step methods
 ! 1.
-    call StepEMatSource(ncyc)
+    call StepMatSourceE(ncyc)
 ! 2.
 ! **
 
-  end subroutine StepEMat
+  end subroutine StepMatE
 
 !----------------------------------------------------------------------
 
-  subroutine StepHMat(ncyc)
+  subroutine StepMatH(ncyc)
 
     integer :: ncyc
 
 ! ** call material h-field step methods
 ! 1.
-    call StepHMatSource(ncyc)
+    call StepMatSourceH(ncyc)
 ! 2.
 ! **
 
-  end subroutine StepHMat
+  end subroutine StepMatH
 
 !----------------------------------------------------------------------
 

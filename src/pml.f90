@@ -1,21 +1,21 @@
 !-*- F90 -*------------------------------------------------------------
 !
-!  module: upml / max3d
+!  module: pml / max3d
 !
 !  boundary conditions using uniform perfectly matched layers.
 !
 !  subs:
 !
-!    InitializeUPML
+!    InitializePml
 !      ReadConfig
 !      Initialize
 !      AllocateFields
 !      CalcCoefficients
-!    FinalizeUPML 
-!    StepUPMLH 
-!      DoStepUPMLH
-!    StepUPMLE
-!      DoStepUPMLE
+!    FinalizePml 
+!    StepPmlH 
+!      DoStepPmlH
+!    StepPmlE
+!      DoStepPmlE
 !
 !----------------------------------------------------------------------
 
@@ -24,7 +24,7 @@
 !
 !
 
-module upml
+module pml
 
   use constant
   use strings
@@ -32,30 +32,40 @@ module upml
   use fdtd
 
   implicit none
+  private
   save
+
+  ! --- Module Identifier
+
+  character(len=20), private, parameter :: modname = 'pml'
+
+  ! --- Public Methods
+
+  public :: InitializePml
+  public :: FinalizePml
+  public :: StepPmlE
+  public :: StepPmlH
+
+  ! --- Public Data
 
   ! --- Constants
 
-  character(len=STRLNG), parameter :: pfxpml = 'pml'
+  ! --- Data
 
-  ! --- Variables
+  integer :: pmlpart           ! flag (inner/outer partition)
+  integer :: PmlMAX            ! number of Pml layers
+  real(kind=8) :: PotPml       ! exponent for sigma and kappa
+  real(kind=8) :: SigmaMax     ! absorption coefficient 
+  real(kind=8) :: KappaMax     ! absorption of evanescent waves 
 
-  integer :: pmlpart                    ! flag (inner/outer partition)
-  integer :: PMLMAX                     ! number of PML layers
-  real(kind=8) :: PotPml                ! exponent for sigma and kappa
-  real(kind=8) :: SigmaMax              ! absorption coefficient 
-  real(kind=8) :: KappaMax              ! absorption of evanescent waves 
-
-  ! do planes 1-6 have a UPML (yes=1, no=0)
+  ! do planes 1-6 have a Pml (yes=1, no=0)
 
   integer, dimension(6) :: planepml=(/ 1,1,1,1,1,1 /)
 
-  ! numeric UPML coefficients
+  ! numeric Pml coefficients
 
-  real(kind=8),allocatable,dimension(:,:) :: cexpml,ceypml,cezpml
-  real(kind=8),allocatable,dimension(:,:) :: cmxpml,cmypml,cmzpml
-
-  ! --- Fields
+  real(kind=8), allocatable, dimension(:,:) :: cexpml,ceypml,cezpml
+  real(kind=8), allocatable, dimension(:,:) :: cmxpml,cmypml,cmzpml
 
   ! auxilliary B and D fields on the 6 planes E1 .. E6
 
@@ -66,7 +76,7 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine InitializeUPML
+  subroutine InitializePml
 
     implicit none
 
@@ -83,11 +93,11 @@ contains
 
         character(len=255) :: file
     
-        file = cat2(pfxpml,sfxin)
+        file = cat2(modname,sfxin)
 
         open(UNITTMP,FILE=file,STATUS='unknown')
         read(UNITTMP,*) (planepml(i),i=1, 6)
-        read(UNITTMP,*) PMLMAX
+        read(UNITTMP,*) PmlMAX
         read(UNITTMP,*) PotPml
         read(UNITTMP,*) SigmaMax
         read(UNITTMP,*) KappaMax 
@@ -104,12 +114,12 @@ contains
         implicit none
 
 
-        if(planepml(1) .eq. 1) ISIG=IBEG+PMLMAX
-        if(planepml(2) .eq. 1) IEIG=IMAX-PMLMAX
-        if(planepml(3) .eq. 1) JSIG=JBEG+PMLMAX
-        if(planepml(4) .eq. 1) JEIG=JMAX-PMLMAX
-        if(planepml(5) .eq. 1) KSIG=KBEG+PMLMAX
-        if(planepml(6) .eq. 1) KEIG=KMAX-PMLMAX
+        if(planepml(1) .eq. 1) ISIG=IBEG+PmlMAX
+        if(planepml(2) .eq. 1) IEIG=IMAX-PmlMAX
+        if(planepml(3) .eq. 1) JSIG=JBEG+PmlMAX
+        if(planepml(4) .eq. 1) JEIG=JMAX-PmlMAX
+        if(planepml(5) .eq. 1) KSIG=KBEG+PmlMAX
+        if(planepml(6) .eq. 1) KEIG=KMAX-PmlMAX
 
         if((IEIG.le.IBEG) .or. (JEIG.le.JBEG) .or. (KEIG.le.KBEG)) then
            write(STDERR,*) "Error with IEIG, JEIG or KEIG in InitPml()"
@@ -120,7 +130,7 @@ contains
         ! SigmaMax (= SigmaOpt, see Tavlove 2, pp 286)
         ! It is Sig = Sig[SI] / (!c*eps0)
 
-        ! SigmaMax = (real(POTPML)+1.0)*0.8/(3.0*DT)
+        ! SigmaMax = (real(POTPml)+1.0)*0.8/(3.0*DT)
         ! KappaMax = 1.1
 
 
@@ -141,32 +151,32 @@ contains
     
         allocate(cexpml(1:4,IBEG:IMAX), STAT=err)
         if(err .ne. 0) then
-           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/pml'
            stop
         endif
         allocate(ceypml(1:4,JBEG:JMAX), STAT=err)
         if(err .ne. 0) then
-           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/pml'
            stop
         endif
         allocate(cezpml(1:4,KBEG:KMAX), STAT=err)
         if(err .ne. 0) then
-           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/pml'
            stop
         endif
         allocate(cmxpml(1:4,IBEG:IMAX), STAT=err)
         if(err .ne. 0) then
-           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/pml'
            stop
         endif
         allocate(cmypml(1:4,JBEG:JMAX), STAT=err)
         if(err .ne. 0) then
-           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/pml'
            stop
         endif
         allocate(cmzpml(1:4,KBEG:KMAX), STAT=err)
         if(err .ne. 0) then
-           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/pml'
            stop
         endif
 
@@ -174,62 +184,62 @@ contains
 
         allocate(BE1(1:3,IBEG:ISIG-1,JBEG:JMAX-1,KBEG:KMAX-1), STAT=err) 
         if(err .ne. 0) then
-           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/pml'
            stop
         endif
         allocate(DE1(1:3,IBEG:ISIG-1,JBEG:JMAX-1,KBEG:KMAX-1), STAT=err)
         if(err .ne. 0) then
-           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/pml'
            stop
         endif
         allocate(BE2(1:3,IEIG:IMAX-1,JBEG:JMAX-1,KBEG:KMAX-1), STAT=err)
         if(err .ne. 0) then
-           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/pml'
            stop
         endif
         allocate(DE2(1:3,IEIG:IMAX-1,JBEG:JMAX-1,KBEG:KMAX-1), STAT=err)
         if(err .ne. 0) then
-           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/pml'
            stop
         endif
         allocate(BE3(1:3,ISIG:IEIG-1,JBEG:JSIG-1,KBEG:KMAX-1), STAT=err) 
         if(err .ne. 0) then
-           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/pml'
            stop
         endif
         allocate(DE3(1:3,ISIG:IEIG-1,JBEG:JSIG-1,KBEG:KMAX-1), STAT=err) 
         if(err .ne. 0) then
-           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/pml'
            stop
         endif
         allocate(BE4(1:3,ISIG:IEIG-1,JEIG:JMAX-1,KBEG:KMAX-1), STAT=err)
         if(err .ne. 0) then
-           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/pml'
            stop
         endif
         allocate(DE4(1:3,ISIG:IEIG-1,JEIG:JMAX-1,KBEG:KMAX-1), STAT=err)
         if(err .ne. 0) then
-           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/pml'
            stop
         endif
         allocate(BE5(1:3,ISIG:IEIG-1,JSIG:JEIG-1,KBEG:KSIG-1), STAT=err) 
         if(err .ne. 0) then
-           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/pml'
            stop
         endif
         allocate(DE5(1:3,ISIG:IEIG-1,JSIG:JEIG-1,KBEG:KSIG-1), STAT=err)
         if(err .ne. 0) then
-           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/pml'
            stop
         endif
         allocate(BE6(1:3,ISIG:IEIG-1,JSIG:JEIG-1,KEIG:KMAX-1), STAT=err)
         if(err .ne. 0) then
-           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/pml'
            stop
         endif
         allocate(DE6(1:3,ISIG:IEIG-1,JSIG:JEIG-1,KEIG:KMAX-1), STAT=err)
         if(err .ne. 0) then
-           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/upml'
+           write(STDERR,*) '! ERROR OUT OF MEMORY: AllocFields/pml'
            stop
         endif
 
@@ -282,7 +292,7 @@ contains
 
         integer, intent(in) :: lbeg, lmax, ls, le
         real(kind=8), dimension(1:4,lbeg:lmax), intent(inout) :: ce, cm
-        real(kind=8), dimension(-1:PMLMAX-1) :: val1,val1p,val2,val2p
+        real(kind=8), dimension(-1:PmlMAX-1) :: val1,val1p,val2,val2p
         real(kind=8) :: x, sigma, kappa
         integer :: l
 
@@ -293,21 +303,21 @@ contains
         val1p = 1.0
         val2p = 1.0
 
-        do l=0, PMLMAX-1
+        do l=0, PmlMAX-1
     
            ! points on the grid corners
     
-           x = real(l) / real(PMLMAX-1)
-           sigma = SigmaMax*x**POTPML
-           kappa = 1.0+(KappaMax-1.0)*x**POTPML
+           x = real(l) / real(PmlMAX-1)
+           sigma = SigmaMax*x**POTPml
+           kappa = 1.0+(KappaMax-1.0)*x**POTPml
            val1(l) = kappa+0.5*sigma*DT
            val2(l) = kappa-0.5*sigma*DT
 
            ! points in the grid center
     
-           x = (real(l)+0.5) / real(PMLMAX-1)
-           sigma = SigmaMax*x**POTPML
-           kappa = 1.0+(KappaMax-1.0)*x**POTPML
+           x = (real(l)+0.5) / real(PmlMAX-1)
+           sigma = SigmaMax*x**POTPml
+           kappa = 1.0+(KappaMax-1.0)*x**POTPml
            val1p(l) = kappa+0.5*sigma*DT
            val2p(l) = kappa-0.5*sigma*DT
   
@@ -341,11 +351,11 @@ contains
 
       end subroutine CalcCoefficients
 
-  end subroutine InitializeUPML
+  end subroutine InitializePml
 
 !----------------------------------------------------------------------
 
-  subroutine FinalizeUPML
+  subroutine FinalizePml
 
     deallocate(DE6)
     deallocate(BE6)
@@ -367,27 +377,27 @@ contains
     deallocate(ceypml)
     deallocate(cexpml)
 
-  end subroutine FinalizeUPML
+  end subroutine FinalizePml
 
 !----------------------------------------------------------------------
 
-  ! update the H-fields of all UPML layers
+  ! update the H-fields of all Pml layers
   
-  subroutine StepUPMLH
+  subroutine StepPmlH
 
     implicit none
 
-    call DoStepUPMLH(IBEG,ISIG-1,JBEG,JMAX-1,KBEG,KMAX-1,BE1) 
-    call DoStepUPMLH(IEIG,IMAX-1,JBEG,JMAX-1,KBEG,KMAX-1,BE2)
-    call DoStepUPMLH(ISIG,IEIG-1,JBEG,JSIG-1,KBEG,KMAX-1,BE3)
-    call DoStepUPMLH(ISIG,IEIG-1,JEIG,JMAX-1,KBEG,KMAX-1,BE4)
-    call DoStepUPMLH(ISIG,IEIG-1,JSIG,JEIG-1,KBEG,KSIG-1,BE5)
-    call DoStepUPMLH(ISIG,IEIG-1,JSIG,JEIG-1,KEIG,KMAX-1,BE6)
+    call DoStepPmlH(IBEG,ISIG-1,JBEG,JMAX-1,KBEG,KMAX-1,BE1) 
+    call DoStepPmlH(IEIG,IMAX-1,JBEG,JMAX-1,KBEG,KMAX-1,BE2)
+    call DoStepPmlH(ISIG,IEIG-1,JBEG,JSIG-1,KBEG,KMAX-1,BE3)
+    call DoStepPmlH(ISIG,IEIG-1,JEIG,JMAX-1,KBEG,KMAX-1,BE4)
+    call DoStepPmlH(ISIG,IEIG-1,JSIG,JEIG-1,KBEG,KSIG-1,BE5)
+    call DoStepPmlH(ISIG,IEIG-1,JSIG,JEIG-1,KEIG,KMAX-1,BE6)
 
     contains
     
 
-      subroutine DoStepUPMLH(is,ie,js,je,ks,ke,B)
+      subroutine DoStepPmlH(is,ie,js,je,ks,ke,B)
 
         implicit none
 
@@ -440,28 +450,28 @@ contains
              enddo
           enddo
 
-        end subroutine DoStepUPMLH
+        end subroutine DoStepPmlH
 
-  end subroutine StepUPMLH
+  end subroutine StepPmlH
 
 !----------------------------------------------------------------------
 
   ! update the E-fields of all pml layers
 
-  subroutine StepUPMLE
+  subroutine StepPmlE
 
     implicit none
 
-    call DoStepUPMLE(IBEG,ISIG-1,JBEG,JMAX-1,KBEG,KMAX-1,DE1)
-    call DoStepUPMLE(IEIG,IMAX-1,JBEG,JMAX-1,KBEG,KMAX-1,DE2)
-    call DoStepUPMLE(ISIG,IEIG-1,JBEG,JSIG-1,KBEG,KMAX-1,DE3)
-    call DoStepUPMLE(ISIG,IEIG-1,JEIG,JMAX-1,KBEG,KMAX-1,DE4)
-    call DoStepUPMLE(ISIG,IEIG-1,JSIG,JEIG-1,KBEG,KSIG-1,DE5)
-    call DoStepUPMLE(ISIG,IEIG-1,JSIG,JEIG-1,KEIG,KMAX-1,DE6)
+    call DoStepPmlE(IBEG,ISIG-1,JBEG,JMAX-1,KBEG,KMAX-1,DE1)
+    call DoStepPmlE(IEIG,IMAX-1,JBEG,JMAX-1,KBEG,KMAX-1,DE2)
+    call DoStepPmlE(ISIG,IEIG-1,JBEG,JSIG-1,KBEG,KMAX-1,DE3)
+    call DoStepPmlE(ISIG,IEIG-1,JEIG,JMAX-1,KBEG,KMAX-1,DE4)
+    call DoStepPmlE(ISIG,IEIG-1,JSIG,JEIG-1,KBEG,KSIG-1,DE5)
+    call DoStepPmlE(ISIG,IEIG-1,JSIG,JEIG-1,KEIG,KMAX-1,DE6)
     
     contains
 
-    subroutine DoStepUPMLE(is,ie,js,je,ks,ke,D)
+    subroutine DoStepPmlE(is,ie,js,je,ks,ke,D)
 
       implicit none
 
@@ -520,13 +530,13 @@ contains
          enddo
       enddo
 
-    end subroutine DoStepUPMLE
+    end subroutine DoStepPmlE
 
-  end subroutine StepUPMLE
+  end subroutine StepPmlE
 
 !----------------------------------------------------------------------
 
-end module upml
+end module pml
 
 !
 ! Authors:  A.Klaedtke, S.Scholz, J.Hamm

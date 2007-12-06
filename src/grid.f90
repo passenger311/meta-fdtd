@@ -26,13 +26,18 @@ module grid
   use mpiworld
 
   implicit none
+  public
   save
 
-  ! --- Constants
+  ! --- Module Identifier
+
+  character(len=20), private, parameter :: modname = 'grid'
+
+  ! --- Public Constants
 
   character(len=STRLNG), parameter :: pfxgrid = 'grid'
 
-  ! --- Variables  
+  ! --- Public Variables  
 
   integer :: IBEG, IEND
   integer :: JBEG, JEND

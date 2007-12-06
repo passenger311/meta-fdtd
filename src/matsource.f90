@@ -9,10 +9,10 @@
 !    InitializeMatSource
 !    FinalizeMatSource
 !    ReadMatSourceObj
-!    StepEMatSource
-!    StepHMatSource
-!    StepEMatSourceObj
-!    StepHMatSourceObj
+!    StepMatSourceE
+!    StepMatSourceH
+!    StepMatSourceObjE
+!    StepMatSourceObjH
 !
 !----------------------------------------------------------------------
 
@@ -32,7 +32,21 @@ module matsource
   use fdtd
 
   implicit none
+  private
   save
+
+  ! --- Module Identifier
+
+  character(len=STRLNG), parameter :: modname = 'matsource'
+
+  ! --- Public Methods
+
+  public :: InitializeMatSource
+  public :: FinalizeMatSource
+  public :: StepMatSourceE
+  public :: StepMatSourceH
+
+  ! --- Public Data
 
   ! --- Constants
 
@@ -42,25 +56,22 @@ module matsource
 
   type T_MATSOURCE
 
-     integer :: regidx ! regobj index
+     integer :: regidx             ! regobj index
 
-     real(kind=8) :: lambda0    ! vacuum wavelength in units of [dx]
-     real(kind=8) :: dlambda0   ! spectral width of vac.wave in units of [dx]
-     real(kind=8) :: a0         ! gaussian start value as fraction of peak
-     real(kind=8) :: ampl       ! amplitude = 1.
-     logical      :: cw         ! go over to cw after peak?
-     logical      :: esource    ! e (or h) field source
-     real(kind=8) :: vec(3)     ! vector
+     real(kind=8) :: lambda0       ! vacuum wavelength in units of [dx]
+     real(kind=8) :: dlambda0      ! spectral width of vac.wave in units of [dx]
+     real(kind=8) :: a0            ! gaussian start value as fraction of peak
+     real(kind=8) :: ampl          ! amplitude = 1.
+     logical      :: cw            ! go over to cw after peak?
+     logical      :: esource       ! e (or h) field source
+     real(kind=8) :: vec(3)        ! vector
 
-! --- internal values
-
-     real(kind=8) :: gamma
+     real(kind=8) :: gamma         ! some internal values ...
      real(kind=8) :: omega0, omega1 
      real(kind=8) :: npeak, nmax
      real(kind=8) :: es
 
   end type T_MATSOURCE
-
 
   ! --- Fields
 
@@ -133,99 +144,80 @@ contains
 
 !----------------------------------------------------------------------
  
-  subroutine StepEMatSource(ncyc)
+  subroutine StepMatSourceE(ncyc)
 
     integer :: ncyc
-    integer :: n
-
-    do n = 1, numobjmatsource
-       
-       call StepEMatSourceObj(objmatsource(n),ncyc)
-
-    end do
-
-  end subroutine StepEMatSource
-
-!----------------------------------------------------------------------
-
-
-  subroutine StepEMatSourceObj(mat,ncyc)
-
     type(T_MATSOURCE) :: mat
-    integer :: ncyc
-    
+    integer :: n
     real(kind=8) :: es
     M4_REGLOOP_DECL(reg,p,i,j,k,w)
 
-    if ( .not. mat%esource ) return
-    
-    reg = reglistobj(mat%regidx)
+    do n = 1, numobjmatsource
 
-    es = 1.0
+       mat = objmatsource(n)
 
-    if ( mat%cw .and. ncyc .lt. mat%nmax ) then
-       es =  exp ( - mat%gamma**2 * ( 1.0 * ncyc - mat%npeak )**2 )
-    endif
+       if ( .not. mat%esource ) return
+       
+       reg = reglistobj(mat%regidx)
+       
+       es = 1.0
+       
+       if ( mat%cw .and. ncyc .lt. mat%nmax ) then
+          es =  exp ( - mat%gamma**2 * ( 1.0 * ncyc - mat%npeak )**2 )
+       endif
+       
+       M4_REGLOOP_EXPR(reg,p,i,j,k,w,
+       
+       Ex(i,j,k) = Ex(i,j,k) + mat%vec(1) * es  * mat%ampl * cos(mat%omega0*ncyc) * DT
+       Ey(i,j,k) = Ey(i,j,k) + mat%vec(2) * es  * mat%ampl * cos(mat%omega0*ncyc) * DT
+       Ez(i,j,k) = Ez(i,j,k) + mat%vec(3) * es  * mat%ampl * cos(mat%omega0*ncyc) * DT
+       )            
+       
+       
+    end do
 
-    M4_REGLOOP_EXPR(reg,p,i,j,k,w,
-     
-                Ex(i,j,k) = Ex(i,j,k) + mat%vec(1) * es  * mat%ampl * cos(mat%omega0*ncyc) * DT
-                Ey(i,j,k) = Ey(i,j,k) + mat%vec(2) * es  * mat%ampl * cos(mat%omega0*ncyc) * DT
-                Ez(i,j,k) = Ez(i,j,k) + mat%vec(3) * es  * mat%ampl * cos(mat%omega0*ncyc) * DT
-    )            
-                
-  end subroutine StepEMatSourceObj
+  end subroutine StepMatSourceE
 
 !----------------------------------------------------------------------
 
-  subroutine StepHMatSource(ncyc)
+
+  subroutine StepMatSourceH(ncyc)
 
     integer :: ncyc
     integer :: n
-
-    do n = 1, numobjmatsource
-       
-       call StepHMatSourceObj(objmatsource(n),ncyc)
-
-    end do
-
-  end subroutine StepHMatSource
-
-
-!----------------------------------------------------------------------
-
-
-  subroutine StepHMatSourceObj(mat,ncyc)
-
     type(T_MATSOURCE) :: mat
-    integer :: ncyc
-    
     real(kind=8) :: es
     M4_REGLOOP_DECL(reg,p,i,j,k,w)
 
-    if ( mat%esource ) return
+    do n = 1, numobjmatsource
 
-    reg = reglistobj(mat%regidx)
+       mat = objmatsource(n)
 
-    es = 1.0
+       if ( mat%esource ) return
+       
+       reg = reglistobj(mat%regidx)
+       
+       es = 1.0
 
-    if ( mat%cw .and. ncyc .lt. mat%nmax ) then
-       es =  exp ( - mat%gamma**2 * ( 1.0 * ncyc - mat%npeak )**2 )
-    endif
+       if ( mat%cw .and. ncyc .lt. mat%nmax ) then
+          es =  exp ( - mat%gamma**2 * ( 1.0 * ncyc - mat%npeak )**2 )
+       endif
     
-    M4_REGLOOP_EXPR(reg,p,i,j,k,w,
-                
-                Hx(i,j,k) = Hx(i,j,k) + mat%vec(1) * es  * mat%ampl * cos(mat%omega0*ncyc) * DT
-                Hy(i,j,k) = Hy(i,j,k) + mat%vec(2) * es  * mat%ampl * cos(mat%omega0*ncyc) * DT
-                Hz(i,j,k) = Hz(i,j,k) + mat%vec(3) * es  * mat%ampl * cos(mat%omega0*ncyc) * DT
-                
-    )
-      
-  end subroutine StepHMatSourceObj
+       M4_REGLOOP_EXPR(reg,p,i,j,k,w,
+       
+       Hx(i,j,k) = Hx(i,j,k) + mat%vec(1) * es  * mat%ampl * cos(mat%omega0*ncyc) * DT
+       Hy(i,j,k) = Hy(i,j,k) + mat%vec(2) * es  * mat%ampl * cos(mat%omega0*ncyc) * DT
+       Hz(i,j,k) = Hz(i,j,k) + mat%vec(3) * es  * mat%ampl * cos(mat%omega0*ncyc) * DT
+       
+       )
+       
+       
+    end do
+    
+  end subroutine StepMatSourceH
 
-
+  
 !----------------------------------------------------------------------
-
 
   subroutine EchoMatSourceObj(mat)
   

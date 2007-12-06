@@ -6,9 +6,9 @@
 !
 !  subs:
 !
-!  InitializePEC
-!  FinalizePEC
-!  SetPEC
+!  InitializePec
+!  FinalizePec
+!  SetPec
 !
 !----------------------------------------------------------------------
  
@@ -24,26 +24,42 @@ module pec
   use fdtd
 
   implicit none
+  private
   save
-  
+
+  ! --- Module Identifier
+
+  character(len=20), private, parameter :: modname = 'pec'
+
+  ! --- Public Methods
+
+  public :: InitializePec
+  public :: FinalizePec
+  public :: SetPec
+
+  ! --- Public Data
+
+  ! --- Constants
+
+  ! --- Data
 
 contains
 
 !----------------------------------------------------------------------
 
-  subroutine InitializePEC
+  subroutine InitializePec
 
-  end subroutine InitializePEC
-
-!----------------------------------------------------------------------
-
-  subroutine FinalizePEC
-
-  end subroutine FinalizePEC
+  end subroutine InitializePec
 
 !----------------------------------------------------------------------
 
-  subroutine SetPEC
+  subroutine FinalizePec
+
+  end subroutine FinalizePec
+
+!----------------------------------------------------------------------
+
+  subroutine SetPec
     
     integer :: i,j,k
 
@@ -91,7 +107,7 @@ contains
     
     endif
 
-  end subroutine SetPEC
+  end subroutine SetPec
 
 !----------------------------------------------------------------------
 

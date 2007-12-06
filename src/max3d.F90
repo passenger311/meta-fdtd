@@ -21,19 +21,17 @@ program max3d
 
   use constant
   use strings
-  use reglist
-  use buflist
-  use outlist
+  use list
   use mpiworld
   use grid
   use outgpl
   use fdtd
   use pec
-  use upml
+  use pml
   use mat
   use tfsf
   use outgpl_fdtd
-  use mat_source
+  use matsource
 
   implicit none
 
@@ -89,18 +87,14 @@ program max3d
 
         write(6,*) '* initialising modules: ',ranklbl
 
-        write(6,*) '* -> InitializeRegList'
-        call InitializeRegList
-        write(6,*) '* -> InitializeBufList'
-        call InitializeBufList
-        write(6,*) '* -> InitializeOutList'
-        call InitializeOutList
+        write(6,*) '* -> InitializeList'
+        call InitializeList
         write(6,*) '* -> InitializeGrid'
         call InitializeGrid(mpi_sfxin)
         write(6,*) '* -> InitializeFdtd'
         call InitializeFdtd(mpi_sfxin)  
-        write(6,*) '* -> InitializeUPML'
-        call InitializeUPML
+        write(6,*) '* -> InitializePml'
+        call InitializePml
         write(6,*) '* -> InitializeMat'
         call InitializeMat
         write(6,*) '* -> InitializeOut'        !
@@ -161,13 +155,13 @@ program max3d
 ! ------------------------------ PMLH ---------------------------------
 
 #if MPE_LOG
-     call MPE_LOG_EVENT(9,"StepUPMLH",mpierr) 
+     call MPE_LOG_EVENT(9,"StepPmlH",mpierr) 
 #endif /* MPE_LOG */
 
-     call StepUPMLH()
+     call StepPmlH()
 
 #if MPE_LOG
-     call MPE_LOG_EVENT(10,"StepUPMLH",mpierr)
+     call MPE_LOG_EVENT(10,"StepPmlH",mpierr)
 #endif /* MPE_LOG */
 
 
@@ -297,15 +291,15 @@ program max3d
 ! ---------------------------- PMLE -----------------------------------
 
 #if MPE_LOG
-     call MPE_LOG_EVENT(13,"StepUPMLE",mpierr)
+     call MPE_LOG_EVENT(13,"StepPmlE",mpierr)
 #endif /* MPE_LOG */
 
-     call StepUPMLE() 
+     call StepPmlE() 
 
      call SetPEC()
 
 #if MPE_LOG
-     call MPE_LOG_EVENT(14,"StepUPMLE",mpierr)
+     call MPE_LOG_EVENT(14,"StepPmlE",mpierr)
 #endif /* MPE_LOG */
 
 
@@ -451,18 +445,14 @@ program max3d
         call FinalizeOut
         write(6,*) '* -> FinalizeMat'
         call FinalizeMat
-        write(6,*) '* -> FinalizeUPML'
-        call FinalizeUPML
+        write(6,*) '* -> FinalizePml'
+        call FinalizePml
         write(6,*) '* -> FinalizeFdtd'
         call FinalizeFdtd
         write(6,*) '* -> FinalizeGrid'
         call FinalizeGrid
-        write(6,*) '* -> FinalizeOutList'
-        call FinalizeOutList
-        write(6,*) '* -> FinalizeBufList'
-        call FinalizeBufList
-        write(6,*) '* -> FinalizeRegList'
-        call FinalizeRegList
+        write(6,*) '* -> FinalizeList'
+        call FinalizeList
 
 #if MPI
         write(6,*) ranklbl, "* time for Comms H = ", time_waited(1)

@@ -26,19 +26,36 @@ module fdtd
   use grid
  
   implicit none
+  private
   save
+
+  ! --- Module Identifier
+
+  character(len=20), parameter :: modname = 'fdtd'
+
+  ! --- Public Methods
+
+  public :: InitializeFdtd
+  public :: FinalizeFdtd
+  public :: StepE
+  public :: StepH
+
+  ! --- Public Data
+
+  public :: Ex, Ey, Ez, Hx, Hy, Hz, EPSINV
+  public :: pfxepsilon
 
   ! --- Constants
 
-  character(len=255), parameter :: pfxepsilon = 'epsilon'
+  character(len=20), parameter :: pfxepsilon = 'epsilon'
 
-  ! --- Fields
+  ! --- Data
 
   M4_FT, allocatable, dimension(:, :, :) :: Ex, Ey, Ez
   M4_FT, allocatable, dimension(:, :, :) :: Hx, Hy, Hz
   real(kind=8), allocatable, dimension(:, :, :) :: EPSINV
 
-  
+ 
 contains
 
 !----------------------------------------------------------------------
@@ -121,7 +138,7 @@ contains
         integer :: ios, i, j, k
         real(kind=8) :: val
 
-        character(len=255) :: file
+        character(len=STRLNG) :: file
 
         file = cat2(pfxepsilon,sfx)
 
