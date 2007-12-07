@@ -51,8 +51,6 @@ contains
 
   subroutine InitializeMPIWorld
 
-    implicit none      
-
 #ifdef MPI
 
     mpicomm = MPI_COMM_WORLD
@@ -65,9 +63,9 @@ contains
 
 #endif /* MPI */
 
-    mpi_sfxin = cat3('.',i2str(myrank),'.in')
-    mpi_sfxout = cat3('.',i2str(myrank),'.out')
-    ranklbl = cat5('(',i2str(myrank),'/',i2str(numproc),')')
+    mpi_sfxin = '.' // TRIM(i2str(myrank)) // '.in'
+    mpi_sfxout = '.' // TRIM(i2str(myrank)) // '.out'
+    ranklbl = '(' // TRIM(i2str(myrank)) // '/' // TRIM(i2str(numproc)) // ')'
 
 #ifdef MPI
 

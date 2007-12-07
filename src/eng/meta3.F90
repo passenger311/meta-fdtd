@@ -85,7 +85,7 @@ program meta3
 
      if (myrank .eq. l) then
 
-        write(6,*) '* initialising modules: ',ranklbl
+        write(6,*) '* initialising modules: myrank = ', ranklbl
 
         write(6,*) '* -> InitializeList'
         call InitializeList

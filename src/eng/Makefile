@@ -78,7 +78,13 @@ meta3.o
 
 EXE = meta3
 
+.PHONY: clean proper default install
+
 default: $(EXE)
+
+install: 
+	[ -d ../build$(ENGINE) ] || mkdir ../build$(ENGINE)
+	cp $(EXE) ../build$(ENGINE)
 
 %.o : %.f90
 	@echo [F90] $*
@@ -91,13 +97,12 @@ default: $(EXE)
 	@$(F90) $(F90FLAGS) $(INCLUDE) -c $*_m4.F90 -o $*.o
 
 %.o : %.c
-	 $(CC) $(CCFLAGS) $(INCLUDE) -c $<
+	@echo [CC ] $*
+	@$(CC) $(CCFLAGS) $(INCLUDE) -c $<
 
 
 $(EXE) : $(FOBJ)
 	$(F90) $(LDFLAGS) $(FOBJ) -o $(EXE)
-
-.PHONY: clean proper
 
 clean:
 	 rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod *_m4.f90 *_m4.F90

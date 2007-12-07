@@ -291,8 +291,8 @@ contains
     character(len=1024) :: str
 
     write(str,*) i
-    i2str = wipe(str)
-    
+!    i2str = wipe(str)
+    i2str = TRIM(ADJUSTL(str))
     return
 
   end function i2str
