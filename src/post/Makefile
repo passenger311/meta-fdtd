@@ -44,46 +44,16 @@ TE=te
 M4DEFINE+=-DM4_TE=1
 endif
 
-# ENGINE=$(CT)$(NG)$(TE)$(MPI)$(OMP)
-
-M4= m4 $(M4DEFINE) meta3.m4
-
-MATLIST=$(shell cat mat.def | tr "," " " 2>/dev/null)
-DIAGLIST=$(shell cat diag.def | tr "," " " 2>/dev/null)
-
-MATOBJ= $(patsubst %,%.o,$(MATLIST))
-DIAGOBJ= $(patsubst %,%.o,$(DIAGLIST))
+# M4= m4 $(M4DEFINE) meta3.m4
 
 
-FOBJ= strings.o\
-constant.o\
-mpiworld.o\
-grid.o\
-reglist.o\
-buflist.o\
-outlist.o\
-list.o\
-fdtd.o\
-pec.o\
-pml.o\
-fdtd_outgpl.o\
-$(MATOBJ)\
-mat.o\
-$(DIAGOBJ)\
-diag.o\
-outgpl.o\
-out.o\
-meta3.o
+INSTALLFILES=\
+stitch-outgpl
 
-
-EXE = meta3
 
 .PHONY: clean proper default install
 
-INSTALLFILES=\
-$(EXE)
-
-default: $(EXE)
+default: 
 
 install: 
 	@echo [INSTALL] $(INSTALLFILES)
@@ -103,10 +73,6 @@ install:
 %.o : %.c
 	@echo [CC ] $*
 	@$(CC) $(CCFLAGS) $(INCLUDE) -c $<
-
-
-$(EXE) : $(FOBJ)
-	$(F90) $(LDFLAGS) $(FOBJ) -o $(EXE)
 
 clean:
 	 rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod *_m4.f90 *_m4.F90

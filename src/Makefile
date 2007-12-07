@@ -40,16 +40,17 @@ ENGINE=$(CT)$(NG)$(TE)$(MPI)$(OMP)
 
 .PHONY: default clean proper eng pre post install
 
-default: eng pre post install
+default: eng pre post run install
 
 eng pre post:
-	cd $@ && $(MAKE) $(M4DEFINE) $(ENGINE)
+	@cd $@ && $(MAKE) $(M4DEFINE) $(ENGINE)
 
 
 clean proper install: 
-	cd eng;  $(MAKE) $@; cd ..
-	cd pre;  $(MAKE) $@; cd ..
-	cd post; $(MAKE) $@; cd ..
+	@cd eng;  $(MAKE) $@; cd ..
+	@cd pre;  $(MAKE) $@; cd ..
+	@cd post; $(MAKE) $@; cd ..
+	@cd run; $(MAKE) $@; cd ..
 
 
 # ---------------------------------------------------------------------
