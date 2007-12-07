@@ -39,7 +39,7 @@ module buflist
 
   ! --- Module Identifier
 
-  character(len=20), parameter :: modname = 'buflist'
+  character(len=20), parameter :: modname = 'BUFLIST'
 
   ! --- Public Methods
 

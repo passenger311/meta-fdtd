@@ -33,7 +33,7 @@ module mat
 
   ! --- Module Identifier
 
-  character(len=20), private, parameter :: modname = 'mat'
+  character(len=20), private, parameter :: modname = 'MAT'
 
   ! --- Public Methods
 

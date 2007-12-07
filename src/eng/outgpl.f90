@@ -40,7 +40,7 @@ module outgpl
   
   ! --- Module Identifier
 
-  character(len=STRLNG), parameter :: modname = 'outgpl'
+  character(len=STRLNG), parameter :: modname = 'OUTGPL'
 
   ! --- Public Methods
 

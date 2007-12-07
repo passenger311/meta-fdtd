@@ -38,7 +38,7 @@ module pml
 
   ! --- Module Identifier
 
-  character(len=20), private, parameter :: modname = 'pml'
+  character(len=20), private, parameter :: modname = 'PML'
 
   ! --- Public Methods
 

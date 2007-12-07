@@ -67,7 +67,7 @@ module reglist
 
   ! --- Module Identifier
 
-  character(len=20), parameter :: modname = 'reglist'
+  character(len=20), parameter :: modname = 'REGLIST'
 
   ! --- Public Methods
 

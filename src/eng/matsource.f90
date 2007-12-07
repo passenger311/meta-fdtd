@@ -25,7 +25,7 @@ module matsource
 
   use constant
   use mpiworld
-  use regobj
+  use reglist
   use grid
   use fdtd
 
@@ -35,7 +35,7 @@ module matsource
 
   ! --- Module Identifier
 
-  character(len=STRLNG), parameter :: modname = 'matsource'
+  character(len=STRLNG), parameter :: modname = 'MATSOURCE'
 
   ! --- Public Methods
 

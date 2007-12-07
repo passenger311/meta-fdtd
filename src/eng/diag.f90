@@ -33,7 +33,7 @@ module diag
 
   ! --- Module Identifier
 
-  character(len=20), private, parameter :: modname = 'diag'
+  character(len=20), private, parameter :: modname = 'DIAG'
 
   ! --- Public Methods
 

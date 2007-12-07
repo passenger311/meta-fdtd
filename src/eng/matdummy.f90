@@ -35,7 +35,7 @@ module matdummy
 
   ! --- Module Identifier
 
-  character(len=STRLNG), parameter :: modname = 'matdummy'
+  character(len=STRLNG), parameter :: modname = 'MATDUMMY'
 
   ! --- Public Methods
 

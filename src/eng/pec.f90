@@ -29,7 +29,7 @@ module pec
 
   ! --- Module Identifier
 
-  character(len=20), private, parameter :: modname = 'pec'
+  character(len=20), private, parameter :: modname = 'PEC'
 
   ! --- Public Methods
 

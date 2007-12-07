@@ -29,7 +29,7 @@ module outlist
 
   ! --- Module Identifier
 
-  character(len=20), parameter :: modname = 'outlist'
+  character(len=20), parameter :: modname = 'OUTLIST'
 
   ! --- Public Methods
 

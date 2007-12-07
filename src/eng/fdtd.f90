@@ -33,7 +33,7 @@ module fdtd
 
   ! --- Module Identifier
 
-  character(len=20), parameter :: modname = 'fdtd'
+  character(len=20), parameter :: modname = 'FDTD'
 
   ! --- Public Methods
 

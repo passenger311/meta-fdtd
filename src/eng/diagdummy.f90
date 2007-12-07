@@ -35,7 +35,7 @@ module diagdummy
 
   ! --- Module Identifier
 
-  character(len=STRLNG), parameter :: modname = 'diagdummy'
+  character(len=STRLNG), parameter :: modname = 'DIAGDUMMY'
 
   ! --- Public Methods
 

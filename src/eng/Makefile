@@ -48,6 +48,13 @@ endif
 
 M4= m4 $(M4DEFINE) meta3.m4
 
+MATLIST=$(shell cat mat.def | tr "," " " 2>/dev/null)
+DIAGLIST=$(shell cat diag.def | tr "," " " 2>/dev/null)
+
+MATOBJ= $(patsubst %,%.o,$(MATLIST))
+DIAGOBJ= $(patsubst %,%.o,$(DIAGLIST))
+
+
 FOBJ= strings.o\
 constant.o\
 mpiworld.o\
@@ -60,10 +67,9 @@ fdtd.o\
 pec.o\
 pml.o\
 fdtd_outgpl.o\
-matdummy.o\
-matsource.o\
+$(MATOBJ)\
 mat.o\
-diagdummy.o\
+$(DIAGOBJ)\
 diag.o\
 outgpl.o\
 out.o\

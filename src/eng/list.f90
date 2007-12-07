@@ -30,7 +30,7 @@ module list
 
   ! --- Module Identifier
 
-  character(len=20), parameter :: modname = 'list'
+  character(len=20), parameter :: modname = 'LIST'
 
   ! --- Public Methods
 

@@ -10,7 +10,7 @@
 !  InitializeOut
 !  FinalizeOut
 !  WriteHeaderOut
-!  PrepDataOut
+!  LoadDataOut
 !  WriteDataOut
 !
 !----------------------------------------------------------------------
@@ -36,7 +36,23 @@ module out
 ! **
 
   implicit none
+  private
   save
+
+  ! --- Module Identifier
+
+  character(len=20), private, parameter :: modname = 'OUT'
+
+  ! --- Public Methods
+
+  public :: InitializeOut
+  public :: FinalizeOut
+  public :: WriteHeaderOut
+  public :: LoadDataOut
+  public :: WriteDataOut
+
+  ! --- Public Data
+
 
 contains
 

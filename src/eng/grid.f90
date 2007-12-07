@@ -31,7 +31,7 @@ module grid
 
   ! --- Module Identifier
 
-  character(len=20), private, parameter :: modname = 'grid'
+  character(len=20), private, parameter :: modname = 'GRID'
 
   ! --- Public Constants
 
