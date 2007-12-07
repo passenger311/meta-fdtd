@@ -29,6 +29,7 @@ program meta3
   use pec
   use pml
   use mat
+  use diag
   use tfsf
   use outgpl_fdtd
   use matsource
@@ -73,6 +74,8 @@ program meta3
      call MPE_Describe_state(13,14,"PmlE","snow:gray6")
      call MPE_Describe_state(15,16,"StepHMat","pink1:gray7")
      call MPE_Describe_state(17,18,"StepEMat","chocolate:gray8")
+     call MPE_Describe_state(19,20,"StepHDiag","pink1:gray7")
+     call MPE_Describe_state(21,22,"StepEDiag","chocolate:gray8")
 
   end if
 #endif /* MPE_LOG */
@@ -165,9 +168,23 @@ program meta3
 #endif /* MPE_LOG */
 
 
+! -------------------------- StepHMat ---------------------------------
+
+
+#if MPE_LOG
+     call MPE_LOG_EVENT(15,"StepHMat",mpierr) 
+#endif /* MPE_LOG */
+
+     call StepHMat(ncyc)
+
+#if MPE_LOG
+     call MPE_LOG_EVENT(16,"StepHMat",mpierr) 
+#endif /* MPE_LOG */
+
+
 ! -------------------------- COMMS H -------------------------------
 
-! initiate comms
+! H field calculation if finished -> initiate comms
 
 #if MPI
 
@@ -216,19 +233,25 @@ program meta3
 #endif /* MPI */
 
 
-! -------------------------- StepMatH ---------------------------------
+! -------------------------- StepHDiag --------------------------------
 
 ! use the time while comms are pending to do some useful stuff
 
 #if MPE_LOG
-     call MPE_LOG_EVENT(15,"StepHMat",mpierr) 
+     call MPE_LOG_EVENT(19,"StepHDiag",mpierr) 
 #endif /* MPE_LOG */
 
-     call StepHMat(ncyc)
+     call StepHDiag(ncyc)
 
 #if MPE_LOG
-     call MPE_LOG_EVENT(16,"StepHMat",mpierr) 
+     call MPE_LOG_EVENT(20,"StepHDiag",mpierr) 
 #endif /* MPE_LOG */
+
+
+! ------------------------ LoadDataOut --------------------------------
+
+! use the time while comms are pending to do some useful stuff
+
 
      call LoadDataOut(ncyc) ! buffer output data from this half-step
 
@@ -303,9 +326,21 @@ program meta3
 #endif /* MPE_LOG */
 
 
+! -------------------------- StepEMat ---------------------------------
+
+#if MPE_LOG
+     call MPE_LOG_EVENT(17,"StepEMat",mpierr) 
+#endif /* MPE_LOG */
+
+     call StepEMat(ncyc)
+
+#if MPE_LOG
+     call MPE_LOG_EVENT(18,"StepEMat",mpierr) 
+#endif /* MPE_LOG */
+
 ! -------------------------- COMMS E ----------------------------------
 
-! initiate comms
+! E field calculation is finished -> initiate comms
 
 #if MPI 
 
@@ -354,24 +389,23 @@ program meta3
 #endif /* MPI */
 
 
-! -------------------------- StepEMat ---------------------------------
+! -------------------------- StepEDiag --------------------------------
 
 ! use the time while comms are pending to do some useful stuff
 
 #if MPE_LOG
-     call MPE_LOG_EVENT(17,"StepEMat",mpierr) 
+     call MPE_LOG_EVENT(21,"StepEDiag",mpierr) 
 #endif /* MPE_LOG */
 
-     call StepEMat(ncyc)
-
-!    call SourceEy(ncyc)
-!    call NewTFSF_E()
-!    call DataOutGPL(ncyc)
-!    call PzDFT(ncyc)
+     call StepEDiag(ncyc)
 
 #if MPE_LOG
-     call MPE_LOG_EVENT(18,"StepEMat",mpierr) 
+     call MPE_LOG_EVENT(22,"StepEDiag",mpierr) 
 #endif /* MPE_LOG */
+
+! ------------------------ WriteDataOut -------------------------------
+
+! use the time while comms are pending to do some useful stuff
 
      call WriteDataOut(ncyc) ! write output data after full-step
 
