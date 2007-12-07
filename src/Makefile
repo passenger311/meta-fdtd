@@ -21,33 +21,36 @@ M4DEFINE+= -DM4_OMP=1
 endif
 
 ifneq ($(CT),)
-CT=ct
+CT=-ct
 M4DEFINE+= -DM4_CT=1
 endif
 
 ifneq ($(NG),)
-NG=ng
+NG=-ng
 M4DEFINE+=-DM4_NG=1
 endif
 
 ifneq ($(TE),)
-TE=te
+TE=-te
 M4DEFINE+=-DM4_TE=1
 endif
 
 ENGINE=$(CT)$(NG)$(TE)$(MPI)$(OMP)
 
 
-.PHONY: default clean proper
+.PHONY: default clean proper eng pre post install
 
-default: 
-	cd eng; $(MAKE) $(M4DEFINE) $(ENGINE)
+default: eng pre post install
 
-clean: 
-	cd eng; $(MAKE) clean
+eng pre post:
+	cd $@ && $(MAKE) $(M4DEFINE) $(ENGINE)
 
-proper: 
-	cd eng; $(MAKE) proper
+
+clean proper install: 
+	cd eng;  $(MAKE) $@; cd ..
+	cd pre;  $(MAKE) $@; cd ..
+	cd post; $(MAKE) $@; cd ..
+
 
 # ---------------------------------------------------------------------
 
