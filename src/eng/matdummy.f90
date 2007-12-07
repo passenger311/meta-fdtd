@@ -25,7 +25,7 @@ module matdummy
 
   use constant
   use mpiworld
-  use regobj
+  use reglist
   use grid
   use fdtd
 

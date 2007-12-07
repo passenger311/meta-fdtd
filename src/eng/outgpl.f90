@@ -155,7 +155,7 @@ contains
 ! ** call output methods
 ! 1.
     case ("fdtd")
-       call LoadDataFdtdOutgplObj(out,ncyc)
+       call WriteDataFdtdOutgplObj(out,ncyc,.false.)
 ! 2.
 ! **
     end select
@@ -180,7 +180,7 @@ contains
 ! ** call output methods
 ! 1.
     case ("fdtd")
-       call WriteDataFdtdOutgplObj(out,ncyc)
+       call WriteDataFdtdOutgplObj(out,ncyc,.true.)
 ! 2.
 ! **
     end select

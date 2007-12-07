@@ -5,8 +5,8 @@ define(`M4_REGLOOP_DECL',`
 ')
 
 define(`M4_REGLOOP_EXPR',`
-! --- START M4: REG_LOOP
-! reg,p,i,j,k,w,expr
+! --- START M4: REGLOOP_EXPR
+! reg,p,i,j,k,w,expr,spac1, spac2
 
 if ( $1%islist ) then
  
@@ -34,7 +34,9 @@ else
      $7
 	   
     enddo
+    $8
    enddo
+   $9
   enddo
 
  else 
@@ -57,7 +59,7 @@ else
 
 endif
 
-! --- END M4: REG_LOOP
+! --- END M4: REGLOOP_EXPR
 
 ')
 
@@ -68,5 +70,5 @@ write($7,"($8)") $9
 else
 write($7,"(I5,I5,I5,$8)") $3,$4,$5,$9
 endif
-')
+',`if ( $1%is .ne. $1%ie ) write($7,*)', `if ( $1%js .ne. $1%je ) write($7,*)' )
 ')
