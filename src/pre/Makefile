@@ -44,7 +44,8 @@ TE=te
 M4DEFINE+=-DM4_TE=1
 endif
 
-# M4= m4 $(M4DEFINE) meta3.m4
+
+ENGINE=$(CT)$(NG)$(TE)$(MPI)$(OMP)
 
 INSTALLFILES=\
 material.pm

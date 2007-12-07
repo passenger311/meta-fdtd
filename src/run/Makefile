@@ -30,21 +30,22 @@ M4DEFINE+= -DM4_OMP=1
 endif
 
 ifneq ($(CT),)
-CT=ct
+CT=-ct
 M4DEFINE+= -DM4_CT=1
 endif
 
 ifneq ($(NG),)
-NG=ng
+NG=-ng
 M4DEFINE+=-DM4_NG=1
 endif
 
 ifneq ($(TE),)
-TE=te
+TE=-te
 M4DEFINE+=-DM4_TE=1
 endif
 
-# M4= m4 $(M4DEFINE) meta3.m4
+ENGINE=$(CT)$(NG)$(TE)$(MPI)$(OMP)
+
 
 INSTALLFILES=\
 qscript.mpi\
