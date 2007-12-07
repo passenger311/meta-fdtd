@@ -2,32 +2,30 @@
 !
 !  module: diag / meta3
 !
-!  diagnostics hook.
+!  diagerial hook.
 !
 !  subs:
 !
-!    InitializeMat
-!    FinalizeMat
-!    StepMatE
-!    StepMatH
+!    InitializeDiag
+!    FinalizeDiag
+!    StepDiagE
+!    StepDiagH
 !
 !----------------------------------------------------------------------
 
 
 ! =====================================================================
 !
-! The Diag hook is structural identical to the Mat modules in providing
-! hooks for specific Diag modules. In contrary to Mat modules, Diag
-! modules promise not to modify the E and H field values.
-!
+! The Diag module hook provides the hooks to include various diagerial 
+! modules into the fdtd algorithm.
+
 
 module diag
 
-! ** add material modules
-! 1.
-  use diagpdft
-! 2.
-! **
+  use strings
+  use constant
+  M4_FOREACH_DIAG(`use ', `
+  ')
 
   implicit none
   private
@@ -35,7 +33,7 @@ module diag
 
   ! --- Module Identifier
 
-  character(len=20), private, parameter :: modname = 'mat'
+  character(len=20), private, parameter :: modname = 'diag'
 
   ! --- Public Methods
 
@@ -46,11 +44,11 @@ module diag
 
   ! --- Public Data
 
-  public :: pfxmat
+  public :: pfxdiag
 
   ! --- Constants
 
-  character(len=STRLNG), parameter :: pfxmat = 'mat'
+  character(len=STRLNG), parameter :: pfxdiag = 'diag'
 
   ! --- Data
 
@@ -64,11 +62,8 @@ contains
 
     call ReadConfig
 
-! ** call material initialize methods
-! 1. 
-    call InitializeDiagSource
-! 2.
-! **
+    M4_FOREACH_DIAG(`call Initialize',`
+    ')
 
   contains
     
@@ -77,19 +72,21 @@ contains
       character(len=STRLNG) :: file, string
       integer :: ios
       
-      file=cat2(pfxmat,sfxin)
+      file=cat2(pfxdiag,sfxin)
         
       open(UNITTMP,FILE=file,STATUS='unknown')
       do
          read(UNITTMP,*, IOSTAT=ios) string
          if(ios .ne. 0) exit
          select case ( string )
-! ** read material config sections
-! 1.
-         case("(MATSOURCE")
-            call ReadDiagSourceObj(UNITTMP)
-! 2.
-! **
+
+            M4_FOREACH_DIAG2(`case ("(',`")
+             call Read',`Obj(UNITTMP)
+             ')
+
+         case default
+            write(STDERR,*) "!ERROR UNDEFINED DIAG SECTION: ReadConfig/diag"
+            stop
          end select
          
       enddo
@@ -103,11 +100,8 @@ contains
 
   subroutine FinalizeDiag
 
-! ** call material finalize methods
-! 1.
-    call FinalizeDiagSource
-! 2.
-! **
+    M4_FOREACH_DIAG(`call Finalize',`
+    ')
 
   end subroutine FinalizeDiag
 
@@ -117,11 +111,8 @@ contains
 
     integer :: ncyc
 
-! ** call material e-field step methods
-! 1.
-    call StepDiagSourceE(ncyc)
-! 2.
-! **
+    M4_FOREACH_DIAG(`call StepE',`(ncyc)
+    ')
 
   end subroutine StepDiagE
 
@@ -131,11 +122,8 @@ contains
 
     integer :: ncyc
 
-! ** call material h-field step methods
-! 1.
-    call StepDiagSourceH(ncyc)
-! 2.
-! **
+    M4_FOREACH_DIAG(`call StepH',`(ncyc)
+    ')
 
   end subroutine StepDiagH
 

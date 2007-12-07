@@ -2,7 +2,7 @@
 !
 !  module: mat / meta3
 !
-!  material equations.
+!  material hook. 
 !
 !  subs:
 !
@@ -16,17 +16,16 @@
 
 ! =====================================================================
 !
-! The Mat module provides the hooks to include various material 
-! equations into the fdtd algorithm.
+! The Mat module hook provides the hooks to include various material 
+! modules into the fdtd algorithm.
 
 
 module mat
 
-! ** add material modules
-! 1.
-  use matsource
-! 2.
-! **
+  use strings
+  use constant
+  M4_FOREACH_MAT(`use ', `
+  ')
 
   implicit none
   private
@@ -63,11 +62,8 @@ contains
 
     call ReadConfig
 
-! ** call material initialize methods
-! 1. 
-    call InitializeMatSource
-! 2.
-! **
+    M4_FOREACH_MAT(`call Initialize',`
+    ')
 
   contains
     
@@ -83,12 +79,15 @@ contains
          read(UNITTMP,*, IOSTAT=ios) string
          if(ios .ne. 0) exit
          select case ( string )
-! ** read material config sections
-! 1.
-         case("(MATSOURCE")
-            call ReadMatSourceObj(UNITTMP)
-! 2.
-! **
+
+            M4_FOREACH_MAT2(`case ("(',`")
+             call Read',`Obj(UNITTMP)
+             ')
+
+         case default
+            write(STDERR,*) "!ERROR UNDEFINED MAT SECTION: ReadConfig/mat"
+            stop
+            
          end select
          
       enddo
@@ -102,11 +101,8 @@ contains
 
   subroutine FinalizeMat
 
-! ** call material finalize methods
-! 1.
-    call FinalizeMatSource
-! 2.
-! **
+    M4_FOREACH_MAT(`call Finalize',`
+    ')
 
   end subroutine FinalizeMat
 
@@ -116,11 +112,8 @@ contains
 
     integer :: ncyc
 
-! ** call material e-field step methods
-! 1.
-    call StepMatSourceE(ncyc)
-! 2.
-! **
+    M4_FOREACH_MAT(`call StepE',`(ncyc)
+    ')
 
   end subroutine StepMatE
 
@@ -130,11 +123,8 @@ contains
 
     integer :: ncyc
 
-! ** call material h-field step methods
-! 1.
-    call StepMatSourceH(ncyc)
-! 2.
-! **
+    M4_FOREACH_MAT(`call StepH',`(ncyc)
+    ')
 
   end subroutine StepMatH
 

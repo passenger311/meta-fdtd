@@ -60,9 +60,10 @@ fdtd.o\
 pec.o\
 pml.o\
 fdtd_outgpl.o\
+matdummy.o\
 matsource.o\
-tfsf.o\
 mat.o\
+diagdummy.o\
 diag.o\
 outgpl.o\
 out.o\
