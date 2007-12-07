@@ -43,12 +43,18 @@ module matsource
   public :: FinalizeMatSource
   public :: StepEMatSource
   public :: StepHMatSource
+  public :: ReadMatSourceObj
 
   ! --- Public Data
 
+  public :: T_MATSOURCE
+  public :: matsourceobj
+  public :: nummatsourceobj
+
+
   ! --- Constants
 
-  integer, parameter :: MAXOBJMATSOURCE = 100
+  integer, parameter :: MAXMATSOURCEOBJ = 100
 
   ! --- Types
 
@@ -73,8 +79,8 @@ module matsource
 
   ! --- Fields
 
-  type(T_MATSOURCE) :: objmatsource(MAXOBJMATSOURCE) 
-  integer :: numobjmatsource
+  type(T_MATSOURCE) :: matsourceobj(MAXMATSOURCEOBJ) 
+  integer :: nummatsourceobj
 
 contains
 
@@ -97,11 +103,11 @@ contains
     integer:: funit
     character(len=STRLNG) :: file, string
     integer :: ios
-    type(T_REGION) :: reg
+    type(T_REG) :: reg
     type(T_MATSOURCE) :: mat
 
-    numobjmatsource = numobjmatsource + 1
-    mat = objmatsource(numobjmatsource)
+    nummatsourceobj = nummatsourceobj + 1
+    mat = matsourceobj(nummatsourceobj)
 
 ! read parameters
 
@@ -120,13 +126,13 @@ contains
        call ReadRegObj(reg, funit)
        mat%regidx = reg%idx
     else
-       write(6,*) "!ERROR NO REGION DEFINED: ReadObjMatSource"
+       write(6,*) "!ERROR NO REGION DEFINED: ReadMatsourceobj"
        stop
     end if
 
     read(funit,*) string
     if ( string .ne. ")" ) then
-       write(6,*) "!ERROR BAD TERMINATOR: ReadObjMatSource"
+       write(6,*) "!ERROR BAD TERMINATOR: ReadMatsourceobj"
        stop
     end if
 
@@ -150,13 +156,13 @@ contains
     real(kind=8) :: es
     M4_REGLOOP_DECL(reg,p,i,j,k,w)
 
-    do n = 1, numobjmatsource
+    do n = 1, nummatsourceobj
 
-       mat = objmatsource(n)
+       mat = matsourceobj(n)
 
        if ( .not. mat%esource ) return
        
-       reg = reglistobj(mat%regidx)
+       reg = regobj(mat%regidx)
        
        es = 1.0
        
@@ -187,13 +193,13 @@ contains
     real(kind=8) :: es
     M4_REGLOOP_DECL(reg,p,i,j,k,w)
 
-    do n = 1, numobjmatsource
+    do n = 1, nummatsourceobj
 
-       mat = objmatsource(n)
+       mat = matsourceobj(n)
 
        if ( mat%esource ) return
        
-       reg = reglistobj(mat%regidx)
+       reg = regobj(mat%regidx)
        
        es = 1.0
 

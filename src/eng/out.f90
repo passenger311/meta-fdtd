@@ -10,7 +10,6 @@
 !  InitializeOut
 !  FinalizeOut
 !  WriteHeaderOut
-!  LoadDataOut
 !  WriteDataOut
 !
 !----------------------------------------------------------------------
@@ -48,7 +47,6 @@ module out
   public :: InitializeOut
   public :: FinalizeOut
   public :: WriteHeaderOut
-  public :: LoadDataOut
   public :: WriteDataOut
 
   ! --- Public Data
@@ -62,13 +60,13 @@ contains
 
     integer :: n
 
-    do n=1, numoutlist
+    do n=1, numoutobj
        
-       select case ( outlist(n)%fmt ) 
+       select case ( outobj(n)%fmt ) 
 ! ** call output buffer preparation
 ! 1.
        case ( "GPL" ) 
-          call InitializeOutgplObj(out)
+          call InitializeOutgplObj(outobj(n))
 ! 2.
 ! **
        case default
@@ -87,13 +85,13 @@ contains
 
     integer :: n
 
-    do n=1, numoutlist
+    do n=1, numoutobj
        
-       select case ( outlist(n)%fmt ) 
+       select case ( outobj(n)%fmt ) 
 ! ** call output buffer preparation
 ! 1.
        case ( "GPL" ) 
-          call FinalizeOutgplObj(out)
+          call FinalizeOutgplObj(outobj(n))
 ! 2.
 ! **
        case default
@@ -112,14 +110,13 @@ contains
     
     integer :: n
 
-    do n=1, numoutlist
+    do n=1, numoutobj
        
-  
-       select case ( outlist(n)%format ) 
+       select case ( outobj(n)%fmt ) 
 ! ** call output write header methods
 ! 1.
        case ( "GPL" ) 
-          call WriteHeaderOutgplObj(outlist(n))
+          call WriteHeaderOutgplObj(outobj(n))
 ! 2.
 ! **
        case default
@@ -131,43 +128,21 @@ contains
     
   end subroutine WriteHeaderOut
   
-!----------------------------------------------------------------------
-
-  subroutine PrepDataOut(ncyc)
-    
-    integer :: n, ncyc
-
-    do n=1, numoutlist
-      
-       select case ( outlist(n)%format ) 
-! ** call output write data methods
-! 1.
-       case ( "GPL" ) 
-          call PrepDataOutgplObj(outlist(n), ncyc)
-! 2.
-! **
-       case default
-          write(STDERR,*) "!ERROR UNDEFINED OUTPUT FORMAT: CloseOut/out"
-          stop
-       end select
-
-    enddo
-    
-  end subroutine PrepDataOut
 
 !----------------------------------------------------------------------
 
-  subroutine WriteDataOut(ncyc)
+  subroutine WriteDataOut(ncyc, mode)
     
     integer :: n, ncyc
+    logical :: mode
 
-    do n=1, numoutlist
+    do n=1, numoutobj
       
-       select case ( outlist(n)%format ) 
+       select case ( outobj(n)%fmt ) 
 ! ** call output write data methods
 ! 1.
        case ( "GPL" ) 
-          call WriteDataOutgplObj(outlist(n), ncyc)
+          call WriteDataOutgplObj(outobj(n), ncyc, mode)
 ! 2.
 ! **
        case default

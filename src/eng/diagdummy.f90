@@ -25,7 +25,7 @@ module diagdummy
 
   use constant
   use mpiworld
-  use regobj
+  use reglist
   use grid
   use fdtd
 
@@ -43,12 +43,17 @@ module diagdummy
   public :: FinalizeDiagDummy
   public :: StepEDiagDummy
   public :: StepHDiagDummy
+  public :: ReadDiagDummyObj
 
   ! --- Public Data
 
+  public :: T_DIAGDUMMY
+  public :: diagdummyobj
+  public :: numdiagdummyobj
+
   ! --- Constants
 
-  integer, parameter :: MAXOBJDIAGDUMMY = 10
+  integer, parameter :: MAXDIAGDUMMYOBJ = 10
 
   ! --- Types
 
@@ -61,8 +66,8 @@ module diagdummy
 
   ! --- Fields
 
-  type(T_DIAGDUMMY) :: objdiagdummy(MAXOBJDIAGDUMMY) 
-  integer :: numobjdiagdummy
+  type(T_DIAGDUMMY) :: diagdummyobj(MAXDIAGDUMMYOBJ) 
+  integer :: numdiagdummyobj
 
 contains
 
@@ -85,11 +90,11 @@ contains
     integer:: funit
     character(len=STRLNG) :: file, string
     integer :: ios
-    type(T_REGION) :: reg
+    type(T_REG) :: reg
     type(T_DIAGDUMMY) :: diag
 
-    numobjdiagdummy = numobjdiagdummy + 1
-    diag = objdiagdummy(numobjdiagdummy)
+    numdiagdummyobj = numdiagdummyobj + 1
+    diag = diagdummyobj(numdiagdummyobj)
 
 ! read diag parameters ...
 
@@ -102,13 +107,13 @@ contains
        call ReadRegObj(reg, funit)
        diag%regidx = reg%idx
     else
-       write(6,*) "!ERROR NO REGION DEFINED: ReadObjDiagDummy/diagdummy"
+       write(6,*) "!ERROR NO REGION DEFINED: ReadDiagdummyobj/diagdummy"
        stop
     end if
 
     read(funit,*) string
     if ( string .ne. ")" ) then
-       write(6,*) "!ERROR BAD TERMINATOR: ReadObjDiagDummy/diagdummy"
+       write(6,*) "!ERROR BAD TERMINATOR: ReadDiagdummyobj/diagdummy"
        stop
     end if
 
@@ -131,10 +136,11 @@ contains
 
     M4_REGLOOP_DECL(reg,p,i,j,k,w)
 
-    do n = 1, numobjdiagdummy
+    do n = 1, numdiagdummyobj
 
-       diag = objdiagdummy(n)
-    
+       diag = diagdummyobj(n)
+       reg = regobj(diag%regidx)
+     
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,
        
        ! do some stuff here
@@ -144,6 +150,33 @@ contains
     end do
     
   end subroutine StepHDiagDummy
+
+
+!----------------------------------------------------------------------
+
+
+  subroutine StepEDiagDummy(ncyc)
+
+    integer :: ncyc
+    integer :: n
+    type(T_DIAGDUMMY) :: diag
+
+    M4_REGLOOP_DECL(reg,p,i,j,k,w)
+
+    do n = 1, numdiagdummyobj
+
+       diag = diagdummyobj(n)
+       reg = regobj(diag%regidx)
+     
+       M4_REGLOOP_EXPR(reg,p,i,j,k,w,
+       
+       ! do some stuff here
+
+       )
+              
+    end do
+    
+  end subroutine StepEDiagDummy
 
   
   

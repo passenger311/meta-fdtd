@@ -39,8 +39,8 @@ module diag
 
   public :: InitializeDiag
   public :: FinalizeDiag
-  public :: StepDiagE
-  public :: StepDiagH
+  public :: StepEDiag
+  public :: StepHDiag
 
   ! --- Public Data
 
@@ -107,25 +107,25 @@ contains
 
 !----------------------------------------------------------------------
  
-  subroutine StepDiagE(ncyc)
+  subroutine StepEDiag(ncyc)
 
     integer :: ncyc
 
     M4_FOREACH_DIAG(`call StepE',`(ncyc)
     ')
 
-  end subroutine StepDiagE
+  end subroutine StepEDiag
 
 !----------------------------------------------------------------------
 
-  subroutine StepDiagH(ncyc)
+  subroutine StepHDiag(ncyc)
 
     integer :: ncyc
 
     M4_FOREACH_DIAG(`call StepH',`(ncyc)
     ')
 
-  end subroutine StepDiagH
+  end subroutine StepHDiag
 
 !----------------------------------------------------------------------
 

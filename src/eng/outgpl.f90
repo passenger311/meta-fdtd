@@ -11,7 +11,6 @@
 !  OpenOutgplObj
 !  CloseOutgplObj
 !  WriteHeaderOutgplObj
-!  PrepDataOutgplObj
 !  WriteDataOutgplObj
 !  
 !----------------------------------------------------------------------
@@ -30,7 +29,7 @@ module outgpl
 
 ! ** add output modules
 ! 1.
-  use outgpl_fdtd
+  use fdtd_outgpl
 ! 2.
 ! **
 
@@ -92,7 +91,7 @@ contains
 ! **
     end select
 
-  end subroutine FinalizeOutgpl
+  end subroutine FinalizeOutgplObj
 
 
 !----------------------------------------------------------------------
@@ -121,7 +120,7 @@ contains
 
     type(T_OUT) :: out
     type(T_REG) :: reg
-    reg = reglistobj(out%regidx)
+    reg = regobj(out%regidx)
     
     call OpenOutgplObj(out)
     
@@ -141,51 +140,29 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine LoadDataOutgplObj(out, ncyc)
+  subroutine WriteDataOutgplObj(out, ncyc, mode)
 
     type(T_OUT) :: out
     integer :: ncyc
+    logical :: mode
     
-    if ( ncyc .lt. out%ns .or. ncyc .gt. out%ne .or. 
+    if ( ncyc .lt. out%ns .or. ncyc .gt. out%ne .or. &
        mod(ncyc - out%ns, out%dn) .ne. 0 ) then
        return
     end if
+    
+    if ( mode ) call OpenOutgplObj(out)
     
     select case ( out%modl ) 
 ! ** call output methods
 ! 1.
     case ("fdtd")
-       call WriteDataFdtdOutgplObj(out,ncyc,.false.)
+       call WriteDataFdtdOutgplObj(out,ncyc,mode)
 ! 2.
 ! **
     end select
 
-  end subroutine LoadDataOutgplObj
-
-!----------------------------------------------------------------------
-
-  subroutine WriteDataOutgplObj(out, ncyc)
-
-    type(T_OUT) :: out
-    integer :: ncyc
-    
-    if ( ncyc .lt. out%ns .or. ncyc .gt. out%ne .or. 
-       mod(ncyc - out%ns, out%dn) .ne. 0 ) then
-       return
-    end if
-    
-    call OpenOutgplObj(out)
-    
-    select case ( out%modl ) 
-! ** call output methods
-! 1.
-    case ("fdtd")
-       call WriteDataFdtdOutgplObj(out,ncyc,.true.)
-! 2.
-! **
-    end select
-
-    call CloseOutgplObj(out)
+     if ( mode ) call CloseOutgplObj(out)
 
 
   end subroutine WriteDataOutgplObj

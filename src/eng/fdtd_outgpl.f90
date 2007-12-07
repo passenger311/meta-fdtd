@@ -51,7 +51,7 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine FinalizeFdtdOutgplObj
+  subroutine FinalizeFdtdOutgplObj(out)
 
     type (T_OUT) :: out
 

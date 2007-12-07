@@ -81,12 +81,14 @@ EXE = meta3
 default: $(EXE)
 
 %.o : %.f90
-	$(M4) $< >$*_m4.f90 
-	$(F90) $(F90FLAGS) $(INCLUDE) -c $*_m4.f90 -o $*.o
+	@echo [F90] $*
+	@$(M4) $< >$*_m4.f90 
+	@$(F90) $(F90FLAGS) $(INCLUDE) -c $*_m4.f90 -o $*.o
 
 %.o : %.F90
-	$(M4) $< >$*_m4.F90 
-	$(F90) $(F90FLAGS) $(INCLUDE) -c $*_m4.F90 -o $*.o
+	@echo [F90] $*
+	@$(M4) $< >$*_m4.F90 
+	@$(F90) $(F90FLAGS) $(INCLUDE) -c $*_m4.F90 -o $*.o
 
 %.o : %.c
 	 $(CC) $(CCFLAGS) $(INCLUDE) -c $<
@@ -101,7 +103,7 @@ clean:
 	 rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod *_m4.f90 *_m4.F90
 
 proper: clean
-	 rm -f $(EXE) $(PREEXE) *.o *.in *.out 
+	 rm -f $(EXE) $(PREEXE) *.o *.in *.out *~
 
 
 # ---------------------------------------------------------------------

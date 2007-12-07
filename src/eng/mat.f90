@@ -8,8 +8,8 @@
 !
 !    InitializeMat
 !    FinalizeMat
-!    StepMatE
-!    StepMatH
+!    StepEMat
+!    StepHMat
 !
 !----------------------------------------------------------------------
 
@@ -39,8 +39,8 @@ module mat
 
   public :: InitializeMat
   public :: FinalizeMat
-  public :: StepMatE
-  public :: StepMatH
+  public :: StepEMat
+  public :: StepHMat
 
   ! --- Public Data
 
@@ -108,25 +108,25 @@ contains
 
 !----------------------------------------------------------------------
  
-  subroutine StepMatE(ncyc)
+  subroutine StepEMat(ncyc)
 
     integer :: ncyc
 
     M4_FOREACH_MAT(`call StepE',`(ncyc)
     ')
 
-  end subroutine StepMatE
+  end subroutine StepEMat
 
 !----------------------------------------------------------------------
 
-  subroutine StepMatH(ncyc)
+  subroutine StepHMat(ncyc)
 
     integer :: ncyc
 
     M4_FOREACH_MAT(`call StepH',`(ncyc)
     ')
 
-  end subroutine StepMatH
+  end subroutine StepHMat
 
 !----------------------------------------------------------------------
 

@@ -24,15 +24,12 @@ program meta3
   use list
   use mpiworld
   use grid
-  use outgpl
   use fdtd
   use pec
   use pml
   use mat
+  use out
   use diag
-  use tfsf
-  use outgpl_fdtd
-  use matsource
 
   implicit none
 
@@ -253,8 +250,7 @@ program meta3
 ! use the time while comms are pending to do some useful stuff
 
 
-     call LoadDataOut(ncyc) ! buffer output data from this half-step
-
+     call WriteDataOut(ncyc,.false.) 
 
 ! ---------------------------- WAIT H ---------------------------------
 
@@ -407,7 +403,7 @@ program meta3
 
 ! use the time while comms are pending to do some useful stuff
 
-     call WriteDataOut(ncyc) ! write output data after full-step
+     call WriteDataOut(ncyc, .true.) 
 
 ! --------------------------- WAIT E ----------------------------------
 
