@@ -15,13 +15,6 @@
 !
 !
 
-M4_IFELSE_MPI(`
-#define MPI
-M4_IFELSE_DGB(`#define MPE_LOG',`#undef MPE_LOG')
-',`
-#undef MPI
-')
-
 
 module mpiworld
 
@@ -30,9 +23,7 @@ module mpiworld
   implicit none
   save 
 
-#ifdef MPI
-  include 'mpif.h'
-#endif /* MPI */
+M4_IFELSE_MPI(`include 'mpif.h'',`')
 
   integer :: numproc = 1
   integer :: myrank = 0
@@ -41,7 +32,7 @@ module mpiworld
   character(len=20)   :: ranklbl
   integer :: mpisize
 
-#ifdef MPI
+M4_IFELSE_MPI(`
   integer :: mpicomm
   integer :: mpierr
   integer :: mpistatus(MPI_STATUS_SIZE) 
@@ -49,7 +40,7 @@ module mpiworld
   integer, parameter :: ytag = 2
   integer :: ireqs(2), ireqr(2)
   integer :: mpitype 
-#endif /* MPI */
+',`')
 
 
 contains
@@ -58,7 +49,7 @@ contains
 
   subroutine InitializeMPIWorld
 
-#ifdef MPI
+M4_IFELSE_MPI(`
 
     mpicomm = MPI_COMM_WORLD
     mpitype = MPI_REAL8
@@ -68,13 +59,13 @@ contains
     if ( mpierr .eq. 0 ) call MPI_COMM_SIZE(MPI_COMM_WORLD, numproc, mpierr)
     if ( mpierr .eq. 0 ) call MPI_COMM_RANK(MPI_COMM_WORLD, myrank, mpierr)
 
-#endif /* MPI */
+',`')
 
     mpi_sfxin = '.' // TRIM(i2str(myrank)) // '.in'
     mpi_sfxout = '.' // TRIM(i2str(myrank)) // '.out'
     ranklbl = '(' // TRIM(i2str(myrank)) // '/' // TRIM(i2str(numproc)) // ')'
 
-#ifdef MPI
+M4_IFELSE_MPI(`
 
     if ( mpierr .ne. 0 ) then
        write(6,*) "@ mpistart: failed!"
@@ -83,7 +74,7 @@ contains
     
     mpi_started = 1
 
-#endif /* MPI */
+',`')
 
   end subroutine InitializeMPIWorld
  
@@ -91,11 +82,7 @@ contains
 
   subroutine FinalizeMPIWorld
 
-#ifdef MPI
-
-    call MPI_FINALIZE(mpierr)
-
-#endif /* MPI */
+M4_IFELSE_MPI(`call MPI_FINALIZE(mpierr)',`')
 
   end subroutine FinalizeMPIWorld
 

@@ -63,10 +63,10 @@ install:
 	@$(M4) $< >$*_m4.f90 
 	@$(F90) $(F90FLAGS) $(INCLUDE) -c $*_m4.f90 -o $*.o
 
-%.o : %.F90
-	@echo [F90] $*
-	@$(M4) $< >$*_m4.F90 
-	@$(F90) $(F90FLAGS) $(INCLUDE) -c $*_m4.F90 -o $*.o
+#%.o : %.F90
+#	@echo [F90] $*
+#	@$(M4) $< >$*_m4.F90 
+#	@$(F90) $(F90FLAGS) $(INCLUDE) -c $*_m4.F90 -o $*.o
 
 %.o : %.c
 	@echo [CC ] $*
