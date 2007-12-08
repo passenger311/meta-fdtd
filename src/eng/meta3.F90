@@ -8,21 +8,15 @@
 
 !======================================================================
 !
-! Compile with preprocessor 
-! -DMPI     : to activate parallel MPI code
-! -DMPE_LOG : to activate MPE logging
-! 
+!
 
-#if M4_MPI
+M4_IFELSE_MPI(`
 #define MPI
-#if M4_DGB
-#define MPE_LOG
-#endif
-#endif
+M4_IFELSE_DGB(`#define MPE_LOG',`#undef MPE_LOG')
+',`
+#undef MPI
+')
 
-#ifndef MPI
-#undef MPE_LOG
-#endif
 
 program meta3
 

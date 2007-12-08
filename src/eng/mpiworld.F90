@@ -14,7 +14,14 @@
 !======================================================================
 !
 !
-!
+
+M4_IFELSE_MPI(`
+#define MPI
+M4_IFELSE_DGB(`#define MPE_LOG',`#undef MPE_LOG')
+',`
+#undef MPI
+')
+
 
 module mpiworld
 

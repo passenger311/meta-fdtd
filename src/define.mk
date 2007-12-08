@@ -6,34 +6,34 @@
 # ---------------------------------------------------------------------
 
 
-ifneq ($(MPI),)
-ENG_MPI=-mpi
-M4DEFINE+= -DM4_MPI=1
+ifneq ($(DBG),)
+ENG_DBG=-dbg
+M4DEFINE+= -DDBG=1
 endif
 
 ifneq ($(MPI),)
 ENG_MPI=-mpi
-M4DEFINE+= -DM4_MPI=1
+M4DEFINE+= -DMPI=1
 endif
 
 ifneq ($(OMP),)
 ENG_OMP=-omp
-M4DEFINE+= -DM4_OMP=1
+M4DEFINE+= -DOMP=1
 endif
 
 ifneq ($(CF),)
 ENG_CF=-cf
-M4DEFINE+= -DM4_CF=1
+M4DEFINE+= -DCF=1
 endif
 
 ifneq ($(NG),)
 ENG_NG=-ng
-M4DEFINE+=-DM4_NG=1
+M4DEFINE+=-DNG=1
 endif
 
 ifneq ($(TE),)
 ENG_TE=-te
-M4DEFINE+=-DM4_TE=1
+M4DEFINE+=-DTE=1
 endif
 
 ENGINE=$(ENG_CF)$(ENG_NG)$(ENG_TE)$(ENG_MPI)$(ENG_OMP)
