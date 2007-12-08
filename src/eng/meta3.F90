@@ -13,6 +13,13 @@
 ! -DMPE_LOG : to activate MPE logging
 ! 
 
+#if M4_MPI
+#define MPI
+#if M4_DGB
+#define MPE_LOG
+#endif
+#endif
+
 #ifndef MPI
 #undef MPE_LOG
 #endif

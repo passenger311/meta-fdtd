@@ -1,20 +1,52 @@
+#-*- Makefile -*-======================================================
+#
+# Make.default
+#
+# for gnu >= 4.1 compiler set
+
+# ---------------------------------------------------------------------
+
+# --- compiler set
 
 ifeq ($(MPI),)
 
-F90 = gfortran 
-CC= gcc
+F90 = gfortran
 CXX= g++
+CC= gcc
 
 else
  
 F90 = mpif90 
-CC= mpicc
 CXX= mpicxx
-DEFINE = -DMPI
+CC= mpicc
 
 endif
 
-F90FLAGS= -O3 $(DEFINE)
-CXXFLAGS= $(DEFINE)
-CCFLAGS= $(DEFINE)
-LDFLAGS=
+# --- standard flags
+
+F90FLAGS= -O3
+LDFLAGS= 
+CXXFLAGS=
+CCFLAGS=
+
+
+# --- debug flags
+
+ifneq ($(DBG),)
+
+F90FLAGS+= -g -O0
+LDFLAGS+= -g
+CXXFLAGS+= -g -O0
+CCFLAGS+= -g -O0
+
+endif 
+
+
+# ---------------------------------------------------------------------
+
+#
+# Authors:  J.Hamm 
+# Modified: 4/12/2007
+#
+#======================================================================
+

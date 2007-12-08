@@ -1,16 +1,50 @@
+#-*- Makefile -*-======================================================
+#
+# Make.intel
+#
+
+# ---------------------------------------------------------------------
+
+# --- compiler set
 
 ifeq ($(MPI),)
 
-F90 =  
-CC= 
+F90 = ifort
+CXX= icpp
+CC= icc
 
 else
- 
+
 F90 = mpif90 
+CXX= mpicxx
 CC= mpicc
 
 endif
 
-F90FLAGS= -g -fpp -O3 -tpp7 -xW -r8
-LDFLAGS= -g -O3 -xW -r8
+# --- standard flags
+
+F90FLAGS= -fpp -O3 -tpp7 -xW -r8
+LDFLAGS= -O3 -xW -r8
+CXXFLAGS=
 CCFLAGS=
+
+
+# --- debug flags
+
+ifneq ($(DBG),)
+
+F90FLAGS+= -g
+LDFLAGS+= -g
+CXXFLAGS+= -g
+CCFLAGS+= -g
+
+endif 
+
+
+# ---------------------------------------------------------------------
+
+#
+# Authors:  J.Hamm 
+# Modified: 4/12/2007
+#
+#======================================================================

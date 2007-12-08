@@ -6,54 +6,23 @@
 
 # ---------------------------------------------------------------------
 
-
-.SUFFIXES: .f90 .F90
-
-
-# Compilation
-# -----------
-
 ifeq ($(ARCH),)
 include ../Make.default
 else 
 include ../Make.$(ARCH)
 endif 
+include ../define.mk
 
-ifneq ($(MPI),)
-MPI=-mpi
-M4DEFINE+= -DM4_MPI=1
-endif
+# ---------------------------------------------------------------------
 
-ifneq ($(OMP),)
-OMP=-omp
-M4DEFINE+= -DM4_OMP=1
-endif
-
-ifneq ($(CT),)
-CT=ct
-M4DEFINE+= -DM4_CT=1
-endif
-
-ifneq ($(NG),)
-NG=ng
-M4DEFINE+=-DM4_NG=1
-endif
-
-ifneq ($(TE),)
-TE=te
-M4DEFINE+=-DM4_TE=1
-endif
-
-ENGINE=$(CT)$(NG)$(TE)$(MPI)$(OMP)
+.PHONY: clean proper default install
 
 M4= m4 $(M4DEFINE) meta3.m4
 
 MATLIST=$(shell cat mat.def | tr "," " " 2>/dev/null)
 DIAGLIST=$(shell cat diag.def | tr "," " " 2>/dev/null)
-
 MATOBJ= $(patsubst %,%.o,$(MATLIST))
 DIAGOBJ= $(patsubst %,%.o,$(DIAGLIST))
-
 
 FOBJ= strings.o\
 constant.o\
@@ -75,10 +44,7 @@ outgpl.o\
 out.o\
 meta3.o
 
-
 EXE = meta3
-
-.PHONY: clean proper default install
 
 INSTALLFILES=\
 $(EXE)
@@ -87,8 +53,8 @@ default: $(EXE)
 
 install: 
 	@echo [INSTALL] $(INSTALLFILES)
-	@ [ -d ../build$(ENGINE) ] || mkdir ../build$(ENGINE)
-	@ cp $(INSTALLFILES) ../build$(ENGINE)
+	@ [ -d ../$(BUILDDIR) ] || mkdir ../$(BUILDDIR)
+	@ cp $(INSTALLFILES) ../$(BUILDDIR)
 
 %.o : %.f90
 	@echo [F90] $*

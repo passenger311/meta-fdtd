@@ -7,31 +7,7 @@
 # ---------------------------------------------------------------------
 
 
-.SUFFIXES: .f90 .F90
-
-
-ifneq ($(MPI),)
-MPI=-mpi
-endif
-
-ifneq ($(OMP),)
-OMP=-omp
-endif
-
-ifneq ($(CT),)
-CT=-ct
-endif
-
-ifneq ($(NG),)
-NG=-ng
-endif
-
-ifneq ($(TE),)
-TE=-te
-endif
-
-ENGINE=$(CT)$(NG)$(TE)$(MPI)$(OMP)
-
+include ./define.mk
 
 .PHONY: default clean proper eng pre post install
 
@@ -41,12 +17,19 @@ eng pre post:
 	@cd $@ && $(MAKE) 
 
 
-clean proper install: 
+clean install: 
 	@cd eng;  $(MAKE) $@; cd ..
 	@cd pre;  $(MAKE) $@; cd ..
 	@cd post; $(MAKE) $@; cd ..
 	@cd run; $(MAKE) $@; cd ..
 
+proper: 
+	@cd eng;  $(MAKE) $@; cd ..
+	@cd pre;  $(MAKE) $@; cd ..
+	@cd post; $(MAKE) $@; cd ..
+	@cd run; $(MAKE) $@; cd ..
+	@rm *~ \#*
+	@rm -rf meta3-build*
 
 # ---------------------------------------------------------------------
 
