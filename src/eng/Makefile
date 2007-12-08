@@ -19,10 +19,12 @@ include ../define.mk
 
 M4= m4 $(M4DEFINE) meta3.m4
 
-MATLIST=$(shell cat mat.def | tr "," " " 2>/dev/null)
-DIAGLIST=$(shell cat diag.def | tr "," " " 2>/dev/null)
+MATLIST=$(shell mlist.pl -s mat.def 2>/dev/null)
+DIAGLIST=$(shell mlist.pl -s diag.def 2>/dev/null)
+OUTGPLLIST=$(shell mlist.pl -s outgpl.def 2>/dev/null)
 MATOBJ= $(patsubst %,%.o,$(MATLIST))
 DIAGOBJ= $(patsubst %,%.o,$(DIAGLIST))
+OUTGPLOBJ= $(patsubst %,%_outgpl.o,$(OUTGPLLIST))
 
 FOBJ= strings.o\
 constant.o\

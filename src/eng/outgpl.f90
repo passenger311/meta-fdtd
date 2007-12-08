@@ -27,11 +27,10 @@ module outgpl
   use reglist
   use outlist
 
-! ** add output modules
-! 1.
+! outgpl modules 
   use fdtd_outgpl
-! 2.
-! **
+M4_FOREACH_OUTGPL(`use ', `
+  ')
 
   implicit none
   private
@@ -64,13 +63,13 @@ contains
 
     type(T_OUT) :: out
 
+! call various finalization methods
     select case ( out%modl ) 
-! ** call output initialization methods
-! 1.
-    case ("fdtd")
+    case ("FDTD")
        call  InitializeFdtdOutgplObj(out)
-! 2.
-! **
+       M4_FOREACH_OUTGPL2(`case ("',`")
+             call Initialize',`OutgplObj(UNITTMP)
+             ')
     end select
 
   end subroutine InitializeOutgplObj
@@ -83,12 +82,13 @@ contains
     type(T_OUT) :: out
 
     select case ( out%modl ) 
-! ** call output finalization methods
-! 1.
-    case ("fdtd")
-      call FinalizeFdtdOutgplObj(out)
-! 2.
-! **
+
+! call various finalization methods
+    case ("FDTD")
+       call FinalizeFdtdOutgplObj(out)
+       M4_FOREACH_OUTGPL2(`case ("',`")
+             call Finalize',`OutgplObj
+             ')
     end select
 
   end subroutine FinalizeOutgplObj
@@ -154,12 +154,13 @@ contains
     if ( mode ) call OpenOutgplObj(out)
     
     select case ( out%modl ) 
-! ** call output methods
-! 1.
-    case ("fdtd")
+
+! call various output methods
+    case ("FDTD")
        call WriteDataFdtdOutgplObj(out,ncyc,mode)
-! 2.
-! **
+       M4_FOREACH_OUTGPL2(`case ("',`")
+             call WriteData',`OutgplObj(out,ncyc,mode)
+             ')
     end select
 
      if ( mode ) call CloseOutgplObj(out)
