@@ -22,10 +22,11 @@ INSTALLFILES=\
 qscript.mpi\
 mpiwrap.sh
 
-
 .PHONY: clean proper default install
 
-default: 
+default: all
+
+all: install
 
 install: 
 	@echo [INSTALL] $(INSTALLFILES)

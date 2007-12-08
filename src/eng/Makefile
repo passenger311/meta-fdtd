@@ -15,7 +15,7 @@ include ../define.mk
 
 # ---------------------------------------------------------------------
 
-.PHONY: clean proper default install
+.PHONY: clean proper default install all
 
 M4= m4 $(M4DEFINE) meta3.m4
 
@@ -51,7 +51,9 @@ EXE = meta3
 INSTALLFILES=\
 $(EXE)
 
-default: $(EXE)
+default: all
+
+all: $(EXE)
 
 install: 
 	@echo [INSTALL] $(INSTALLFILES)

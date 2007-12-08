@@ -15,14 +15,15 @@ include ../define.mk
 
 # ---------------------------------------------------------------------
 
+.PHONY: clean proper default install all
+
 INSTALLFILES=\
 material.pm
 
+default: all
 
-.PHONY: clean proper default install
-
-default: 
-
+all: install 
+ 
 install: 
 	@echo [INSTALL] $(INSTALLFILES)
 	@ [ -d ../$(BUILDDIR) ] || mkdir ../$(BUILDDIR)
