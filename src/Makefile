@@ -9,9 +9,12 @@
 
 include ./define.mk
 
-.PHONY: default clean proper eng pre post install
+.PHONY: default clean proper eng pre post install all
 
-default: eng pre post run install
+
+default: all
+
+all: eng pre post run install
 
 eng pre post:
 	@cd $@ && $(MAKE) 
@@ -28,7 +31,7 @@ proper:
 	@cd pre;  $(MAKE) $@; cd ..
 	@cd post; $(MAKE) $@; cd ..
 	@cd run; $(MAKE) $@; cd ..
-	@rm *~ \#*
+	@rm -f *~ \#*
 	@rm -rf meta3-build*
 
 # ---------------------------------------------------------------------
