@@ -94,6 +94,8 @@ contains
     type(T_REG) :: reg
     type(T_MATSOURCE) :: mat
 
+   M4_WRITE_DBG(". enter ReadMatSourceObj/matsource")
+
     nummatsourceobj = nummatsourceobj + 1
     mat = matsourceobj(nummatsourceobj)
 
@@ -117,6 +119,8 @@ contains
 ! read regions and terminator
 
    M4_GET_REG_AND_TERMINATOR(mat, "ReadMatSourceObj/matsource")
+
+   M4_WRITE_DBG(". exit ReadMatSourceObj/matsource")
 
   end subroutine ReadMatSourceObj
 

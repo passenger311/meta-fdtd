@@ -59,24 +59,18 @@ contains
     integer :: funit
     character(len=*) :: string
 
-    integer :: ios
-
-    do
-
-       select case ( string )
-          
-          M4_FOREACH_DIAG2({case ("(},{")
-          call Read},{Obj(UNITTMP)
-          })
-        
-       case default
-          if ( string(1:1) .ne. "!" ) then
-             M4_FATAL_ERROR({"RECEIVED BAD TOKEN: ReadConfig/diag"})
-          endif
-       end select
-         
-    enddo
-
+    select case ( string )
+       
+       M4_FOREACH_DIAG2({case ("(},{")
+       call Read},{Obj(UNITTMP)
+       })
+       
+    case default
+       if ( string(1:1) .ne. "!" ) then
+          M4_FATAL_ERROR({"RECEIVED BAD TOKEN: ReadConfig/diag"})
+       endif
+    end select
+    
   end subroutine ReadConfigDiag
   
 !----------------------------------------------------------------------

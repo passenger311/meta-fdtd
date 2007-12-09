@@ -73,7 +73,7 @@ contains
     
     integer :: ios
 
-    M4_WRITE_DBG({". ReadConfigGrid/grid"})
+    M4_WRITE_DBG({". enter ReadConfigGrid/grid"})
 
     M4_WRITE_DBG({"received token: ", TRIM(string)})
     if ( string .ne. "(GRID" ) then
@@ -107,13 +107,15 @@ contains
 
     call InitializeGrid
 
+    M4_WRITE_DBG({". exit ReadConfigGrid/grid"})
+
   end subroutine ReadConfigGrid
 
 !----------------------------------------------------------------------
 
   subroutine InitializeGrid
     
-    M4_WRITE_DBG({". InitializeGrid/grid"})
+    M4_WRITE_DBG({". enter InitializeGrid/grid"})
 
     if ( .not. modconfigured ) then
        M4_FATAL_ERROR({"NOT CONFIGURED: InitializeGrid/grid"})
@@ -142,6 +144,8 @@ contains
     KEIG=KMAX
     
     GRIDSIZE = (IEND - IBEG)*(JEND - JBEG)*(KEND - KBEG)
+
+    M4_WRITE_DBG({". exit InitializeGrid/grid"})
     
   end subroutine InitializeGrid
 

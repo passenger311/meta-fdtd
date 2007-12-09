@@ -58,21 +58,16 @@ contains
       integer :: funit
       character(len=*) :: string
       
-      integer :: ios
-
-      do
-         select case ( string )
-
-            M4_FOREACH_MAT2({case ("(},{")
-            call Read},{Obj(UNITTMP)
-            })
-
-         case default
-            M4_FATAL_ERROR({"RECEIVED BAD TOKEN ", TRIM(string) ,": ReadConfig/mat"})
-         end select
-        
-      enddo
-
+      select case ( string )
+         
+         M4_FOREACH_MAT2({case ("(},{")
+         call Read},{Obj(UNITTMP)
+         })
+         
+      case default
+         M4_FATAL_ERROR({"RECEIVED BAD TOKEN ", TRIM(string) ,": ReadConfig/mat"})
+      end select
+      
     end subroutine ReadConfigMat
 
 !----------------------------------------------------------------------

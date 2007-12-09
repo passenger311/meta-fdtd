@@ -71,7 +71,7 @@ contains
 
    integer :: ios
 
-   M4_WRITE_DBG({". ReadConfigFdtd/fdtd"})
+   M4_WRITE_DBG({". enter ReadConfigFdtd/fdtd"})
       
    if ( string .ne. "(FDTD" ) then
       M4_FATAL_ERROR({"BAD SECTION IDENTIFIER: ReadConfigFdtd/fdtd"})
@@ -87,6 +87,8 @@ contains
    endif
    
    modconfigured = .true.
+
+   M4_WRITE_DBG({". exit ReadConfigFdtd/fdtd"})
    
  end subroutine ReadConfigFdtd
  
@@ -97,7 +99,7 @@ contains
    
    integer :: err
     
-    M4_WRITE_DBG({". InitializeFdtd/fdtd"})
+    M4_WRITE_DBG({". enter InitializeFdtd/fdtd"})
 
    if ( .not. modconfigured ) then
       M4_FATAL_ERROR({"NOT CONFIGURED: InitializeFdtd/fdtd"})
@@ -105,12 +107,14 @@ contains
  
    call AllocateFields
    call ReadEpsilonField
+
+    M4_WRITE_DBG({". exit InitializeFdtd/fdtd"})
    
  contains
       
    subroutine AllocateFields
 
-     M4_WRITE_DBG({". InitializeFdtd/fdtd . AllocateFields"})
+     M4_WRITE_DBG({". enter InitializeFdtd/fdtd . AllocateFields"})
      
      allocate(Ex(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
      M4_ALLOC_ERROR(err, "AllocateFields/fdtd")
@@ -143,6 +147,8 @@ contains
      
      EPSINV = 1.0
 
+     M4_WRITE_DBG({". exit InitializeFdtd/fdtd . AllocateFields"})
+
    end subroutine AllocateFields
    
    
@@ -153,7 +159,7 @@ contains
      
      character(len=STRLNG) :: file
      
-     M4_WRITE_DBG({". InitializeFdtd/fdtd . ReadEpsilonField"})
+     M4_WRITE_DBG({". enter InitializeFdtd/fdtd . ReadEpsilonField"})
 
      file = cat2(pfxepsilon,mpi_sfxin)
      
@@ -172,9 +178,10 @@ contains
      end do
      
      close(UNITTMP)
+
+     M4_WRITE_DBG({". exit InitializeFdtd/fdtd . ReadEpsilonField"})
      
    end subroutine ReadEpsilonField
-
    
  end subroutine InitializeFdtd
 
@@ -182,7 +189,7 @@ contains
 
  subroutine FinalizeFdtd
    
-   M4_WRITE_DBG({". FinalizeFdtd/fdtd"})
+   M4_WRITE_DBG({". enter FinalizeFdtd/fdtd"})
    
    deallocate(Hz)
    deallocate(Hy)
@@ -191,6 +198,8 @@ contains
    deallocate(Ey)
    deallocate(Ex)
    deallocate(EPSINV)
+
+   M4_WRITE_DBG({". exit FinalizeFdtd/fdtd"})
    
  end subroutine FinalizeFdtd
  

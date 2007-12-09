@@ -110,7 +110,9 @@ module reglist
   type(T_REG) :: regobj(MAXREGOBJ) 
   integer :: numregobj
 
-  real(kind=8), allocatable, dimension(:,:,:) :: tmpmask
+  integer, allocatable, dimension(:,:,:) :: tmpmask
+  real(kind=8), allocatable, dimension(:) :: tmpval
+  integer :: numnodes
 
 contains
 
@@ -147,9 +149,9 @@ contains
     type(T_REG), external :: CreateRegObj
 
     integer :: ios, err
-    integer :: i,j,k, i0, i1, di, j0, j1, dj, k0, k1, dk, num
+    integer :: i,j,k, i0, i1, di, j0, j1, dj, k0, k1, dk, num, p
     integer :: masksz, listsz
-    real*8 :: val
+    real(kind=8) :: val
     character(len=STRLNG) :: string
     logical :: auto
 
@@ -159,8 +161,9 @@ contains
     reg = CreateRegObj()
 
     M4_WRITE_DBG({ "allocating mask, size = ", GRIDSIZE})
-    allocate(tmpmask(IBEG:IEND,JBEG:JEND,KBEG:KEND),stat = err)
+    allocate(tmpmask(IBEG:IEND,JBEG:JEND,KBEG:KEND),tmpval(1:GRIDSIZE),stat = err)
     M4_ALLOC_ERROR(err,"ReadRegObj/reglist")
+    numnodes = 0
    
     auto = .true.
     ! read until an unexpected line is encountered, eg ")"
@@ -182,7 +185,7 @@ contains
           end do
        case( "(BOX" ) 
           M4_WRITE_DBG({"got a ", TRIM(string)})
-          if ( numtmpregpoints .eq. 0 ) then 
+          if ( numnodes .eq. 0 ) then 
              reg%isbox = .true.
           else
              reg%isbox = .false.
@@ -225,6 +228,10 @@ contains
           reg%islist = .false.
           auto = .false.
        case default
+          M4_WRITE_DBG({"read terminator: ", TRIM(string)})
+          if ( string .ne. ")" ) then
+             M4_FATAL_ERROR({"BAD TERMINATOR: ReadRegObj/reglist"})
+          end if
           exit
        end select
 
@@ -232,6 +239,7 @@ contains
 
     if ( reg%isbox ) then ! A SINGLE BOX
         
+       M4_WRITE_DBG({"filling struct in single box mode", numnodes})
        reg%numnodes = &
             ( reg%ie - reg%is + 1 ) / reg%di * &
             ( reg%je - reg%js + 1 ) / reg%dj * &
@@ -241,7 +249,7 @@ contains
 
        if ( auto ) then
           masksz = (reg%ie - reg%is) * (reg%je - reg%js) * (reg%ke - reg%ks)
-          listsz = numtmpregpoints * 3 
+          listsz = numnodes * 3 
           if ( listsz .lt. masksz ) then 
              reg%islist = .true.
           else 
@@ -249,44 +257,62 @@ contains
           endif
        end if
 
-       reg%numnodes = numtmpregpoints
+       reg%numnodes = numnodes
        
        if ( .not. reg%islist ) then ! A MASK
 
-          allocate(reg%mask(reg%is:reg%ie,reg%js:reg%je,reg%ks:reg%ke),reg%val(numtmpregpoints), stat = err )
-          if ( err .ne. 0 ) then
-             M4_FATAL_ERROR({"OUT OF MEMORY: ReadRegObj/reg"})
-          end if
+          M4_WRITE_DBG({"filling struct in list mode", numnodes})
+          allocate(reg%mask(reg%is:reg%ie,reg%js:reg%je,reg%ks:reg%ke),reg%val(numnodes), stat = err )
+          M4_ALLOC_ERROR(err, {"ReadRegObj/reg"})
           reg%mask = 0
-          do num = 1, numtmpregpoints
-             reg%mask(tmpregpoints(num,1),tmpregpoints(num,2),tmpregpoints(num,3)) = num
-             reg%val(num) = tmpregvalues(num)
-          end do
-          ! 1 point!
+          ! 1 point
           reg%pe = 1
 
+          do k = reg%ks, reg%ke
+             do j = reg%js, reg%je
+                do i = reg%is, reg%ie
+                   num = tmpmask(i,j,k)
+                   reg%mask(i,j,k) = num
+                   reg%val(num) = tmpval(num)
+                end do
+             end do
+          end do
+          
        else ! A LIST
 
-          reg%pe = numtmpregpoints
-          allocate(reg%i(numtmpregpoints),reg%j(numtmpregpoints),reg%k(numtmpregpoints),reg%val(numtmpregpoints) , stat = err)
+          M4_WRITE_DBG({"filling struct in list mode", numnodes})
+          reg%pe = numnodes
+          allocate(reg%i(numnodes),reg%j(numnodes),reg%k(numnodes),reg%val(numnodes) , stat = err)
           if ( err .ne. 0 ) then
              M4_FATAL_ERROR({"OUT OF MEMORY: ReadRegObj/reg"})
           end if
-          do num = 1, numtmpregpoints
-             reg%i(num) = tmpregpoints(num,1)
-             reg%j(num) = tmpregpoints(num,2)
-             reg%k(num) = tmpregpoints(num,3)
-             reg%val(num) = tmpregvalues(num)
-          end do
           ! 1 step stepping!
           reg%di = reg%ie - reg%is + 1
           reg%dj = reg%je - reg%js + 1
           reg%dk = reg%ke - reg%ks + 1
+          
+          num = 0
+          do k = reg%ks, reg%ke
+             do j = reg%js, reg%je
+                do i = reg%is, reg%ie
+                   num = num + 1
+                   p = tmpmask(i,j,k)
+                   if ( p .gt. 0 ) then
+                      reg%i(num) = i
+                      reg%j(num) = j
+                      reg%k(num) = k
+                      reg%val(num) = tmpval(p)
+                   endif
+                end do
+             end do
+          end do
+
        end if
        
     end if
  
     deallocate(tmpmask)
+    deallocate(tmpval)
     
   end subroutine ReadRegObj
 
@@ -322,6 +348,12 @@ contains
 
     M4_WRITE_DBG({"set box: ",i0, i1, di, j0, j1, dj, k0, k1, dk})
 
+    ! check whether box is inside grid
+    if ( i1 .lt. IBEG .or. j1 .lt. JBEG .or. k1 .lt. KBEG .or. &
+         i0 .gt. IEND .or. j0 .gt. JEND .or. k0 .gt. KEND ) then
+       return
+    end if
+
     ! clip box to grid
     i0 = Max(i0,IBEG)
     j0 = Max(j0,JBEG)
@@ -353,6 +385,7 @@ contains
     do k = k0, k1, dk
        do j = j0, j1, dj
           do i = i0, i1, di
+             numnodes = numnodes + 1
              tmpmask(i,j,k) = val
           end do
        end do
@@ -388,6 +421,7 @@ contains
     reg%dk = 1
 
     ! set point
+    numnodes = numnodes + 1
     tmpmask(i,j,k) = val
 
   end subroutine SetPointRegObj
