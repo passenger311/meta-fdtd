@@ -29,8 +29,8 @@ module outgpl
 
 ! outgpl modules 
   use fdtd_outgpl
-M4_FOREACH_OUTGPL(`use ', `
-  ')
+M4_FOREACH_OUTGPL({use }, {
+  })
 
   implicit none
   private
@@ -67,9 +67,9 @@ contains
     select case ( out%modl ) 
     case ("FDTD")
        call  InitializeFdtdOutgplObj(out)
-       M4_FOREACH_OUTGPL2(`case ("',`")
-             call Initialize',`OutgplObj(UNITTMP)
-             ')
+       M4_FOREACH_OUTGPL2({case ("},{")
+             call Initialize},{OutgplObj(UNITTMP)
+             })
     end select
 
   end subroutine InitializeOutgplObj
@@ -86,9 +86,9 @@ contains
 ! call various finalization methods
     case ("FDTD")
        call FinalizeFdtdOutgplObj(out)
-       M4_FOREACH_OUTGPL2(`case ("',`")
-             call Finalize',`OutgplObj
-             ')
+       M4_FOREACH_OUTGPL2({case ("},{")
+             call Finalize},{OutgplObj
+             })
     end select
 
   end subroutine FinalizeOutgplObj
@@ -100,7 +100,7 @@ contains
 
     type(T_OUT) :: out
 
-    open(UNITTMP,FILE=out%filename,STATUS='unknown')
+    open(UNITTMP,FILE=out%filename,STATUS="unknown")
 
   end subroutine OpenOutgplObj
 
@@ -158,9 +158,9 @@ contains
 ! call various output methods
     case ("FDTD")
        call WriteDataFdtdOutgplObj(out,ncyc,mode)
-       M4_FOREACH_OUTGPL2(`case ("',`")
-             call WriteData',`OutgplObj(out,ncyc,mode)
-             ')
+       M4_FOREACH_OUTGPL2({case ("},{")
+             call WriteData},{OutgplObj(out,ncyc,mode)
+             })
     end select
 
      if ( mode ) call CloseOutgplObj(out)

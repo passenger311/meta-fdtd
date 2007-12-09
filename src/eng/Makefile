@@ -19,21 +19,24 @@ include ../define.mk
 
 M4= m4 $(M4DEFINE) meta3.m4
 
-MATLIST=$(shell mlist.pl -s mat.def 2>/dev/null)
-DIAGLIST=$(shell mlist.pl -s diag.def 2>/dev/null)
-OUTGPLLIST=$(shell mlist.pl -s outgpl.def 2>/dev/null)
+MATLIST=$(shell ./mlist.pl -s mat.def 2>/dev/null)
+DIAGLIST=$(shell ./mlist.pl -s diag.def 2>/dev/null)
+OUTGPLLIST=$(shell ./mlist.pl -s outgpl.def 2>/dev/null)
 MATOBJ= $(patsubst %,%.o,$(MATLIST))
 DIAGOBJ= $(patsubst %,%.o,$(DIAGLIST))
 OUTGPLOBJ= $(patsubst %,%_outgpl.o,$(OUTGPLLIST))
 
-FOBJ= strings.o\
+BOBJ=\
+strings.o\
 constant.o\
 mpiworld.o\
 grid.o\
 reglist.o\
 buflist.o\
 outlist.o\
-list.o\
+list.o
+
+FOBJ=\
 fdtd.o\
 pec.o\
 pml.o\
@@ -60,23 +63,20 @@ install:
 	@ [ -d ../$(BUILDDIR) ] || mkdir ../$(BUILDDIR)
 	@ cp $(INSTALLFILES) ../$(BUILDDIR)
 
-%.o : %.f90
+$(BOBJ) : %.o : %.f90
 	@echo [F90] $*
 	@$(M4) $< >$*_m4.f90 
 	@$(F90) $(F90FLAGS) $(INCLUDE) -c $*_m4.f90 -o $*.o
 
-#%.o : %.F90
-#	@echo [F90] $*
-#	@$(M4) $< >$*_m4.F90 
-#	@$(F90) $(F90FLAGS) $(INCLUDE) -c $*_m4.F90 -o $*.o
-
-%.o : %.c
-	@echo [CC ] $*
-	@$(CC) $(CCFLAGS) $(INCLUDE) -c $<
+$(FOBJ) : %.o : %.f90 $(BOBJ)
+	@echo [F90] $*
+	@$(M4) $< >$*_m4.f90 
+	@$(F90) $(F90FLAGS_OPT) $(INCLUDE) -c $*_m4.f90 -o $*.o
 
 
-$(EXE) : $(FOBJ)
-	$(F90) $(LDFLAGS) $(FOBJ) -o $(EXE)
+$(EXE) : $(FOBJ) $(BOBJ)
+	@echo [LD] $@
+	@$(F90) $(LDFLAGS) $(FOBJ) $(BOBJ) -o $(EXE)
 
 clean:
 	 rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod *_m4.f90 *_m4.F90

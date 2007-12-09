@@ -82,40 +82,31 @@ contains
 
         allocate(Ex(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
         if(err .ne. 0) then
-           write(STDERR,*) "!ERROR OUT OF MEMORY: AllocateFields/fdtd"
-           stop
+           M4_FATAL_ERROR({"OUT OF MEMORY: AllocateFields/fdtd"})
         endif
         allocate(Ey(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
         if(err .ne. 0) then
-           write(STDERR,*) "!ERROR OUT OF MEMORY: AllocateFields/fdtd"
-           stop
+           M4_FATAL_ERROR({"OUT OF MEMORY: AllocateFields/fdtd"})
         endif
         allocate(Ez(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
         if(err .ne. 0) then
-           write(STDERR,*) "!ERROR OUT OF MEMORY: AllocateFields/fdtd"
-           stop
+           M4_FATAL_ERROR({"OUT OF MEMORY: AllocateFields/fdtd"})
         endif
-
         allocate(Hx(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
         if(err .ne. 0) then
-           write(STDERR,*) "!ERROR OUT OF MEMORY: AllocateFields/fdtd"
-           stop
+           M4_FATAL_ERROR({"OUT OF MEMORY: AllocateFields/fdtd"})
         endif
         allocate(Hy(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
         if(err .ne. 0) then
-           write(STDERR,*) "!ERROR OUT OF MEMORY: AllocateFields/fdtd"
-           stop
+           M4_FATAL_ERROR({"OUT OF MEMORY: AllocateFields/fdtd"})
         endif
         allocate(Hz(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
         if(err .ne. 0) then
-           write(STDERR,*) "!ERROR OUT OF MEMORY: AllocateFields/fdtd"
-           stop
+           M4_FATAL_ERROR({"OUT OF MEMORY: AllocateFields/fdtd"})
         endif
-
         allocate(EPSINV(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
         if(err .ne. 0) then
-           write(STDERR,*) "!ERROR OUT OF MEMORY: AllocateFields/fdtd"
-           stop
+           M4_FATAL_ERROR({"OUT OF MEMORY: AllocateFields/fdtd"})
         endif
 
         Ex = 0.0

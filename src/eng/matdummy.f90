@@ -107,14 +107,12 @@ contains
        call ReadRegObj(reg, funit)
        mat%regidx = reg%idx
     else
-       write(6,*) "!ERROR NO REGION DEFINED: ReadMatdummyobj/matdummy"
-       stop
+       M4_FATAL_ERROR({"NO REGION DEFINED: ReadMatdummyobj/matdummy"})
     end if
 
     read(funit,*) string
     if ( string .ne. ")" ) then
-       write(6,*) "!ERROR BAD TERMINATOR: ReadMatdummyobj/matdummy"
-       stop
+       M4_FATAL_ERROR({"BAD TERMINATOR: ReadMatdummyobj/matdummy"})
     end if
 
 ! initialize object data

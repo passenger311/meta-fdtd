@@ -171,7 +171,6 @@ contains
 !
 !       ---- cat<n>, cat up to 9 strings
 !
- 
 
   character(len=255) function cat9(s1,s2,s3,s4,s5,s6,s7,s8,s9)
 
@@ -179,8 +178,8 @@ contains
 
     character(len=*) :: s1,s2,s3,s4,s5,s6,s7,s8,s9
         
-    cat9 = cat(cats(cats(cats(cats(cats(cats( &
-         cats(s1,s2),s3),s4),s5),s6),s7),s8),s9)
+    cat9 = cat2(cat2(cat2(cat2(cat2(cat2(cat2( &
+         cat2(s1,s2),s3),s4),s5),s6),s7),s8),s9)
 
     return
   end function cat9
@@ -191,8 +190,8 @@ contains
 
     character(len=*) :: s1,s2,s3,s4,s5,s6,s7,s8
     
-    cat8 = cat(cats(cats(cats(cats(cats( &
-         cats(s1,s2),s3),s4),s5),s6),s7),s8)
+    cat8 = cat2(cat2(cat2(cat2(cat2(cat2( &
+         cat2(s1,s2),s3),s4),s5),s6),s7),s8)
 
     return
   end function cat8
@@ -203,7 +202,7 @@ contains
     
     character(len=*) :: s1,s2,s3,s4,s5,s6,s7
 
-    cat7 = cat(cats(cats(cats(cats(cat(s1,s2),s3),s4),s5),s6),s7)
+    cat7 = cat2(cat2(cat2(cat2(cat2(cat2(s1,s2),s3),s4),s5),s6),s7)
 
     return
   end function cat7
@@ -214,7 +213,7 @@ contains
     
     character(len=*) :: s1,s2,s3,s4,s5,s6
 
-    cat6 = cat(cats(cats(cats(cats(s1,s2),s3),s4),s5),s6)
+    cat6 = cat2(cat2(cat2(cat2(cat2(s1,s2),s3),s4),s5),s6)
 
     return
   end function cat6
@@ -225,7 +224,7 @@ contains
 
     character(len=*) :: s1,s2,s3,s4,s5
     
-    cat5 = cat(cats(cats(cats(s1,s2),s3),s4),s5)
+    cat5 = cat2(cat2(cat2(cat2(s1,s2),s3),s4),s5)
 
     return
   end function cat5
@@ -236,7 +235,7 @@ contains
 
     character(len=*) :: s1,s2,s3,s4
 
-    cat4 = cat(cats(cats(s1,s2),s3),s4)
+    cat4 = cat2(cat2(cat2(s1,s2),s3),s4)
 
     return
   end function cat4
@@ -247,7 +246,7 @@ contains
 
     character(len=*) :: s1,s2,s3
 
-    cat3 = cat(cats(s1,s2),s3)
+    cat3 = cat2(cat2(s1,s2),s3)
 
     return
   end function cat3
@@ -259,7 +258,7 @@ contains
 
     character(len=*) :: s1,s2
 
-    cat2 = cat(s1,s2)
+    cat2 = TRIM(ADJUSTL(s1)) // ADJUSTL(s2)
 
     return
   end function cat2
@@ -298,39 +297,6 @@ contains
   end function i2str
 
 
-  ! ---- wipe, removes *all* spaces
-
-  character(len=255) function wipe(str)
-
-    implicit none
-
-    character(len=*) :: str
-
-    character(len=1) :: c
-    character(len=1024) :: nstr
-    integer :: i,j,l
-
-    l = strlen(str)
-
-    j = 1
-    do i=1,l
-       c = str(i:i) 
-       if ( c .ne. ' ' .and. iachar(c) .ne. 9 ) then
-          nstr(j:j) = c
-          j = j + 1
-       endif
-    enddo
-    do i=j,len(nstr)
-       nstr(i:i) = ' '
-    enddo
-    
-    wipe = nstr
-
-    return
-
-  end function wipe
-
-
 
   ! ---- ltrim, removes leading spaces
 
@@ -340,79 +306,10 @@ contains
 
     character(len=*) :: str
 
-    character(len=1) :: c
-    character(len=1024) :: nstr 
-    integer :: i, j
-    logical :: flag
-
-    j = 1
-    
-    flag = .false.
-    nstr = ''
-    
-    do i = 1, len(str)
-       
-       c = str(i:i)
-       
-       if ( ( c .ne. ' ' .and. iachar(c) .ne. 9 ) &
-            .or. flag ) then
-          
-          nstr(j:j) = str(i:i)  
-          j = j + 1
-          flag = .true.
-       endif
-
-    enddo
-
-    ltrim = nstr
+    ltrim = TRIM(ADJUSTL(str))
 
     return
   end function ltrim
-
-
-  ! ---- cat 2 strings, add string terminator '~'
-
-  character(len=255) function cats(str1,str2)
-
-    implicit none
-
-    character(len=*) :: str1,str2
-
-    character(len=1024) :: str
-    integer :: l1,l2
-
-    l1 = strlen(str1)
-    l2 = strlen(str2)
-    str = str1(1:l1)
-    str(l1+1:l1+l2) = str2(1:l2)
-    str(l1+l2+1:l1+l2+1) = '~'
-    
-    cats = str
-
-    return
-  end function cats
-
-
-! ---- cat 2 strings
-
-  character(len=255) function cat(str1,str2)
-
-    implicit none
-
-    character(len=*) :: str1,str2
-
-    character(len=1024) :: str
-    integer :: l1,l2
-
-    l1 = strlen(str1)
-    l2 = strlen(str2)
-    str = str1(1:l1)
-    str(l1+1:l1+l2) = str2(1:l2)
-
-    cat = str
-    
-    return
-  end function cat
 
 
 ! ---- effective string length

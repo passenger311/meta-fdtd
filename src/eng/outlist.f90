@@ -124,8 +124,7 @@ contains
     end if
 
     if ( string .ne. ")" ) then
-       write(STDERR,*) "!ERROR (OUT LACKS ) TERMINATOR: ReadOutObj/out"
-       stop
+       M4_FATAL_ERROR({"OUT LACKS TERMINATOR: ReadOutObj/out"})
     end if
 
   end subroutine ReadOutObj

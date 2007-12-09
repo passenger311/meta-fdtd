@@ -126,14 +126,12 @@ contains
        call ReadRegObj(reg, funit)
        mat%regidx = reg%idx
     else
-       write(6,*) "!ERROR NO REGION DEFINED: ReadMatsourceobj"
-       stop
+       M4_FATAL_ERROR({"NO REGION DEFINED: ReadMatsourceobj"})
     end if
 
     read(funit,*) string
     if ( string .ne. ")" ) then
-       write(6,*) "!ERROR BAD TERMINATOR: ReadMatsourceobj"
-       stop
+       M4_FATAL_ERROR({"BAD TERMINATOR: ReadMatsourceobj"})
     end if
 
 ! initialize object data
@@ -170,12 +168,12 @@ contains
           es =  exp ( - mat%gamma**2 * ( 1.0 * ncyc - mat%npeak )**2 )
        endif
        
-       M4_REGLOOP_EXPR(reg,p,i,j,k,w,
+       M4_REGLOOP_EXPR(reg,p,i,j,k,w, {
        
        Ex(i,j,k) = Ex(i,j,k) + mat%vec(1) * es  * mat%ampl * cos(mat%omega0*ncyc) * DT
        Ey(i,j,k) = Ey(i,j,k) + mat%vec(2) * es  * mat%ampl * cos(mat%omega0*ncyc) * DT
        Ez(i,j,k) = Ez(i,j,k) + mat%vec(3) * es  * mat%ampl * cos(mat%omega0*ncyc) * DT
-       )            
+       } )            
        
        
     end do
@@ -207,13 +205,13 @@ contains
           es =  exp ( - mat%gamma**2 * ( 1.0 * ncyc - mat%npeak )**2 )
        endif
     
-       M4_REGLOOP_EXPR(reg,p,i,j,k,w,
+       M4_REGLOOP_EXPR(reg,p,i,j,k,w, {
        
        Hx(i,j,k) = Hx(i,j,k) + mat%vec(1) * es  * mat%ampl * cos(mat%omega0*ncyc) * DT
        Hy(i,j,k) = Hy(i,j,k) + mat%vec(2) * es  * mat%ampl * cos(mat%omega0*ncyc) * DT
        Hz(i,j,k) = Hz(i,j,k) + mat%vec(3) * es  * mat%ampl * cos(mat%omega0*ncyc) * DT
        
-       )
+       } )
        
        
     end do

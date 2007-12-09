@@ -32,13 +32,14 @@ program meta3
 
   ! --- comms time measurement
 
-M4_IFELSE_MPI(`
+M4_IFELSE_MPI({
   real(kind=8) :: tt
   real(kind=8) :: time_waited (2)
   time_waited = 0
-',`')
+},{})
 
 ! =========================== INITIALIZATION ==========================
+
 
   ! --- startup MPI
 
@@ -46,7 +47,7 @@ M4_IFELSE_MPI(`
 
   ! --- init grid
 
-M4_IFELSE_MPELOG(`
+M4_IFELSE_MPELOG({
 
   if (myrank .eq. 0) then
 
@@ -69,12 +70,12 @@ M4_IFELSE_MPELOG(`
      call MPE_Describe_state(21,22,"StepEDiag","chocolate:gray8")
 
   end if
-',`')
+})
 
 
   do l=0, numproc-1
 
-M4_IFELSE_MPI(`call MPI_BARRIER(MPI_COMM_WORLD,mpierr)',`')
+M4_IFELSE_MPI({call MPI_BARRIER(MPI_COMM_WORLD,mpierr)},{})
 
      if (myrank .eq. l) then
 
@@ -103,7 +104,7 @@ M4_IFELSE_MPI(`call MPI_BARRIER(MPI_COMM_WORLD,mpierr)',`')
  
   do l=0, numproc-1
 
-M4_IFELSE_MPI(`call MPI_BARRIER(MPI_COMM_WORLD,mpierr)',`')
+M4_IFELSE_MPI({call MPI_BARRIER(MPI_COMM_WORLD,mpierr)})
 
      if (myrank .eq. l) then
                 
@@ -125,54 +126,54 @@ M4_IFELSE_MPI(`call MPI_BARRIER(MPI_COMM_WORLD,mpierr)',`')
 
      if (myrank .eq. 0 .and. mod(ncyc*10000/NCYCMAX,100) .eq. 0  ) then
 
-        str = cat2(i2str(ncyc*100/NCYCMAX),'%')
+        str = cat2(i2str(ncyc*100/NCYCMAX),"%")
         write(6,*) "running ... ", str
 
      end if
 
 ! ------------------------------ StepH --------------------------------
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(7,"StepH",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(7,"StepH",mpierr)})
 
      call StepH()
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(8,"StepH",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(8,"StepH",mpierr)})
 
 ! ------------------------------ PMLH ---------------------------------
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(9,"StepHPml",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(9,"StepHPml",mpierr)})
 
      call StepHPml()
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(10,"StepHPml",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(10,"StepHPml",mpierr)})
 
 ! -------------------------- StepHMat ---------------------------------
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(15,"StepHMat",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(15,"StepHMat",mpierr)})
 
      call StepHMat(ncyc)
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(16,"StepHMat",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(16,"StepHMat",mpierr)})
 
 ! -------------------------- COMMS H -------------------------------
 
 ! H field calculation if finished -> initiate comms
 
-M4_IFELSE_MPI(`
+M4_IFELSE_MPI({
 
 ! 1. send tangential H fields to right
 
      if ( myrank .ne. numproc-1 ) then
         ides= myrank+1
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(1,"ISEND",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(1,"ISEND",mpierr)})
 
         call MPI_ISEND( Hx(IMIN,JMIN,KEND),mpisize,mpitype,ides, &
              xtag,mpicomm,ireqs(1),mpierr )
         call MPI_ISEND( Hy(IMIN,JMIN,KEND),mpisize,mpitype,ides, &
              ytag,mpicomm,ireqs(2),mpierr )
         
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(2,"ISEND",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(2,"ISEND",mpierr)})
 
      endif
 
@@ -181,31 +182,31 @@ M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(2,"ISEND",mpierr)',`')
      if ( myrank .ne. 0 ) then
         isrc= myrank-1
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(3,"IRECV",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(3,"IRECV",mpierr)})
 
         call MPI_IRECV( Hx(IMIN,JMIN,KMIN),mpisize,mpitype,isrc, &
              xtag,mpicomm,ireqr(1),mpierr )
         call MPI_IRECV( Hy(IMIN,JMIN,KMIN),mpisize,mpitype,isrc, &
              ytag,mpicomm,ireqr(2),mpierr )
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(4,"IRECV",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(4,"IRECV",mpierr)})
 
      endif
 
      tt = MPI_WTIME()
 
-',`')
+})
 
 
 ! -------------------------- StepHDiag --------------------------------
 
 ! use the time while comms are pending to do some useful stuff
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(19,"StepHDiag",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(19,"StepHDiag",mpierr)})
 
      call StepHDiag(ncyc)
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(20,"StepHDiag",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(20,"StepHDiag",mpierr)})
 
 ! ------------------------ LoadDataOut --------------------------------
 
@@ -217,80 +218,80 @@ M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(20,"StepHDiag",mpierr)',`')
 
 ! wait for pending comms to finish
 
-M4_IFELSE_MPI(`
+M4_IFELSE_MPI({
 
      if ( myrank .ne. 0 ) then
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(5,"WAIT",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(5,"WAIT",mpierr)})
 
         call MPI_WAIT(ireqr(2),mpistatus, mpierr )
         call MPI_WAIT(ireqr(1),mpistatus, mpierr )
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(6,"WAIT",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(6,"WAIT",mpierr)})
 
      endif
 
      if ( myrank .ne. numproc-1 ) then
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(5,"WAIT",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(5,"WAIT",mpierr)})
 
         call MPI_WAIT(ireqs(2),mpistatus, mpierr )
         call MPI_WAIT(ireqs(1),mpistatus, mpierr )
  
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(6,"WAIT",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(6,"WAIT",mpierr)})
 
      endif
 
      tt = MPI_WTIME() - tt
      time_waited(1) = time_waited(1) + tt
 
-',`')
+})
 
 
 ! ---------------------------- StepE ----------------------------------
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(11,"StepE",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(11,"StepE",mpierr)})
 
      call StepE()
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(12,"StepE",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(12,"StepE",mpierr)})
 
 ! ---------------------------- PMLE -----------------------------------
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(13,"StepEPml",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(13,"StepEPml",mpierr)})
 
      call StepEPml() 
      call SetPec()
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(14,"StepEPml",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(14,"StepEPml",mpierr)})
 
 ! -------------------------- StepEMat ---------------------------------
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(17,"StepEMat",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(17,"StepEMat",mpierr)})
 
      call StepEMat(ncyc)
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(18,"StepEMat",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(18,"StepEMat",mpierr)})
 
 ! -------------------------- COMMS E ----------------------------------
 
 ! E field calculation is finished -> initiate comms
 
-M4_IFELSE_MPI(` 
+M4_IFELSE_MPI({ 
 
 ! 1. send tangential E fields to the left
 
      if ( myrank .ne. 0 ) then
         ides = myrank-1
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(1,"ISEND",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(1,"ISEND",mpierr)})
 
         call MPI_ISEND( Ex(IMIN,JMIN,KBEG),mpisize,mpitype,ides, &
              xtag,mpicomm,ireqs(1),mpierr )
         call MPI_ISEND( Ey(IMIN,JMIN,KBEG),mpisize,mpitype,ides, &
              ytag,mpicomm,ireqs(2),mpierr )
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(2,"ISEND",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(2,"ISEND",mpierr)})
 
      endif
 
@@ -299,31 +300,31 @@ M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(2,"ISEND",mpierr)',`')
      if ( myrank .ne. numproc-1 ) then
         isrc = myrank+1
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(3,"IRECV",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(3,"IRECV",mpierr)})
 
         call MPI_IRECV( Ex(IMIN,JMIN,KMAX),mpisize,mpitype,isrc, &
              xtag,mpicomm,ireqr(1),mpierr )
         call MPI_IRECV( Ey(IMIN,JMIN,KMAX),mpisize,mpitype,isrc, &
              ytag,mpicomm,ireqr(2),mpierr )
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(4,"IRECV",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(4,"IRECV",mpierr)})
 
      endif
 
      tt = MPI_WTIME()
 
-',`')
+})
 
 
 ! -------------------------- StepEDiag --------------------------------
 
 ! use the time while comms are pending to do some useful stuff
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(21,"StepEDiag",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(21,"StepEDiag",mpierr)})
 
      call StepEDiag(ncyc)
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(22,"StepEDiag",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(22,"StepEDiag",mpierr)})
 
 ! ------------------------ WriteDataOut -------------------------------
 
@@ -335,34 +336,34 @@ M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(22,"StepEDiag",mpierr)',`')
 
 ! complete comms
 
-M4_IFELSE_MPI(`
+M4_IFELSE_MPI({
 
      if ( myrank .ne. numproc-1 ) then
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(5,"WAIT",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(5,"WAIT",mpierr)})
 
         call MPI_WAIT(ireqr(2),mpistatus, mpierr )
         call MPI_WAIT(ireqr(1),mpistatus, mpierr )
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(6,"WAIT",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(6,"WAIT",mpierr)})
 
      endif
 
      if ( myrank .ne. 0 ) then
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(5,"WAIT",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(5,"WAIT",mpierr)})
 
         call MPI_WAIT(ireqs(2),mpistatus, mpierr )
         call MPI_WAIT(ireqs(1),mpistatus, mpierr )
 
-M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(6,"WAIT",mpierr)',`')
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(6,"WAIT",mpierr)})
 
      endif
 
      tt = MPI_WTIME() - tt
      time_waited(2) = time_waited(2) + tt
 
-',`')
+})
 
 ! ---------------------------------------------------------------------
 
@@ -374,11 +375,11 @@ M4_IFELSE_MPELOG(`call MPE_LOG_EVENT(6,"WAIT",mpierr)',`')
 
 ! end of time loop.
 
-M4_IFELSE_MPI(`call MPI_BARRIER(MPI_COMM_WORLD,mpierr)',`')
+M4_IFELSE_MPI({call MPI_BARRIER(MPI_COMM_WORLD,mpierr)})
 
   do l=0, numproc-1
 
-M4_IFELSE_MPI(`call MPI_BARRIER(MPI_COMM_WORLD,mpierr)',`')
+M4_IFELSE_MPI({call MPI_BARRIER(MPI_COMM_WORLD,mpierr)})
 
      if (myrank .eq. l) then
  
@@ -397,10 +398,10 @@ M4_IFELSE_MPI(`call MPI_BARRIER(MPI_COMM_WORLD,mpierr)',`')
         write(6,*) "* -> FinalizeList"
         call FinalizeList
 
-M4_IFELSE_MPI(`
+M4_IFELSE_MPI({
         write(6,*) ranklbl, "* time for Comms H = ", time_waited(1)
         write(6,*) ranklbl, "* time for Comms E = ", time_waited(2)
-',`')
+})
 
      end if
 
@@ -408,9 +409,9 @@ M4_IFELSE_MPI(`
 
 ! --- terminate logging
 
-M4_IFELSE_MPI(`call MPI_BARRIER(MPI_COMM_WORLD,mpierr)',`')
+M4_IFELSE_MPI({call MPI_BARRIER(MPI_COMM_WORLD,mpierr)})
 
-M4_IFELSE_MPELOG(`call MPE_FINISH_LOG("meta3.log")',`')
+M4_IFELSE_MPELOG({call MPE_FINISH_LOG("meta3.log")})
 
 ! --- terminate MPI
 

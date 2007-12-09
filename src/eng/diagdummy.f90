@@ -107,14 +107,12 @@ contains
        call ReadRegObj(reg, funit)
        diag%regidx = reg%idx
     else
-       write(6,*) "!ERROR NO REGION DEFINED: ReadDiagdummyobj/diagdummy"
-       stop
+       M4_FATAL_ERROR({"NO REGION DEFINED: ReadDiagdummyobj/diagdummy"})
     end if
 
     read(funit,*) string
     if ( string .ne. ")" ) then
-       write(6,*) "!ERROR BAD TERMINATOR: ReadDiagdummyobj/diagdummy"
-       stop
+       M4_FATAL_ERROR({"BAD TERMINATOR: ReadDiagdummyobj/diagdummy"})
     end if
 
 ! initialize object data

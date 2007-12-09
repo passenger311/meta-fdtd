@@ -70,8 +70,7 @@ contains
 ! 2.
 ! **
        case default
-          write(STDERR,*) "!ERROR UNDEFINED OUTPUT FORMAT: CloseOut/out"
-          stop
+          M4_FATAL_ERROR({"UNDEFINED OUTPUT FORMAT: CloseOut/out"})
        end select
 
     enddo
@@ -95,8 +94,7 @@ contains
 ! 2.
 ! **
        case default
-          write(STDERR,*) "!ERROR UNDEFINED OUTPUT FORMAT: CloseOut/out"
-          stop
+          M4_FATAL_ERROR({"UNDEFINED OUTPUT FORMAT: CloseOut/out"})
        end select
 
     enddo
@@ -120,8 +118,7 @@ contains
 ! 2.
 ! **
        case default
-          write(STDERR,*) "!ERROR UNDEFINED OUTPUT FORMAT: CloseOut/out"
-          stop
+          M4_FATAL_ERROR({"UNDEFINED OUTPUT FORMAT: CloseOut/out"})
        end select
 
     enddo
@@ -146,8 +143,7 @@ contains
 ! 2.
 ! **
        case default
-          write(STDERR,*) "!ERROR UNDEFINED OUTPUT FORMAT: CloseOut/out"
-          stop
+          M4_FATAL_ERROR({"UNDEFINED OUTPUT FORMAT: CloseOut/out"})
        end select
 
     enddo

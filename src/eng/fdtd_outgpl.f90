@@ -126,8 +126,8 @@ contains
       reg = regobj(out%regidx)
       
       M4_REGLOOP_WRITE(reg,p,i,j,k,w,   
-      UNITTMP,6E15.6E3, `Ex(i,j,k),Ey(i,j,k),Ez(i,j,k),Hx(i,j,k),Hy(i,j,k),Hz(i,j,k)',
-      `')
+      UNITTMP,6E15.6E3, { Ex(i,j,k),Ey(i,j,k),Ez(i,j,k),Hx(i,j,k),Hy(i,j,k),Hz(i,j,k) }
+      )
       
     end subroutine WriteEH
 
@@ -143,8 +143,8 @@ contains
       reg = regobj(out%regidx)
 
        M4_REGLOOP_WRITE(reg,p,i,j,k,w,   
-       UNITTMP,E15.6E3, `Comp(i,j,k)',
-       `')
+       UNITTMP,E15.6E3, { Comp(i,j,k) }
+       )
 
     end subroutine WriteComp
 
@@ -159,8 +159,8 @@ contains
       reg = regobj(out%regidx)
       
       M4_REGLOOP_WRITE(reg,p,i,j,k,w,
-      UNITTMP,E15.6E3, `1.0/epsinv(i,j,k)',
-      `')
+      UNITTMP,E15.6E3, { 1.0/epsinv(i,j,k) }
+      )
 
     end subroutine WriteEps
 
@@ -180,14 +180,14 @@ contains
       buf = bufobj(out%bufidx)
   
       if ( out%mode .ne. 'S' ) then ! spatial integration
-         M4_REGLOOP_EXPR(reg,p,i,j,k,w,`
+         M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
          sum = sum + buf%data(p)
-         ',`')
+         })
          write(UNITTMP,*) sum
       else
          M4_REGLOOP_WRITE(reg,p,i,j,k,w,
-         UNITTMP,E15.6E3, `buf%data(p)',
-         `')
+         UNITTMP,E15.6E3, {buf%data(p)}
+         )
       endif
 
     end subroutine WriteBufData
@@ -208,13 +208,13 @@ contains
     reg = regobj(out%regidx)
     buf = bufobj(out%bufidx)
 
-    M4_REGLOOP_EXPR(reg,p,i,j,k,w,`
+    M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
     val = 0.125*((Ey(i,j,k)+Ey(i+1,j,k))*Hz(i,j,k) &
          + (Ey(i,j-1,k)+Ey(i+1,j-1,k))* Hz(i,j-1,k) &
          - (Ez(i,j,k)+Ez(i+1,j,k))*Hy(i,j,k) &
          - (Ez(i,j,k-1)+Ez(i+1,j,k-1))* Hy(i,j,k-1)) 
     buf%data(p) = buf%data(p) + val/(4.0*PI)
-    ',`')
+    })
       
   end subroutine LoadBufPx
 
@@ -233,13 +233,13 @@ contains
     reg = regobj(out%regidx)
     buf = bufobj(out%bufidx)
     
-    M4_REGLOOP_EXPR(reg,p,i,j,k,w,`
+    M4_REGLOOP_EXPR(reg,p,i,j,k,w, {
     val = 0.125*( (Ez(i,j,k)+Ez(i,j+1,k))*Hx(i,j,k) &
          + (Ez(i,j,k-1)+Ez(i,j+1,k-1))*Hx(i,j,k-1) &
          - (Ex(i,j,k)+Ex(i,j+1,k))*Hz(i,j,k) &
          - (Ex(i-1,j,k)+Ex(i-1,j+1,k))*Hz(i-1,j,k))
     buf%data(p) = buf%data(p) + val/(4.0*PI)
-    ',`')
+    } )
 
   end subroutine LoadBufPy
 
@@ -258,13 +258,13 @@ contains
     reg = regobj(out%regidx)
     buf = bufobj(out%bufidx)
     
-    M4_REGLOOP_EXPR(reg,p,i,j,k,w,`
+    M4_REGLOOP_EXPR(reg,p,i,j,k,w, {
     val = 0.125*( (Ex(i,j,k)+Ex(i,j,k+1))*Hy(i,j,k) &
          +(Ex(i-1,j,k)+Ex(i-1,j,k+1))*Hy(i-1,j,k) &
          - (Ey(i,j,k)+Ey(i,j,k+1))*Hx(i,j,k) &
          - (Ey(i,j-1,k)+Ey(i,j-1,k+1))* Hx(i,j-1,k))
     buf%data(p) = buf%data(p) + val/(4.0*PI)
-    ',`')
+    } )
 
   end subroutine LoadBufPz
 
@@ -283,7 +283,7 @@ contains
     reg = regobj(out%regidx)
     buf = bufobj(out%bufidx)
     
-    M4_REGLOOP_EXPR(reg,p,i,j,k,w,`
+    M4_REGLOOP_EXPR(reg,p,i,j,k,w, {
     eps = 1.0/epsinv(i,j,k)
     EEx = 0.5*eps*(Ex(i,j,k)**2+Ex(i-1,j,k)**2)
     EEy = 0.5*eps*(Ey(i,j,k)**2+Ey(i,j-1,k)**2)
@@ -295,7 +295,7 @@ contains
     EHz = 0.25*(Hz(i,j,k)**2+Hz(i-1,j,k)**2 + &
          Hz(i,j-1,k)**2+Hz(i-1,j-1,k)**2)
     buf%data(p) = (EEx+EEy+EEz+EHx+EHy+EHz)/(4.0*PI)
-    ',`')
+    } )
     
   end subroutine LoadBufEn
 

@@ -166,8 +166,7 @@ contains
        allocate(tmpregvalues(GRIDSIZE),stat = err)
     end if
     if ( err .ne. 0 ) then
-       write(STDERR,*) "!ERROR OUT OF MEMORY: ReadRegObj/reg"
-       stop
+       M4_FATAL_ERROR({"OUT OF MEMORY: ReadRegObj/reg"})
     end if
    
     auto = .true.
@@ -256,8 +255,7 @@ contains
 
           allocate(reg%mask(reg%is:reg%ie,reg%js:reg%je,reg%ks:reg%ke),reg%val(numtmpregpoints), stat = err )
           if ( err .ne. 0 ) then
-             write(STDERR,*) "!ERROR OUT OF MEMORY: ReadRegObj/reg"
-             stop
+             M4_FATAL_ERROR({"OUT OF MEMORY: ReadRegObj/reg"})
           end if
           reg%mask = 0
           do num = 1, numtmpregpoints
@@ -272,8 +270,7 @@ contains
           reg%pe = numtmpregpoints
           allocate(reg%i(numtmpregpoints),reg%j(numtmpregpoints),reg%k(numtmpregpoints),reg%val(numtmpregpoints) , stat = err)
           if ( err .ne. 0 ) then
-             write(STDERR,*) "!ERROR OUT OF MEMORY: ReadRegObj/reg"
-             stop
+             M4_FATAL_ERROR({"OUT OF MEMORY: ReadRegObj/reg"})
           end if
           do num = 1, numtmpregpoints
              reg%i(num) = tmpregpoints(num,1)

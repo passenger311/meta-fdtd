@@ -1,10 +1,10 @@
-define(`M4_REGLOOP_DECL',`
+define({M4_REGLOOP_DECL},{
  type(T_REG) :: $1
  integer :: $2,$3,$4,$5
  real(kind=8) :: $6
-')
+})
 
-define(`M4_REGLOOP_EXPR',`
+define({M4_REGLOOP_EXPR},{
 ! --- START M4: REGLOOP_EXPR
 ! reg,p,i,j,k,w,expr,spac1, spac2
 
@@ -61,14 +61,14 @@ endif
 
 ! --- END M4: REGLOOP_EXPR
 
-')
+})
 
-define(`M4_REGLOOP_WRITE',`
-M4_REGLOOP_EXPR($1,$2,$3,$4,$5,$6,`
+define({M4_REGLOOP_WRITE},{
+M4_REGLOOP_EXPR($1,$2,$3,$4,$5,$6,{
 if ( $1%isbox ) then
 write($7,"($8)") $9
 else
 write($7,"(I5,I5,I5,$8)") $3,$4,$5,$9
 endif
-',`if ( $1%is .ne. $1%ie ) write($7,*)', `if ( $1%js .ne. $1%je ) write($7,*)' )
-')
+},{if ( $1%is .ne. $1%ie ) write($7,*)}, {if ( $1%js .ne. $1%je ) write($7,*)} )
+})

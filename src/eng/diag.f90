@@ -24,8 +24,8 @@ module diag
 
   use strings
   use constant
-  M4_FOREACH_DIAG(`use ', `
-  ')
+  M4_FOREACH_DIAG({use }, {
+  })
 
   implicit none
   private
@@ -62,8 +62,8 @@ contains
 
     call ReadConfig
 
-    M4_FOREACH_DIAG(`call Initialize',`
-    ')
+    M4_FOREACH_DIAG({call Initialize},{
+    })
 
   contains
     
@@ -80,13 +80,12 @@ contains
          if(ios .ne. 0) exit
          select case ( string )
 
-            M4_FOREACH_DIAG2(`case ("(',`")
-             call Read',`Obj(UNITTMP)
-             ')
+            M4_FOREACH_DIAG2({case ("(},{")
+             call Read},{Obj(UNITTMP)
+             })
 
          case default
-            write(STDERR,*) "!ERROR UNDEFINED DIAG SECTION: ReadConfig/diag"
-            stop
+            M4_FATAL_ERROR({"UNDEFINED DIAG SECTION: ReadConfig/diag"})
          end select
          
       enddo
@@ -100,8 +99,8 @@ contains
 
   subroutine FinalizeDiag
 
-    M4_FOREACH_DIAG(`call Finalize',`
-    ')
+    M4_FOREACH_DIAG({call Finalize},{
+    })
 
   end subroutine FinalizeDiag
 
@@ -111,8 +110,8 @@ contains
 
     integer :: ncyc
 
-    M4_FOREACH_DIAG(`call StepE',`(ncyc)
-    ')
+    M4_FOREACH_DIAG({call StepE},{(ncyc)
+    })
 
   end subroutine StepEDiag
 
@@ -122,8 +121,8 @@ contains
 
     integer :: ncyc
 
-    M4_FOREACH_DIAG(`call StepH',`(ncyc)
-    ')
+    M4_FOREACH_DIAG({call StepH},{(ncyc)
+    })
 
   end subroutine StepHDiag
 

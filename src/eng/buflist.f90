@@ -116,8 +116,7 @@ contains
     buf = bufobj(numbufobj)
     allocate(buf%data(buf%size), stat=err)
     if ( err .ne. 0 ) then
-       write(STDERR,*) "!ERROR OUT OF MEMORY: CreateBufObj/bufobj"
-       stop
+       M4_FATAL_ERROR({"OUT OF MEMORY: CreateBufObj/bufobj"})
     endif
     CreateBufObj = buf
     

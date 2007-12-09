@@ -22,24 +22,45 @@ CC= mpicc
 
 endif
 
-# --- standard flags
+# --- openmp flags
 
-F90FLAGS= -O3
-LDFLAGS= 
-CXXFLAGS=
-CCFLAGS=
+ifneq ($(OMP),)
 
+OMPFLAGS= -openmp
+
+endif 
 
 # --- debug flags
 
 ifneq ($(DBG),)
 
-F90FLAGS+= -g -O0
-LDFLAGS+= -g
-CXXFLAGS+= -g -O0
-CCFLAGS+= -g -O0
+DBGFLAGS= -g -O0
 
 endif 
+
+# --- release flags
+
+RELFLAGS= 
+
+# --- optimization flags
+
+ifeq ($(DBG),)
+
+OPTFLAGS= -O3
+
+endif
+
+# --- flags
+
+FLAGS=  $(DBGFLAGS) $(RELFLAGS) $(OMPFLAGS)
+
+F90FLAGS+= $(FLAGS)
+F90FLAGS_OPT= $(OPTFLAGS) $(FLAGS) 
+CXXFLAGS+= $(FLAGS)
+CXXFLAGS_OPT= $(OPTFLAGS) $(FLAGS)
+CCFLAGS+= $(FLAGS)
+CCFLAGS_OPT= $(OPTFLAGS) $(FLAGS)
+LDFLAGS+= $(FLAGS)
 
 
 # ---------------------------------------------------------------------

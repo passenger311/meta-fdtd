@@ -24,8 +24,8 @@ module mat
 
   use strings
   use constant
-  M4_FOREACH_MAT(`use ', `
-  ')
+  M4_FOREACH_MAT({use },{
+  })
 
   implicit none
   private
@@ -62,8 +62,8 @@ contains
 
     call ReadConfig
 
-    M4_FOREACH_MAT(`call Initialize',`
-    ')
+    M4_FOREACH_MAT({call Initialize}, {
+    })
 
   contains
     
@@ -80,14 +80,13 @@ contains
          if(ios .ne. 0) exit
          select case ( string )
 
-            M4_FOREACH_MAT2(`case ("(',`")
-             call Read',`Obj(UNITTMP)
-             ')
+            M4_FOREACH_MAT2({case ("(},{")
+             call Read},{Obj(UNITTMP)
+             })
 
          case default
-            write(STDERR,*) "!ERROR UNDEFINED MAT SECTION: ReadConfig/mat"
-            stop
-            
+            M4_FATAL_ERROR({"UNDEFINED MAT SECTION: ReadConfig/mat"})
+
          end select
          
       enddo
@@ -101,8 +100,8 @@ contains
 
   subroutine FinalizeMat
 
-    M4_FOREACH_MAT(`call Finalize',`
-    ')
+    M4_FOREACH_MAT({call Finalize},{
+    })
 
   end subroutine FinalizeMat
 
@@ -112,8 +111,8 @@ contains
 
     integer :: ncyc
 
-    M4_FOREACH_MAT(`call StepE',`(ncyc)
-    ')
+    M4_FOREACH_MAT({call StepE},{(ncyc)
+    })
 
   end subroutine StepEMat
 
@@ -123,8 +122,8 @@ contains
 
     integer :: ncyc
 
-    M4_FOREACH_MAT(`call StepH',`(ncyc)
-    ')
+    M4_FOREACH_MAT({call StepH},{(ncyc)
+    })
 
   end subroutine StepHMat
 

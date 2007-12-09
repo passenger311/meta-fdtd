@@ -90,6 +90,8 @@ contains
 
         file = cat2(pfxgrid,sfx)
 
+        M4_WRITE_DBG({"Trying to open ", file})
+
         open(UNITTMP,FILE=file,STATUS='unknown')
         read(UNITTMP,*) PARTITIONS
         read(UNITTMP,*) NCYCMAX

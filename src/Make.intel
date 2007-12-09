@@ -5,6 +5,7 @@
 
 # ---------------------------------------------------------------------
 
+
 # --- compiler set
 
 ifeq ($(MPI),)
@@ -21,24 +22,42 @@ CC= mpicc
 
 endif
 
-# --- standard flags
+# --- openmp flags
 
-F90FLAGS= -fpp -O3 -tpp7 -xW -r8
-LDFLAGS= -O3 -xW -r8
-CXXFLAGS=
-CCFLAGS=
+ifneq ($(OMP),)
 
+OMPFLAGS= -openmp
+
+endif 
 
 # --- debug flags
 
 ifneq ($(DBG),)
 
-F90FLAGS+= -g
-LDFLAGS+= -g
-CXXFLAGS+= -g
-CCFLAGS+= -g
+DBGFLAGS= -g -O0
 
 endif 
+
+# --- optimization flags
+
+ifeq ($(DBG),)
+
+OPTFLAGS= -fpp -O3 -tpp7 -xW
+
+endif
+
+# --- flags
+
+FLAGS=  $(DBGFLAGS) $(RELFLAGS) $(OMPFLAGS)
+
+F90FLAGS+= $(FLAGS)
+F90FLAGS_OPT= $(OPTFLAGS) $(FLAGS) 
+CXXFLAGS+= $(FLAGS)
+CXXFLAGS_OPT= $(OPTFLAGS) $(FLAGS)
+CCFLAGS+= $(FLAGS)
+CCFLAGS_OPT= $(OPTFLAGS) $(FLAGS)
+LDFLAGS+= $(FLAGS)
+
 
 
 # ---------------------------------------------------------------------

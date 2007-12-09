@@ -22,8 +22,8 @@ module constant
   integer, parameter :: STRLNG=80                  ! max. Stringlength
   integer, parameter :: STDERR=0                   ! auf Himiko 6, sonst 0
 
-  character(len=20), parameter :: sfxin = '.in'
-  character(len=20), parameter :: sfxout = '.out'
+  character(len=20), parameter :: sfxin = ".in"
+  character(len=20), parameter :: sfxout = ".out"
 
 end module constant
 
