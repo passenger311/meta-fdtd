@@ -37,6 +37,7 @@ module mat
 
   ! --- Public Methods
 
+  public :: ReadConfigMat
   public :: InitializeMat
   public :: FinalizeMat
   public :: StepEMat
@@ -44,11 +45,7 @@ module mat
 
   ! --- Public Data
 
-  public :: pfxmat
-
   ! --- Constants
-
-  character(len=STRLNG), parameter :: pfxmat = 'mat'
 
   ! --- Data
 
@@ -56,43 +53,34 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine InitializeMat
+    subroutine ReadConfigMat(funit,string)
 
-    integer :: err
-
-    call ReadConfig
-
-    M4_FOREACH_MAT({call Initialize}, {
-    })
-
-  contains
-    
-    subroutine ReadConfig
+      integer :: funit
+      character(len=*) :: string
       
-      character(len=STRLNG) :: file, string
       integer :: ios
-      
-      file=cat2(pfxmat,sfxin)
-        
-      open(UNITTMP,FILE=file,STATUS='unknown')
+
       do
-         read(UNITTMP,*, IOSTAT=ios) string
-         if(ios .ne. 0) exit
          select case ( string )
 
             M4_FOREACH_MAT2({case ("(},{")
-             call Read},{Obj(UNITTMP)
-             })
+            call Read},{Obj(UNITTMP)
+            })
 
          case default
-            M4_FATAL_ERROR({"UNDEFINED MAT SECTION: ReadConfig/mat"})
-
+            M4_FATAL_ERROR({"RECEIVED BAD TOKEN ", TRIM(string) ,": ReadConfig/mat"})
          end select
-         
+        
       enddo
-      close(UNITTMP)
 
-    end subroutine ReadConfig
+    end subroutine ReadConfigMat
+
+!----------------------------------------------------------------------
+
+  subroutine InitializeMat
+
+    M4_FOREACH_MAT({call Initialize}, {
+    })
         
   end subroutine InitializeMat
     

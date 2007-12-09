@@ -32,10 +32,7 @@ module grid
   ! --- Module Identifier
 
   character(len=20), private, parameter :: modname = 'GRID'
-
-  ! --- Public Constants
-
-  character(len=STRLNG), parameter :: pfxgrid = 'grid'
+  logical, private :: modconfigured = .false.
 
   ! --- Public Variables  
 
@@ -64,84 +61,96 @@ module grid
 
   integer :: PARTITIONS
 
+
 contains
 
 !----------------------------------------------------------------------
 
-  subroutine InitializeGrid(sfx)
+  subroutine ReadConfigGrid(funit,string)
 
-    implicit none
+    integer :: funit
+    character(len=*) :: string
+    
+    integer :: ios
 
-    character(len=*) :: sfx
+    M4_WRITE_DBG({". ReadConfigGrid/grid"})
 
-    call ReadConfig(sfx)
-    call Initialize()
+    M4_WRITE_DBG({"received token: ", TRIM(string)})
+    if ( string .ne. "(GRID" ) then
+       M4_FATAL_ERROR({"BAD SECTION IDENTIFIER: ReadConfigGrid/grid"})
+    endif
 
-    contains
+    read(funit,*) PARTITIONS
+    M4_WRITE_DBG({"read PARTITIONS: ", PARTITIONS})
+    read(funit,*) NCYCMAX
+    M4_WRITE_DBG({"read NCYCMAX: ", NCYCMAX})
+    read(funit,*) DT
+    M4_WRITE_DBG({"read DT: ", DT})
+    read(funit,*) IBEG, IEND    ! from ... to ranges
+    M4_WRITE_DBG({"read IBEG/IEND: ", IBEG, IEND})
+    read(funit,*) JBEG, JEND
+    M4_WRITE_DBG({"read JBEG/JEND: ", JBEG, JEND})
+    read(funit,*) KBEG, KEND
+    M4_WRITE_DBG({"read KBEG/KEND: ", KBEG, KEND})
+    read(funit,*,iostat=ios) string
+    M4_WRITE_DBG({"read terminator: ", TRIM(string)})
 
-      subroutine ReadConfig(sfx)
+    ! TODO: add some checks on numerical values
 
-        implicit none
+    if ( string(1:1) .ne. ")" ) then
+       M4_FATAL_ERROR({"BAD SECTION TERMINATOR: ReadConfigGrid/grid"})
+    endif
 
-        character(len=*) :: sfx
+    modconfigured = .true.
 
-        character(len=STRLNG) :: file 
-        integer :: err, i
+    M4_WRITE_DBG({"initializing grid early!"})
 
-        file = cat2(pfxgrid,sfx)
+    call InitializeGrid
 
-        M4_WRITE_DBG({"Trying to open ", file})
+  end subroutine ReadConfigGrid
 
-        open(UNITTMP,FILE=file,STATUS='unknown')
-        read(UNITTMP,*) PARTITIONS
-        read(UNITTMP,*) NCYCMAX
-        read(UNITTMP,*) DT
-        read(UNITTMP,*) IBEG, IEND    ! from ... to ranges
-        read(UNITTMP,*) JBEG, JEND
-        read(UNITTMP,*) KBEG, KEND
+!----------------------------------------------------------------------
 
-        close(UNITTMP) 
+  subroutine InitializeGrid
+    
+    M4_WRITE_DBG({". InitializeGrid/grid"})
 
+    if ( .not. modconfigured ) then
+       M4_FATAL_ERROR({"NOT CONFIGURED: InitializeGrid/grid"})
+    endif
 
-      end subroutine ReadConfig
+    if ( PARTITIONS .ne. numproc .and. mpi_started .ne. 0 ) then
+       M4_FATAL_ERROR({"GRID PARTITIONS MISMATCH: InitializeGrid/grid"})
+    end if
+    
+    ! inner ranges are [IBEG,IEND] etc., outer ranges [IMIN,IMAX]
 
-      subroutine Initialize
-
-        implicit none
-
-        if ( PARTITIONS .ne. numproc .and. mpi_started .ne. 0 ) then
-           write(STDERR,*) "!ERROR GRID PARTITIONS MISMATCH: InitializeGrid/grid"
-           stop
-        end if
-
-        ! inner ranges are [IBEG,IEND] etc., outer ranges [IMIN,IMAX]
-
-        IMIN = IBEG-1          
-        IMAX = IEND+1
-        JMIN = JBEG-1
-        JMAX = JEND+1
-        KMIN = KBEG-1
-        KMAX = KEND+1
-
-       ! ranges for PML sheets [ISIG,IEIG]
-
-        ISIG=IBEG
-        IEIG=IMAX
-        JSIG=IBEG
-        JEIG=JMAX
-        KSIG=KBEG
-        KEIG=KMAX
-
-        GRIDSIZE = (IEND - IBEG)*(JEND - JBEG)*(KEND - KBEG)
-
-      end subroutine Initialize
-
+    IMIN = IBEG-1          
+    IMAX = IEND+1
+    JMIN = JBEG-1
+    JMAX = JEND+1
+    KMIN = KBEG-1
+    KMAX = KEND+1
+    
+    ! ranges for PML sheets [ISIG,IEIG]
+    
+    ISIG=IBEG
+    IEIG=IMAX
+    JSIG=IBEG
+    JEIG=JMAX
+    KSIG=KBEG
+    KEIG=KMAX
+    
+    GRIDSIZE = (IEND - IBEG)*(JEND - JBEG)*(KEND - KBEG)
+    
   end subroutine InitializeGrid
 
 !----------------------------------------------------------------------
 
 
   subroutine FinalizeGrid
+
+    M4_WRITE_DBG({". FinalizeGrid/grid"})
 
   end subroutine FinalizeGrid
 

@@ -16,7 +16,7 @@
 
 ! =====================================================================
 !
-! The Diag module hook provides the hooks to include various diagerial 
+! The Diag module hook provides the hooks to include various diagnostic
 ! modules into the fdtd algorithm.
 
 
@@ -24,6 +24,7 @@ module diag
 
   use strings
   use constant
+
   M4_FOREACH_DIAG({use }, {
   })
 
@@ -37,6 +38,7 @@ module diag
 
   ! --- Public Methods
 
+  public :: ReadConfigDiag
   public :: InitializeDiag
   public :: FinalizeDiag
   public :: StepEDiag
@@ -44,11 +46,7 @@ module diag
 
   ! --- Public Data
 
-  public :: pfxdiag
-
   ! --- Constants
-
-  character(len=STRLNG), parameter :: pfxdiag = 'diag'
 
   ! --- Data
 
@@ -56,45 +54,40 @@ contains
 
 !----------------------------------------------------------------------
 
+  subroutine ReadConfigDiag(funit,string)
+
+    integer :: funit
+    character(len=*) :: string
+
+    integer :: ios
+
+    do
+
+       select case ( string )
+          
+          M4_FOREACH_DIAG2({case ("(},{")
+          call Read},{Obj(UNITTMP)
+          })
+        
+       case default
+          if ( string(1:1) .ne. "!" ) then
+             M4_FATAL_ERROR({"RECEIVED BAD TOKEN: ReadConfig/diag"})
+          endif
+       end select
+         
+    enddo
+
+  end subroutine ReadConfigDiag
+  
+!----------------------------------------------------------------------
+  
   subroutine InitializeDiag
-
-    integer :: err
-
-    call ReadConfig
 
     M4_FOREACH_DIAG({call Initialize},{
     })
 
-  contains
-    
-    subroutine ReadConfig
-      
-      character(len=STRLNG) :: file, string
-      integer :: ios
-      
-      file=cat2(pfxdiag,sfxin)
-        
-      open(UNITTMP,FILE=file,STATUS='unknown')
-      do
-         read(UNITTMP,*, IOSTAT=ios) string
-         if(ios .ne. 0) exit
-         select case ( string )
-
-            M4_FOREACH_DIAG2({case ("(},{")
-             call Read},{Obj(UNITTMP)
-             })
-
-         case default
-            M4_FATAL_ERROR({"UNDEFINED DIAG SECTION: ReadConfig/diag"})
-         end select
-         
-      enddo
-      close(UNITTMP)
-
-    end subroutine ReadConfig
-        
   end subroutine InitializeDiag
-    
+ 
 !----------------------------------------------------------------------
 
   subroutine FinalizeDiag

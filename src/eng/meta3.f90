@@ -10,7 +10,6 @@
 !
 !
 
-
 program meta3
 
   use constant
@@ -24,6 +23,7 @@ program meta3
   use mat
   use out
   use diag
+  use config
 
   implicit none
 
@@ -51,8 +51,6 @@ M4_IFELSE_MPELOG({
 
   if (myrank .eq. 0) then
 
-     write(6,*) "* --------- meta3 start"
-
   ! --- init logging
 
      call MPE_INIT_LOG() 
@@ -72,6 +70,11 @@ M4_IFELSE_MPELOG({
   end if
 })
 
+  if (myrank .eq. 0) then
+
+     write(6,*) "* --------- meta-3 engine starts"
+
+  end if
 
   do l=0, numproc-1
 
@@ -79,14 +82,15 @@ M4_IFELSE_MPI({call MPI_BARRIER(MPI_COMM_WORLD,mpierr)},{})
 
      if (myrank .eq. l) then
 
+
         write(6,*) "* initialising modules: myrank = ", ranklbl
 
         write(6,*) "* -> InitializeList"
         call InitializeList
-        write(6,*) "* -> InitializeGrid"
-        call InitializeGrid(mpi_sfxin)
+        write(6,*) "* -> ReadConfig"
+        call ReadConfig
         write(6,*) "* -> InitializeFdtd"
-        call InitializeFdtd(mpi_sfxin)  
+        call InitializeFdtd
         write(6,*) "* -> InitializePml"
         call InitializePml
         write(6,*) "* -> InitializeMat"
@@ -419,7 +423,7 @@ M4_IFELSE_MPELOG({call MPE_FINISH_LOG("meta3.log")})
 
   if (myrank .eq. 0) then
 
-     write(6,*) "* --------- meta3 end"
+     write(6,*) "* --------- meta-3 engine stops"
 
   end if
   

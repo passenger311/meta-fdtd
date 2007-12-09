@@ -34,9 +34,11 @@ module fdtd
   ! --- Module Identifier
 
   character(len=20), parameter :: modname = 'FDTD'
+  logical, private :: modconfigured
 
   ! --- Public Methods
 
+  public :: ReadConfigFdtd
   public :: InitializeFdtd
   public :: FinalizeFdtd
   public :: StepE
@@ -62,112 +64,137 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine InitializeFdtd(sfx)
+ subroutine ReadConfigFdtd(funit,string)
 
-    implicit none
+   integer :: funit
+   character(len=*) :: string
 
-    character(len=*) :: sfx
+   integer :: ios
 
-    integer :: err
+   M4_WRITE_DBG({". ReadConfigFdtd/fdtd"})
+      
+   if ( string .ne. "(FDTD" ) then
+      M4_FATAL_ERROR({"BAD SECTION IDENTIFIER: ReadConfigFdtd/fdtd"})
+   endif
+   
+! TODO: read field output structures here
 
-    call AllocateFields
-    call ReadEpsilonField(sfx)
+   read(funit,*,iostat=ios) string
+   M4_WRITE_DBG({"read terminator: ", TRIM(string)})
+   
+   if ( string .ne. ")" ) then
+      M4_FATAL_ERROR({"BAD SECTION TERMINATOR: ReadConfigFdtd/fdtd"})
+   endif
+   
+   modconfigured = .true.
+   
+ end subroutine ReadConfigFdtd
+ 
 
+!----------------------------------------------------------------------
 
-    contains
+ subroutine InitializeFdtd
+   
+   integer :: err
+    
+    M4_WRITE_DBG({". InitializeFdtd/fdtd"})
 
-      subroutine AllocateFields
+   if ( .not. modconfigured ) then
+      M4_FATAL_ERROR({"NOT CONFIGURED: InitializeFdtd/fdtd"})
+   endif
+ 
+   call AllocateFields
+   call ReadEpsilonField
+   
+ contains
+      
+   subroutine AllocateFields
 
-        implicit none
+     M4_WRITE_DBG({". InitializeFdtd/fdtd . AllocateFields"})
+     
+     allocate(Ex(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
+     M4_ALLOC_ERROR(err, "AllocateFields/fdtd")
+     
+     allocate(Ey(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
+     M4_ALLOC_ERROR(err, "AllocateFields/fdtd")
+     
+     allocate(Ez(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
+     M4_ALLOC_ERROR(err, "AllocateFields/fdtd")
+     
+     allocate(Hx(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
+     M4_ALLOC_ERROR(err, "AllocateFields/fdtd")
 
-        allocate(Ex(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
-        if(err .ne. 0) then
-           M4_FATAL_ERROR({"OUT OF MEMORY: AllocateFields/fdtd"})
-        endif
-        allocate(Ey(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
-        if(err .ne. 0) then
-           M4_FATAL_ERROR({"OUT OF MEMORY: AllocateFields/fdtd"})
-        endif
-        allocate(Ez(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
-        if(err .ne. 0) then
-           M4_FATAL_ERROR({"OUT OF MEMORY: AllocateFields/fdtd"})
-        endif
-        allocate(Hx(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
-        if(err .ne. 0) then
-           M4_FATAL_ERROR({"OUT OF MEMORY: AllocateFields/fdtd"})
-        endif
-        allocate(Hy(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
-        if(err .ne. 0) then
-           M4_FATAL_ERROR({"OUT OF MEMORY: AllocateFields/fdtd"})
-        endif
-        allocate(Hz(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
-        if(err .ne. 0) then
-           M4_FATAL_ERROR({"OUT OF MEMORY: AllocateFields/fdtd"})
-        endif
-        allocate(EPSINV(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
-        if(err .ne. 0) then
-           M4_FATAL_ERROR({"OUT OF MEMORY: AllocateFields/fdtd"})
-        endif
+     allocate(Hy(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
+     M4_ALLOC_ERROR(err, "AllocateFields/fdtd")
+     
+     allocate(Hz(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
+     M4_ALLOC_ERROR(err, "AllocateFields/fdtd")
+     
+     allocate(EPSINV(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
+     M4_ALLOC_ERROR(err, "AllocateFields/fdtd")
+     
+     Ex = 0.0
+     Ey = 0.0
+     Ez = 0.0
+     
+     Hx = 0.0
+     Hy = 0.0
+     Hz = 0.0
+     
+     EPSINV = 1.0
 
-        Ex = 0.0
-        Ey = 0.0
-        Ez = 0.0
+   end subroutine AllocateFields
+   
+   
+   subroutine ReadEpsilonField
 
-        Hx = 0.0
-        Hy = 0.0
-        Hz = 0.0
+     integer :: ios, i, j, k
+     real(kind=8) :: val
+     
+     character(len=STRLNG) :: file
+     
+     M4_WRITE_DBG({". InitializeFdtd/fdtd . ReadEpsilonField"})
 
-        EPSINV = 1.0
-
-      end subroutine AllocateFields
-
-
-      subroutine ReadEpsilonField(sfx)
-
-        implicit none
-
-        character(len=*) :: sfx
-
-        integer :: ios, i, j, k
-        real(kind=8) :: val
-
-        character(len=STRLNG) :: file
-
-        file = cat2(pfxepsilon,sfx)
-
-        open(UNITTMP, FILE=file, STATUS='unknown')
-        do k=KBEG,KEND+1
-           do j=JBEG,JEND+1
-              do i=IBEG, IEND+1
-                 read(UNITTMP,*) val
-                 EPSINV(i,j,k)=1.0/val
-              end do
+     file = cat2(pfxepsilon,mpi_sfxin)
+     
+     M4_WRITE_DBG({"trying to open ", file})
+     
+     open(UNITTMP, FILE=file, STATUS='old', IOSTAT=ios)
+     M4_OPEN_ERROR(ios,file)
+     
+     do k=KBEG,KEND+1
+        do j=JBEG,JEND+1
+           do i=IBEG, IEND+1
+              read(UNITTMP,*) val
+              EPSINV(i,j,k)=1.0/val
            end do
         end do
-        close(UNITTMP)
+     end do
+     
+     close(UNITTMP)
+     
+   end subroutine ReadEpsilonField
 
-      end subroutine ReadEpsilonField
-
-
-  end subroutine InitializeFdtd
-
-!----------------------------------------------------------------------
-
-  subroutine FinalizeFdtd
-
-    implicit none
-
-    deallocate(Hz)
-    deallocate(Hy)
-    deallocate(Hx)
-    deallocate(Ez)
-    deallocate(Ey)
-    deallocate(Ex)
-    deallocate(EPSINV)
-
-  end subroutine FinalizeFdtd
+   
+ end subroutine InitializeFdtd
 
 !----------------------------------------------------------------------
+
+ subroutine FinalizeFdtd
+   
+   M4_WRITE_DBG({". FinalizeFdtd/fdtd"})
+   
+   deallocate(Hz)
+   deallocate(Hy)
+   deallocate(Hx)
+   deallocate(Ez)
+   deallocate(Ey)
+   deallocate(Ex)
+   deallocate(EPSINV)
+   
+ end subroutine FinalizeFdtd
+ 
+ !----------------------------------------------------------------------
 
   subroutine StepH
 

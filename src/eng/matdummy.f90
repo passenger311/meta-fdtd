@@ -73,18 +73,6 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine InitializeMatDummy
-
-  end subroutine InitializeMatDummy
-
-!----------------------------------------------------------------------
-
-  subroutine FinalizeMatDummy
-
-  end subroutine FinalizeMatDummy
-
-!----------------------------------------------------------------------
-
   subroutine ReadMatDummyObj(funit)
 
     integer:: funit
@@ -98,30 +86,47 @@ contains
 
 ! read mat parameters ...
 
-!    read(funit,*) mat%parameter
+!   read(funit,*) mat%parameter
 
-! read regobj
+! read regions and terminator
 
-    read(funit,*) string
-    if ( string .eq. "(REGION" ) then
-       call ReadRegObj(reg, funit)
-       mat%regidx = reg%idx
-    else
-       M4_FATAL_ERROR({"NO REGION DEFINED: ReadMatdummyobj/matdummy"})
-    end if
-
-    read(funit,*) string
-    if ( string .ne. ")" ) then
-       M4_FATAL_ERROR({"BAD TERMINATOR: ReadMatdummyobj/matdummy"})
-    end if
-
-! initialize object data
-
-! intialize mat structure ...
-
+   M4_GET_REG_AND_TERMINATOR(mat, "ReadMatDummyObj/matdummy")
 
   end subroutine ReadMatDummyObj
 
+!----------------------------------------------------------------------
+
+  subroutine InitializeMatDummy
+
+    integer :: n
+    type(T_MATDUMMY) :: mat
+
+    do n = 1, nummatdummyobj
+
+       mat = matdummyobj(n)
+
+       ! Initialize matdummy object here
+
+    end do
+
+  end subroutine InitializeMatDummy
+
+!----------------------------------------------------------------------
+
+  subroutine FinalizeMatDummy
+
+    integer :: n
+    type(T_MATDUMMY) :: mat
+    
+    do n = 1, nummatdummyobj
+       
+       mat = matdummyobj(n)
+
+       ! Finalize matdummy object here
+
+    end do
+
+  end subroutine FinalizeMatDummy
 
 !----------------------------------------------------------------------
 

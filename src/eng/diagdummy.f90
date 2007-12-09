@@ -73,18 +73,6 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine InitializeDiagDummy
-
-  end subroutine InitializeDiagDummy
-
-!----------------------------------------------------------------------
-
-  subroutine FinalizeDiagDummy
-
-  end subroutine FinalizeDiagDummy
-
-!----------------------------------------------------------------------
-
   subroutine ReadDiagDummyObj(funit)
 
     integer:: funit
@@ -100,31 +88,47 @@ contains
 
 !    read(funit,*) diag%parameter
 
-! read regobj
+! read regions and terminator
 
-    read(funit,*) string
-    if ( string .eq. "(REGION" ) then
-       call ReadRegObj(reg, funit)
-       diag%regidx = reg%idx
-    else
-       M4_FATAL_ERROR({"NO REGION DEFINED: ReadDiagdummyobj/diagdummy"})
-    end if
-
-    read(funit,*) string
-    if ( string .ne. ")" ) then
-       M4_FATAL_ERROR({"BAD TERMINATOR: ReadDiagdummyobj/diagdummy"})
-    end if
-
-! initialize object data
-
-! intialize diag structure ...
-
+   M4_GET_REG_AND_TERMINATOR(diag,"ReadDiagDummyObj/diagdummy")
 
   end subroutine ReadDiagDummyObj
 
+!----------------------------------------------------------------------
+
+  subroutine InitializeDiagDummy
+
+    integer :: n
+    type(T_DIAGDUMMY) :: diag
+
+    do n = 1, numdiagdummyobj
+
+       diag = diagdummyobj(n)
+
+       ! Initialize diagdummy object here
+
+    end do
+
+  end subroutine InitializeDiagDummy
 
 !----------------------------------------------------------------------
 
+  subroutine FinalizeDiagDummy
+
+    integer :: n
+    type(T_DIAGDUMMY) :: diag
+    
+    do n = 1, numdiagdummyobj
+       
+       diag = diagdummyobj(n)
+
+       ! Finalize diagdummy object here
+
+    end do
+
+  end subroutine FinalizeDiagDummy
+
+!----------------------------------------------------------------------
 
   subroutine StepHDiagDummy(ncyc)
 

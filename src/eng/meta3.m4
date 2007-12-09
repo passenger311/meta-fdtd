@@ -29,5 +29,24 @@ define({M4_FATAL_ERROR}, {write(STDERR,*) "!ERR ", $1
 stop
 })
 
+define({M4_ALLOC_ERROR}, {if ( $1 .ne. 0 ) then
+write(STDERR,*) "!ERR OUT OF MEMORY: ", $2
+stop
+endif
+})
+
+
+define({M4_OPEN_ERROR}, {if ( $1 .ne. 0 ) then
+write(STDERR,*) "!ERR COULD NOT OPEN FILE: ", $2
+stop
+endif
+})
+
+define({M4_READ_ERROR}, {if ( $1 .ne. 0 ) then
+write(STDERR,*) "!ERR READ ERROR: ", $2
+stop
+endif
+})
+
 define({M4_FTYPE}, {ifdef({M4_CF}, {complex(kind=8)}, {real(kind=8)})})
 

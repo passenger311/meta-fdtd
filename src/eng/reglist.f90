@@ -71,11 +71,11 @@ module reglist
 
   ! --- Public Methods
 
+  public :: ReadRegObj
   public :: InitializeRegList
   public :: FinalizeRegList
   public :: CreateRegObj
   public :: DestroyRegObj
-  public :: ReadRegObj
 
   ! --- Public Data
 
@@ -110,9 +110,7 @@ module reglist
   type(T_REG) :: regobj(MAXREGOBJ) 
   integer :: numregobj
 
-  integer, allocatable, dimension(:,:) :: tmpregpoints
-  real*8, allocatable, dimension(:) :: tmpregvalues
-  integer :: numtmpregpoints
+  real(kind=8), allocatable, dimension(:,:,:) :: tmpmask
 
 contains
 
@@ -155,19 +153,14 @@ contains
     character(len=STRLNG) :: string
     logical :: auto
 
+    M4_WRITE_DBG(". ReadRegObj")
+
+    M4_WRITE_DBG("creating new regobj")
     reg = CreateRegObj()
 
-    numtmpregpoints = 0
-    err = 0
-    if ( err .eq. 0 ) then
-       allocate(tmpregpoints(GRIDSIZE, 3),stat = err)
-    end if
-    if ( err .eq. 0 ) then
-       allocate(tmpregvalues(GRIDSIZE),stat = err)
-    end if
-    if ( err .ne. 0 ) then
-       M4_FATAL_ERROR({"OUT OF MEMORY: ReadRegObj/reg"})
-    end if
+    M4_WRITE_DBG({ "allocating mask, size = ", GRIDSIZE})
+    allocate(tmpmask(IBEG:IEND,JBEG:JEND,KBEG:KEND),stat = err)
+    M4_ALLOC_ERROR(err,"ReadRegObj/reglist")
    
     auto = .true.
     ! read until an unexpected line is encountered, eg ")"
@@ -177,6 +170,7 @@ contains
        
        select case ( string ) 
        case( "(POINTS" ) 
+          M4_WRITE_DBG({"got a ", TRIM(string)})
           reg%isbox = .false.
           val = 1.0
           do 
@@ -187,6 +181,7 @@ contains
              call SetPointRegObj(reg, i,j,k, val)
           end do
        case( "(BOX" ) 
+          M4_WRITE_DBG({"got a ", TRIM(string)})
           if ( numtmpregpoints .eq. 0 ) then 
              reg%isbox = .true.
           else
@@ -196,11 +191,13 @@ contains
           do 
              read(funit,*,iostat = ios)  i0, i1, di, j0, j1, dj, k0, k1, dk
              if ( ios .ne. 0 ) then
+                M4_WRITE_DBG({"end of box list"})
                 exit
              end if
              call SetBoxRegObj(reg, i0, i1, di, j0, j1, dj, k0, k1, dk, val)
           end do
        case( "(VBOX" ) 
+          M4_WRITE_DBG({"got a ", TRIM(string)})
           reg%isbox = .false.
           do 
              read(funit,*,iostat = ios)  i0, i1, di, j0, j1, dj, k0, k1, dk, val
@@ -210,6 +207,7 @@ contains
              call SetBoxRegObj(reg, i0, i1, di, j0, j1, dj, k0, k1, dk, val)
           end do
        case( "(VPOINTS" ) 
+          M4_WRITE_DBG({"got a ", TRIM(string)})
           reg%isbox = .false.
           do 
              read(funit,*,iostat = ios) i,j,k, val
@@ -219,9 +217,11 @@ contains
              call SetPointRegObj(reg, i,j,k, val)
           end do
        case("LIST") ! force list mode
+          M4_WRITE_DBG({"mode -> ", TRIM(string)})
           reg%islist = .true.
           auto = .false.
        case("MASK") ! force mask mode
+          M4_WRITE_DBG({"mode -> ", TRIM(string)})
           reg%islist = .false.
           auto = .false.
        case default
@@ -286,8 +286,7 @@ contains
        
     end if
  
-    deallocate(tmpregpoints)
-    deallocate(tmpregvalues)
+    deallocate(tmpmask)
     
   end subroutine ReadRegObj
 
@@ -321,6 +320,8 @@ contains
     real*8 :: val
     integer :: i,j,k
 
+    M4_WRITE_DBG({"set box: ",i0, i1, di, j0, j1, dj, k0, k1, dk})
+
     ! clip box to grid
     i0 = Max(i0,IBEG)
     j0 = Max(j0,JBEG)
@@ -346,15 +347,13 @@ contains
        reg%dk = 1
     end if
 
+    M4_WRITE_DBG({"box now: ",i0, i1, di, j0, j1, dj, k0, k1, dk})
+
     ! set points
-    do i = i0, i1, di
+    do k = k0, k1, dk
        do j = j0, j1, dj
-          do k = k0, k1, dk
-             numtmpregpoints = numtmpregpoints + 1
-             tmpregpoints(numtmpregpoints,1) = i
-             tmpregpoints(numtmpregpoints,2) = j
-             tmpregpoints(numtmpregpoints,3) = k
-             tmpregvalues(numtmpregpoints) = val
+          do i = i0, i1, di
+             tmpmask(i,j,k) = val
           end do
        end do
     end do
@@ -368,6 +367,8 @@ contains
     type(T_REG) :: reg
     integer :: i,j,k
     real*8 :: val
+
+    M4_WRITE_DBG({"set point: ",i,j,k})
 
     ! check whether point is inside grid
     if ( i .lt. IBEG .or. j .lt. JBEG .or. k .lt. KBEG .or. &
@@ -387,11 +388,7 @@ contains
     reg%dk = 1
 
     ! set point
-    numtmpregpoints = numtmpregpoints + 1
-    tmpregpoints(numtmpregpoints,1) = i
-    tmpregpoints(numtmpregpoints,2) = j
-    tmpregpoints(numtmpregpoints,3) = k
-    tmpregvalues(numtmpregpoints) = val
+    tmpmask(i,j,k) = val
 
   end subroutine SetPointRegObj
 

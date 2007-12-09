@@ -47,6 +47,7 @@ $(DIAGOBJ)\
 diag.o\
 outgpl.o\
 out.o\
+config.o\
 meta3.o
 
 EXE = meta3
@@ -82,7 +83,7 @@ clean:
 	 rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod *_m4.f90 *_m4.F90
 
 proper: clean
-	 rm -f $(EXE) $(PREEXE) *.o *.in *.out *~
+	 rm -f $(EXE) $(PREEXE) *.o *~
 
 
 # ---------------------------------------------------------------------

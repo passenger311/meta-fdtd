@@ -86,18 +86,6 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine InitializeMatSource
-
-  end subroutine InitializeMatSource
-
-!----------------------------------------------------------------------
-
-  subroutine FinalizeMatSource
-
-  end subroutine FinalizeMatSource
-
-!----------------------------------------------------------------------
-
   subroutine ReadMatSourceObj(funit)
 
     integer:: funit
@@ -112,40 +100,68 @@ contains
 ! read parameters
 
     read(funit,*) mat%lambda0     ! vacuum wavelength in units of [dx]
+   M4_WRITE_DBG({"read lambda0: ", mat%lambda0})
     read(funit,*) mat%dlambda0    ! spectral width of vac.wave in units of [dx]
+   M4_WRITE_DBG({"read dlambda0: ", mat%dlambda0})
     read(funit,*) mat%a0          ! gaussian start value as fraction of peak
+   M4_WRITE_DBG({"read a0: ", mat%a0})
     read(funit,*) mat%ampl        ! amplitude = 1.
+   M4_WRITE_DBG({"read ampl: ", mat%ampl})
     read(funit,*) mat%cw          ! go over to cw after peak
+   M4_WRITE_DBG({"read cw: ", mat%cw})
     read(funit,*) mat%esource     ! electric/magnetic field source
+   M4_WRITE_DBG({"read esource: ", mat%esource})
     read(funit,*) mat%vec(1),mat%vec(2), mat%vec(3) ! vector components
+   M4_WRITE_DBG({"read vec(1:3): ", mat%vec(1),mat%vec(2), mat%vec(3) })
 
-! read regobj information
+! read regions and terminator
 
-    read(funit,*) string
-    if ( string .eq. "(REGION" ) then
-       call ReadRegObj(reg, funit)
-       mat%regidx = reg%idx
-    else
-       M4_FATAL_ERROR({"NO REGION DEFINED: ReadMatsourceobj"})
-    end if
-
-    read(funit,*) string
-    if ( string .ne. ")" ) then
-       M4_FATAL_ERROR({"BAD TERMINATOR: ReadMatsourceobj"})
-    end if
-
-! initialize object data
-
-    mat%omega0 = 2. * PI * 1. / ( mat%lambda0 * DT )
-    mat%omega1 = 2. * PI * 1. / ( ( mat%lambda0 + mat%dlambda0 ) * DT )
-    mat%gamma = (mat%omega0 - mat%omega1 ) / log(2.0)
-    mat%npeak =  sqrt ( - log(mat%a0) / mat%gamma**2 )
-    mat%nmax = mat%npeak
+   M4_GET_REG_AND_TERMINATOR(mat, "ReadMatSourceObj/matsource")
 
   end subroutine ReadMatSourceObj
 
 !----------------------------------------------------------------------
- 
+
+  subroutine InitializeMatSource
+
+    integer :: n
+    type(T_MATSOURCE) :: mat
+
+    do n = 1, nummatsourceobj
+
+       mat = matsourceobj(n)
+
+       ! Initialize matsource object
+
+       mat%omega0 = 2. * PI * 1. / ( mat%lambda0 * DT )
+       mat%omega1 = 2. * PI * 1. / ( ( mat%lambda0 + mat%dlambda0 ) * DT )
+       mat%gamma = (mat%omega0 - mat%omega1 ) / log(2.0)
+       mat%npeak =  sqrt ( - log(mat%a0) / mat%gamma**2 )
+       mat%nmax = mat%npeak
+
+    end do
+
+  end subroutine InitializeMatSource
+
+!----------------------------------------------------------------------
+
+  subroutine FinalizeMatSource
+
+    integer :: n
+    type(T_MATSOURCE) :: mat
+
+    do n = 1, nummatsourceobj
+
+       mat = matsourceobj(n)
+
+       ! Finalize matdsource object here 
+
+    end do
+
+  end subroutine FinalizeMatSource
+
+!----------------------------------------------------------------------
+
   subroutine StepEMatSource(ncyc)
 
     integer :: ncyc
