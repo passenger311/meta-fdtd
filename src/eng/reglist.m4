@@ -1,26 +1,4 @@
 
-define({M4_GET_REG_AND_TERMINATOR},{
-! read regobj information
-
-    read(funit,*) string
-    if ( string .eq. "(REG" ) then
-       M4_WRITE_DBG({"got (REG -> ReadRegObj"})
-       call ReadRegObj(reg, funit)
-       $1%regidx = reg%idx
-    else
-       M4_FATAL_ERROR({"NO REGION DEFINED: ",$2})
-    end if
-
-! get terminator
-
-    read(funit,*) string
-    M4_WRITE_DBG({"read terminator: ", TRIM(string)})
-
-    if ( string(1:1) .ne. ")" ) then
-       M4_FATAL_ERROR({"BAD TERMINATOR: ",$2})
-    end if
-})
-
 define({M4_REGLOOP_DECL},{
  type(T_REG) :: $1
  integer :: $2,$3,$4,$5

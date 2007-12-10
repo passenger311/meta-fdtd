@@ -26,6 +26,7 @@ module matdummy
   use constant
   use mpiworld
   use reglist
+  use outlist
   use grid
   use fdtd
 
@@ -33,41 +34,12 @@ module matdummy
   private
   save
 
-  ! --- Module Identifier
+  M4_MODHEAD_DECL({MATDUMMY},100,{
 
-  character(len=STRLNG), parameter :: modname = 'MATDUMMY'
+  ! enter mat data structure here:
+  integer :: something
 
-  ! --- Public Methods
-
-  public :: InitializeMatDummy
-  public :: FinalizeMatDummy
-  public :: StepEMatDummy
-  public :: StepHMatDummy
-  public :: ReadMatDummyObj
-
-  ! --- Public Data
-
-  public :: T_MATDUMMY
-  public :: matdummyobj
-  public :: nummatdummyobj
-
-  ! --- Constants
-
-  integer, parameter :: MAXMATDUMMYOBJ = 10
-
-  ! --- Types
-
-  type T_MATDUMMY
-
-     integer :: regidx             ! regobj index
-
-
-  end type T_MATDUMMY
-
-  ! --- Fields
-
-  type(T_MATDUMMY) :: matdummyobj(MAXMATDUMMYOBJ) 
-  integer :: nummatdummyobj
+  })
 
 contains
 
@@ -75,22 +47,12 @@ contains
 
   subroutine ReadMatDummyObj(funit)
 
-    integer:: funit
-    character(len=STRLNG) :: file, string
-    integer :: ios
-    type(T_REG) :: reg
-    type(T_MATDUMMY) :: mat
-
-    nummatdummyobj = nummatdummyobj + 1
-    mat = matdummyobj(nummatdummyobj)
-
-! read mat parameters ...
-
-!   read(funit,*) mat%parameter
-
-! read regions and terminator
-
-   M4_GET_REG_AND_TERMINATOR(mat, "ReadMatDummyObj/matdummy")
+    M4_MODREAD_DECL({MATDUMMY}, funit,mat,reg,out)
+    
+    ! read mat parameters here, as defined in mat data structure
+    read(funit,*) mat%something
+ 
+    M4_MODREAD_END({MATDUMMY}, funit,mat,reg,out)
 
   end subroutine ReadMatDummyObj
 
@@ -98,16 +60,12 @@ contains
 
   subroutine InitializeMatDummy
 
-    integer :: n
-    type(T_MATDUMMY) :: mat
+    M4_MODLOOP_DECL({MATDUMMY},mat)
+    M4_MODLOOP_EXPR({MATDUMMY},mat,{
+    
+       ! initialize mat object here
 
-    do n = 1, nummatdummyobj
-
-       mat = matdummyobj(n)
-
-       ! Initialize matdummy object here
-
-    end do
+    })
 
   end subroutine InitializeMatDummy
 
@@ -115,44 +73,37 @@ contains
 
   subroutine FinalizeMatDummy
 
-    integer :: n
-    type(T_MATDUMMY) :: mat
-    
-    do n = 1, nummatdummyobj
-       
-       mat = matdummyobj(n)
+    M4_MODLOOP_DECL({MATDUMMY},mat)
+    M4_MODLOOP_EXPR({MATDUMMY},mat,{
 
-       ! Finalize matdummy object here
+       ! finalize mat object here
 
-    end do
+    })
 
   end subroutine FinalizeMatDummy
 
 !----------------------------------------------------------------------
 
-
   subroutine StepHMatDummy(ncyc)
 
     integer :: ncyc
-    integer :: n
-    type(T_MATDUMMY) :: mat
-
+    M4_MODLOOP_DECL({MATDUMMY},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w)
 
-    do n = 1, nummatdummyobj
+    M4_MODLOOP_EXPR({MATDUMMY},mat,{
 
-       mat = matdummyobj(n)
-       reg = regobj(mat%regidx)
-     
-       M4_REGLOOP_EXPR(reg,p,i,j,k,w,
+       ! this loops over all mat structures, setting mat
+
+       M4_MODOBJ_GETREG(mat,reg)
+       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
        
-       ! do some stuff here
+       ! this loops over all points of the region 
 
-       )
-              
-    end do
-    
+       })      
+    })
+  
   end subroutine StepHMatDummy
+
 
 !----------------------------------------------------------------------
 
@@ -160,24 +111,21 @@ contains
   subroutine StepEMatDummy(ncyc)
 
     integer :: ncyc
-    integer :: n
-    type(T_MATDUMMY) :: mat
-
+    M4_MODLOOP_DECL({MATDUMMY},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w)
 
-    do n = 1, nummatdummyobj
+    M4_MODLOOP_EXPR({MATDUMMY},mat,{
 
-       mat = matdummyobj(n)
-       reg = regobj(mat%regidx)
-     
-       M4_REGLOOP_EXPR(reg,p,i,j,k,w,
+       ! this loops over all mat structures, setting mat
+
+       M4_MODOBJ_GETREG(mat,reg)
+       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
        
-       ! do some stuff here
+       ! this loops over all points of the region 
 
-       )
-              
-    end do
-    
+       })      
+    })
+
   end subroutine StepEMatDummy
 
   

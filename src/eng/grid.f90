@@ -150,7 +150,7 @@ contains
     M4_WRITE_DBG({"init KSIG/KEIG: ", KSIG, KEIG})
 
     
-    GRIDSIZE = (IEND - IBEG)*(JEND - JBEG)*(KEND - KBEG)
+    GRIDSIZE = (IEND - IBEG+1)*(JEND - JBEG+1)*(KEND - KBEG+1)
     M4_WRITE_DBG({"init GRIDSIZE: ", GRIDSIZE})
 
 

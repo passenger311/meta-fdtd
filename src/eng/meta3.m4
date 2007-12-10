@@ -5,6 +5,7 @@ include({reglist.m4})
 include({mat.m4})
 include({diag.m4})
 include({outgpl.m4})
+include({modules.m4})
 
 
 define({M4_ISDBG}, {ifdef({M4_DBG}, {.true.}, {.false.})})

@@ -155,7 +155,7 @@ contains
     character(len=STRLNG) :: string
     logical :: auto
 
-    M4_WRITE_DBG(". ReadRegObj")
+    M4_WRITE_DBG(". enter ReadRegObj")
 
     M4_WRITE_DBG("creating new regobj")
     reg = CreateRegObj()
@@ -164,6 +164,7 @@ contains
     allocate(tmpmask(IBEG:IEND,JBEG:JEND,KBEG:KEND),tmpval(1:GRIDSIZE),stat = err)
     M4_ALLOC_ERROR(err,"ReadRegObj/reglist")
     tmpmask = 0
+    tmpval = 0.0
     numnodes = 0
    
     auto = .true.
@@ -233,15 +234,27 @@ contains
           auto = .false.
        case("AUTO") 
        case default
-          M4_WRITE_DBG({"X read terminator: ", TRIM(string)})
+          M4_WRITE_DBG({"read terminator: ", TRIM(string)})
           if ( string(1:1) .ne. ")" ) then
-             M4_FATAL_ERROR({"X BAD TERMINATOR: ReadRegObj/reglist"})
+             M4_FATAL_ERROR({"BAD TERMINATOR: ReadRegObj/reglist"})
           end if
           exit
        end select
 
     end do
 
+    if ( auto  ) then
+       M4_WRITE_DBG({"auto mode, trying to find best allocation scheme"})
+       masksz = (reg%ie - reg%is + 1) * (reg%je - reg%js + 1) * (reg%ke - reg%ks + 1)
+       listsz = numnodes * 3 
+       M4_WRITE_DBG({"list size = ", listsz, " / mask size = ", masksz})
+       if ( listsz .lt. masksz ) then 
+          reg%islist = .true.
+       else 
+          reg%islist = .false.
+       endif
+    end if
+       
     if ( reg%isbox ) then ! A SINGLE BOX
         
        M4_WRITE_DBG({"filling struct in single box mode", numnodes})
@@ -251,18 +264,6 @@ contains
             ( reg%ke - reg%ks + 1 ) / reg%dk    
 
     else
-
-       if ( auto ) then
-          M4_WRITE_DBG({"auto mode, trying to find best allocation scheme"})
-          masksz = (reg%ie - reg%is) * (reg%je - reg%js) * (reg%ke - reg%ks)
-          listsz = numnodes * 3 
-          M4_WRITE_DBG({"list size = ", listsz, " / mask size = ", masksz})
-          if ( listsz .lt. masksz ) then 
-             reg%islist = .true.
-          else 
-             reg%islist = .false.
-          endif
-       end if
 
        reg%numnodes = numnodes
        
@@ -338,6 +339,8 @@ contains
     M4_WRITE_DBG({" reg%is reg%ie reg%di = ", reg%is, reg%ie, reg%di})
     M4_WRITE_DBG({" reg%js reg%je reg%dj = ", reg%js, reg%je, reg%dj})
     M4_WRITE_DBG({" reg%ks reg%ke reg%dk = ", reg%ks, reg%ke, reg%dk})
+
+    M4_WRITE_DBG(". exit ReadRegObj")
 
   end subroutine ReadRegObj
 

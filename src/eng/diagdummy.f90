@@ -26,6 +26,7 @@ module diagdummy
   use constant
   use mpiworld
   use reglist
+  use outlist
   use grid
   use fdtd
 
@@ -33,41 +34,12 @@ module diagdummy
   private
   save
 
-  ! --- Module Identifier
+  M4_MODHEAD_DECL({DIAGDUMMY},100,{
 
-  character(len=STRLNG), parameter :: modname = 'DIAGDUMMY'
+  ! enter diag data structure here:
+  integer :: something
 
-  ! --- Public Methods
-
-  public :: InitializeDiagDummy
-  public :: FinalizeDiagDummy
-  public :: StepEDiagDummy
-  public :: StepHDiagDummy
-  public :: ReadDiagDummyObj
-
-  ! --- Public Data
-
-  public :: T_DIAGDUMMY
-  public :: diagdummyobj
-  public :: numdiagdummyobj
-
-  ! --- Constants
-
-  integer, parameter :: MAXDIAGDUMMYOBJ = 10
-
-  ! --- Types
-
-  type T_DIAGDUMMY
-
-     integer :: regidx             ! regobj index
-
-
-  end type T_DIAGDUMMY
-
-  ! --- Fields
-
-  type(T_DIAGDUMMY) :: diagdummyobj(MAXDIAGDUMMYOBJ) 
-  integer :: numdiagdummyobj
+  })
 
 contains
 
@@ -75,22 +47,12 @@ contains
 
   subroutine ReadDiagDummyObj(funit)
 
-    integer:: funit
-    character(len=STRLNG) :: file, string
-    integer :: ios
-    type(T_REG) :: reg
-    type(T_DIAGDUMMY) :: diag
-
-    numdiagdummyobj = numdiagdummyobj + 1
-    diag = diagdummyobj(numdiagdummyobj)
-
-! read diag parameters ...
-
-!    read(funit,*) diag%parameter
-
-! read regions and terminator
-
-   M4_GET_REG_AND_TERMINATOR(diag,"ReadDiagDummyObj/diagdummy")
+    M4_MODREAD_DECL({DIAGDUMMY}, funit,diag,reg,out)
+    
+    ! read diag parameters here, as defined in diag data structure
+    read(funit,*) diag%something
+ 
+    M4_MODREAD_END({DIAGDUMMY}, funit,diag,reg,out)
 
   end subroutine ReadDiagDummyObj
 
@@ -98,16 +60,12 @@ contains
 
   subroutine InitializeDiagDummy
 
-    integer :: n
-    type(T_DIAGDUMMY) :: diag
+    M4_MODLOOP_DECL({DIAGDUMMY},diag)
+    M4_MODLOOP_EXPR({DIAGDUMMY},diag,{
+    
+       ! initialize diag object here
 
-    do n = 1, numdiagdummyobj
-
-       diag = diagdummyobj(n)
-
-       ! Initialize diagdummy object here
-
-    end do
+    })
 
   end subroutine InitializeDiagDummy
 
@@ -115,16 +73,12 @@ contains
 
   subroutine FinalizeDiagDummy
 
-    integer :: n
-    type(T_DIAGDUMMY) :: diag
-    
-    do n = 1, numdiagdummyobj
-       
-       diag = diagdummyobj(n)
+    M4_MODLOOP_DECL({DIAGDUMMY},diag)
+    M4_MODLOOP_EXPR({DIAGDUMMY},diag,{
 
-       ! Finalize diagdummy object here
+       ! finalize diag object here
 
-    end do
+    })
 
   end subroutine FinalizeDiagDummy
 
@@ -133,24 +87,21 @@ contains
   subroutine StepHDiagDummy(ncyc)
 
     integer :: ncyc
-    integer :: n
-    type(T_DIAGDUMMY) :: diag
-
+    M4_MODLOOP_DECL({DIAGDUMMY},diag)
     M4_REGLOOP_DECL(reg,p,i,j,k,w)
 
-    do n = 1, numdiagdummyobj
+    M4_MODLOOP_EXPR({DIAGDUMMY},diag,{
 
-       diag = diagdummyobj(n)
-       reg = regobj(diag%regidx)
-     
-       M4_REGLOOP_EXPR(reg,p,i,j,k,w,
+       ! this loops over all diag structures, setting diag
+
+       M4_MODOBJ_GETREG(diag,reg)
+       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
        
-       ! do some stuff here
+       ! this loops over all points of the region 
 
-       )
-              
-    end do
-    
+       })      
+    })
+  
   end subroutine StepHDiagDummy
 
 
@@ -160,24 +111,21 @@ contains
   subroutine StepEDiagDummy(ncyc)
 
     integer :: ncyc
-    integer :: n
-    type(T_DIAGDUMMY) :: diag
-
+    M4_MODLOOP_DECL({DIAGDUMMY},diag)
     M4_REGLOOP_DECL(reg,p,i,j,k,w)
 
-    do n = 1, numdiagdummyobj
+    M4_MODLOOP_EXPR({DIAGDUMMY},diag,{
 
-       diag = diagdummyobj(n)
-       reg = regobj(diag%regidx)
-     
-       M4_REGLOOP_EXPR(reg,p,i,j,k,w,
+       ! this loops over all diag structures, setting diag
+
+       M4_MODOBJ_GETREG(diag,reg)
+       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
        
-       ! do some stuff here
+       ! this loops over all points of the region 
 
-       )
-              
-    end do
-    
+       })      
+    })
+
   end subroutine StepEDiagDummy
 
   

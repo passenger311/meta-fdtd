@@ -37,6 +37,7 @@ module outlist
   public :: FinalizeOutList
   public :: CreateOutObj
   public :: DestroyOutObj
+  public :: ReadOutObj
 
   ! --- Public Data
 
@@ -107,25 +108,37 @@ contains
     integer :: ns, ne, dn
     type(T_REG) :: reg
     
-
     out = CreateOutObj()
+    
+    M4_WRITE_DBG({". enter ReadOutObj num = ",out%idx})
+
     ! read output information
     read(funit,*) filename         ! filename
+    M4_WRITE_DBG({"filename: ",TRIM(filename)})
     read(funit,*) fmt, fn, mode    ! format, function and mode
+    M4_WRITE_DBG({"fmt fn mode: ",TRIM(fmt)," ",TRIM(fn)," ",TRIM(mode) })
     read(funit,*) ns, ne, dn       ! time frame
+    M4_WRITE_DBG({"ns ne dn: ",ns, ne, dn })
     read(funit,*) string
+    M4_WRITE_DBG({"got token ",TRIM(string)})
+
     ! consume regobj start string
     if ( string .eq. "(REG" ) then
+       M4_WRITE_DBG({"-> ReadRegObj"})
        call ReadRegObj(reg, funit) ! spatial regobj
        read(funit,*) string
+       M4_WRITE_DBG({"got token ",TRIM(string)})
        call SetOutObj(out, fmt, modl, filename, fn, mode, ns, ne, dn, reg)
     else
+       M4_WRITE_DBG({"using default region!"})
        call SetOutObj(out, fmt, modl, filename, fn, mode, ns, ne, dn, regdef)  
     end if
 
-    if ( string .ne. ")" ) then
-       M4_FATAL_ERROR({"OUT LACKS TERMINATOR: ReadOutObj/out"})
+    if ( string(1:1) .ne. ")" ) then
+       M4_FATAL_ERROR({"BAD TERMINATOR: ReadOutObj/out"})
     end if
+
+    M4_WRITE_DBG(". exit ReadOutObj")
 
   end subroutine ReadOutObj
 
