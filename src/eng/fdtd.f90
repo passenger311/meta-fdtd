@@ -18,8 +18,7 @@
 
 !======================================================================
 !
-! m4 macro-preprocessor runs over this file and replaces
-! M4 FTYPE -> real(kind=8) or complex(kind=8)
+! 
 !
 
 module fdtd
@@ -124,7 +123,7 @@ contains
       
    subroutine AllocateFields
 
-     M4_WRITE_DBG({". enter InitializeFdtd/fdtd . AllocateFields"})
+     M4_WRITE_DBG({". enter InitializeFdtd/fdtd | AllocateFields"})
      
      allocate(Ex(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
      M4_ALLOC_ERROR(err, "AllocateFields/fdtd")
@@ -157,7 +156,7 @@ contains
      
      EPSINV = 1.0
 
-     M4_WRITE_DBG({". exit InitializeFdtd/fdtd . AllocateFields"})
+     M4_WRITE_DBG({". exit InitializeFdtd/fdtd | AllocateFields"})
 
    end subroutine AllocateFields
    
@@ -169,27 +168,34 @@ contains
      
      character(len=STRLNG) :: file
      
-     M4_WRITE_DBG({". enter InitializeFdtd/fdtd . ReadEpsilonField"})
+     M4_WRITE_DBG({". enter InitializeFdtd/fdtd | ReadEpsilonField"})
 
      file = cat2(pfxepsilon,mpi_sfxin)
      
      M4_WRITE_DBG({"trying to open ", file})
      
      open(UNITTMP, FILE=file, STATUS='old', IOSTAT=ios)
-     M4_OPEN_ERROR(ios,file)
-     
-     do k=KBEG,KEND+1
-        do j=JBEG,JEND+1
-           do i=IBEG, IEND+1
-              read(UNITTMP,*) val
-              EPSINV(i,j,k)=1.0/val
+
+     if ( ios .eq. 0 ) then
+
+        do k=KBEG,KEND+1
+           do j=JBEG,JEND+1
+              do i=IBEG, IEND+1
+                 read(UNITTMP,*) val
+                 EPSINV(i,j,k)=1.0/val
+              end do
            end do
         end do
-     end do
      
      close(UNITTMP)
 
-     M4_WRITE_DBG({". exit InitializeFdtd/fdtd . ReadEpsilonField"})
+     else 
+        write(6,*) "!WARN COULD NOT OPEN ", TRIM(file)," ASSUMING FREESPACE!"
+        EPSINV = 1.0
+     endif
+
+
+     M4_WRITE_DBG({". exit InitializeFdtd/fdtd | ReadEpsilonField"})
      
    end subroutine ReadEpsilonField
    

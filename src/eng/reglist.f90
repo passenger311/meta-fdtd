@@ -340,6 +340,8 @@ contains
     M4_WRITE_DBG({" reg%js reg%je reg%dj = ", reg%js, reg%je, reg%dj})
     M4_WRITE_DBG({" reg%ks reg%ke reg%dk = ", reg%ks, reg%ke, reg%dk})
 
+    regobj(numregobj) = reg
+
     M4_WRITE_DBG(". exit ReadRegObj")
 
   end subroutine ReadRegObj
@@ -404,6 +406,7 @@ contains
     reg%je = Max(j1,reg%je)
     reg%ks = Min(k0,reg%ks)
     reg%ke = Max(k1,reg%ke)
+
     if ( reg%isbox ) then ! the first box has a stride
        reg%di = di
        reg%dj = dj

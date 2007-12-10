@@ -63,6 +63,9 @@ contains
 
     type(T_OUT) :: out
 
+    
+
+
 ! call various finalization methods
     select case ( out%modl ) 
     case ("FDTD")

@@ -87,7 +87,7 @@ contains
       
     integer :: ios, i
 
-    M4_WRITE_DBG({". ReadConfigPml/pml"})
+    M4_WRITE_DBG({". enter ReadConfigPml/pml"})
 
     M4_WRITE_DBG({"received token: ", TRIM(string)})
     if ( string .ne. "(PML" ) then
@@ -115,13 +115,15 @@ contains
 
     modconfigured = .true.
 
+    M4_WRITE_DBG({". exit ReadConfigPml/pml"})
+
   end subroutine ReadConfigPml
 
 !----------------------------------------------------------------------
 
   subroutine InitializePml
 
-    M4_WRITE_DBG({". InitializePml/pml"})
+    M4_WRITE_DBG({". enter InitializePml/pml"})
 
     if ( .not. modconfigured ) then
        M4_FATAL_ERROR({"NOT CONFIGURED: InitializePml/pml"})
@@ -152,13 +154,15 @@ contains
     call CalcCoefficients(JBEG, JMAX, JSIG, JEIG, ceypml, cmypml)
     call CalcCoefficients(KBEG, KMAX, KSIG, KEIG, cezpml, cmzpml)
 
+    M4_WRITE_DBG({". exit InitializePml/pml"})
+
   contains
     
     subroutine AllocateFields
 
       integer :: err, i, j, k, l
 
-      M4_WRITE_DBG({". InitializePml/pml . AllocateFields"})
+      M4_WRITE_DBG({". enter InitializePml/pml | AllocateFields"})
       
       ! numeric coefficient-fields
       
@@ -258,6 +262,8 @@ contains
             enddo
          enddo
       enddo
+
+      M4_WRITE_DBG({". exit InitializePml/pml | AllocateFields"})
       
     end subroutine AllocateFields
     
@@ -269,7 +275,7 @@ contains
       real(kind=8) :: x, sigma, kappa
       integer :: l
 
-      M4_WRITE_DBG({". InitializePml/pml . CalcCoefficients"})
+      M4_WRITE_DBG({". enter InitializePml/pml | CalcCoefficients"})
       
       ! help values
 
@@ -323,6 +329,8 @@ contains
          cm(2,l) = 1.0 / val1p(l-le)
          cm(4,l) = val2p(l-le) / val1p(l-le)
       enddo
+
+      M4_WRITE_DBG({". exit InitializePml/pml | CalcCoefficients"})
       
     end subroutine CalcCoefficients
       

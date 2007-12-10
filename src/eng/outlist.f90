@@ -113,10 +113,10 @@ contains
     M4_WRITE_DBG({". enter ReadOutObj num = ",out%idx})
 
     ! read output information
-    read(funit,*) filename         ! filename
-    M4_WRITE_DBG({"filename: ",TRIM(filename)})
-    read(funit,*) fmt, fn, mode    ! format, function and mode
-    M4_WRITE_DBG({"fmt fn mode: ",TRIM(fmt)," ",TRIM(fn)," ",TRIM(mode) })
+    read(funit,*) fmt, filename    ! format and filename
+    M4_WRITE_DBG({"fmt filename: ",TRIM(fmt), " ", TRIM(filename)})
+    read(funit,*) fn, mode    ! function and mode
+    M4_WRITE_DBG({"fn mode: ", TRIM(fn)," ",TRIM(mode) })
     read(funit,*) ns, ne, dn       ! time frame
     M4_WRITE_DBG({"ns ne dn: ",ns, ne, dn })
     read(funit,*) string
@@ -137,6 +137,8 @@ contains
     if ( string(1:1) .ne. ")" ) then
        M4_FATAL_ERROR({"BAD TERMINATOR: ReadOutObj/out"})
     end if
+
+    outobj(numoutobj) = out
 
     M4_WRITE_DBG(". exit ReadOutObj")
 

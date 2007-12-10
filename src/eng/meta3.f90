@@ -72,7 +72,7 @@ M4_IFELSE_MPELOG({
 
   if (myrank .eq. 0) then
 
-     write(6,*) "* --------- meta-3 engine starts"
+     write(6,*) "* ------------------------ META-3 ENGINE STARTS  ------------------------ "
 
   end if
 
@@ -423,7 +423,7 @@ M4_IFELSE_MPELOG({call MPE_FINISH_LOG("meta3.log")})
 
   if (myrank .eq. 0) then
 
-     write(6,*) "* --------- meta-3 engine stops"
+     write(6,*) "* ------------------------ META-3 ENGINE STOPPED ------------------------ "
 
   end if
   

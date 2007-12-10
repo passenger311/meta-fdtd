@@ -61,7 +61,8 @@ contains
     integer :: n
 
     do n=1, numoutobj
-       
+    
+       M4_WRITE_DBG({"initializing out # ",TRIM(i2str(n))," fmt: ", TRIM(outobj(n)%fmt), ", modl: ", TRIM(outobj(n)%modl)})
        select case ( outobj(n)%fmt ) 
 ! ** call output buffer preparation
 ! 1.
@@ -70,7 +71,7 @@ contains
 ! 2.
 ! **
        case default
-          M4_FATAL_ERROR({"UNDEFINED OUTPUT FORMAT: CloseOut/out"})
+          M4_FATAL_ERROR({"UNDEFINED OUTPUT FORMAT ", TRIM(outobj(n)%fmt)})
        end select
 
     enddo
@@ -94,7 +95,7 @@ contains
 ! 2.
 ! **
        case default
-          M4_FATAL_ERROR({"UNDEFINED OUTPUT FORMAT: CloseOut/out"})
+          M4_FATAL_ERROR({"UNDEFINED OUTPUT FORMAT ", TRIM(outobj(n)%fmt)})
        end select
 
     enddo
@@ -118,7 +119,7 @@ contains
 ! 2.
 ! **
        case default
-          M4_FATAL_ERROR({"UNDEFINED OUTPUT FORMAT: CloseOut/out"})
+          M4_FATAL_ERROR({"UNDEFINED OUTPUT FORMAT ", TRIM(outobj(n)%fmt)})
        end select
 
     enddo
@@ -143,7 +144,7 @@ contains
 ! 2.
 ! **
        case default
-          M4_FATAL_ERROR({"UNDEFINED OUTPUT FORMAT: CloseOut/out"})
+          M4_FATAL_ERROR({"UNDEFINED OUTPUT FORMAT ", TRIM(outobj(n)%fmt)})
        end select
 
     enddo
