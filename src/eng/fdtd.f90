@@ -82,7 +82,7 @@ contains
    read(funit,*,iostat=ios) string
    M4_WRITE_DBG({"read terminator: ", TRIM(string)})
    
-   if ( string .ne. ")" ) then
+   if ( string(1:1) .ne. ")" ) then
       M4_FATAL_ERROR({"BAD SECTION TERMINATOR: ReadConfigFdtd/fdtd"})
    endif
    

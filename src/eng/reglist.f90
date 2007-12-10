@@ -22,7 +22,7 @@
 !    (POINT
 !     100 20 30 
 !     100 21 33
-!    )
+!    POINT)
 !    (VPOINT
 !     100 10 32 0.8
 !    )
@@ -30,9 +30,9 @@
 !     0 10 20 1 6 20 100 1
 !    (VBOX
 !     0 10 20 1 6 20 100 0.25 1
-!    LIST | MASK | AUTO
+!     LIST | MASK | AUTO
 !    )
-!  )
+!  REG)
 !
 !  A regobj is a set of points with a weight attached. BOX, POINT set the 
 !  weigth to 1.0, while VPOINT and VBOX allow to set a userdefined weight 
@@ -233,9 +233,9 @@ contains
           auto = .false.
        case("AUTO") 
        case default
-          M4_WRITE_DBG({"read terminator: ", TRIM(string)})
-          if ( string .ne. ")" ) then
-             M4_FATAL_ERROR({"BAD TERMINATOR: ReadRegObj/reglist"})
+          M4_WRITE_DBG({"X read terminator: ", TRIM(string)})
+          if ( string(1:1) .ne. ")" ) then
+             M4_FATAL_ERROR({"X BAD TERMINATOR: ReadRegObj/reglist"})
           end if
           exit
        end select

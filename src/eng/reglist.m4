@@ -16,7 +16,7 @@ define({M4_GET_REG_AND_TERMINATOR},{
     read(funit,*) string
     M4_WRITE_DBG({"read terminator: ", TRIM(string)})
 
-    if ( string .ne. ")" ) then
+    if ( string(1:1) .ne. ")" ) then
        M4_FATAL_ERROR({"BAD TERMINATOR: ",$2})
     end if
 })

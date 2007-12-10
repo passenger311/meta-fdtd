@@ -109,7 +109,7 @@ contains
 
     ! TODO: add some checks on numerical values
 
-    if ( string .ne. ")" ) then
+    if ( string(1:1) .ne. ")" ) then
        M4_FATAL_ERROR({"BAD SECTION TERMINATOR: ReadConfigPml/pml"})
     endif
 
