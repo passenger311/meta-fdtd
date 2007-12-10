@@ -133,6 +133,9 @@ contains
     JMAX = JEND+1
     KMIN = KBEG-1
     KMAX = KEND+1
+    M4_WRITE_DBG({"init IMIN/IMAX: ", IMIN, IMAX})
+    M4_WRITE_DBG({"init KMIN/KMAX: ", JMIN, JMAX})
+    M4_WRITE_DBG({"init KMIN/KMAX: ", KMIN, KMAX})
     
     ! ranges for PML sheets [ISIG,IEIG]
     
@@ -142,8 +145,14 @@ contains
     JEIG=JMAX
     KSIG=KBEG
     KEIG=KMAX
+    M4_WRITE_DBG({"init ISIG/IEIG: ", ISIG, IEIG})
+    M4_WRITE_DBG({"init KSIG/KEIG: ", JSIG, JEIG})
+    M4_WRITE_DBG({"init KSIG/KEIG: ", KSIG, KEIG})
+
     
     GRIDSIZE = (IEND - IBEG)*(JEND - JBEG)*(KEND - KBEG)
+    M4_WRITE_DBG({"init GRIDSIZE: ", GRIDSIZE})
+
 
     M4_WRITE_DBG({". exit InitializeGrid/grid"})
     

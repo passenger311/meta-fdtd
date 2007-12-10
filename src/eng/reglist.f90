@@ -163,6 +163,7 @@ contains
     M4_WRITE_DBG({ "allocating mask, size = ", GRIDSIZE})
     allocate(tmpmask(IBEG:IEND,JBEG:JEND,KBEG:KEND),tmpval(1:GRIDSIZE),stat = err)
     M4_ALLOC_ERROR(err,"ReadRegObj/reglist")
+    tmpmask = 0
     numnodes = 0
    
     auto = .true.
@@ -172,61 +173,65 @@ contains
        read(funit,*) string
        
        select case ( string ) 
-       case( "(POINTS" ) 
-          M4_WRITE_DBG({"got a ", TRIM(string)})
+       case( "(POINT" ) 
+          M4_WRITE_DBG({"got ", TRIM(string), " token"})
           reg%isbox = .false.
           val = 1.0
           do 
              read(funit,*,iostat = ios) i,j,k
              if ( ios .ne. 0 ) then
+                M4_WRITE_DBG({"end of point list"})
                 exit
              end if
              call SetPointRegObj(reg, i,j,k, val)
           end do
        case( "(BOX" ) 
-          M4_WRITE_DBG({"got a ", TRIM(string)})
-          if ( numnodes .eq. 0 ) then 
-             reg%isbox = .true.
-          else
-             reg%isbox = .false.
-          end if
+          M4_WRITE_DBG({"got ", TRIM(string), " token"})
           val = 1.0
           do 
              read(funit,*,iostat = ios)  i0, i1, di, j0, j1, dj, k0, k1, dk
              if ( ios .ne. 0 ) then
                 M4_WRITE_DBG({"end of box list"})
                 exit
+             else
+                reg%isbox = numnodes .eq. 0
              end if
              call SetBoxRegObj(reg, i0, i1, di, j0, j1, dj, k0, k1, dk, val)
           end do
        case( "(VBOX" ) 
-          M4_WRITE_DBG({"got a ", TRIM(string)})
           reg%isbox = .false.
           do 
              read(funit,*,iostat = ios)  i0, i1, di, j0, j1, dj, k0, k1, dk, val
              if ( ios .ne. 0 ) then
+                M4_WRITE_DBG({"end of box list"})
                 exit
+             else 
+                M4_WRITE_DBG({"got a ", TRIM(string), " numnodes = ", numnodes})
              end if
              call SetBoxRegObj(reg, i0, i1, di, j0, j1, dj, k0, k1, dk, val)
           end do
-       case( "(VPOINTS" ) 
-          M4_WRITE_DBG({"got a ", TRIM(string)})
+       case( "(VPOINT" ) 
           reg%isbox = .false.
+          M4_WRITE_DBG({"got ", TRIM(string), " token"})
           do 
              read(funit,*,iostat = ios) i,j,k, val
              if ( ios .ne. 0 ) then
+                M4_WRITE_DBG({"end of point list"})
                 exit
              end if
              call SetPointRegObj(reg, i,j,k, val)
           end do
        case("LIST") ! force list mode
-          M4_WRITE_DBG({"mode -> ", TRIM(string)})
+          M4_WRITE_DBG({"got ", TRIM(string), " token"})
           reg%islist = .true.
           auto = .false.
+          reg%isbox = .false.
        case("MASK") ! force mask mode
-          M4_WRITE_DBG({"mode -> ", TRIM(string)})
+          M4_WRITE_DBG({"got ", TRIM(string), " token"})
           reg%islist = .false.
+          reg%isbox = .false.
           auto = .false.
+       case("AUTO") 
        case default
           M4_WRITE_DBG({"read terminator: ", TRIM(string)})
           if ( string .ne. ")" ) then
@@ -248,8 +253,10 @@ contains
     else
 
        if ( auto ) then
+          M4_WRITE_DBG({"auto mode, trying to find best allocation scheme"})
           masksz = (reg%ie - reg%is) * (reg%je - reg%js) * (reg%ke - reg%ks)
           listsz = numnodes * 3 
+          M4_WRITE_DBG({"list size = ", listsz, " / mask size = ", masksz})
           if ( listsz .lt. masksz ) then 
              reg%islist = .true.
           else 
@@ -261,22 +268,29 @@ contains
        
        if ( .not. reg%islist ) then ! A MASK
 
-          M4_WRITE_DBG({"filling struct in list mode", numnodes})
+          M4_WRITE_DBG({"filling struct in mask mode", numnodes})
           allocate(reg%mask(reg%is:reg%ie,reg%js:reg%je,reg%ks:reg%ke),reg%val(numnodes), stat = err )
           M4_ALLOC_ERROR(err, {"ReadRegObj/reg"})
           reg%mask = 0
           ! 1 point
           reg%pe = 1
 
+          num = 0
           do k = reg%ks, reg%ke
              do j = reg%js, reg%je
                 do i = reg%is, reg%ie
-                   num = tmpmask(i,j,k)
-                   reg%mask(i,j,k) = num
-                   reg%val(num) = tmpval(num)
+                   p = tmpmask(i,j,k)
+                   if ( p .gt. 0 ) then
+                      num = num + 1
+                      reg%mask(i,j,k) = p
+                      reg%val(p) = tmpval(p)
+                   end if
                 end do
              end do
           end do
+          if ( num .ne. numnodes ) then
+             M4_FATAL_ERROR({"BAD NODE COUNT last idx = ", p, " .ne. numnodes = ",numnodes})
+          endif
           
        else ! A LIST
 
@@ -295,9 +309,9 @@ contains
           do k = reg%ks, reg%ke
              do j = reg%js, reg%je
                 do i = reg%is, reg%ie
-                   num = num + 1
                    p = tmpmask(i,j,k)
                    if ( p .gt. 0 ) then
+                      num = num + 1
                       reg%i(num) = i
                       reg%j(num) = j
                       reg%k(num) = k
@@ -306,14 +320,25 @@ contains
                 end do
              end do
           end do
+          if ( num .ne. numnodes ) then
+             M4_FATAL_ERROR({"BAD NODE COUNT last idx = ", num, " .ne. numnodes = ",numnodes})
+          endif
 
        end if
        
     end if
- 
+
     deallocate(tmpmask)
     deallocate(tmpval)
-    
+
+    M4_WRITE_DBG({" created regobj num = ", numregobj})
+    M4_WRITE_DBG({" reg%isbox = ", reg%isbox})
+    M4_WRITE_DBG({" reg%islist = ", reg%islist})
+    M4_WRITE_DBG({" reg%numnodes = ", reg%numnodes})
+    M4_WRITE_DBG({" reg%is reg%ie reg%di = ", reg%is, reg%ie, reg%di})
+    M4_WRITE_DBG({" reg%js reg%je reg%dj = ", reg%js, reg%je, reg%dj})
+    M4_WRITE_DBG({" reg%ks reg%ke reg%dk = ", reg%ks, reg%ke, reg%dk})
+
   end subroutine ReadRegObj
 
 !----------------------------------------------------------------------
@@ -322,7 +347,14 @@ contains
 
     numregobj = numregobj + 1
     regobj(numregobj)%idx = numregobj
-    
+
+    regobj(numregobj)%is = IMAX
+    regobj(numregobj)%ie = IMIN
+    regobj(numregobj)%js = JMAX
+    regobj(numregobj)%je = JMIN
+    regobj(numregobj)%ks = KMAX
+    regobj(numregobj)%ke = KMIN
+  
     !no points
     regobj(numregobj)%ps = 1
     regobj(numregobj)%pe = 0
@@ -344,7 +376,7 @@ contains
     type(T_REG) :: reg
     integer :: i0, i1, di, j0, j1, dj, k0, k1, dk
     real*8 :: val
-    integer :: i,j,k
+    integer :: i,j,k,p
 
     M4_WRITE_DBG({"set box: ",i0, i1, di, j0, j1, dj, k0, k1, dk})
 
@@ -356,18 +388,18 @@ contains
 
     ! clip box to grid
     i0 = Max(i0,IBEG)
-    j0 = Max(j0,JBEG)
-    k0 = Max(k0,KBEG)
     i1 = Min(i1,IEND)
+    j0 = Max(j0,JBEG)
     j1 = Min(j1,JEND)
+    k0 = Max(k0,KBEG)
     k1 = Min(k1,KEND)
     
     ! resize bounding box
     reg%is = Min(i0,reg%is)
-    reg%js = Min(j0,reg%js)
-    reg%ks = Min(k0,reg%ks)
     reg%ie = Max(i1,reg%ie)
+    reg%js = Min(j0,reg%js)
     reg%je = Max(j1,reg%je)
+    reg%ks = Min(k0,reg%ks)
     reg%ke = Max(k1,reg%ke)
     if ( reg%isbox ) then ! the first box has a stride
        reg%di = di
@@ -385,8 +417,11 @@ contains
     do k = k0, k1, dk
        do j = j0, j1, dj
           do i = i0, i1, di
-             numnodes = numnodes + 1
-             tmpmask(i,j,k) = val
+             if ( tmpmask(i,j,k) .eq. 0 ) then
+                numnodes = numnodes + 1
+                tmpmask(i,j,k) = numnodes 
+                tmpval(numnodes) = val
+             endif
           end do
        end do
     end do
@@ -411,18 +446,21 @@ contains
 
     ! resize bounding box
     reg%is = Min(reg%is, i)
-    reg%js = Min(reg%js, j)
-    reg%ks = Min(reg%ks, k)
     reg%ie = Max(reg%ie, i)
+    reg%js = Min(reg%js, j)
     reg%je = Max(reg%je, j)
+    reg%ks = Min(reg%ks, k)
     reg%ke = Max(reg%ke, k)
     reg%di = 1
     reg%dj = 1
     reg%dk = 1
 
     ! set point
-    numnodes = numnodes + 1
-    tmpmask(i,j,k) = val
+    if ( tmpmask(i,j,k) .eq. 0 ) then
+       numnodes = numnodes + 1
+       tmpmask(i,j,k) = numnodes
+       tmpval(numnodes) = val
+    endif
 
   end subroutine SetPointRegObj
 
