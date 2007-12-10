@@ -25,6 +25,8 @@
 module fdtd
  
   use constant
+  use reglist
+  use outlist
   use grid
  
   implicit none
@@ -68,6 +70,8 @@ contains
 
    integer :: funit
    character(len=*) :: string
+   type (T_OUT) :: out
+   type (T_REG) :: reg
 
    integer :: ios
 
@@ -77,15 +81,21 @@ contains
       M4_FATAL_ERROR({"BAD SECTION IDENTIFIER: ReadConfigFdtd/fdtd"})
    endif
    
-! TODO: read field output structures here
+   do	
+      read(funit,*) string
+      select case (string)
+      case("(OUT") 
+	M4_WRITE_DBG({"got token (OUT -> ReadOutObj"})
+        call ReadOutObj(out, reg, modname, funit)
+      case default	
+        M4_WRITE_DBG({"read terminator: ", TRIM(string)})
+        if ( string(1:1) .ne. ")" ) then
+          M4_FATAL_ERROR({"BAD TERMINATOR: ReadConfigFdtd/fdtd"})
+        end if
+        exit
+      end select
+    enddo	
 
-   read(funit,*,iostat=ios) string
-   M4_WRITE_DBG({"read terminator: ", TRIM(string)})
-   
-   if ( string(1:1) .ne. ")" ) then
-      M4_FATAL_ERROR({"BAD SECTION TERMINATOR: ReadConfigFdtd/fdtd"})
-   endif
-   
    modconfigured = .true.
 
    M4_WRITE_DBG({". exit ReadConfigFdtd/fdtd"})

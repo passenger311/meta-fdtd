@@ -22,9 +22,7 @@
   1 100         	! k range
 )GRID
 
-(FDTD
-)FDTD
- 
+
 (PML
   1 1 1 1 1 1   	! active pmls
   6			!
@@ -33,6 +31,28 @@
   0.44			!
 )PML
 
+
+(FDTD
+
+  (OUT
+    test2
+    OUTGPL Ex S
+    1 100 10
+    (REG
+      (BOX
+	 1 100 4 1 100 4 1 100 4
+      )BOX
+    )REG
+  )OUT	
+
+  (OUT
+    test4
+    OUTGPL Ex S
+    1 100 10
+  )OUT	
+
+)FDTD
+ 
 
 ! -----------------------------------------------------------------------
 

@@ -257,7 +257,7 @@ contains
        
     if ( reg%isbox ) then ! A SINGLE BOX
         
-       M4_WRITE_DBG({"filling struct in single box mode", numnodes})
+       M4_WRITE_DBG({"setting up reg in single box mode", numnodes})
        reg%numnodes = &
             ( reg%ie - reg%is + 1 ) / reg%di * &
             ( reg%je - reg%js + 1 ) / reg%dj * &
@@ -269,7 +269,7 @@ contains
        
        if ( .not. reg%islist ) then ! A MASK
 
-          M4_WRITE_DBG({"filling struct in mask mode", numnodes})
+          M4_WRITE_DBG({"setting up reg in mask mode", numnodes})
           allocate(reg%mask(reg%is:reg%ie,reg%js:reg%je,reg%ks:reg%ke),reg%val(numnodes), stat = err )
           M4_ALLOC_ERROR(err, {"ReadRegObj/reg"})
           reg%mask = 0
@@ -295,7 +295,7 @@ contains
           
        else ! A LIST
 
-          M4_WRITE_DBG({"filling struct in list mode", numnodes})
+          M4_WRITE_DBG({"setting up reg in list mode", numnodes})
           reg%pe = numnodes
           allocate(reg%i(numnodes),reg%j(numnodes),reg%k(numnodes),reg%val(numnodes) , stat = err)
           if ( err .ne. 0 ) then
