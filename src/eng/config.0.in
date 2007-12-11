@@ -15,8 +15,8 @@
 
 (GRID
   1             	! partitions
-  1000          	! ncyc
-  0.576             	! dt
+  10000          	! ncyc
+  0.176             	! dt
   1 10	         	! i range
   1 10  	       	! j range
   1 10         		! k range
@@ -45,6 +45,25 @@
 
   (EPSILON
      11.0
+  )
+
+  (EPSILON
+     7.0
+     (REG
+       (BOX
+         4 7 1 4 7 1 4 7 1  
+       )
+     )
+  )
+
+  (EPSILON
+     9.0
+     (REG
+       (POINT
+         5 5 5
+	 3 3 3   
+       )
+     )
   )
 
   (OUT
