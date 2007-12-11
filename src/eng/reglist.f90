@@ -288,6 +288,14 @@ contains
 
     M4_WRITE_DBG(". enter CreateRegObjEnd")
 
+    if ( numnodes .eq. 0 ) then
+       reg%isbox = .true.
+       deallocate(tmpmask)
+       deallocate(tmpval)
+       return
+    endif
+
+
     if ( auto  ) then
        M4_WRITE_DBG({"auto mode, trying to find best allocation scheme"})
        masksz = (reg%ie - reg%is + 1) * (reg%je - reg%js + 1) * (reg%ke - reg%ks + 1)
@@ -469,6 +477,7 @@ contains
     ! check whether point is inside grid
     if ( i .lt. IBEG .or. j .lt. JBEG .or. k .lt. KBEG .or. &
          i .gt. IEND .or. j .gt. JEND .or. k .gt. KEND ) then
+       M4_WRITE_DBG({"point not in grid domain!"})
        return
     end if
 
@@ -482,6 +491,8 @@ contains
     reg%di = 1
     reg%dj = 1
     reg%dk = 1
+
+    M4_WRITE_DBG({"point now: ",i,j,k})
 
     ! set point
     if ( tmpmask(i,j,k) .eq. 0 ) then
@@ -498,13 +509,18 @@ contains
 
     type(T_REG) :: reg
 
-    if ( .not. reg%isbox ) then
+    M4_WRITE_DBG(". enter DestroyRegObjEnd")
+
+    call WriteDbgRegObj(reg)
+    if ( .not. reg%isbox .and. numnodes .gt. 0) then
        if ( .not. reg%islist ) then
           deallocate(reg%mask, reg%val)
        else
           deallocate(reg%i, reg%j, reg%k, reg%val)
        end if
     end if
+
+    M4_WRITE_DBG(". exit DestroyRegObjEnd")
     
   end subroutine DestroyRegObj
 

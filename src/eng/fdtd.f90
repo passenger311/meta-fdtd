@@ -147,6 +147,7 @@ contains
       M4_WRITE_DBG({"found initializer type: ",TRIM(init%type)})
       if ( init%type .eq. "INIT" ) then 
          reg = regobj(init%regidx)
+         call WriteDbgRegObj(reg)
          M4_REGLOOP_EXPR(reg,p,i,j,k,w,
          Ex(i,j,k) = init%val(1)
          Ey(i,j,k) = init%val(2)
@@ -159,10 +160,13 @@ contains
 
    end do
 
+   M4_WRITE_DBG({"setting epsilon = 1.0"})   
    EPSINV = 1.0
 
+   M4_WRITE_DBG({"reading epsilon field"})   
    call ReadEpsilonField
 
+   M4_WRITE_DBG({"overwriting epsilon with data from (EPSILON-)"})   
    ! overwrite epsilon field with values from (EPSILON definition block
    do n = 1, numinitobj
 

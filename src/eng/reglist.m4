@@ -9,6 +9,7 @@ define({M4_REGLOOP_EXPR},{
 ! --- START M4: REGLOOP_EXPR
 ! reg,p,i,j,k,w,expr,spac1, spac2
 
+if ( $1%numnodes .gt. 0 ) then
 
 if ( $1%isbox ) then
 $6 = 1.0
@@ -61,6 +62,8 @@ enddo !k
 endif !islist
 
 endif !isbox
+
+endif !numnodes > 0
 
 ! --- END M4: REGLOOP_EXPR
 

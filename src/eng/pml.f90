@@ -136,15 +136,20 @@ contains
     if(planepml(5) .eq. 1) KSIG=KBEG+PMLMAX
     if(planepml(6) .eq. 1) KEIG=KMAX-PMLMAX
     
-    if((IEIG.le.IBEG) .or. (JEIG.le.JBEG) .or. (KEIG.le.KBEG)) then
-       write(STDERR,*) "Error with IEIG, JEIG or KEIG in InitPml()"
+    M4_WRITE_DBG({"modified ISIG/IEIG: ", ISIG, IEIG})
+    M4_WRITE_DBG({"modified KSIG/KEIG: ", JSIG, JEIG})
+    M4_WRITE_DBG({"modified KSIG/KEIG: ", KSIG, KEIG})
+
+    if((IEIG.le.ISIG) .or. (JEIG.le.JSIG) .or. (KEIG.le.KSIG)) then
+       write(STDERR,*) "OPPOSITE PML LAYERS OVERLAP!"
        stop
     endif
     
 
     ! SigmaMax (= SigmaOpt, see Tavlove 2, pp 286)
     ! It is Sig = Sig[SI] / (!c*eps0)
-    
+
+    ! PotPML = 3.2
     ! SigmaMax = (real(POTPml)+1.0)*0.8/(3.0*DT)
     ! KappaMax = 1.1
     
