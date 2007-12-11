@@ -125,6 +125,8 @@ contains
     type(T_REG) :: reg
     reg = regobj(out%regidx)
     
+    M4_WRITE_DBG({"write header ",TRIM(out%filename)})
+
     call OpenOutgplObj(out)
     
     write(UNITTMP,*) '# ',out%fmt               ! format
@@ -147,23 +149,21 @@ contains
 
     type(T_OUT) :: out
     integer :: ncyc
-    logical :: mode
-    
-    if ( ncyc .lt. out%ns .or. ncyc .gt. out%ne .or. &
-       mod(ncyc - out%ns, out%dn) .ne. 0 ) then
-       return
-    end if
+    logical :: mode  
     
     if ( mode ) call OpenOutgplObj(out)
     
     select case ( out%modl ) 
 
 ! call various output methods
+
     case ("FDTD")
+
        call WriteDataFdtdOutgplObj(out,ncyc,mode)
        M4_FOREACH_OUTGPL2({case ("},{")
-             call WriteData},{OutgplObj(out,ncyc,mode)
-             })
+       call WriteData},{OutgplObj(out,ncyc,mode)
+       })
+
     end select
 
      if ( mode ) call CloseOutgplObj(out)

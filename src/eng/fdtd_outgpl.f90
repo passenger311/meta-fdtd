@@ -25,7 +25,18 @@ module fdtd_outgpl
   use fdtd
 
   implicit none
+  private
   save
+
+  ! --- Module Identifier
+
+  character(len=STRLNG), parameter :: modname = 'FDTD_OUTGPL'
+
+ ! --- Public Methods
+
+  public :: InitializeFdtdOutgplObj
+  public :: FinalizeFdtdOutgplObj
+  public :: WriteDataFdtdOutgplObj
 
 contains
 
@@ -80,10 +91,14 @@ contains
 
     if ( .not. mode .and. out%bufidx .gt. 0 ) then
 
+       M4_WRITE_DBG({"clearing write data buffer"})
+
        buf = bufobj(out%bufidx)
        call SetBufObj(buf,clearval)
 
     end if
+
+    M4_WRITE_DBG({"write data ",TRIM(out%filename), " ",TRIM(out%fn)})
 
     select case (out%fn)
     case('Px')

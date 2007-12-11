@@ -38,6 +38,7 @@ module outlist
   public :: CreateOutObj
   public :: DestroyOutObj
   public :: ReadOutObj
+  public :: WriteDbgOutObj
 
   ! --- Public Data
 
@@ -196,8 +197,24 @@ contains
     out%numnodes = reg%numnodes
 
   end subroutine SetOutObj
+
+!----------------------------------------------------------------------
+
+  subroutine WriteDbgOutObj(out)
+
+    type(T_OUT) :: out
+
+    M4_WRITE_DBG({"out # ", TRIM(i2str(out%idx)) })
+    M4_WRITE_DBG({"  fmt modl filename : ", TRIM(out%fmt), " ", TRIM(out%modl), " ", TRIM(out%filename) })
+    M4_WRITE_DBG({"  fn mode : ", TRIM(out%fn), " ", TRIM(out%mode) })
+    M4_WRITE_DBG({"  ns ne dn : ", out%ns, out%ne, out%dn })
+    M4_WRITE_DBG({"defined over"})
+    call WriteDbgRegObj(regobj(out%regidx))
+
+  end subroutine WriteDbgOutObj
   
 !----------------------------------------------------------------------
+
 
 end module outlist
 

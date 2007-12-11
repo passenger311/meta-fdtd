@@ -74,8 +74,12 @@ module reglist
   public :: ReadRegObj
   public :: InitializeRegList
   public :: FinalizeRegList
-  public :: CreateRegObj
+  public :: CreateRegObjStart
+  public :: CreateRegObjEnd
   public :: DestroyRegObj
+  public :: WriteDbgRegObj
+  public :: SetBoxRegObj
+  public :: SetPointRegObj
 
   ! --- Public Data
 
@@ -149,34 +153,24 @@ contains
     type(T_REG), external :: CreateRegObj
 
     integer :: ios, err
-    integer :: i,j,k, i0, i1, di, j0, j1, dj, k0, k1, dk, num, p
-    integer :: masksz, listsz
+    integer :: i,j,k, i0, i1, di, j0, j1, dj, k0, k1, dk
     real(kind=8) :: val
     character(len=STRLNG) :: string
     logical :: auto
 
     M4_WRITE_DBG(". enter ReadRegObj")
 
-    M4_WRITE_DBG("creating new regobj")
-    reg = CreateRegObj()
-
-    M4_WRITE_DBG({ "allocating mask, size = ", GRIDSIZE})
-    allocate(tmpmask(IBEG:IEND,JBEG:JEND,KBEG:KEND),tmpval(1:GRIDSIZE),stat = err)
-    M4_ALLOC_ERROR(err,"ReadRegObj/reglist")
-    tmpmask = 0
-    tmpval = 0.0
-    numnodes = 0
+    reg = CreateRegObjStart()
    
     auto = .true.
     ! read until an unexpected line is encountered, eg ")"
     do
 
        read(funit,*) string
-       
+    
        select case ( string ) 
        case( "(POINT" ) 
           M4_WRITE_DBG({"got ", TRIM(string), " token"})
-          reg%isbox = .false.
           val = 1.0
           do 
              read(funit,*,iostat = ios) i,j,k
@@ -195,12 +189,10 @@ contains
                 M4_WRITE_DBG({"end of box list"})
                 exit
              else
-                reg%isbox = numnodes .eq. 0
              end if
              call SetBoxRegObj(reg, i0, i1, di, j0, j1, dj, k0, k1, dk, val)
           end do
        case( "(VBOX" ) 
-          reg%isbox = .false.
           do 
              read(funit,*,iostat = ios)  i0, i1, di, j0, j1, dj, k0, k1, dk, val
              if ( ios .ne. 0 ) then
@@ -212,7 +204,6 @@ contains
              call SetBoxRegObj(reg, i0, i1, di, j0, j1, dj, k0, k1, dk, val)
           end do
        case( "(VPOINT" ) 
-          reg%isbox = .false.
           M4_WRITE_DBG({"got ", TRIM(string), " token"})
           do 
              read(funit,*,iostat = ios) i,j,k, val
@@ -242,6 +233,64 @@ contains
        end select
 
     end do
+
+    call CreateRegObjEnd(reg,auto)
+
+    M4_WRITE_DBG(". exit ReadRegObj")
+
+  end subroutine ReadRegObj
+
+!----------------------------------------------------------------------
+
+  type(T_REG) function CreateRegObjStart
+
+    integer :: err
+
+    M4_WRITE_DBG(". enter CreateRegObjStart")
+
+    M4_WRITE_DBG({ "allocating mask, size = ", GRIDSIZE})
+    allocate(tmpmask(IBEG:IEND,JBEG:JEND,KBEG:KEND),tmpval(1:GRIDSIZE),stat = err)
+    M4_ALLOC_ERROR(err,"ReadRegObj/reglist")
+    tmpmask = 0
+    tmpval = 0.0
+    numnodes = 0
+
+    numregobj = numregobj + 1
+    regobj(numregobj)%idx = numregobj
+
+    regobj(numregobj)%is = IMAX
+    regobj(numregobj)%ie = IMIN
+    regobj(numregobj)%js = JMAX
+    regobj(numregobj)%je = JMIN
+    regobj(numregobj)%ks = KMAX
+    regobj(numregobj)%ke = KMIN
+  
+    !no points
+    regobj(numregobj)%ps = 1
+    regobj(numregobj)%pe = 0
+    !no steps
+    regobj(numregobj)%di = 0
+    regobj(numregobj)%dj = 0
+    regobj(numregobj)%dk = 0
+
+    regobj(numregobj)%isbox = .false.
+    regobj(numregobj)%islist = .false.
+    CreateRegObjStart = regobj(numregobj)
+
+    M4_WRITE_DBG(". exit CreateRegObjStart")
+   
+  end function CreateRegObjStart
+
+!----------------------------------------------------------------------
+
+  subroutine CreateRegObjEnd(reg,auto)
+
+    type(T_REG) :: reg
+    logical :: auto
+
+    integer :: masksz, listsz, num, i,j,k,p, err
+
+    M4_WRITE_DBG(". enter CreateRegObjEnd")
 
     if ( auto  ) then
        M4_WRITE_DBG({"auto mode, trying to find best allocation scheme"})
@@ -342,37 +391,10 @@ contains
 
     regobj(numregobj) = reg
 
-    M4_WRITE_DBG(". exit ReadRegObj")
+    M4_WRITE_DBG(". exit CreateRegObjEnd")
 
-  end subroutine ReadRegObj
+  end subroutine CreateRegObjEnd
 
-!----------------------------------------------------------------------
-
-  type(T_REG) function CreateRegObj
-
-    numregobj = numregobj + 1
-    regobj(numregobj)%idx = numregobj
-
-    regobj(numregobj)%is = IMAX
-    regobj(numregobj)%ie = IMIN
-    regobj(numregobj)%js = JMAX
-    regobj(numregobj)%je = JMIN
-    regobj(numregobj)%ks = KMAX
-    regobj(numregobj)%ke = KMIN
-  
-    !no points
-    regobj(numregobj)%ps = 1
-    regobj(numregobj)%pe = 0
-    !no steps
-    regobj(numregobj)%di = 0
-    regobj(numregobj)%dj = 0
-    regobj(numregobj)%dk = 0
-
-    regobj(numregobj)%isbox = .false.
-    regobj(numregobj)%islist = .false.
-    CreateRegObj = regobj(numregobj)
-   
-  end function CreateRegObj
 
 !----------------------------------------------------------------------
 
@@ -384,7 +406,13 @@ contains
     integer :: i,j,k,p
 
     M4_WRITE_DBG({"set box: ",i0, i1, di, j0, j1, dj, k0, k1, dk})
-
+    
+    if ( numnodes .eq. 0 .and. val .eq. 1.0) then 
+       reg%isbox = .true.
+    else
+       reg%isbox = .false.
+    endif
+ 
     ! check whether box is inside grid
     if ( i1 .lt. IBEG .or. j1 .lt. JBEG .or. k1 .lt. KBEG .or. &
          i0 .gt. IEND .or. j0 .gt. JEND .or. k0 .gt. KEND ) then
@@ -444,6 +472,8 @@ contains
 
     M4_WRITE_DBG({"set point: ",i,j,k})
 
+    reg%isbox = .false.
+
     ! check whether point is inside grid
     if ( i .lt. IBEG .or. j .lt. JBEG .or. k .lt. KBEG .or. &
          i .gt. IEND .or. j .gt. JEND .or. k .gt. KEND ) then
@@ -485,6 +515,22 @@ contains
     end if
     
   end subroutine DestroyRegObj
+
+!----------------------------------------------------------------------
+
+  subroutine WriteDbgRegObj(reg)
+
+    type(T_REG) :: reg
+
+    M4_WRITE_DBG({"reg # ", TRIM(i2str(reg%idx)) })
+    M4_WRITE_DBG({"  isbox : ", reg%isbox })
+    M4_WRITE_DBG({"  islist : ", reg%islist })
+    M4_WRITE_DBG({"  numnodes : ", reg%numnodes })
+    M4_WRITE_DBG({"  is ie di : ", reg%is, reg%ie, reg%di })
+    M4_WRITE_DBG({"  js je dj : ", reg%js, reg%je, reg%dj })
+    M4_WRITE_DBG({"  ks ke dk : ", reg%ks, reg%ke, reg%dk })
+
+  end subroutine WriteDbgRegObj
 
 !----------------------------------------------------------------------
 

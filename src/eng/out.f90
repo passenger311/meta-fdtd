@@ -60,9 +60,12 @@ contains
 
     integer :: n
 
+    M4_WRITE_DBG({". enter InitializeOut/out"})
+
     do n=1, numoutobj
-    
-       M4_WRITE_DBG({"initializing out # ",TRIM(i2str(n))," fmt: ", TRIM(outobj(n)%fmt), ", modl: ", TRIM(outobj(n)%modl)})
+       
+       call WriteDbgOutObj(outobj(n))
+
        select case ( outobj(n)%fmt ) 
 ! ** call output buffer preparation
 ! 1.
@@ -76,6 +79,8 @@ contains
 
     enddo
 
+    M4_WRITE_DBG({". exit InitializeOut/out"})
+
   end subroutine InitializeOut
 
 
@@ -84,6 +89,8 @@ contains
   subroutine FinalizeOut
 
     integer :: n
+
+    M4_WRITE_DBG({". enter FinalizeOut/out"})
 
     do n=1, numoutobj
        
@@ -99,6 +106,8 @@ contains
        end select
 
     enddo
+
+    M4_WRITE_DBG({". exit FinalizeOut/out"})
 
   end subroutine FinalizeOut
 
@@ -125,7 +134,6 @@ contains
     enddo
     
   end subroutine WriteHeaderOut
-  
 
 !----------------------------------------------------------------------
 
@@ -135,7 +143,16 @@ contains
     logical :: mode
 
     do n=1, numoutobj
-      
+
+     
+       if ( ncyc .lt. outobj(n)%ns .or. ncyc .gt. outobj(n)%ne .or. &
+            mod(ncyc - outobj(n)%ns, outobj(n)%dn) .ne. 0 ) then
+          cycle
+       end if
+
+       M4_WRITE_DBG({"ncyc=",TRIM(i2str(ncyc)),", write out # ", TRIM(i2str(n)), " : ", &
+            TRIM(outobj(n)%fmt), " ", TRIM(outobj(n)%filename)})
+   
        select case ( outobj(n)%fmt ) 
 ! ** call output write data methods
 ! 1.

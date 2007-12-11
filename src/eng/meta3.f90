@@ -27,6 +27,8 @@ program meta3
 
   implicit none
 
+
+  character(len=STRLNG), parameter :: modname = "META3"
   integer :: ncyc, error, l, ides, isrc
   character(len=12) :: str
 
@@ -95,6 +97,8 @@ M4_IFELSE_MPI({call MPI_BARRIER(MPI_COMM_WORLD,mpierr)},{})
         call InitializePml
         write(6,*) "* -> InitializeMat"
         call InitializeMat
+        write(6,*) "* -> InitializeDiag"
+        call InitializeDiag
         write(6,*) "* -> InitializeOut"
         call InitializeOut
         write(6,*) "* -> WriteHeaderOut"
@@ -112,7 +116,7 @@ M4_IFELSE_MPI({call MPI_BARRIER(MPI_COMM_WORLD,mpierr)})
 
      if (myrank .eq. l) then
                 
-        write(6,*) "* process entering loop, rank = ",ranklbl 
+        write(6,*) "* process entering loop: myrank = ",ranklbl 
 
 
         str = i2str(NCYCMAX)

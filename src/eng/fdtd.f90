@@ -60,7 +60,8 @@ module fdtd
   M4_FTYPE, allocatable, dimension(:, :, :) :: Hx, Hy, Hz
   real(kind=8), allocatable, dimension(:, :, :) :: EPSINV
 
- 
+  type(T_REG) :: fdtdreg
+
 contains
 
 !----------------------------------------------------------------------
@@ -71,11 +72,16 @@ contains
    character(len=*) :: string
    type (T_OUT) :: out
    type (T_REG) :: reg
+   real(kind=8) :: val = 1.0
 
    integer :: ios
 
    M4_WRITE_DBG({". enter ReadConfigFdtd/fdtd"})
       
+   reg = CreateRegObjStart()
+   call SetBoxRegObj(reg, IBEG, IEND, 1, JBEG, JEND, 1, KBEG, KEND, 1, val)
+   call CreateRegObjEnd(reg,.false.)
+
    if ( string .ne. "(FDTD" ) then
       M4_FATAL_ERROR({"BAD SECTION IDENTIFIER: ReadConfigFdtd/fdtd"})
    endif
@@ -117,8 +123,8 @@ contains
    call AllocateFields
    call ReadEpsilonField
 
-    M4_WRITE_DBG({". exit InitializeFdtd/fdtd"})
-   
+   M4_WRITE_DBG({". exit InitializeFdtd/fdtd"})   
+
  contains
       
    subroutine AllocateFields
@@ -190,7 +196,7 @@ contains
      close(UNITTMP)
 
      else 
-        write(6,*) "!WARN COULD NOT OPEN ", TRIM(file)," ASSUMING FREESPACE!"
+        write(6,*) "!WARN COULD NOT OPEN ", TRIM(file)," -> ASSUMING FREESPACE!"
         EPSINV = 1.0
      endif
 

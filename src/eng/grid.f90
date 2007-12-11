@@ -61,7 +61,6 @@ module grid
 
   integer :: PARTITIONS
 
-
 contains
 
 !----------------------------------------------------------------------
@@ -149,7 +148,6 @@ contains
     M4_WRITE_DBG({"init KSIG/KEIG: ", JSIG, JEIG})
     M4_WRITE_DBG({"init KSIG/KEIG: ", KSIG, KEIG})
 
-    
     GRIDSIZE = (IEND - IBEG+1)*(JEND - JBEG+1)*(KEND - KBEG+1)
     M4_WRITE_DBG({"init GRIDSIZE: ", GRIDSIZE})
 

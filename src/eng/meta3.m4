@@ -25,7 +25,7 @@ define({M4_IFELSE_NG}, {ifdef({M4_NG}, {$1}, {$2})})
 define({M4_ISMPELOG}, {ifdef({M4_MPI}, {ifdef({M4_DBG},{.true.},{})}, {.false.})})
 define({M4_IFELSE_MPELOG}, {ifdef({M4_MPI}, {ifdef({M4_DBG},{$1},{})}, {$2})})
 
-define({M4_WRITE_DBG}, {M4_IFELSE_DBG({write(6,*) "!DBG ", $1},{})})
+define({M4_WRITE_DBG}, {M4_IFELSE_DBG({write(6,*) "!DBG (",TRIM(modname),") ", $1},{})})
 define({M4_FATAL_ERROR}, {write(STDERR,*) "!ERR ", $1
 stop
 })
