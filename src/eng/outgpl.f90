@@ -71,15 +71,17 @@ contains
 
     case ("FDTD")
        call  InitializeFdtdOutgplObj(out)
-       call OpenOutgplObj(out, 0, .not. out%snap)
-       call CloseOutgplObj(out)
 
     M4_FOREACH_OUTGPL2({case ("},{")
        call Initialize},{OutgplObj(UNITTMP)
-       call OpenOutgplObj(out, 0, .not. out%snap)
-       call CloseOutgplObj(out)
              })
     end select
+
+    if ( .not. out%snap ) then
+       call OpenOutgplObj(out, 0, .true.)
+       call CloseOutgplObj(out)
+    endif
+
 
 ! if not in snapshot mode: write a header once at initialization 
 

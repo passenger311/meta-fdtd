@@ -87,10 +87,6 @@ module reglist
   public :: numregobj
   public :: T_REG
 
-  ! --- Constants
-
-  integer, parameter :: MAXREGOBJ = 1000
-
   ! --- Types
 
   type T_REG

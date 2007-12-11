@@ -46,10 +46,6 @@ module outlist
   public :: numoutobj
   public :: T_OUT
 
-  ! --- Constants
-
-  integer, parameter :: MAXOUTOBJ = 500
-
   ! --- Types
 
   type T_OUT 
@@ -132,10 +128,10 @@ contains
        call ReadRegObj(reg, funit) ! spatial regobj
        read(funit,*) string
        M4_WRITE_DBG({"got token ",TRIM(string)})
-       call SetOutObj(out, fmt, modl, filename, fn, mode, ns, ne, dn, reg)
+       call SetOutObj(out, fmt, snap, modl, filename, fn, mode, ns, ne, dn, reg)
     else
        M4_WRITE_DBG({"using default region!"})
-       call SetOutObj(out, fmt, modl, filename, fn, mode, ns, ne, dn, regdef)  
+       call SetOutObj(out, fmt, snap, modl, filename, fn, mode, ns, ne, dn, regdef)  
     end if
 
     if ( string(1:1) .ne. ")" ) then
@@ -184,14 +180,16 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine SetOutObj(out, fmt, modl, filename, fn, mode, ns, ne, dn, reg)
+  subroutine SetOutObj(out, fmt, snap, modl, filename, fn, mode, ns, ne, dn, reg)
 
     type(T_OUT) :: out
     character(len=STRLNG) :: fmt, modl, filename, fn, mode
+    logical :: snap
     type(T_REG) :: reg
     integer:: ns, ne, dn
 
     out%fmt = fmt
+    out%snap = snap
     out%modl = modl
     out%filename = filename
     out%fn = fn

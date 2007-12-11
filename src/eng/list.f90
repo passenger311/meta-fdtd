@@ -23,6 +23,7 @@ module list
   use reglist
   use buflist
   use outlist
+  use initlist
 
   implicit none
   private
@@ -52,6 +53,7 @@ contains
     call InitializeRegList
     call InitializeBufList
     call InitializeOutList
+    call InitializeInitList
 
   end subroutine InitializeList
 
@@ -62,6 +64,7 @@ contains
     call FinalizeRegList
     call FinalizeBufList
     call FinalizeOutList
+    call FinalizeInitList
 
   end subroutine FinalizeList
 

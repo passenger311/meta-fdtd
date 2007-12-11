@@ -129,7 +129,7 @@ M4_IFELSE_MPI({call MPI_BARRIER(MPI_COMM_WORLD,mpierr)})
 ! ============================ TIMELOOP ===============================
 
   ncyc = 0
-  do ncyc = 1, NCYCMAX
+  do ncyc = 0, NCYCMAX
 
      if (myrank .eq. 0 .and. mod(ncyc*10000/NCYCMAX,100) .eq. 0  ) then
 
@@ -142,7 +142,7 @@ M4_IFELSE_MPI({call MPI_BARRIER(MPI_COMM_WORLD,mpierr)})
 
 M4_IFELSE_MPELOG({call MPE_LOG_EVENT(7,"StepH",mpierr)})
 
-     call StepH()
+     if ( ncyc .gt. 0 ) call StepH()
 
 M4_IFELSE_MPELOG({call MPE_LOG_EVENT(8,"StepH",mpierr)})
 
@@ -150,7 +150,7 @@ M4_IFELSE_MPELOG({call MPE_LOG_EVENT(8,"StepH",mpierr)})
 
 M4_IFELSE_MPELOG({call MPE_LOG_EVENT(9,"StepHPml",mpierr)})
 
-     call StepHPml()
+     if ( ncyc .gt. 0 )  call StepHPml()
 
 M4_IFELSE_MPELOG({call MPE_LOG_EVENT(10,"StepHPml",mpierr)})
 
@@ -158,7 +158,7 @@ M4_IFELSE_MPELOG({call MPE_LOG_EVENT(10,"StepHPml",mpierr)})
 
 M4_IFELSE_MPELOG({call MPE_LOG_EVENT(15,"StepHMat",mpierr)})
 
-     call StepHMat(ncyc)
+     if ( ncyc .gt. 0 ) call StepHMat(ncyc)
 
 M4_IFELSE_MPELOG({call MPE_LOG_EVENT(16,"StepHMat",mpierr)})
 
@@ -259,7 +259,7 @@ M4_IFELSE_MPELOG({call MPE_LOG_EVENT(6,"WAIT",mpierr)})
 
 M4_IFELSE_MPELOG({call MPE_LOG_EVENT(11,"StepE",mpierr)})
 
-     call StepE()
+      if ( ncyc .gt. 0 ) call StepE()
 
 M4_IFELSE_MPELOG({call MPE_LOG_EVENT(12,"StepE",mpierr)})
 
@@ -267,8 +267,8 @@ M4_IFELSE_MPELOG({call MPE_LOG_EVENT(12,"StepE",mpierr)})
 
 M4_IFELSE_MPELOG({call MPE_LOG_EVENT(13,"StepEPml",mpierr)})
 
-     call StepEPml() 
-     call SetPec()
+      if ( ncyc .gt. 0 ) call StepEPml() 
+      if ( ncyc .gt. 0 ) call SetPec()
 
 M4_IFELSE_MPELOG({call MPE_LOG_EVENT(14,"StepEPml",mpierr)})
 
@@ -276,7 +276,7 @@ M4_IFELSE_MPELOG({call MPE_LOG_EVENT(14,"StepEPml",mpierr)})
 
 M4_IFELSE_MPELOG({call MPE_LOG_EVENT(17,"StepEMat",mpierr)})
 
-     call StepEMat(ncyc)
+      if ( ncyc .gt. 0 ) call StepEMat(ncyc)
 
 M4_IFELSE_MPELOG({call MPE_LOG_EVENT(18,"StepEMat",mpierr)})
 

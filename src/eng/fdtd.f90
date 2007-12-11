@@ -26,6 +26,7 @@ module fdtd
   use constant
   use reglist
   use outlist
+  use initlist
   use grid
  
   implicit none
@@ -72,6 +73,7 @@ contains
    character(len=*) :: string
    type (T_OUT) :: out
    type (T_REG) :: reg
+   type (T_INIT) :: init
    real(kind=8) :: val = 1.0
 
    integer :: ios
@@ -89,6 +91,12 @@ contains
    do	
       read(funit,*) string
       select case (string)
+      case("(INIT") 
+         M4_WRITE_DBG({"got token (INIT -> ReadInitObj"})
+         call ReadInitObj(init, reg, 6, "INIT", funit)
+      case("(EPSILON") 
+         M4_WRITE_DBG({"got token (EPSILON -> ReadInitObj"})
+         call ReadInitObj(init, reg, 1, "EPSILON", funit)
       case("(OUT") 
 	M4_WRITE_DBG({"got token (OUT -> ReadOutObj"})
         call ReadOutObj(out, reg, modname, funit)
@@ -112,22 +120,69 @@ contains
 
  subroutine InitializeFdtd
    
-   integer :: err
+   integer :: n
+   type(T_INIT) :: init
+   M4_REGLOOP_DECL(reg,p,i,j,k,w)  
     
-    M4_WRITE_DBG({". enter InitializeFdtd/fdtd"})
+   M4_WRITE_DBG({". enter InitializeFdtd/fdtd"})
 
    if ( .not. modconfigured ) then
       M4_FATAL_ERROR({"NOT CONFIGURED: InitializeFdtd/fdtd"})
    endif
  
    call AllocateFields
+
+   M4_WRITE_DBG({"setting inital values of field components"})   
+
+   Ex = 0.0
+   Ey = 0.0
+   Ez = 0.0
+   Hx = 0.0
+   Hy = 0.0
+   Hz = 0.0
+
+   do n = 1, numinitobj
+
+      init = initobj(n)
+      M4_WRITE_DBG({"found initializer type: ",TRIM(init%type)})
+      if ( init%type .eq. "INIT" ) then 
+         reg = regobj(init%regidx)
+         M4_REGLOOP_EXPR(reg,p,i,j,k,w,
+         Ex(i,j,k) = init%val(1)
+         Ey(i,j,k) = init%val(2)
+         Ez(i,j,k) = init%val(3)
+         Hx(i,j,k) = init%val(4)
+         Hy(i,j,k) = init%val(5)
+         Hz(i,j,k) = init%val(6)
+         )
+      endif
+
+   end do
+
+   EPSINV = 1.0
+
    call ReadEpsilonField
+
+   ! overwrite epsilon field with values from (EPSILON definition block
+   do n = 1, numinitobj
+
+      init = initobj(n)
+      if ( init%type .eq. "EPSILON" ) then 
+         reg = regobj(init%regidx)
+         M4_REGLOOP_EXPR(reg,p,i,j,k,w,
+         EPSINV(i,j,k) = 1./init%val(1)
+         )
+      endif
+
+   end do
 
    M4_WRITE_DBG({". exit InitializeFdtd/fdtd"})   
 
  contains
       
    subroutine AllocateFields
+
+     integer :: err
 
      M4_WRITE_DBG({". enter InitializeFdtd/fdtd | AllocateFields"})
      
@@ -152,16 +207,6 @@ contains
      allocate(EPSINV(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
      M4_ALLOC_ERROR(err, "AllocateFields/fdtd")
      
-     Ex = 0.0
-     Ey = 0.0
-     Ez = 0.0
-     
-     Hx = 0.0
-     Hy = 0.0
-     Hz = 0.0
-     
-     EPSINV = 1.0
-
      M4_WRITE_DBG({". exit InitializeFdtd/fdtd | AllocateFields"})
 
    end subroutine AllocateFields
@@ -196,8 +241,7 @@ contains
      close(UNITTMP)
 
      else 
-        write(6,*) "!WARN COULD NOT OPEN ", TRIM(file)," -> ASSUMING FREESPACE!"
-        EPSINV = 1.0
+        write(6,*) "!WARN COULD NOT OPEN ", TRIM(file),"!"
      endif
 
 

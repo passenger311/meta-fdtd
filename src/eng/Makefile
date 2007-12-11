@@ -34,6 +34,7 @@ grid.o\
 reglist.o\
 buflist.o\
 outlist.o\
+initlist.o\
 list.o
 
 FOBJ=\

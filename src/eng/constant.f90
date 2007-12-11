@@ -16,6 +16,11 @@ module constant
   implicit none
   public
   save 
+
+  integer, parameter :: MAXOUTOBJ=1000
+  integer, parameter :: MAXREGOBJ=1000
+  integer, parameter :: MAXINITOBJ=100
+  integer, parameter :: MAXBUFOBJ=500
  
   integer, parameter :: UNITTMP=10                 ! File number
   real(8), parameter :: PI=3.14159265358979323846  ! PI

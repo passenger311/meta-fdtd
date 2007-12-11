@@ -54,10 +54,6 @@ module buflist
   public :: numbufobj
   public :: T_BUF
 
-  ! --- Constants
-
-  integer, parameter :: MAXBUFOBJ = 1000
-
   ! --- Types
 
   type T_BUF
