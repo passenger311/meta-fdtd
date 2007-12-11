@@ -59,6 +59,8 @@ module outlist
      character(len=20) :: modl         ! output module
      character(len=20) :: fn           ! output function
      character(len=20) :: mode         ! output mode
+     integer :: funit
+     logical :: snap                   ! snapshot or continuous mode
      integer :: ns, ne, dn             ! time frame
      integer :: numnodes = 0           ! number of points / nodes
      integer :: regidx = 0             ! region index
@@ -106,6 +108,7 @@ contains
     type(T_OUT), external :: CreateOutObj
     
     character (len=STRLNG) :: fmt, modl, fn, mode, filename, string
+    logical :: snap
     integer :: ns, ne, dn
     type(T_REG) :: reg
     
@@ -114,9 +117,9 @@ contains
     M4_WRITE_DBG({". enter ReadOutObj num = ",out%idx})
 
     ! read output information
-    read(funit,*) fmt, filename    ! format and filename
-    M4_WRITE_DBG({"fmt filename: ",TRIM(fmt), " ", TRIM(filename)})
-    read(funit,*) fn, mode    ! function and mode
+    read(funit,*) fmt, snap, filename    ! format and filename
+    M4_WRITE_DBG({"fmt snap filename: ",TRIM(fmt)," ",snap," ", TRIM(filename)})
+    read(funit,*) fn, mode   ! function and mode
     M4_WRITE_DBG({"fn mode: ", TRIM(fn)," ",TRIM(mode) })
     read(funit,*) ns, ne, dn       ! time frame
     M4_WRITE_DBG({"ns ne dn: ",ns, ne, dn })
@@ -158,6 +161,9 @@ contains
     outobj(numoutobj)%ns = 0
     outobj(numoutobj)%ne = 0
     outobj(numoutobj)%dn = 0
+
+    outobj(numoutobj)%funit = UNITTMP
+    outobj(numoutobj)%snap = .false.
 
     CreateOutObj = outobj(numoutobj)
    

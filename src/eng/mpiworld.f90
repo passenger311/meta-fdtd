@@ -28,7 +28,7 @@ M4_IFELSE_MPI({include 'mpif.h'})
   integer :: numproc = 1
   integer :: myrank = 0
   integer :: mpi_started = 0
-  character(len=STRLNG) :: mpi_sfxin, mpi_sfxout
+  character(len=STRLNG) :: mpi_sfxin, mpi_sfxout, mpi_sfx
   character(len=20)   :: ranklbl
   integer :: mpisize
 
@@ -63,6 +63,7 @@ M4_IFELSE_MPI({
 
     mpi_sfxin = cat3(".",i2str(myrank),".in")
     mpi_sfxout = cat3(".",i2str(myrank),".out")
+    mpi_sfx = cat2(".",i2str(myrank))
     ranklbl = cat5("(",i2str(myrank),"/",i2str(numproc),")")
 
 M4_IFELSE_MPI({

@@ -75,7 +75,9 @@ M4_IFELSE_MPELOG({
   if (myrank .eq. 0) then
 
      write(6,*) "* ------------------------ META-3 ENGINE STARTS  ------------------------ "
-
+     write(6,*) "*"
+     call DisplayVersionLine
+     write(6,*) "*"
   end if
 
   do l=0, numproc-1
@@ -83,7 +85,6 @@ M4_IFELSE_MPELOG({
 M4_IFELSE_MPI({call MPI_BARRIER(MPI_COMM_WORLD,mpierr)},{})
 
      if (myrank .eq. l) then
-
 
         write(6,*) "* initialising modules: myrank = ", ranklbl
 
@@ -101,9 +102,7 @@ M4_IFELSE_MPI({call MPI_BARRIER(MPI_COMM_WORLD,mpierr)},{})
         call InitializeDiag
         write(6,*) "* -> InitializeOut"
         call InitializeOut
-        write(6,*) "* -> WriteHeaderOut"
-        call WriteHeaderOut
-
+       
      end if
 
   end do

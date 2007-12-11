@@ -24,6 +24,7 @@ module outgpl
 
   use constant
   use strings
+  use mpiworld
   use reglist
   use outlist
 
@@ -53,6 +54,8 @@ M4_FOREACH_OUTGPL({use }, {
 
   ! --- Constants
 
+  character(len=STRLNG), parameter :: outgplsfx = '.gpl'
+
   ! --- Data
 
 contains
@@ -63,17 +66,22 @@ contains
 
     type(T_OUT) :: out
 
-    
-
-
 ! call various finalization methods
     select case ( out%modl ) 
+
     case ("FDTD")
        call  InitializeFdtdOutgplObj(out)
-       M4_FOREACH_OUTGPL2({case ("},{")
-             call Initialize},{OutgplObj(UNITTMP)
+       call OpenOutgplObj(out, 0, .not. out%snap)
+       call CloseOutgplObj(out)
+
+    M4_FOREACH_OUTGPL2({case ("},{")
+       call Initialize},{OutgplObj(UNITTMP)
+       call OpenOutgplObj(out, 0, .not. out%snap)
+       call CloseOutgplObj(out)
              })
     end select
+
+! if not in snapshot mode: write a header once at initialization 
 
   end subroutine InitializeOutgplObj
 
@@ -99,11 +107,34 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine OpenOutgplObj(out)
+  subroutine OpenOutgplObj(out, ncyc, writehdr)
 
     type(T_OUT) :: out
+    integer :: ncyc
+    logical :: writehdr
+    character(len=STRLNG) :: name, stepstr
+ 
+    if ( out%snap ) then
+       stepstr = TRIM(i2str(ncyc))
+       name = cat5(out%filename,"_",TRIM(i2str(ncyc)),mpi_sfx,outgplsfx)
+    else
+       name = cat3(out%filename,mpi_sfx,outgplsfx)
+    endif
+   
+    if ( writehdr ) then 
+       
+       M4_WRITE_DBG({"opening ",TRIM(out%filename),", as ",TRIM(name),", unit ", &
+            TRIM(i2str(out%funit)), " (new)"})
+       open(out%funit,FILE=name,STATUS="UNKNOWN",POSITION="REWIND")
+       call WriteHeaderOutgplObj(out,ncyc)
 
-    open(UNITTMP,FILE=out%filename,STATUS="unknown")
+    else
+
+       M4_WRITE_DBG({"opening ",TRIM(out%filename),", as ",TRIM(name),", unit ", &
+            TRIM(i2str(out%funit)), " (append)"})
+       open(out%funit,FILE=name,STATUS="UNKNOWN",POSITION="APPEND")
+
+    endif
 
   end subroutine OpenOutgplObj
 
@@ -113,32 +144,44 @@ contains
 
     type(T_OUT) :: out
 
-    close(UNITTMP)
+    M4_WRITE_DBG({"closing ",TRIM(out%filename),", unit ", TRIM(i2str(out%funit))})
+
+    close(out%funit)
 
   end subroutine CloseOutgplObj
 
 !----------------------------------------------------------------------
 
-  subroutine WriteHeaderOutgplObj(out)
+  subroutine WriteHeaderOutgplObj(out,ncyc)
 
     type(T_OUT) :: out
+    integer :: ncyc
     type(T_REG) :: reg
+    integer :: numn 
+
+    numn = (out%ne - out%ns + 1) / out%dn + 1
+    
     reg = regobj(out%regidx)
     
     M4_WRITE_DBG({"write header ",TRIM(out%filename)})
 
-    call OpenOutgplObj(out)
-    
-    write(UNITTMP,*) '# ',out%fmt               ! format
-    write(UNITTMP,*) '# ',out%modl              ! module
-    write(UNITTMP,*) '# ',out%fn                ! function
-    write(UNITTMP,*) '# ',out%mode              ! mode
-    write(UNITTMP,*) '# ',out%ns,out%ne,out%dn  ! time frame
-    write(UNITTMP,*) '# ',reg%is,reg%ie,reg%di  ! space box
-    write(UNITTMP,*) '# ',reg%js,reg%je,reg%dj
-    write(UNITTMP,*) '# ',reg%ks,reg%ke,reg%dk
-
-    call CloseOutgplObj(out)
+    write(out%funit,*) '# ',out%fmt                 ! format
+    write(out%funit,*) '# ',out%snap                ! snapshot mode
+    write(out%funit,*) '# ',out%modl                ! module
+    write(out%funit,*) '# ',out%fn                  ! function
+    write(out%funit,*) '# ',out%mode                ! mode
+    if ( out%snap ) then
+       write(out%funit,*) '# ',1                    ! number of time points
+       write(out%funit,*) '# ',ncyc,ncyc,1          ! time frame
+    else
+       write(out%funit,*) '# ',numn                 ! number of time points
+       write(out%funit,*) '# ',out%ns,out%ne,out%dn ! time frame
+    endif
+    write(out%funit,*) '# ',reg%isbox               ! mode
+    write(out%funit,*) '# ',reg%numnodes            ! number of points
+    write(out%funit,*) '# ',reg%is,reg%ie,reg%di    ! space box
+    write(out%funit,*) '# ',reg%js,reg%je,reg%dj
+    write(out%funit,*) '# ',reg%ks,reg%ke,reg%dk
 
   end subroutine WriteHeaderOutgplObj
 
@@ -151,7 +194,8 @@ contains
     integer :: ncyc
     logical :: mode  
     
-    if ( mode ) call OpenOutgplObj(out)
+    M4_WRITE_DBG({"write data ",TRIM(out%filename),", numnodes ", TRIM(i2str(out%numnodes))})
+
     
     select case ( out%modl ) 
 
@@ -159,14 +203,18 @@ contains
 
     case ("FDTD")
 
+       if ( mode ) call OpenOutgplObj(out, ncyc, out%snap)
        call WriteDataFdtdOutgplObj(out,ncyc,mode)
-       M4_FOREACH_OUTGPL2({case ("},{")
+       if ( mode ) call CloseOutgplObj(out)
+    
+    M4_FOREACH_OUTGPL2({case ("},{")
+       if ( mode ) call OpenOutgplObj(out, ncyc, out%snap)
        call WriteData},{OutgplObj(out,ncyc,mode)
+       if ( mode ) call CloseOutgplObj(out)
        })
 
     end select
 
-     if ( mode ) call CloseOutgplObj(out)
 
 
   end subroutine WriteDataOutgplObj

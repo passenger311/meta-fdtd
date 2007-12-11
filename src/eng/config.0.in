@@ -35,7 +35,7 @@
 (FDTD
 
   (OUT
-    GPL test2
+    GPL F test1_fdtd
     Ex S
     1 100 10
     (REG
@@ -46,9 +46,16 @@
   )OUT	
 
   (OUT
-    GPL test4
-    Ex S
+    GPL F test2_fdtd
+    Ey S
     1 100 10
+    (REG
+      (POINT
+	1 1 1
+   	5 5 5
+	10 10 10
+      )
+    )REG
   )OUT	
 
 )FDTD
@@ -77,13 +84,13 @@
   )REG
 
   (OUT
-    GPL test1
+    GPL F test_matsource
     Ex S
     1 100 10
   )OUT
 
   (OUT
-    GPL test2
+    GPL F test2
     Ex S
     1 100 10
     (REG                

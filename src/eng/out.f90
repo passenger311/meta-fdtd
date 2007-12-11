@@ -46,7 +46,6 @@ module out
 
   public :: InitializeOut
   public :: FinalizeOut
-  public :: WriteHeaderOut
   public :: WriteDataOut
 
   ! --- Public Data
@@ -58,12 +57,18 @@ contains
 
   subroutine InitializeOut
 
-    integer :: n
+    integer :: n,m 
 
-    M4_WRITE_DBG({". enter InitializeOut/out"})
 
     do n=1, numoutobj
        
+       do m = n+1, numoutobj
+          if ( outobj(n)%filename .eq. outobj(m)%filename .and.&
+             outobj(n)%fmt .eq. outobj(m)%fmt ) then
+             M4_FATAL_ERROR({"DUPLICATE FILENAME : ",TRIM(outobj(n)%filename)})
+          endif
+       end do
+
        call WriteDbgOutObj(outobj(n))
 
        select case ( outobj(n)%fmt ) 
@@ -110,30 +115,6 @@ contains
     M4_WRITE_DBG({". exit FinalizeOut/out"})
 
   end subroutine FinalizeOut
-
-
-!----------------------------------------------------------------------
-
-  subroutine WriteHeaderOut
-    
-    integer :: n
-
-    do n=1, numoutobj
-       
-       select case ( outobj(n)%fmt ) 
-! ** call output write header methods
-! 1.
-       case ( "GPL" ) 
-          call WriteHeaderOutgplObj(outobj(n))
-! 2.
-! **
-       case default
-          M4_FATAL_ERROR({"UNDEFINED OUTPUT FORMAT ", TRIM(outobj(n)%fmt)})
-       end select
-
-    enddo
-    
-  end subroutine WriteHeaderOut
 
 !----------------------------------------------------------------------
 

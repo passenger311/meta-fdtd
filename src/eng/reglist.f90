@@ -304,18 +304,14 @@ contains
        endif
     end if
        
+    reg%numnodes = numnodes
+
     if ( reg%isbox ) then ! A SINGLE BOX
         
        M4_WRITE_DBG({"setting up reg in single box mode", numnodes})
-       reg%numnodes = &
-            ( reg%ie - reg%is + 1 ) / reg%di * &
-            ( reg%je - reg%js + 1 ) / reg%dj * &
-            ( reg%ke - reg%ks + 1 ) / reg%dk    
 
     else
-
-       reg%numnodes = numnodes
-       
+   
        if ( .not. reg%islist ) then ! A MASK
 
           M4_WRITE_DBG({"setting up reg in mask mode", numnodes})

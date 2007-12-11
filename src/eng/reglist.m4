@@ -9,56 +9,58 @@ define({M4_REGLOOP_EXPR},{
 ! --- START M4: REGLOOP_EXPR
 ! reg,p,i,j,k,w,expr,spac1, spac2
 
+
+if ( $1%isbox ) then
+$6 = 1.0
+$2 = 0
+do $5 = $1%ks, $1%ke, $1%dk
+do $4 = $1%js, $1%je, $1%dj
+do $3 = $1%is, $1%ie, $1%di
+$2 = $2 + 1	     
+
+$7
+	   
+enddo !i
+$8
+enddo !j
+$9
+enddo !k
+
+else !isbox
+
 if ( $1%islist ) then
  
- do $2 = 1, $1%pe
+do $2 = 1, $1%pe
 
-  $3 = $1%i(p)
-  $4 = $1%j(p)
-  $5 = $1%k(p)
-  $6 = $1%val(p)
+$3 = $1%i(p)
+$4 = $1%j(p)
+$5 = $1%k(p)
+$6 = $1%val(p)
 
-  $7
+$7
 
- enddo
+enddo !p
 
-else 
- 
- $2 = 0
- if ( $1%isbox ) then
-  $6 = 1.0
-  do $5 = $1%ks, $1%ke, $1%dk
-   do $4 = $1%js, $1%je, $1%dj
-    do $3 = $1%is, $1%ie, $1%di
-     $2 = $2 + 1	     
+else !islist
 
-     $7
+$2 = 0
+do $5 = $1%ks, $1%ke, $1%dk
+do $4 = $1%js, $1%je, $1%dj
+do $3 = $1%is, $1%ie, $1%di
+if ( $1%mask(i,j,k) .gt. 0 ) then
+$6 = $1%val($1%mask(i,j,k)) 
+$2 = $2 + 1	     
+
+$7
 	   
-    enddo
-    $8
-   enddo
-   $9
-  enddo
+endif !mask
+enddo !i
+enddo !j
+enddo !k
 
- else 
+endif !islist
 
-  do $5 = $1%ks, $1%ke, $1%dk
-   do $4 = $1%js, $1%je, $1%dj
-    do $3 = $1%is, $1%ie, $1%di
-     if ( $1%mask(i,j,k) .gt. 0 ) then
-      $6 = $1%val($1%mask(i,j,k)) 
-      $2 = $2 + 1	     
-
-      $7
-	   
-     endif
-    enddo
-   enddo
-  enddo
-
- endif
-
-endif
+endif !isbox
 
 ! --- END M4: REGLOOP_EXPR
 

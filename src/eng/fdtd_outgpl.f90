@@ -141,7 +141,7 @@ contains
       reg = regobj(out%regidx)
       
       M4_REGLOOP_WRITE(reg,p,i,j,k,w,   
-      UNITTMP,6E15.6E3, { Ex(i,j,k),Ey(i,j,k),Ez(i,j,k),Hx(i,j,k),Hy(i,j,k),Hz(i,j,k) }
+      out%funit,6E15.6E3, { Ex(i,j,k),Ey(i,j,k),Ez(i,j,k),Hx(i,j,k),Hy(i,j,k),Hz(i,j,k) }
       )
       
     end subroutine WriteEH
@@ -153,12 +153,14 @@ contains
 
       type (T_OUT) :: out
       M4_FTYPE, dimension(IMIN:KMAX,JMIN:KMAX,KMIN:KMAX) :: Comp
-      
       M4_REGLOOP_DECL(reg,p,i,j,k,w)  
+
+      M4_WRITE_DBG({"WriteComp!"})
+      call WriteDbgRegObj(reg)
       reg = regobj(out%regidx)
 
        M4_REGLOOP_WRITE(reg,p,i,j,k,w,   
-       UNITTMP,E15.6E3, { Comp(i,j,k) }
+       out%funit,E15.6E3, { Comp(i,j,k) }
        )
 
     end subroutine WriteComp
@@ -174,7 +176,7 @@ contains
       reg = regobj(out%regidx)
       
       M4_REGLOOP_WRITE(reg,p,i,j,k,w,
-      UNITTMP,E15.6E3, { 1.0/epsinv(i,j,k) }
+      out%funit,E15.6E3, { 1.0/epsinv(i,j,k) }
       )
 
     end subroutine WriteEps
@@ -198,10 +200,10 @@ contains
          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
          sum = sum + buf%data(p)
          })
-         write(UNITTMP,*) sum
+         write(out%funit,*) sum
       else
          M4_REGLOOP_WRITE(reg,p,i,j,k,w,
-         UNITTMP,E15.6E3, {buf%data(p)}
+         out%funit, E15.6E3, {buf%data(p)}
          )
       endif
 
