@@ -131,10 +131,10 @@ M4_IFELSE_MPI({call MPI_BARRIER(MPI_COMM_WORLD,mpierr)})
   ncyc = 0
   do ncyc = 0, NCYCMAX
 
-     if (myrank .eq. 0 .and. mod(ncyc*10000/NCYCMAX,100) .eq. 0  ) then
+     if (myrank .eq. 0 .and. mod(ncyc*10000/NCYCMAX,10) .eq. 0  ) then
 
-        str = cat2(i2str(ncyc*100/NCYCMAX),"%")
-        write(6,*) "running ... ", str
+        str = cat4(i2str(ncyc*100/NCYCMAX),".",i2str(mod(ncyc*1000/NCYCMAX,10)),"%")
+        write(6,*) ": running ... ", str
 
      end if
 

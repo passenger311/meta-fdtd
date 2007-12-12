@@ -254,7 +254,7 @@ contains
      close(UNITTMP)
 
      else 
-        write(6,*) "!WARN COULD NOT OPEN ", TRIM(file),"!"
+        M4_WRITE_WARN({"COULD NOT OPEN ", TRIM(file),"!"})
      endif
 
 

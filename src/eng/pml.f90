@@ -126,7 +126,10 @@ contains
 
     M4_WRITE_DBG({". enter InitializePml"})
 
-    if ( .not. modconfigured ) return
+    if ( .not. modconfigured ) then
+       M4_WRITE_WARN({"NO PMLS CONFIGURED!"})
+       return
+    end if
 
     if(planepml(1) .eq. 1) ISIG=IBEG+PMLMAX
     if(planepml(2) .eq. 1) IEIG=IMAX-PMLMAX

@@ -28,7 +28,7 @@ module constant
   integer, parameter :: STDERR=0                   ! auf Himiko 6, sonst 0
   integer, parameter :: STDOUT=6                   ! 
 
-  character(len=40), parameter :: VERSION_NUMBER = "1.1.1.1"
+  character(len=40), parameter :: VERSION_NUMBER = "1.1.1.74"
   character(len=40), parameter :: VERSION_DATE = "2007-2008"
   character(len=40), parameter :: VERSION_AUTHORS = "J.Hamm, A.Klaedtke, S.Scholz, C.Hermann"
 
