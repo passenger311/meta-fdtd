@@ -48,11 +48,17 @@ contains
   subroutine ReadDiagDummyObj(funit)
 
     M4_MODREAD_DECL({DIAGDUMMY}, funit,diag,reg,out)
+
+    M4_WRITE_DBG(". enter ReadMatDummyObj")
     
+    M4_MODREAD_EXPR({DIAGDUMMY}, funit,diag,reg,out, {
+
     ! read diag parameters here, as defined in diag data structure
     read(funit,*) diag%something
  
-    M4_MODREAD_END({DIAGDUMMY}, funit,diag,reg,out)
+    })
+
+    M4_WRITE_DBG(". exit ReadMatDummyObj")
 
   end subroutine ReadDiagDummyObj
 
@@ -61,11 +67,15 @@ contains
   subroutine InitializeDiagDummy
 
     M4_MODLOOP_DECL({DIAGDUMMY},diag)
+    M4_WRITE_DBG(". enter InitializeMatDummy")
     M4_MODLOOP_EXPR({DIAGDUMMY},diag,{
     
        ! initialize diag object here
 
+       M4_IFELSE_DBG({call EchoDiagDummyObj(diag)})
+
     })
+    M4_WRITE_DBG(". exit InitializeMatDummy")
 
   end subroutine InitializeDiagDummy
 
@@ -74,11 +84,13 @@ contains
   subroutine FinalizeDiagDummy
 
     M4_MODLOOP_DECL({DIAGDUMMY},diag)
+    M4_WRITE_DBG(". enter FinalizeMatDummy")
     M4_MODLOOP_EXPR({DIAGDUMMY},diag,{
 
        ! finalize diag object here
 
     })
+    M4_WRITE_DBG(". exit FinalizeMatDummy")
 
   end subroutine FinalizeDiagDummy
 
@@ -128,7 +140,23 @@ contains
 
   end subroutine StepEDiagDummy
 
-  
+!----------------------------------------------------------------------
+
+   subroutine EchoDiagDummyObj(diag)
+
+    type(T_DIAGDUMMY) :: diag
+ 
+    M4_WRITE_INFO({"--- diagdummy # ",&
+         TRIM(i2str(diag%idx))," ", TRIM(diag%type)})
+
+    ! -- write parameters to console 
+    M4_WRITE_INFO({"something = ",diag%something })
+
+    M4_WRITE_INFO({"defined over:"})
+    call EchoRegObj(regobj(diag%regidx))
+    
+
+  end subroutine EchoDiagDummyObj
   
 !----------------------------------------------------------------------
 

@@ -12,7 +12,7 @@ define({M4_REGLOOP_EXPR},{
 if ( $1%numnodes .gt. 0 ) then
 
 if ( $1%isbox ) then
-$6 = 1.0
+$6 = $1%boxval
 $2 = 0
 do $5 = $1%ks, $1%ke, $1%dk
 do $4 = $1%js, $1%je, $1%dj

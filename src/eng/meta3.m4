@@ -26,25 +26,22 @@ define({M4_ISMPELOG}, {ifdef({M4_MPI}, {ifdef({M4_DBG},{.true.},{})}, {.false.})
 define({M4_IFELSE_MPELOG}, {ifdef({M4_MPI}, {ifdef({M4_DBG},{$1},{})}, {$2})})
 
 define({M4_WRITE_DBG}, {M4_IFELSE_DBG({write(6,*) "!DBG (",TRIM(modname),") ", $1},{})})
-define({M4_FATAL_ERROR}, {write(STDERR,*) "!ERR ", $1
+
+define({M4_WRITE_INFO}, {write(STDOUT,*) "!INF (",TRIM(modname),") ", $1 })
+define({M4_FATAL_ERROR}, {write(STDERR,*) "!ERR (",TRIM(modname),") ", $1
 stop
 })
-
 define({M4_ALLOC_ERROR}, {if ( $1 .ne. 0 ) then
-write(STDERR,*) "!ERR OUT OF MEMORY: ", $2
-stop
+M4_FATAL_ERROR({"OUT OF MEMORY ",$2})
 endif
 })
-
-
 define({M4_OPEN_ERROR}, {if ( $1 .ne. 0 ) then
-write(STDERR,*) "!ERR COULD NOT OPEN FILE: ", $2
+M4_FATAL_ERROR({"COULD NOT OPEN FILE ",$2})
 stop
 endif
 })
-
 define({M4_READ_ERROR}, {if ( $1 .ne. 0 ) then
-write(STDERR,*) "!ERR READ ERROR: ", $2
+M4_FATAL_ERROR({"READ ERROR ",$2})
 stop
 endif
 })

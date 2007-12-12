@@ -114,7 +114,7 @@ contains
     ! consume regobj start string
     if ( string .eq. "(REG" ) then
        M4_WRITE_DBG({"-> ReadRegObj"})
-       call ReadRegObj(reg, funit) ! spatial regobj
+       call ReadRegObj(reg, regdef, funit) ! spatial regobj
        read(funit,*) string
        M4_WRITE_DBG({"got token ",TRIM(string)})
        init%regidx = reg%idx

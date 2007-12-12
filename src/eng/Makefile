@@ -30,12 +30,12 @@ BOBJ=\
 strings.o\
 constant.o\
 mpiworld.o\
-grid.o\
 reglist.o\
 buflist.o\
 outlist.o\
 initlist.o\
-list.o
+list.o\
+grid.o
 
 FOBJ=\
 fdtd.o\

@@ -48,11 +48,17 @@ contains
   subroutine ReadMatDummyObj(funit)
 
     M4_MODREAD_DECL({MATDUMMY}, funit,mat,reg,out)
+
+    M4_WRITE_DBG(". enter ReadMatDummyObj")
     
+    M4_MODREAD_EXPR({MATDUMMY}, funit,mat,reg,out,{ 
+
     ! read mat parameters here, as defined in mat data structure
     read(funit,*) mat%something
  
-    M4_MODREAD_END({MATDUMMY}, funit,mat,reg,out)
+    })
+
+    M4_WRITE_DBG(". exit ReadMatDummyObj")
 
   end subroutine ReadMatDummyObj
 
@@ -60,12 +66,15 @@ contains
 
   subroutine InitializeMatDummy
 
-    M4_MODLOOP_DECL({MATDUMMY},mat)
+    M4_MODLOOP_DECL({MATDUMMY},mat) 
+    M4_WRITE_DBG(". enter InitializeMatDummy")
     M4_MODLOOP_EXPR({MATDUMMY},mat,{
     
        ! initialize mat object here
-
+       M4_IFELSE_DBG({call EchoMatDummyObj(mat)})
+ 
     })
+    M4_WRITE_DBG(". exit InitializeMatDummy")
 
   end subroutine InitializeMatDummy
 
@@ -74,11 +83,13 @@ contains
   subroutine FinalizeMatDummy
 
     M4_MODLOOP_DECL({MATDUMMY},mat)
+    M4_WRITE_DBG(". enter FinalizeMatDummy")
     M4_MODLOOP_EXPR({MATDUMMY},mat,{
 
        ! finalize mat object here
 
     })
+    M4_WRITE_DBG(". exit FinalizeMatDummy")
 
   end subroutine FinalizeMatDummy
 
@@ -128,7 +139,25 @@ contains
 
   end subroutine StepEMatDummy
 
-  
+
+!----------------------------------------------------------------------
+
+   subroutine EchoMatDummyObj(mat)
+
+    type(T_MATDUMMY) :: mat
+
+    M4_WRITE_INFO({"--- matdummy # ",&
+         TRIM(i2str(mat%idx))," ", TRIM(mat%type)})
+
+    ! -- write parameters to console 
+    M4_WRITE_INFO({"something = ",mat%something })
+
+    M4_WRITE_INFO({"defined over:"})
+    call EchoRegObj(regobj(mat%regidx))
+    
+
+  end subroutine EchoMatDummyObj
+
   
 !----------------------------------------------------------------------
 

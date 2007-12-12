@@ -61,8 +61,6 @@ module fdtd
   M4_FTYPE, allocatable, dimension(:, :, :) :: Hx, Hy, Hz
   real(kind=8), allocatable, dimension(:, :, :) :: EPSINV
 
-  type(T_REG) :: fdtdreg
-
 contains
 
 !----------------------------------------------------------------------
@@ -70,7 +68,8 @@ contains
  subroutine ReadConfigFdtd(funit,string)
 
    integer :: funit
-   character(len=*) :: string
+   character(len=*) :: string 
+   character(len=STRLNG) :: line, skiptill
    type (T_OUT) :: out
    type (T_REG) :: reg
    type (T_INIT) :: init
@@ -78,32 +77,42 @@ contains
 
    integer :: ios
 
-   M4_WRITE_DBG({". enter ReadConfigFdtd/fdtd"})
+   M4_WRITE_DBG({". enter ReadConfigFdtd"})
       
-   reg = CreateRegObjStart()
-   call SetBoxRegObj(reg, IBEG, IEND, 1, JBEG, JEND, 1, KBEG, KEND, 1, val)
-   call CreateRegObjEnd(reg,.false.)
-
    if ( string .ne. "(FDTD" ) then
-      M4_FATAL_ERROR({"BAD SECTION IDENTIFIER: ReadConfigFdtd/fdtd"})
+      M4_FATAL_ERROR({"BAD SECTION IDENTIFIER: ReadConfigFdtd"})
    endif
    
+   skiptill = ""
    do	
-      read(funit,*) string
+      read(funit,*) line
+      string = TRIM(ADJUSTL(line))
+
+      if ( skiptill .ne. "" ) then 
+         M4_WRITE_DBG({"skipping line ",string})
+         if ( string .eq. skiptill ) skiptill = ""  
+         cycle              
+      endif
+ 
       select case (string)
       case("(INIT") 
          M4_WRITE_DBG({"got token (INIT -> ReadInitObj"})
-         call ReadInitObj(init, reg, 6, "INIT", funit)
+         call ReadInitObj(init, fdtdreg, 6, "INIT", funit)
       case("(EPSILON") 
          M4_WRITE_DBG({"got token (EPSILON -> ReadInitObj"})
-         call ReadInitObj(init, reg, 1, "EPSILON", funit)
+         call ReadInitObj(init, fdtdreg, 1, "EPSILON", funit)
       case("(OUT") 
 	M4_WRITE_DBG({"got token (OUT -> ReadOutObj"})
-        call ReadOutObj(out, reg, modname, funit)
-      case default	
+        call ReadOutObj(out, fdtdreg, modname, funit)
+     case default	
+        if ( string(1:2) .eq. "(!" ) then
+           skiptill = cat2(")",string(3:))
+           M4_WRITE_DBG({"got token (! -> skiptill = ", TRIM(skiptill)})  
+           cycle
+        end if
         M4_WRITE_DBG({"read terminator: ", TRIM(string)})
         if ( string(1:1) .ne. ")" ) then
-          M4_FATAL_ERROR({"BAD TERMINATOR: ReadConfigFdtd/fdtd"})
+          M4_FATAL_ERROR({"BAD TERMINATOR: ReadConfigFdtd"})
         end if
         exit
       end select
@@ -111,7 +120,7 @@ contains
 
    modconfigured = .true.
 
-   M4_WRITE_DBG({". exit ReadConfigFdtd/fdtd"})
+   M4_WRITE_DBG({". exit ReadConfigFdtd"})
    
  end subroutine ReadConfigFdtd
  
@@ -124,10 +133,10 @@ contains
    type(T_INIT) :: init
    M4_REGLOOP_DECL(reg,p,i,j,k,w)  
     
-   M4_WRITE_DBG({". enter InitializeFdtd/fdtd"})
+   M4_WRITE_DBG({". enter InitializeFdtd"})
 
    if ( .not. modconfigured ) then
-      M4_FATAL_ERROR({"NOT CONFIGURED: InitializeFdtd/fdtd"})
+      M4_FATAL_ERROR({"NOT CONFIGURED: InitializeFdtd"})
    endif
  
    call AllocateFields
@@ -147,7 +156,7 @@ contains
       M4_WRITE_DBG({"found initializer type: ",TRIM(init%type)})
       if ( init%type .eq. "INIT" ) then 
          reg = regobj(init%regidx)
-         call WriteDbgRegObj(reg)
+         M4_IFELSE_DBG({call EchoRegObj(regobj(numregobj))})
          M4_REGLOOP_EXPR(reg,p,i,j,k,w,
          Ex(i,j,k) = init%val(1)
          Ey(i,j,k) = init%val(2)
@@ -180,7 +189,7 @@ contains
 
    end do
 
-   M4_WRITE_DBG({". exit InitializeFdtd/fdtd"})   
+   M4_WRITE_DBG({". exit InitializeFdtd"})   
 
  contains
       
@@ -188,30 +197,30 @@ contains
 
      integer :: err
 
-     M4_WRITE_DBG({". enter InitializeFdtd/fdtd | AllocateFields"})
+     M4_WRITE_DBG({". enter InitializeFdtd.AllocateFields"})
      
      allocate(Ex(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
-     M4_ALLOC_ERROR(err, "AllocateFields/fdtd")
+     M4_ALLOC_ERROR(err, "AllocateFields")
      
      allocate(Ey(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
-     M4_ALLOC_ERROR(err, "AllocateFields/fdtd")
+     M4_ALLOC_ERROR(err, "AllocateFields")
      
      allocate(Ez(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
-     M4_ALLOC_ERROR(err, "AllocateFields/fdtd")
+     M4_ALLOC_ERROR(err, "AllocateFields")
      
      allocate(Hx(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
-     M4_ALLOC_ERROR(err, "AllocateFields/fdtd")
+     M4_ALLOC_ERROR(err, "AllocateFields")
 
      allocate(Hy(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
-     M4_ALLOC_ERROR(err, "AllocateFields/fdtd")
+     M4_ALLOC_ERROR(err, "AllocateFields")
      
      allocate(Hz(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
-     M4_ALLOC_ERROR(err, "AllocateFields/fdtd")
+     M4_ALLOC_ERROR(err, "AllocateFields")
      
      allocate(EPSINV(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX), STAT=err)
-     M4_ALLOC_ERROR(err, "AllocateFields/fdtd")
+     M4_ALLOC_ERROR(err, "AllocateFields")
      
-     M4_WRITE_DBG({". exit InitializeFdtd/fdtd | AllocateFields"})
+     M4_WRITE_DBG({". exit InitializeFdtd.AllocateFields"})
 
    end subroutine AllocateFields
    
@@ -223,7 +232,7 @@ contains
      
      character(len=STRLNG) :: file
      
-     M4_WRITE_DBG({". enter InitializeFdtd/fdtd | ReadEpsilonField"})
+     M4_WRITE_DBG({". enter InitializeFdtd.ReadEpsilonField"})
 
      file = cat2(pfxepsilon,mpi_sfxin)
      
@@ -249,7 +258,7 @@ contains
      endif
 
 
-     M4_WRITE_DBG({". exit InitializeFdtd/fdtd | ReadEpsilonField"})
+     M4_WRITE_DBG({". exit InitializeFdtd.ReadEpsilonField"})
      
    end subroutine ReadEpsilonField
    
@@ -259,7 +268,7 @@ contains
 
  subroutine FinalizeFdtd
    
-   M4_WRITE_DBG({". enter FinalizeFdtd/fdtd"})
+   M4_WRITE_DBG({". enter FinalizeFdtd"})
    
    deallocate(Hz)
    deallocate(Hy)
@@ -269,7 +278,7 @@ contains
    deallocate(Ex)
    deallocate(EPSINV)
 
-   M4_WRITE_DBG({". exit FinalizeFdtd/fdtd"})
+   M4_WRITE_DBG({". exit FinalizeFdtd"})
    
  end subroutine FinalizeFdtd
  

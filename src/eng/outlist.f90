@@ -38,7 +38,7 @@ module outlist
   public :: CreateOutObj
   public :: DestroyOutObj
   public :: ReadOutObj
-  public :: WriteDbgOutObj
+  public :: EchoOutObj
 
   ! --- Public Data
 
@@ -59,6 +59,7 @@ module outlist
      logical :: snap                   ! snapshot or continuous mode
      integer :: ns, ne, dn             ! time frame
      integer :: numnodes = 0           ! number of points / nodes
+     integer :: numsteps =0            ! number of time steps 
      integer :: regidx = 0             ! region index
      integer :: bufidx = 0             ! buffer index
      integer :: idx = 0                ! this objects index
@@ -125,7 +126,7 @@ contains
     ! consume regobj start string
     if ( string .eq. "(REG" ) then
        M4_WRITE_DBG({"-> ReadRegObj"})
-       call ReadRegObj(reg, funit) ! spatial regobj
+       call ReadRegObj(reg, regdef, funit) ! spatial regobj
        read(funit,*) string
        M4_WRITE_DBG({"got token ",TRIM(string)})
        call SetOutObj(out, fmt, snap, modl, filename, fn, mode, ns, ne, dn, reg)
@@ -135,7 +136,7 @@ contains
     end if
 
     if ( string(1:1) .ne. ")" ) then
-       M4_FATAL_ERROR({"BAD TERMINATOR: ReadOutObj/out"})
+       M4_FATAL_ERROR({"BAD TERMINATOR: ReadOutObj"})
     end if
 
     outobj(numoutobj) = out
@@ -199,23 +200,25 @@ contains
     out%dn = dn
     out%regidx = reg%idx
     out%numnodes = reg%numnodes
+    out%numsteps = (ne - ns) / dn + 1
 
   end subroutine SetOutObj
 
 !----------------------------------------------------------------------
 
-  subroutine WriteDbgOutObj(out)
+  subroutine EchoOutObj(out)
 
     type(T_OUT) :: out
 
-    M4_WRITE_DBG({"out # ", TRIM(i2str(out%idx)) })
-    M4_WRITE_DBG({"  fmt modl filename : ", TRIM(out%fmt), " ", TRIM(out%modl), " ", TRIM(out%filename) })
-    M4_WRITE_DBG({"  fn mode : ", TRIM(out%fn), " ", TRIM(out%mode) })
-    M4_WRITE_DBG({"  ns ne dn : ", out%ns, out%ne, out%dn })
-    M4_WRITE_DBG({"defined over"})
-    call WriteDbgRegObj(regobj(out%regidx))
+    M4_WRITE_INFO({"--- out # ", TRIM(i2str(out%idx)) })
+    M4_WRITE_INFO({"fmt modl filename = ", TRIM(out%fmt),&
+         " ", TRIM(out%modl), " ", TRIM(out%filename) })
+    M4_WRITE_INFO({"fn mode = ", TRIM(out%fn), " ", TRIM(out%mode) })
+    M4_WRITE_INFO({"ns ne dn = ", out%ns, out%ne, out%dn })
+    M4_WRITE_INFO({"defined over:"})
+    call EchoRegObj(regobj(out%regidx))
 
-  end subroutine WriteDbgOutObj
+  end subroutine EchoOutObj
   
 !----------------------------------------------------------------------
 

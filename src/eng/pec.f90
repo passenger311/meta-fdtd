@@ -49,11 +49,17 @@ contains
 
   subroutine InitializePec
 
+    M4_WRITE_DBG(". enter InitializePec")
+    M4_WRITE_DBG(". exit InitializePec")
+
   end subroutine InitializePec
 
 !----------------------------------------------------------------------
 
   subroutine FinalizePec
+
+    M4_WRITE_DBG(". enter FinalizePec")
+    M4_WRITE_DBG(". exit FinalizePec")
 
   end subroutine FinalizePec
 
@@ -67,14 +73,14 @@ contains
 
     do k=KBEG, KMAX
        do i=IBEG, IMAX
-          Ez(i,0,k)=0.0
-          Ex(i,0,k)=0.0
+          Ez(i,JBEG,k)=0.0
+          Ex(i,JBEG,k)=0.0
           Ez(i,JMAX,k)=0.0
           Ex(i,JMAX,k)=0.0
        enddo
        do j=JBEG, JMAX
-          Ez(0,j,k)=0.0
-          Ey(0,j,k)=0.0
+          Ez(IBEG,j,k)=0.0
+          Ey(IBEG,j,k)=0.0
           Ez(IMAX,j,k)=0.0
           Ey(IMAX,j,k)=0.0
        enddo

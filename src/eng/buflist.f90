@@ -111,9 +111,7 @@ contains
     numbufobj = numbufobj + 1
     buf = bufobj(numbufobj)
     allocate(buf%data(buf%size), stat=err)
-    if ( err .ne. 0 ) then
-       M4_FATAL_ERROR({"OUT OF MEMORY: CreateBufObj/bufobj"})
-    endif
+    M4_ALLOC_ERROR(err, {"CreatBufObj"})
     CreateBufObj = buf
     
   end function CreateBufObj

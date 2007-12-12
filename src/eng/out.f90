@@ -69,7 +69,7 @@ contains
           endif
        end do
 
-       call WriteDbgOutObj(outobj(n))
+       M4_IFELSE_DBG({call EchoOutObj(outobj(n))})
 
        select case ( outobj(n)%fmt ) 
 ! ** call output buffer preparation

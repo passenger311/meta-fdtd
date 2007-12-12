@@ -22,10 +22,11 @@ module constant
   integer, parameter :: MAXINITOBJ=100
   integer, parameter :: MAXBUFOBJ=500
  
-  integer, parameter :: UNITTMP=10                 ! File number
+  integer, parameter :: UNITTMP=10                 ! file unit number
   real(8), parameter :: PI=3.14159265358979323846  ! PI
-  integer, parameter :: STRLNG=80                  ! max. Stringlength
+  integer, parameter :: STRLNG=80                  ! max. string length
   integer, parameter :: STDERR=0                   ! auf Himiko 6, sonst 0
+  integer, parameter :: STDOUT=6                   ! 
 
   character(len=40), parameter :: VERSION_NUMBER = "1.1.1.1"
   character(len=40), parameter :: VERSION_DATE = "2007-2008"

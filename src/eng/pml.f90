@@ -40,6 +40,7 @@ module pml
 
   character(len=20), private, parameter :: modname = 'PML'
   logical, private :: modconfigured = .false.
+  logical, private :: modinitialized = .false.
 
   ! --- Public Methods
 
@@ -87,11 +88,11 @@ contains
       
     integer :: ios, i
 
-    M4_WRITE_DBG({". enter ReadConfigPml/pml"})
+    M4_WRITE_DBG({". enter ReadConfigPml"})
 
     M4_WRITE_DBG({"received token: ", TRIM(string)})
     if ( string .ne. "(PML" ) then
-       M4_FATAL_ERROR({"BAD SECTION IDENTIFIER: ReadConfigPml/pml"})
+       M4_FATAL_ERROR({"BAD SECTION IDENTIFIER: ReadConfigPml"})
     endif
 
     read(UNITTMP,*) (planepml(i),i=1, 6)
@@ -110,12 +111,12 @@ contains
     ! TODO: add some checks on numerical values
 
     if ( string(1:1) .ne. ")" ) then
-       M4_FATAL_ERROR({"BAD SECTION TERMINATOR: ReadConfigPml/pml"})
+       M4_FATAL_ERROR({"BAD SECTION TERMINATOR: ReadConfigPml"})
     endif
 
     modconfigured = .true.
 
-    M4_WRITE_DBG({". exit ReadConfigPml/pml"})
+    M4_WRITE_DBG({". exit ReadConfigPml"})
 
   end subroutine ReadConfigPml
 
@@ -123,11 +124,9 @@ contains
 
   subroutine InitializePml
 
-    M4_WRITE_DBG({". enter InitializePml/pml"})
+    M4_WRITE_DBG({". enter InitializePml"})
 
-    if ( .not. modconfigured ) then
-       M4_FATAL_ERROR({"NOT CONFIGURED: InitializePml/pml"})
-    endif
+    if ( .not. modconfigured ) return
 
     if(planepml(1) .eq. 1) ISIG=IBEG+PMLMAX
     if(planepml(2) .eq. 1) IEIG=IMAX-PMLMAX
@@ -159,7 +158,9 @@ contains
     call CalcCoefficients(JBEG, JMAX, JSIG, JEIG, ceypml, cmypml)
     call CalcCoefficients(KBEG, KMAX, KSIG, KEIG, cezpml, cmzpml)
 
-    M4_WRITE_DBG({". exit InitializePml/pml"})
+    modinitialized = .true.
+
+    M4_WRITE_DBG({". exit InitializePml"})
 
   contains
     
@@ -167,65 +168,65 @@ contains
 
       integer :: err, i, j, k, l
 
-      M4_WRITE_DBG({". enter InitializePml/pml | AllocateFields"})
+      M4_WRITE_DBG({". enter InitializePml.AllocateFields"})
       
       ! numeric coefficient-fields
       
       allocate(cexpml(1:4,IBEG:IMAX), STAT=err)
-      M4_ALLOC_ERROR(err,"AllocFields/pml")
+      M4_ALLOC_ERROR(err,"AllocFields")
       
       allocate(ceypml(1:4,JBEG:JMAX), STAT=err)
-      M4_ALLOC_ERROR(err,"AllocFields/pml")
+      M4_ALLOC_ERROR(err,"AllocFields")
       
       allocate(cezpml(1:4,KBEG:KMAX), STAT=err)
-      M4_ALLOC_ERROR(err,"AllocFields/pml")
+      M4_ALLOC_ERROR(err,"AllocFields")
       
       allocate(cmxpml(1:4,IBEG:IMAX), STAT=err)
-      M4_ALLOC_ERROR(err,"AllocFields/pml")
+      M4_ALLOC_ERROR(err,"AllocFields")
       
       allocate(cmypml(1:4,JBEG:JMAX), STAT=err)
-      M4_ALLOC_ERROR(err,"AllocFields/pml")
+      M4_ALLOC_ERROR(err,"AllocFields")
 
       allocate(cmzpml(1:4,KBEG:KMAX), STAT=err)
-      M4_ALLOC_ERROR(err,"AllocFields/pml")
+      M4_ALLOC_ERROR(err,"AllocFields")
       
       !  B and D fields for each of the 6 layers 
       
       allocate(BE1(1:3,IBEG:ISIG-1,JBEG:JMAX-1,KBEG:KMAX-1), STAT=err) 
-      M4_ALLOC_ERROR(err,"AllocFields/pml")
+      M4_ALLOC_ERROR(err,"AllocFields")
       
       allocate(DE1(1:3,IBEG:ISIG-1,JBEG:JMAX-1,KBEG:KMAX-1), STAT=err)
-      M4_ALLOC_ERROR(err,"AllocFields/pml")
+      M4_ALLOC_ERROR(err,"AllocFields")
       
       allocate(BE2(1:3,IEIG:IMAX-1,JBEG:JMAX-1,KBEG:KMAX-1), STAT=err)
-      M4_ALLOC_ERROR(err,"AllocFields/pml")
+      M4_ALLOC_ERROR(err,"AllocFields")
       
       allocate(DE2(1:3,IEIG:IMAX-1,JBEG:JMAX-1,KBEG:KMAX-1), STAT=err)
-      M4_ALLOC_ERROR(err,"AllocFields/pml")
+      M4_ALLOC_ERROR(err,"AllocFields")
       
       allocate(BE3(1:3,ISIG:IEIG-1,JBEG:JSIG-1,KBEG:KMAX-1), STAT=err) 
-      M4_ALLOC_ERROR(err,"AllocFields/pml")
+      M4_ALLOC_ERROR(err,"AllocFields")
 
       allocate(DE3(1:3,ISIG:IEIG-1,JBEG:JSIG-1,KBEG:KMAX-1), STAT=err) 
-      M4_ALLOC_ERROR(err,"AllocFields/pml")
+      M4_ALLOC_ERROR(err,"AllocFields")
       
       allocate(BE4(1:3,ISIG:IEIG-1,JEIG:JMAX-1,KBEG:KMAX-1), STAT=err)
-      M4_ALLOC_ERROR(err,"AllocFields/pml")
+      M4_ALLOC_ERROR(err,"AllocFields")
       
       allocate(DE4(1:3,ISIG:IEIG-1,JEIG:JMAX-1,KBEG:KMAX-1), STAT=err)
-      M4_ALLOC_ERROR(err,"AllocFields/pml")
+      M4_ALLOC_ERROR(err,"AllocFields")
       
       allocate(BE5(1:3,ISIG:IEIG-1,JSIG:JEIG-1,KBEG:KSIG-1), STAT=err) 
-      M4_ALLOC_ERROR(err,"AllocFields/pml")
+      M4_ALLOC_ERROR(err,"AllocFields")
       
       allocate(DE5(1:3,ISIG:IEIG-1,JSIG:JEIG-1,KBEG:KSIG-1), STAT=err)
-      M4_ALLOC_ERROR(err,"AllocFields/pml")
+      M4_ALLOC_ERROR(err,"AllocFields")
       
       allocate(BE6(1:3,ISIG:IEIG-1,JSIG:JEIG-1,KEIG:KMAX-1), STAT=err)
-      M4_ALLOC_ERROR(err,"AllocFields/pml")
+      M4_ALLOC_ERROR(err,"AllocFields")
 
       allocate(DE6(1:3,ISIG:IEIG-1,JSIG:JEIG-1,KEIG:KMAX-1), STAT=err)
-      M4_ALLOC_ERROR(err,"AllocFields/pml")
+      M4_ALLOC_ERROR(err,"AllocFields")
       
       ! initialize fields
       
@@ -268,7 +269,7 @@ contains
          enddo
       enddo
 
-      M4_WRITE_DBG({". exit InitializePml/pml | AllocateFields"})
+      M4_WRITE_DBG({". exit InitializePml.AllocateFields"})
       
     end subroutine AllocateFields
     
@@ -280,7 +281,7 @@ contains
       real(kind=8) :: x, sigma, kappa
       integer :: l
 
-      M4_WRITE_DBG({". enter InitializePml/pml | CalcCoefficients"})
+      M4_WRITE_DBG({". enter InitializePml.CalcCoefficients"})
       
       ! help values
 
@@ -335,7 +336,7 @@ contains
          cm(4,l) = val2p(l-le) / val1p(l-le)
       enddo
 
-      M4_WRITE_DBG({". exit InitializePml/pml | CalcCoefficients"})
+      M4_WRITE_DBG({". exit InitializePml.CalcCoefficients"})
       
     end subroutine CalcCoefficients
       
@@ -345,7 +346,7 @@ contains
 
   subroutine FinalizePml
 
-    M4_WRITE_DBG({". FinalizePml/pml"})
+    M4_WRITE_DBG({". FinalizePml"})
 
     deallocate(DE6)
     deallocate(BE6)
@@ -374,6 +375,8 @@ contains
   ! update the H-fields of all Pml layers
   
   subroutine StepHPml
+
+    if ( .not. modinitialized ) return
 
     call DoStepHPml(IBEG,ISIG-1,JBEG,JMAX-1,KBEG,KMAX-1,BE1) 
     call DoStepHPml(IEIG,IMAX-1,JBEG,JMAX-1,KBEG,KMAX-1,BE2)
@@ -444,6 +447,8 @@ contains
   ! update the E-fields of all pml layers
   
   subroutine StepEPml
+
+    if ( .not. modinitialized ) return
 
     call DoStepEPml(IBEG,ISIG-1,JBEG,JMAX-1,KBEG,KMAX-1,DE1)
     call DoStepEPml(IEIG,IMAX-1,JBEG,JMAX-1,KBEG,KMAX-1,DE2)

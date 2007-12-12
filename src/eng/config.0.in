@@ -1,15 +1,32 @@
-! -----------------------------------------------------------------------
+! =======================================================================
 !
 ! Meta-3 Engine Configuration File
 !
+! =======================================================================
+
+! -----------------------------------------------------------------------
+! This is a sample configuration file, that illustrates how the various
+! sections are setup. Regions can be commented out using (!IDENTIFIER
+! ... )IDENTIFIER. Do not use comment lines (starting with !) inside a
+! section. The OUT and REG blocks are reoccuring in the various sections.
+!
+! * REG: marks a continuous and discontinuous region of space. Format is
+!
+! (REG
+!    <list of objects>
+!    <region-format>
+! )REG
+!
+! <list of objects>: any number of POINT, VPOINT, BOX or VBOX objects
+! <region-format>: optional. AUTO (default),MASK or LIST mode.
+!
 ! -----------------------------------------------------------------------
 
-! =======================================================================
-!
-! This is a sample configuration file, that illustrates how the various
-! sections are setup.
 
-
+! -----------------------------------------------------------------------
+! GRID: this is a mandatory section. Note, that the lower index range 
+! must be 0 if an PML is implemented on that interface. <parititions> is
+! overwritten to 1 if not compiled with mpi.
 ! -----------------------------------------------------------------------
 
 
@@ -17,20 +34,16 @@
   1             	! partitions
   1000          	! ncyc
   0.576             	! dt
-  0 20	         	! i range
-  0 20 	       		! j range
-  20 40        		! k range
+  0 50	         	! i range
+  0 50 	       		! j range
+  0 50        		! k range
 )GRID
 
 
-(PML
- 1 1 1 1 0 1   		! active pmls
- 8               	! pml cells
- 3.2             	! pot parameter
- 1.94444444444444       ! sigma parameter
- 1.1             	! kappa parameter
-)PML
-
+! -----------------------------------------------------------------------
+! FDTD: this is  a mandatory section. FDTD can contain an arbitrary 
+! number of INIT, EPSILON and OUT blocks.
+! -----------------------------------------------------------------------
 
 (FDTD
 
@@ -38,8 +51,8 @@
      1.e-7   0. 0.	0. 0. 0. ! e and h field values
      (REG
 	(POINT
-           10 10 10 
-        )
+           25 25 25 
+        )POINT
      ) 
   )	
 
@@ -72,7 +85,7 @@
   (OUT
     GPL F test2_ey
     Ey S
-    1 1000 10
+    0 10000 10
     (REG
       (POINT
 	1 1 1
@@ -84,9 +97,44 @@
 
 )FDTD
  
-
+! -----------------------------------------------------------------------
+! PML: this is an optional section which specifies PMLs and on which
+! interfaces they are defined. If this section is commented out, PEC
+! boundary conditions will apply.
 ! -----------------------------------------------------------------------
 
+(PML
+ 1 1 1 1 1 1   		! active pmls
+ 8               	! pml cells
+ 3.2             	! pot parameter
+ 1.94444444444444       ! sigma parameter
+ 1.1             	! kappa parameter
+)PML
+
+
+! -----------------------------------------------------------------------
+! MATSOURCE: hard electromagnetic field source. 
+! -----------------------------------------------------------------------
+
+(MATSOURCE
+1.0     	! vacuum wavelength in units of [dx]
+1.0		! spectral width of vac.wave in units of [dx]
+1.0		! gaussian start value as fraction of peak
+1.0		! amplitude = 1
+100		! start time  
+.F.		! T: go over to cw after peak
+.T.		! T: electric field source F: magnetic
+1.0 1.0 1.0 	! vector components of source
+(REG
+  (VPOINT
+     5 5 5 
+     9 9 9
+  )VPOINT
+)REG
+(!OUT
+	
+)OUT
+)MATSOURCE
 
 !
 !

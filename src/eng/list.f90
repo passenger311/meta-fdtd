@@ -50,10 +50,14 @@ contains
 
   subroutine InitializeList
 
+    M4_WRITE_DBG(". enter InitializeList")
+
     call InitializeRegList
     call InitializeBufList
     call InitializeOutList
     call InitializeInitList
+
+    M4_WRITE_DBG(". exit InitializeList")
 
   end subroutine InitializeList
 
@@ -61,10 +65,14 @@ contains
 
   subroutine FinalizeList
 
+    M4_WRITE_DBG(". enter FinalizeList")
+
     call FinalizeRegList
     call FinalizeBufList
     call FinalizeOutList
     call FinalizeInitList
+
+    M4_WRITE_DBG(". enter FinalizeList")
 
   end subroutine FinalizeList
 

@@ -161,8 +161,6 @@ contains
     type(T_REG) :: reg
     integer :: numn 
 
-    numn = (out%ne - out%ns + 1) / out%dn + 1
-    
     reg = regobj(out%regidx)
     
     M4_WRITE_DBG({"write header ",TRIM(out%filename)})
@@ -176,7 +174,7 @@ contains
        write(out%funit,*) '# ',1                    ! number of time points
        write(out%funit,*) '# ',ncyc,ncyc,1          ! time frame
     else
-       write(out%funit,*) '# ',numn                 ! number of time points
+       write(out%funit,*) '# ',out%numsteps         ! number of time points
        write(out%funit,*) '# ',out%ns,out%ne,out%dn ! time frame
     endif
     write(out%funit,*) '# ',reg%isbox               ! mode

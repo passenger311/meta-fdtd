@@ -24,6 +24,7 @@ module grid
   use constant
   use strings
   use mpiworld
+  use reglist
 
   implicit none
   public
@@ -61,6 +62,8 @@ module grid
 
   integer :: PARTITIONS
 
+  type(T_REG) :: fdtdreg
+
 contains
 
 !----------------------------------------------------------------------
@@ -72,11 +75,11 @@ contains
     
     integer :: ios
 
-    M4_WRITE_DBG({". enter ReadConfigGrid/grid"})
+    M4_WRITE_DBG({". enter ReadConfigGrid"})
 
     M4_WRITE_DBG({"received token: ", TRIM(string)})
     if ( string .ne. "(GRID" ) then
-       M4_FATAL_ERROR({"BAD SECTION IDENTIFIER: ReadConfigGrid/grid"})
+       M4_FATAL_ERROR({"BAD SECTION IDENTIFIER: ReadConfigGrid"})
     endif
 
     read(funit,*) PARTITIONS
@@ -97,7 +100,7 @@ contains
     ! TODO: add some checks on numerical values
 
     if ( string(1:1) .ne. ")" ) then
-       M4_FATAL_ERROR({"BAD SECTION TERMINATOR: ReadConfigGrid/grid"})
+       M4_FATAL_ERROR({"BAD SECTION TERMINATOR: ReadConfigGrid"})
     endif
 
     modconfigured = .true.
@@ -106,7 +109,9 @@ contains
 
     call InitializeGrid
 
-    M4_WRITE_DBG({". exit ReadConfigGrid/grid"})
+    fdtdreg = CreateBoxRegObj(IBEG, IEND, 1, JBEG, JEND, 1, KBEG, KEND, 1)
+
+    M4_WRITE_DBG({". exit ReadConfigGrid"})
 
   end subroutine ReadConfigGrid
 
@@ -114,14 +119,14 @@ contains
 
   subroutine InitializeGrid
     
-    M4_WRITE_DBG({". enter InitializeGrid/grid"})
+    M4_WRITE_DBG({". enter InitializeGrid"})
 
     if ( .not. modconfigured ) then
-       M4_FATAL_ERROR({"NOT CONFIGURED: InitializeGrid/grid"})
+       M4_FATAL_ERROR({"NOT CONFIGURED: InitializeGrid"})
     endif
 
     if ( PARTITIONS .ne. numproc .and. mpi_started .ne. 0 ) then
-       M4_FATAL_ERROR({"GRID PARTITIONS MISMATCH: InitializeGrid/grid"})
+       M4_FATAL_ERROR({"GRID PARTITIONS MISMATCH: InitializeGrid"})
     end if
     
     ! inner ranges are [IBEG,IEND] etc., outer ranges [IMIN,IMAX]
@@ -148,11 +153,11 @@ contains
     M4_WRITE_DBG({"init KSIG/KEIG: ", JSIG, JEIG})
     M4_WRITE_DBG({"init KSIG/KEIG: ", KSIG, KEIG})
 
-    GRIDSIZE = (IEND - IBEG+1)*(JEND - JBEG+1)*(KEND - KBEG+1)
+    GRIDSIZE = (IEND - IBEG + 1)*(JEND - JBEG + 1)*(KEND - KBEG + 1)
     M4_WRITE_DBG({"init GRIDSIZE: ", GRIDSIZE})
 
 
-    M4_WRITE_DBG({". exit InitializeGrid/grid"})
+    M4_WRITE_DBG({". exit InitializeGrid"})
     
   end subroutine InitializeGrid
 
@@ -161,7 +166,7 @@ contains
 
   subroutine FinalizeGrid
 
-    M4_WRITE_DBG({". FinalizeGrid/grid"})
+    M4_WRITE_DBG({". FinalizeGrid"})
 
   end subroutine FinalizeGrid
 

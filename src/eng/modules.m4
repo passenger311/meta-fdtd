@@ -12,6 +12,7 @@ define({M4_MODHEAD_DECL},{
   public :: StepE$1
   public :: StepH$1
   public :: Read$1Obj
+  public :: Echo$1Obj
 
   ! --- Public Data
 
@@ -27,7 +28,8 @@ define({M4_MODHEAD_DECL},{
 
   type T_$1
 
-     integer :: regidx             ! regobj index
+     character(len=STRLNG) :: type = "$1"
+     integer :: regidx, idx       		! regobj index
      $3	
 
   end type T_$1
@@ -52,6 +54,8 @@ define({M4_MODLOOP_EXPR},{
        
        $3
 
+       $1obj(m4_n) = $2
+
   end do
 })
 
@@ -65,35 +69,55 @@ define({M4_MODREAD_DECL},{
     type(T_$1) :: $3 
     type(T_REG) :: $4 ! reg
     type(T_OUT) :: $5 ! out
-    character(len=STRLNG) :: m4_string
+    character(len=STRLNG) :: m4_string, m4_linestr, m4_skiptill
 
-    num$1obj = num$1obj + 1
-    $3 = $1obj(num$1obj)
 })
 
 
-define({M4_MODREAD_END},{
+
+define({M4_MODREAD_EXPR},{
+
+ num$1obj = num$1obj + 1
+ $3 = $1obj(num$1obj)
+ $3%idx = num$1obj	
+
+ $6
+
 ! read regobj information
 
     read($2,*) m4_string
     if ( m4_string .eq. "(REG" ) then
        M4_WRITE_DBG({"got token (REG -> ReadRegObj"})
-       call ReadRegObj($4, $2)
+       call ReadRegObj($4, fdtdreg, $2)
        $3%regidx = reg%idx
     else
-       M4_FATAL_ERROR({"NO REGION DEFINED: Read$1Obj/$1"})
+       M4_FATAL_ERROR({"NO REGION DEFINED: Read$1Obj"})
     end if
 
 ! get terminator
 
+    m4_skiptill = ""
     do	
-      read($2,*) m4_string
+      read($2,*) m4_linestr
+      m4_string = TRIM(ADJUSTL(m4_linestr))
+
+      if ( m4_skiptill .ne. "" ) then 
+         M4_WRITE_DBG({"skipping line ",TRIM(m4_string)})
+         if ( m4_string .eq. m4_skiptill ) m4_skiptill = ""  
+         cycle              
+      endif
+
       select case (m4_string)
       case("(OUT") 
 	M4_WRITE_DBG({"got token (OUT -> ReadOutObj"})
        call ReadOutObj($5, $4, modname, $2)
        $3%regidx = $4%idx
       case default	
+	if ( m4_string(1:2) .eq. "(!" ) then
+           m4_skiptill = cat2(")",m4_string(3:))
+           M4_WRITE_DBG({"got token (! -> skiptill = ", TRIM(m4_skiptill)})  
+           cycle
+        end if
 
         M4_WRITE_DBG({"read terminator: ", TRIM(m4_string)})
         if ( m4_string(1:1) .ne. ")" ) then
@@ -101,5 +125,9 @@ define({M4_MODREAD_END},{
         end if
         exit
       end select
-    enddo	
+    enddo
+
+
+! write back
+    $1obj(num$1obj) = $3		
 })
