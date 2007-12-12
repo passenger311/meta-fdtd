@@ -158,12 +158,12 @@ contains
          reg = regobj(init%regidx)
          M4_IFELSE_DBG({call EchoRegObj(regobj(numregobj))})
          M4_REGLOOP_EXPR(reg,p,i,j,k,w,
-         Ex(i,j,k) = init%val(1)
-         Ey(i,j,k) = init%val(2)
-         Ez(i,j,k) = init%val(3)
-         Hx(i,j,k) = init%val(4)
-         Hy(i,j,k) = init%val(5)
-         Hz(i,j,k) = init%val(6)
+         Ex(i,j,k) = w*init%val(1)
+         Ey(i,j,k) = w*init%val(2)
+         Ez(i,j,k) = w*init%val(3)
+         Hx(i,j,k) = w*init%val(4)
+         Hy(i,j,k) = w*init%val(5)
+         Hz(i,j,k) = w*init%val(6)
          )
       endif
 
@@ -183,7 +183,7 @@ contains
       if ( init%type .eq. "EPSILON" ) then 
          reg = regobj(init%regidx)
          M4_REGLOOP_EXPR(reg,p,i,j,k,w,
-         EPSINV(i,j,k) = 1./init%val(1)
+         EPSINV(i,j,k) = 1./(w*init%val(1))
          )
       endif
 

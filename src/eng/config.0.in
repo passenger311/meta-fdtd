@@ -48,50 +48,67 @@
 (FDTD
 
   (INIT
-     1.e-7   0. 0.	0. 0. 0. ! e and h field values
+     1.  0.  0.	0. 0. 0. ! e and h field values
      (REG
-	(POINT
-           25 25 25 
-        )POINT
-     ) 
-  )	
+	(VPOINT
+           25 25 25 1.0
+           25 25 26 0.5
+           25 26 25 0.5
+           26 25 25 0.5
+           25 25 24 0.5
+           25 24 25 0.5
+           24 25 25 0.5
+        )VPOINT
+     )REG
+  )INIT	
 
   (EPSILON
-     1.0
-  )
+     5.0
+     (REG
+        (BOX
+           15 35 1 15 35 1 15 35 1
+	)BOX
+     )REG
+  )EPSILON
 
   (OUT
-    GPL F test1_diel
+    GPL F test1_xy_diel
     Di S
     0 0 1
     (REG
       (BOX
-	 1 100 1 1 100 1 1 100 1
+	 1 50 1 1 50 1 25 25 1
       )BOX
     )REG
   )OUT
 
   (OUT
-    GPL T test1_ex
+    GPL T test1_xy_ex
     Ex S
     0 1000 100
     (REG
       (BOX
-	 1 100 1 1 100 1 1 100 1
+	 1 50 1 1 50 1 25 25 1
       )BOX
     )REG
   )OUT	
 
   (OUT
-    GPL F test2_ey
+    GPL F test1_points_ey
     Ey S
     0 10000 10
     (REG
       (POINT
-	1 1 1
-   	5 5 5
-	10 10 10
-      )
+	5 5 5
+	5 5 45
+	5 45 5
+	45 5 5
+	45 45 5
+	45 5 45
+	5 45 45
+	45 45 45
+   	25 25 25
+      )POINT
     )REG
   )OUT	
 
@@ -116,7 +133,7 @@
 ! MATSOURCE: hard electromagnetic field source. 
 ! -----------------------------------------------------------------------
 
-(MATSOURCE
+(!MATSOURCE
 1.0     	! vacuum wavelength in units of [dx]
 1.0		! spectral width of vac.wave in units of [dx]
 1.0		! gaussian start value as fraction of peak

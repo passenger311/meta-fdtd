@@ -196,7 +196,7 @@ contains
     
     M4_WRITE_DBG({"write data ",TRIM(out%filename),", numnodes ", TRIM(i2str(out%numnodes))})
 
-    
+
     select case ( out%modl ) 
 
 ! call various output methods
@@ -204,14 +204,21 @@ contains
     case ("FDTD")
 
        if ( mode ) call OpenOutgplObj(out, ncyc, out%snap)
+       if ( out%numnodes .gt. 0 ) write(out%funit,*) 
        call WriteDataFdtdOutgplObj(out,ncyc,mode)
        if ( mode ) call CloseOutgplObj(out)
     
     M4_FOREACH_OUTGPL2({case ("},{")
        if ( mode ) call OpenOutgplObj(out, ncyc, out%snap)
+       if ( out%numnodes .gt. 0 ) write(out%funit,*) 
        call WriteData},{OutgplObj(out,ncyc,mode)
        if ( mode ) call CloseOutgplObj(out)
        })
+
+    case default
+       if ( mode ) call OpenOutgplObj(out, ncyc, out%snap)
+       write(out%funit,*) "OUTPUT MODULE NOT IMPLEMENTED" 
+       if ( mode ) call CloseOutgplObj(out)
 
     end select
 

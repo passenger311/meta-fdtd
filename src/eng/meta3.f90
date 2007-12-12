@@ -31,6 +31,7 @@ program meta3
   character(len=STRLNG), parameter :: modname = "META3"
   integer :: ncyc, error, l, ides, isrc
   character(len=12) :: str
+  character(len=1) :: busychar ="|"
 
   ! --- comms time measurement
 
@@ -134,7 +135,17 @@ M4_IFELSE_MPI({call MPI_BARRIER(MPI_COMM_WORLD,mpierr)})
      if (myrank .eq. 0 .and. mod(ncyc*10000/NCYCMAX,10) .eq. 0  ) then
 
         str = cat4(i2str(ncyc*100/NCYCMAX),".",i2str(mod(ncyc*1000/NCYCMAX,10)),"%")
-        write(6,*) ": running ... ", str
+        select case ( busychar )
+        case ( "|" ) 
+           busychar = "/"
+        case ( "/" ) 
+           busychar = "-"
+        case ( "-" ) 
+           busychar = "\"
+        case ( "\" ) 
+           busychar = "|"
+        end select
+        write(6,*) busychar," running ... ", str
 
      end if
 

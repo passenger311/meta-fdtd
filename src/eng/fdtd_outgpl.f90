@@ -129,6 +129,8 @@ contains
        if ( mode ) call WriteComp(out,Hz)
     case('Di')         
        if ( mode ) call WriteEps(out)
+    case default
+       write(out%funit,*) "OUTPUT FUNCTION NOT IMPLEMENTED" 
     end select
     
   contains
