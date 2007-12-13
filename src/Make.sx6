@@ -1,24 +1,25 @@
 #-*- Makefile -*-======================================================
 #
-# Make.path
+# Make.default
 #
+# for nec sx-6 compiler
+
 # ---------------------------------------------------------------------
 
-M4_ARCH=PATH
-
+M4_ARCH=SX6
 
 # --- compiler set
 
 ifeq ($(MPI),)
 
-F90=pathf90
-CXX=pathCC
-CC=pathcc
+F90=f90
+CXX=c++
+CC=cc
 
 else
-
+ 
 F90=mpif90 
-CXX=mpicxx
+CXX=mpic++
 CC=mpicc
 
 endif
@@ -27,7 +28,7 @@ endif
 
 ifneq ($(OMP),)
 
-OMPFLAGS=-mp
+OMPFLAGS=-P openmp -pi
 
 endif 
 
@@ -35,8 +36,8 @@ endif
 
 ifneq ($(DBG),)
 
-DBGFLAGS=-g -O0 -fmath-errno
-F90DBGFLAGS=-ffortran-bounds-check 
+DBGFLAGS= -g
+F90DBGFLAGS=-C debug -fbounds-check -init "stack=nan heap=nan"
 
 endif 
 
@@ -44,23 +45,23 @@ endif
 
 ifeq ($(DBG),)
 
-OPTFLAGS= -Ofast -ipa
-NOOPTFLAGS= -ipa
+OPTFLAGS=-C hopt
+NOOPTFLAGS=-C vsafe
 
 endif
 
 # --- flags
 
+RELFLAGS= -Wf,'-Nesc'
 FLAGS=$(DBGFLAGS) $(RELFLAGS) $(OMPFLAGS)
 
 F90FLAGS+=$(NOOPTFLAGS) $(FLAGS) $(F90DBGFLAGS)
-F90FLAGS_OPT=$(OPTFLAGS) $(FLAGS) $(F90DBGFLAGS)
-CXXFLAGS+=$(NOOPTFLAGS) $(FLAGS)
+F90FLAGS_OPT=$(OPTFLAGS) $(FLAGS) $(F90DBGFLAGS) 
+CXXFLAGS+=$(NOOPTFLAGS) $(FLAGS) 
 CXXFLAGS_OPT=$(OPTFLAGS) $(FLAGS)
 CCFLAGS+=$(NOOPTFLAGS) $(FLAGS)
 CCFLAGS_OPT=$(OPTFLAGS) $(FLAGS)
-LDFLAGS+=$(NOOPTFLAGS) $(FLAGS)
-
+LDFLAGS+=$(FLAGS)
 
 
 # ---------------------------------------------------------------------
@@ -70,3 +71,4 @@ LDFLAGS+=$(NOOPTFLAGS) $(FLAGS)
 # Modified: 4/12/2007
 #
 #======================================================================
+
