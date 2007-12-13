@@ -5,6 +5,9 @@
 
 # ---------------------------------------------------------------------
 
+ifneq ($(M4_ARCH),)
+M4DEFINE+= -DM4_ARCH=$(M4_ARCH)
+endif
 
 ifneq ($(DBG),)
 ENG_DBG=-dbg

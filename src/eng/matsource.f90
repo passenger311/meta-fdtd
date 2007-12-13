@@ -141,8 +141,8 @@ contains
           es =  exp ( - mat%gamma**2 * ( 1.0 * ncyc - mat%npeak )**2 )
        endif
 
-       
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+
           Ex(i,j,k) = Ex(i,j,k) + mat%vec(1) * es  * mat%ampl * cos(mat%omega0*ncyc) * DT
           Ey(i,j,k) = Ey(i,j,k) + mat%vec(2) * es  * mat%ampl * cos(mat%omega0*ncyc) * DT
           Ez(i,j,k) = Ez(i,j,k) + mat%vec(3) * es  * mat%ampl * cos(mat%omega0*ncyc) * DT

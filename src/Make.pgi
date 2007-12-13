@@ -1,21 +1,19 @@
 #-*- Makefile -*-======================================================
 #
-# Make.intel
-#
+# Make.pgi
 #
 # ---------------------------------------------------------------------
 
-M4_ARCH=INTEL 
+M4_ARCH=PGI
 
 
 # --- compiler set
 
-
 ifeq ($(MPI),)
 
-F90 = ifort
-CXX= icpp
-CC= icc
+F90 = pgf90
+CXX= pgCC
+CC= pgcc
 
 else
 
@@ -45,7 +43,7 @@ endif
 
 ifeq ($(DBG),)
 
-OPTFLAGS= -fpp -O3 -xW
+OPTFLAGS= -O3
 
 endif
 

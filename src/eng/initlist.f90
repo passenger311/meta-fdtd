@@ -95,7 +95,6 @@ contains
     integer :: num
     character(len=*) :: type
     integer :: funit
-    type(T_INIT), external :: CreateInitObj
     type(T_REG) :: reg
     character(len=STRLNG) :: string
     integer :: i
@@ -137,7 +136,7 @@ contains
 
 !----------------------------------------------------------------------
 
-  type(T_INIT) function CreateInitObj
+  type(T_INIT) function CreateInitObj()
 
     numinitobj = numinitobj + 1
     initobj(numinitobj)%idx = numinitobj

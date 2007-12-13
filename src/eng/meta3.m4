@@ -21,6 +21,7 @@ define({M4_IFELSE_OMP}, {ifdef({M4_OMP}, {$1}, {$2})})
 define({M4_IFELSE_CF}, {ifdef({M4_CF}, {$1}, {$2})})
 define({M4_IFELSE_TE}, {ifdef({M4_TE}, {$1}, {$2})})
 define({M4_IFELSE_NG}, {ifdef({M4_NG}, {$1}, {$2})})
+define({M4_IFELSE_ARCH},{ifelse("M4_ARCH","$1",$2,$3)}) 
 
 define({M4_ISMPELOG}, {ifdef({M4_MPI}, {ifdef({M4_DBG},{.true.},{})}, {.false.})})
 define({M4_IFELSE_MPELOG}, {ifdef({M4_MPI}, {ifdef({M4_DBG},{$1},{})}, {$2})})

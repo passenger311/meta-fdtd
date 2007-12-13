@@ -102,9 +102,9 @@ contains
     integer :: funit
     type(T_REG) :: regdef ! default region
     type(T_OUT) :: out
-    type(T_OUT), external :: CreateOutObj
-    
-    character (len=STRLNG) :: fmt, modl, fn, mode, filename, string
+    character(len=*) :: modl
+
+    character (len=STRLNG) :: fmt, fn, mode, filename, string
     logical :: snap
     integer :: ns, ne, dn
     type(T_REG) :: reg
@@ -147,7 +147,7 @@ contains
 
 !----------------------------------------------------------------------
 
-  type(T_OUT) function CreateOutObj
+  type(T_OUT) function CreateOutObj()
 
     numoutobj = numoutobj + 1
     outobj(numoutobj)%idx = numoutobj

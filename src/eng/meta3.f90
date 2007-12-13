@@ -31,7 +31,7 @@ program meta3
   character(len=STRLNG), parameter :: modname = "META3"
   integer :: ncyc, error, l, ides, isrc
   character(len=12) :: str
-  character(len=1) :: busychar ="|"
+  character(len=1) :: busychar ='|'
 
   ! --- comms time measurement
 
@@ -136,14 +136,19 @@ M4_IFELSE_MPI({call MPI_BARRIER(MPI_COMM_WORLD,mpierr)})
 
         str = cat4(i2str(ncyc*100/NCYCMAX),".",i2str(mod(ncyc*1000/NCYCMAX,10)),"%")
         select case ( busychar )
-        case ( "|" ) 
-           busychar = "/"
-        case ( "/" ) 
-           busychar = "-"
-        case ( "-" ) 
-           busychar = "\"
-        case ( "\" ) 
-           busychar = "|"
+        case ( '|' ) 
+           busychar = '/'
+        case ( '/' ) 
+           busychar = '-'
+        case ( '-' ) 
+M4_IFELSE_ARCH({PGI}, {
+           busychar = '\\'
+        case ( '\\' ) 
+}, {
+           busychar = '\'
+        case ( '\' ) 
+})
+           busychar = '|'
         end select
         write(6,*) busychar," running ... ", str
 
@@ -157,6 +162,14 @@ M4_IFELSE_MPELOG({call MPE_LOG_EVENT(7,"StepH",mpierr)})
 
 M4_IFELSE_MPELOG({call MPE_LOG_EVENT(8,"StepH",mpierr)})
 
+! -------------------------- StepHMat ---------------------------------
+
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(15,"StepHMat",mpierr)})
+
+     if ( ncyc .gt. 0 ) call StepHMat(ncyc)
+
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(16,"StepHMat",mpierr)})
+
 ! ------------------------------ PMLH ---------------------------------
 
 M4_IFELSE_MPELOG({call MPE_LOG_EVENT(9,"StepHPml",mpierr)})
@@ -165,13 +178,6 @@ M4_IFELSE_MPELOG({call MPE_LOG_EVENT(9,"StepHPml",mpierr)})
 
 M4_IFELSE_MPELOG({call MPE_LOG_EVENT(10,"StepHPml",mpierr)})
 
-! -------------------------- StepHMat ---------------------------------
-
-M4_IFELSE_MPELOG({call MPE_LOG_EVENT(15,"StepHMat",mpierr)})
-
-     if ( ncyc .gt. 0 ) call StepHMat(ncyc)
-
-M4_IFELSE_MPELOG({call MPE_LOG_EVENT(16,"StepHMat",mpierr)})
 
 ! -------------------------- COMMS H -------------------------------
 
@@ -274,6 +280,14 @@ M4_IFELSE_MPELOG({call MPE_LOG_EVENT(11,"StepE",mpierr)})
 
 M4_IFELSE_MPELOG({call MPE_LOG_EVENT(12,"StepE",mpierr)})
 
+! -------------------------- StepEMat ---------------------------------
+
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(17,"StepEMat",mpierr)})
+
+      if ( ncyc .gt. 0 ) call StepEMat(ncyc)
+
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(18,"StepEMat",mpierr)})
+
 ! ---------------------------- PMLE -----------------------------------
 
 M4_IFELSE_MPELOG({call MPE_LOG_EVENT(13,"StepEPml",mpierr)})
@@ -282,14 +296,6 @@ M4_IFELSE_MPELOG({call MPE_LOG_EVENT(13,"StepEPml",mpierr)})
       if ( ncyc .gt. 0 ) call SetPec()
 
 M4_IFELSE_MPELOG({call MPE_LOG_EVENT(14,"StepEPml",mpierr)})
-
-! -------------------------- StepEMat ---------------------------------
-
-M4_IFELSE_MPELOG({call MPE_LOG_EVENT(17,"StepEMat",mpierr)})
-
-      if ( ncyc .gt. 0 ) call StepEMat(ncyc)
-
-M4_IFELSE_MPELOG({call MPE_LOG_EVENT(18,"StepEMat",mpierr)})
 
 ! -------------------------- COMMS E ----------------------------------
 
