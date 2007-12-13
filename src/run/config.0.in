@@ -32,7 +32,7 @@
 
 (GRID
   1             	! partitions
-  1000          	! ncyc
+  500	          	! ncyc
   0.576             	! dt
   0 100	         	! i range
   0 100        		! j range
@@ -91,9 +91,9 @@
     )REG
   )OUT
 
-  (!OUT
+  (OUT
     GPL T test1_xy_ex
-    En N
+    Ex N
     0 1000 100
     (REG
       (BOX
@@ -103,9 +103,9 @@
   )OUT	
 
   (OUT
-    GPL F test1_points_ex
-    Ex S
-    0 1000 100
+    GPL F test1_points_en
+    En S
+    0 500 10
     (REG
       (POINT
 	5 5 5
