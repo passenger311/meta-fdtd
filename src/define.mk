@@ -19,6 +19,13 @@ ENG_MPI=-mpi
 M4DEFINE+= -DM4_MPI=1
 endif
 
+ifneq ($(MPELOG),)
+ifneq ($(MPI),)
+ENG_MPELOG=-mpelog
+M4DEFINE+= -DM4_MPELOG=1
+endif
+endif
+
 ifneq ($(OMP),)
 ENG_OMP=-omp
 M4DEFINE+= -DM4_OMP=1
@@ -39,7 +46,7 @@ ENG_TE=-te
 M4DEFINE+=-DM4_TE=1
 endif
 
-ENGINE=$(ENG_CF)$(ENG_NG)$(ENG_TE)$(ENG_MPI)$(ENG_OMP)$(ENG_DBG)
+ENGINE=$(ENG_CF)$(ENG_NG)$(ENG_TE)$(ENG_MPI)$(ENG_MPELOG)$(ENG_OMP)$(ENG_DBG)
 BUILDPFX=meta3-build
 BUILDDIR=$(BUILDPFX)$(ENGINE)
 
