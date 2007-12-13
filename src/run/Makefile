@@ -34,27 +34,12 @@ install:
 	@ [ -d ../$(BUILDDIR) ] || mkdir ../$(BUILDDIR)
 	@ cp $(INSTALLFILES) ../$(BUILDDIR)
 
-%.o : %.f90
-	@echo [F90] $*
-	@$(M4) $< >$*_m4.f90 
-	@$(F90) $(F90FLAGS) $(INCLUDE) -c $*_m4.f90 -o $*.o
-
-%.o : %.F90
-	@echo [F90] $*
-	@$(M4) $< >$*_m4.F90 
-	@$(F90) $(F90FLAGS) $(INCLUDE) -c $*_m4.F90 -o $*.o
-
-%.o : %.c
-	@echo [CC ] $*
-	@$(CC) $(CCFLAGS) $(INCLUDE) -c $<
-
 .PHONY: clean proper
 
 clean:
-	 rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod *_m4.f90 *_m4.F90
 
 proper: clean
-	 rm -f $(EXE) $(PREEXE) *.o *.in *.out *~
+	 rm -f *~
 
 
 # ---------------------------------------------------------------------
