@@ -13,15 +13,15 @@ M4_ARCH=INTEL
 
 ifeq ($(MPI),)
 
-F90 = ifort
-CXX= icpp
-CC= icc
+F90=ifort
+CXX=icpp
+CC=icc
 
 else
 
-F90 = mpif90 
-CXX= mpicxx
-CC= mpicc
+F90=mpif90 
+CXX=mpicxx
+CC=mpicc
 
 endif
 
@@ -37,7 +37,8 @@ endif
 
 ifneq ($(DBG),)
 
-DBGFLAGS= -g -O0
+DBGFLAGS=-g -O0 -fmath-errno
+F90DBGFLAGS=-check bounds
 
 endif 
 
@@ -45,21 +46,21 @@ endif
 
 ifeq ($(DBG),)
 
-OPTFLAGS= -fpp -O3 -xW
+OPTFLAGS=-fpp -O3 -xW
 
 endif
 
 # --- flags
 
-FLAGS=  $(DBGFLAGS) $(RELFLAGS) $(OMPFLAGS)
+FLAGS=$(DBGFLAGS) $(RELFLAGS) $(OMPFLAGS)
 
-F90FLAGS+= $(FLAGS)
-F90FLAGS_OPT= $(OPTFLAGS) $(FLAGS) 
-CXXFLAGS+= $(FLAGS)
-CXXFLAGS_OPT= $(OPTFLAGS) $(FLAGS)
-CCFLAGS+= $(FLAGS)
+F90FLAGS+=$(FLAGS) $(F90DBGFLAGS)
+F90FLAGS_OPT=$(OPTFLAGS) $(FLAGS) $(F90DBGFLAGS)
+CXXFLAGS+=$(FLAGS)
+CXXFLAGS_OPT=$(OPTFLAGS) $(FLAGS)
+CCFLAGS+=$(FLAGS)
 CCFLAGS_OPT= $(OPTFLAGS) $(FLAGS)
-LDFLAGS+= $(FLAGS)
+LDFLAGS+=$(FLAGS)
 
 
 

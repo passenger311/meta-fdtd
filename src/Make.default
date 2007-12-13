@@ -12,15 +12,15 @@ M4_ARCH=GCC
 
 ifeq ($(MPI),)
 
-F90 = gfortran
-CXX= g++
-CC= gcc
+F90=gfortran
+CXX=g++
+CC=gcc
 
 else
  
-F90 = mpif90 
-CXX= mpicxx
-CC= mpicc
+F90=mpif90 
+CXX=mpicxx
+CC=mpicc
 
 endif
 
@@ -28,7 +28,7 @@ endif
 
 ifneq ($(OMP),)
 
-OMPFLAGS= -openmp
+OMPFLAGS=-fopenmp
 
 endif 
 
@@ -36,7 +36,8 @@ endif
 
 ifneq ($(DBG),)
 
-DBGFLAGS= -g -O0
+DBGFLAGS=-g -O0 -ffpe-trap="overflow,invalid,zero"
+F90DBGFLAGS= -fbounds-check 
 
 endif 
 
@@ -48,21 +49,21 @@ RELFLAGS=
 
 ifeq ($(DBG),)
 
-OPTFLAGS= -O3
+OPTFLAGS=-O3
 
 endif
 
 # --- flags
 
-FLAGS=  $(DBGFLAGS) $(RELFLAGS) $(OMPFLAGS)
+FLAGS=$(DBGFLAGS) $(RELFLAGS) $(OMPFLAGS)
 
-F90FLAGS+= $(FLAGS)
-F90FLAGS_OPT= $(OPTFLAGS) $(FLAGS) 
-CXXFLAGS+= $(FLAGS)
-CXXFLAGS_OPT= $(OPTFLAGS) $(FLAGS)
-CCFLAGS+= $(FLAGS)
-CCFLAGS_OPT= $(OPTFLAGS) $(FLAGS)
-LDFLAGS+= $(FLAGS)
+F90FLAGS+=$(FLAGS) $(F90DBGFLAGS)
+F90FLAGS_OPT=$(OPTFLAGS) $(FLAGS) $(F90DBGFLAGS) 
+CXXFLAGS+=$(FLAGS)
+CXXFLAGS_OPT=$(OPTFLAGS) $(FLAGS)
+CCFLAGS+=$(FLAGS)
+CCFLAGS_OPT=$(OPTFLAGS) $(FLAGS)
+LDFLAGS+=$(FLAGS)
 
 
 # ---------------------------------------------------------------------

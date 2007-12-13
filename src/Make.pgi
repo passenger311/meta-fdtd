@@ -23,11 +23,12 @@ CC= mpicc
 
 endif
 
+
 # --- openmp flags
 
 ifneq ($(OMP),)
 
-OMPFLAGS= -openmp
+OMPFLAGS= -mp
 
 endif 
 
@@ -35,7 +36,8 @@ endif
 
 ifneq ($(DBG),)
 
-DBGFLAGS= -g -O0
+DBGFLAGS=-g -O0 -Ktrap=divz -Ktrap=fp -Ktrap=ovf
+F90DBGFLAGS=-C 
 
 endif 
 
@@ -49,15 +51,15 @@ endif
 
 # --- flags
 
-FLAGS=  $(DBGFLAGS) $(RELFLAGS) $(OMPFLAGS)
+FLAGS=$(DBGFLAGS) $(RELFLAGS) $(OMPFLAGS)
 
-F90FLAGS+= $(FLAGS)
-F90FLAGS_OPT= $(OPTFLAGS) $(FLAGS) 
-CXXFLAGS+= $(FLAGS)
+F90FLAGS+=$(FLAGS) $(F90DBGFLAGS) -Mbackslash
+F90FLAGS_OPT=$(OPTFLAGS) $(FLAGS) $(F90DBGFLAGS) -Mbackslash
+CXXFLAGS+=$(FLAGS)
 CXXFLAGS_OPT= $(OPTFLAGS) $(FLAGS)
-CCFLAGS+= $(FLAGS)
+CCFLAGS+=$(FLAGS)
 CCFLAGS_OPT= $(OPTFLAGS) $(FLAGS)
-LDFLAGS+= $(FLAGS)
+LDFLAGS+=$(FLAGS)
 
 
 

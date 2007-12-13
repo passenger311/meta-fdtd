@@ -68,17 +68,17 @@ install:
 $(BOBJ) : %.o : %.f90
 	@echo [F90] $*
 	@$(M4) $< >$*_m4.f90 
-	@$(F90) $(F90FLAGS) $(INCLUDE) -c $*_m4.f90 -o $*.o
+	$(strip $(F90) $(F90FLAGS) -c $*_m4.f90 -o $*.o)
 
 $(FOBJ) : %.o : %.f90 $(BOBJ)
 	@echo [F90] $*
 	@$(M4) $< >$*_m4.f90 
-	@$(F90) $(F90FLAGS_OPT) $(INCLUDE) -c $*_m4.f90 -o $*.o
+	$(strip $(F90) $(F90FLAGS_OPT) -c $*_m4.f90 -o $*.o)
 
 
 $(EXE) : $(FOBJ) $(BOBJ)
 	@echo [LD] $@
-	@$(F90) $(LDFLAGS) $(FOBJ) $(BOBJ) -o $(EXE)
+	$(strip @$(F90) $(LDFLAGS) $(FOBJ) $(BOBJ) -o $(EXE))
 
 clean:
 	 rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod *_m4.f90 *_m4.F90

@@ -11,15 +11,15 @@ M4_ARCH=PATH
 
 ifeq ($(MPI),)
 
-F90 = pathf90
-CXX= pathCC
-CC= pathcc
+F90=pathf90
+CXX=pathCC
+CC=pathcc
 
 else
 
-F90 = mpif90 
-CXX= mpicxx
-CC= mpicc
+F90=mpif90 
+CXX=mpicxx
+CC=mpicc
 
 endif
 
@@ -27,7 +27,7 @@ endif
 
 ifneq ($(OMP),)
 
-OMPFLAGS= -openmp
+OMPFLAGS=-mp
 
 endif 
 
@@ -35,7 +35,8 @@ endif
 
 ifneq ($(DBG),)
 
-DBGFLAGS= -g -O0
+DBGFLAGS=-g -O0 -fmath-errno
+F90DBGFLAGS=-ffortran-bounds-check 
 
 endif 
 
@@ -43,21 +44,22 @@ endif
 
 ifeq ($(DBG),)
 
-OPTFLAGS= -O3
+NOOPTFLAGS= -ipa
+OPTFLAGS= -Ofast
 
 endif
 
 # --- flags
 
-FLAGS=  $(DBGFLAGS) $(RELFLAGS) $(OMPFLAGS)
+FLAGS=$(DBGFLAGS) $(RELFLAGS) $(OMPFLAGS)
 
-F90FLAGS+= $(FLAGS)
-F90FLAGS_OPT= $(OPTFLAGS) $(FLAGS) 
-CXXFLAGS+= $(FLAGS)
-CXXFLAGS_OPT= $(OPTFLAGS) $(FLAGS)
-CCFLAGS+= $(FLAGS)
-CCFLAGS_OPT= $(OPTFLAGS) $(FLAGS)
-LDFLAGS+= $(FLAGS)
+F90FLAGS+=$(NOOPTFLAGS) $(FLAGS) $(F90DBGFLAGS)
+F90FLAGS_OPT=$(OPTFLAGS) $(FLAGS) $(F90DBGFLAGS)
+CXXFLAGS+=$(NOOPTFLAGS) $(FLAGS)
+CXXFLAGS_OPT=$(OPTFLAGS) $(FLAGS)
+CCFLAGS+=$(NOOPTFLAGS) $(FLAGS)
+CCFLAGS_OPT=$(OPTFLAGS) $(FLAGS)
+LDFLAGS+=$(NOOPTFLAGS) $(FLAGS)
 
 
 
