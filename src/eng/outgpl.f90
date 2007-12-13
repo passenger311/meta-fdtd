@@ -202,21 +202,27 @@ contains
 
     case ("FDTD")
 
-       if ( mode ) call OpenOutgplObj(out, ncyc, out%snap)
-       if ( out%numnodes .gt. 0 ) write(out%funit,*) 
+       if ( mode ) then 
+          call OpenOutgplObj(out, ncyc, out%snap)
+          if ( out%numnodes .gt. 0 ) write(out%funit,*)
+       end if
        call WriteDataFdtdOutgplObj(out,mode)
        if ( mode ) call CloseOutgplObj(out)
     
     M4_FOREACH_OUTGPL2({case ("},{")
-       if ( mode ) call OpenOutgplObj(out, ncyc, out%snap)
-       if ( out%numnodes .gt. 0 ) write(out%funit,*) 
+       if ( mode ) then 
+          call OpenOutgplObj(out, ncyc, out%snap)
+          if ( out%numnodes .gt. 0 ) write(out%funit,*) 
+       endif
        call WriteData},{OutgplObj(out,mode)
        if ( mode ) call CloseOutgplObj(out)
        })
 
     case default
-       if ( mode ) call OpenOutgplObj(out, ncyc, out%snap)
-       write(out%funit,*) "OUTPUT MODULE NOT IMPLEMENTED" 
+       if ( mode ) then 
+          call OpenOutgplObj(out, ncyc, out%snap)
+          write(out%funit,*) "OUTPUT MODULE NOT IMPLEMENTED" 
+       end if
        if ( mode ) call CloseOutgplObj(out)
 
     end select

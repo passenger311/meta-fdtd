@@ -48,6 +48,7 @@ contains
     write(6,*) "* . BUILD FLAGS : ",TRIM(BUILD_FLAGS) 
     write(6,*) "* . MAT MODS    : M4_MATLIST"
     write(6,*) "* . DIAG MODS   : M4_DIAGLIST"
+    write(6,*) "* . OUTGPL MODS : M4_OUTGPLLIST"
 
   end subroutine DisplayVersion
 
