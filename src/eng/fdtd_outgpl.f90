@@ -153,7 +153,7 @@ contains
     subroutine WriteComp(out,Comp)
 
       type (T_OUT) :: out
-      M4_FTYPE, dimension(IMIN:KMAX,JMIN:KMAX,KMIN:KMAX) :: Comp
+      M4_FTYPE, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: Comp
       M4_REGLOOP_DECL(reg,p,i,j,k,w)  
 
       M4_WRITE_DBG({"WriteComp!"})
