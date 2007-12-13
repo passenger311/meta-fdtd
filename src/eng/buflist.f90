@@ -103,16 +103,16 @@ contains
   type(T_BUF) function CreateBufObj(reg)
 
     type(T_REG) :: reg
-    type(T_BUF) :: buf
     integer :: err
 
-    buf%regidx = reg%idx
-    buf%size = reg%numnodes
     numbufobj = numbufobj + 1
-    buf = bufobj(numbufobj)
-    allocate(buf%data(buf%size), stat=err)
+    bufobj(numbufobj)%idx = numbufobj
+    bufobj(numbufobj)%regidx = reg%idx
+    bufobj(numbufobj)%size = reg%numnodes
+
+    allocate(bufobj(numbufobj)%data(reg%numnodes), stat=err)
     M4_ALLOC_ERROR(err, {"CreatBufObj"})
-    CreateBufObj = buf
+    CreateBufObj = bufobj(numbufobj)
     
   end function CreateBufObj
 

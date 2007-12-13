@@ -55,6 +55,9 @@ contains
        buf = CreateBufObj(regobj(out%regidx))
        out%bufidx = buf%idx
 
+       M4_WRITE_DBG({"created data buffer # ",&
+            TRIM(i2str(out%bufidx))," for out # ",TRIM(i2str(out%idx))})
+
     endif
 
   end subroutine InitializeFdtdOutgplObj
@@ -73,6 +76,9 @@ contains
 
        call DestroyBufObj(bufobj(out%bufidx))
        
+       M4_WRITE_DBG({"destroyed data buffer # ",&
+            TRIM(i2str(out%bufidx))," for out # ",TRIM(i2str(out%idx))})
+
     endif
 
   end subroutine FinalizeFdtdOutgplObj
@@ -193,10 +199,14 @@ contains
       M4_FTYPE :: sum = 0.0
       type(T_BUF) :: buf
       M4_REGLOOP_DECL(reg,p,i,j,k,w)  
-      reg = regobj(out%regidx)
 
+      reg = regobj(out%regidx)
       buf = bufobj(out%bufidx)
   
+      M4_WRITE_DBG({"write data buffer # ",&
+           TRIM(i2str(out%bufidx)),&
+           " for out # ",TRIM(i2str(out%idx))})
+
       if ( out%mode .ne. 'S' ) then ! spatial integration
          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
          sum = sum + buf%data(p)
@@ -223,6 +233,9 @@ contains
     type(T_BUF) :: buf
     M4_REGLOOP_DECL(reg,p,i,j,k,w)  
     
+    M4_WRITE_DBG({"load data buffer # ",&
+         TRIM(i2str(out%bufidx))," for out # ",TRIM(i2str(out%idx))})
+
     reg = regobj(out%regidx)
     buf = bufobj(out%bufidx)
 
@@ -248,6 +261,9 @@ contains
     type(T_BUF) :: buf
     M4_REGLOOP_DECL(reg,p,i,j,k,w)  
     
+    M4_WRITE_DBG({"load data buffer # ",&
+         TRIM(i2str(out%bufidx))," for out # ",TRIM(i2str(out%idx))})
+
     reg = regobj(out%regidx)
     buf = bufobj(out%bufidx)
     
@@ -273,6 +289,9 @@ contains
     type(T_BUF) :: buf
     M4_REGLOOP_DECL(reg,p,i,j,k,w)  
     
+    M4_WRITE_DBG({"load data buffer # ",TRIM(i2str(out%bufidx)),&
+         " for out # ",TRIM(i2str(out%idx))})
+
     reg = regobj(out%regidx)
     buf = bufobj(out%bufidx)
     
@@ -298,9 +317,13 @@ contains
     type(T_BUF) :: buf
     M4_REGLOOP_DECL(reg,p,i,j,k,w)  
     
+    M4_WRITE_DBG({"load data buffer # ",&
+         TRIM(i2str(out%bufidx))," for out # ",TRIM(i2str(out%idx))})
+
     reg = regobj(out%regidx)
     buf = bufobj(out%bufidx)
     
+
     M4_REGLOOP_EXPR(reg,p,i,j,k,w, {
     eps = 1.0/epsinv(i,j,k)
     EEx = 0.5*eps*(Ex(i,j,k)**2+Ex(i-1,j,k)**2)
