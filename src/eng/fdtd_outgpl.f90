@@ -69,17 +69,6 @@ contains
 
     type (T_OUT) :: out
 
-    if ( out%fn .eq. 'Px' .or. out%fn .eq. 'Py' .or. out%fn .eq. 'Pz' .or. &
-         out%fn .eq. 'En' ) then
-
-       ! destroy additional buffer for Load functions here
-
-       call DestroyBufObj(bufobj(out%bufidx))
-       
-       M4_WRITE_DBG({"destroyed data buffer # ",&
-            TRIM(i2str(out%bufidx))," for out # ",TRIM(i2str(out%idx))})
-
-    endif
 
   end subroutine FinalizeFdtdOutgplObj
 
@@ -207,11 +196,11 @@ contains
            TRIM(i2str(out%bufidx)),&
            " for out # ",TRIM(i2str(out%idx))})
 
-      if ( out%mode .ne. 'S' ) then ! spatial integration
+      if ( out%mode .eq. 'S' ) then ! spatial integration
          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
          sum = sum + buf%data(p)
          })
-         write(out%funit,*) sum
+         write(out%funit,"(E15.6E3)") sum
       else
          M4_REGLOOP_WRITE(reg,p,i,j,k,w,
          out%funit, E15.6E3, {buf%data(p)}

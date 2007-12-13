@@ -103,9 +103,9 @@
   )OUT	
 
   (OUT
-    GPL F test1_points_ex
-    En N
-    0 5000 100
+    GPL F test1_points_en
+    En S
+    0 500 10
     (REG
       (POINT
 	5 5 5
