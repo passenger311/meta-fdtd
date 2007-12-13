@@ -34,9 +34,9 @@
   1             	! partitions
   1000          	! ncyc
   0.576             	! dt
-  0 50	         	! i range
-  0 50 	       		! j range
-  0 50        		! k range
+  0 100	         	! i range
+  0 100        		! j range
+  0 20        		! k range
 )GRID
 
 
@@ -47,20 +47,35 @@
 
 (FDTD
 
-  (INIT
-     1.  0.  0.	0. 0. 0. ! e and h field values
+  (!INIT
+     8.  -4.  -4. 0. 0. 0. ! e and h field values
      (REG
 	(VPOINT
            25 25 25 1.0
         )VPOINT
      )REG
   )INIT	
+ 
+ (!INIT
+    0.  1.  0.  0.  0.  0.
+    (REG
+       (VPOINT
+          25 25 25 -4.0
+          25 25 26  0.0
+          25 26 25  0.0
+          26 25 25  0.0
+          25 25 24  0.0
+          25 24 25  0.0
+          24 25 25  0.0
+       )VPOINT
+    )REG
+ )INIT
 
-  (EPSILON
-     5.0
+ (EPSILON
+     4.0
      (REG
         (BOX
-           15 35 1 15 35 1 15 35 1
+           85 100 1 0 100 1 0 20 1
 	)BOX
      )REG
   )EPSILON
@@ -71,26 +86,26 @@
     0 0 1
     (REG
       (BOX
-	 1 50 1 1 50 1 25 25 1
+	 1 100 1 1 100 1 10 10 1
       )BOX
     )REG
   )OUT
 
-  (OUT
+  (!OUT
     GPL T test1_xy_ex
-    Ex S
-    0 100 10
+    En N
+    0 1000 100
     (REG
       (BOX
-	 1 50 1 1 50 1 25 25 1
+	 1 100 1 1 100 1 10 10 1
       )BOX
     )REG
   )OUT	
 
   (OUT
-    GPL F test1_points_ey
-    Ey S
-    0 10000 10
+    GPL F test1_points_ex
+    Ex S
+    0 1000 100
     (REG
       (POINT
 	5 5 5
@@ -127,20 +142,19 @@
 ! MATSOURCE: hard electromagnetic field source. 
 ! -----------------------------------------------------------------------
 
-(!MATSOURCE
-1.0     	! vacuum wavelength in units of [dx]
+(MATSOURCE
+60.0     	! vacuum wavelength in units of [dx]
 1.0		! spectral width of vac.wave in units of [dx]
-1.0		! gaussian start value as fraction of peak
+0.3		! gaussian start value as fraction of peak
 1.0		! amplitude = 1
-100		! start time  
-.F.		! T: go over to cw after peak
+0		! start time  
+.T.		! T: go over to cw after peak
 .T.		! T: electric field source F: magnetic
-1.0 1.0 1.0 	! vector components of source
+0.0 0.0 1.0 	! vector components of source
 (REG
-  (VPOINT
-     5 5 5 0.3
-     9 9 9 1.2
-  )VPOINT
+  (POINT
+     15 50 10
+  )POINT
 )REG
 (!OUT
 	
