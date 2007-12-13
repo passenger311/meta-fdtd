@@ -20,7 +20,8 @@ include ../define.mk
 
 INSTALLFILES=\
 qscript.mpi\
-mpiwrap.sh
+mpiwrap.sh\
+config.0.in
 
 .PHONY: clean proper default install
 
