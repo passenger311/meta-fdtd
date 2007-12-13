@@ -124,8 +124,6 @@ contains
 
   subroutine InitializeRegList
 
-    integer :: err
-
     numregobj = 0
 
   end subroutine InitializeRegList
@@ -150,9 +148,8 @@ contains
 
     integer :: funit
     type(T_REG) :: reg, dom
-    type(T_REG), external :: CreateRegObj
 
-    integer :: ios, err
+    integer :: ios
     integer :: i,j,k, i0, i1, di, j0, j1, dj, k0, k1, dk
     real(kind=8) :: val
     character(len=STRLNG) :: string
@@ -463,15 +460,6 @@ contains
   end subroutine CreateRegObjEnd
 
 
-! ----------------------------------------------------------------------
-
-  subroutine FilterRegObj(reg, dom)
-
-    type(T_REG) :: reg, dom
-
-
-  end subroutine FilterRegObj
-
 !----------------------------------------------------------------------
 
 
@@ -480,7 +468,7 @@ contains
     type(T_REG) :: reg
     integer :: i0, i1, di, j0, j1, dj, k0, k1, dk
     real*8 :: val
-    integer :: i,j,k,p
+    integer :: i,j,k
 
     M4_WRITE_DBG({"set box: ",i0, i1, di, j0, j1, dj, k0, k1, dk})
 

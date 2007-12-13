@@ -71,11 +71,8 @@ contains
    character(len=*) :: string 
    character(len=STRLNG) :: line, skiptill
    type (T_OUT) :: out
-   type (T_REG) :: reg
    type (T_INIT) :: init
    real(kind=8) :: val = 1.0
-
-   integer :: ios
 
    M4_WRITE_DBG({". enter ReadConfigFdtd"})
       

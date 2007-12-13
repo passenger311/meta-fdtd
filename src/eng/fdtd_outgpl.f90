@@ -81,11 +81,10 @@ contains
 !----------------------------------------------------------------------
 
 
-  subroutine WriteDataFdtdOutgplObj(out, ncyc, mode)
+  subroutine WriteDataFdtdOutgplObj(out, mode)
 
     type (T_OUT) :: out
     type (T_BUF) :: buf
-    integer :: ncyc
     logical :: mode
     M4_FTYPE :: clearval = 0.0
 
@@ -172,7 +171,7 @@ contains
 
     subroutine WriteEps(out)
 
-      type (T_OUT) :: out, sum
+      type (T_OUT) :: out
 
       M4_REGLOOP_DECL(reg,p,i,j,k,w)  
       reg = regobj(out%regidx)

@@ -38,12 +38,10 @@ endif
 })
 define({M4_OPEN_ERROR}, {if ( $1 .ne. 0 ) then
 M4_FATAL_ERROR({"COULD NOT OPEN FILE ",$2})
-stop
 endif
 })
 define({M4_READ_ERROR}, {if ( $1 .ne. 0 ) then
 M4_FATAL_ERROR({"READ ERROR ",$2})
-stop
 endif
 })
 

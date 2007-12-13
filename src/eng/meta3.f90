@@ -29,13 +29,14 @@ program meta3
 
 
   character(len=STRLNG), parameter :: modname = "META3"
-  integer :: ncyc, error, l, ides, isrc
+  integer :: ncyc, l 
   character(len=12) :: str
   character(len=1) :: busychar ='|'
 
   ! --- comms time measurement
 
 M4_IFELSE_MPI({
+  integer :: ides, isrc
   real(kind=8) :: tt
   real(kind=8) :: time_waited (2)
   time_waited = 0

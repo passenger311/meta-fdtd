@@ -188,7 +188,6 @@ contains
   subroutine EchoMatSourceObj(mat)
 
     type(T_MATSOURCE) :: mat
-    integer :: i
 
     M4_WRITE_INFO({"--- mat # ",&
          TRIM(i2str(mat%idx))," ", TRIM(mat%type)})
@@ -209,7 +208,6 @@ contains
     M4_WRITE_INFO({"defined over:"})
     call EchoRegObj(regobj(mat%regidx))
     
-
   end subroutine EchoMatSourceObj
 
  !----------------------------------------------------------------------

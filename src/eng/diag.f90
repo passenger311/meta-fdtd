@@ -62,7 +62,7 @@ contains
     select case ( string )
        
        M4_FOREACH_DIAG2({case ("(},{")
-       call Read},{Obj(UNITTMP)
+       call Read},{Obj(funit)
        })
        
     case default

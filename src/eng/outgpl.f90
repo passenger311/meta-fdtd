@@ -159,7 +159,6 @@ contains
     type(T_OUT) :: out
     integer :: ncyc
     type(T_REG) :: reg
-    integer :: numn 
 
     reg = regobj(out%regidx)
     
@@ -205,13 +204,13 @@ contains
 
        if ( mode ) call OpenOutgplObj(out, ncyc, out%snap)
        if ( out%numnodes .gt. 0 ) write(out%funit,*) 
-       call WriteDataFdtdOutgplObj(out,ncyc,mode)
+       call WriteDataFdtdOutgplObj(out,mode)
        if ( mode ) call CloseOutgplObj(out)
     
     M4_FOREACH_OUTGPL2({case ("},{")
        if ( mode ) call OpenOutgplObj(out, ncyc, out%snap)
        if ( out%numnodes .gt. 0 ) write(out%funit,*) 
-       call WriteData},{OutgplObj(out,ncyc,mode)
+       call WriteData},{OutgplObj(out,mode)
        if ( mode ) call CloseOutgplObj(out)
        })
 
