@@ -402,10 +402,9 @@ contains
       dty = DT/SY
       dtz = DT/SZ   
         
+!$OMP PARALLEL DO PRIVATE(Exh,Eyh,Ezh,Bxo,Byo,Bzo)
       do k=ks, ke     
-         !SOPTION unroll(1)  
          do j=js, je
-            !SOPTION unroll(1)  
             do i=is, ie
                
                Exh = Ex(i,j,k)
@@ -440,7 +439,8 @@ contains
             enddo
          enddo
       enddo
-      
+!$OMP END PARALLEL DO      
+
     end subroutine DoStepHPml
     
   end subroutine StepHPml
@@ -476,10 +476,9 @@ contains
       dty = DT/SY
       dtz = DT/SZ
   
+!$OMP PARALLEL DO PRIVATE(Hxh,Hyh,Hzh,Dxo,Dyo,Dzo,epsinvx,epsinvy,epsinvz) 
       do k=ks, ke
-!SOPTION unroll(2)  
          do j=js, je
-!SOPTION unroll(2)  
             do i=is, ie
            
                Hxh = Hx(i,j,k)
@@ -518,6 +517,7 @@ contains
             enddo
          enddo
       enddo
+!$OMP END PARALLEL DO
 
     end subroutine DoStepEPml
     

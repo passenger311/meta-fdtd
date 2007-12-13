@@ -299,6 +299,7 @@ contains
 
     ! H in GT+1/2DT
 
+!$OMP PARALLEL DO PRIVATE(Exh,Eyh,Ezh)
     do k=KSIG, KEIG-1
        do j=JSIG, JEIG-1
           do i=ISIG, IEIG-1
@@ -320,7 +321,8 @@ contains
           enddo
        enddo
     enddo
-        
+ !$OMP END PARALLEL DO        
+       
   end subroutine StepH
 
 !----------------------------------------------------------------------
@@ -339,7 +341,9 @@ contains
     dtz = DT/Sz
     
     ! E in GT + DT
-    do k=KSIG, KEIG-1
+
+ !$OMP PARALLEL DO PRIVATE(Hxh,Hyh,Hzh,epsinvx,epsinvy,epsinvz)
+   do k=KSIG, KEIG-1
        do j=JSIG, JEIG-1
           do i=ISIG, IEIG-1
 
@@ -364,6 +368,7 @@ contains
           enddo
        enddo
     enddo
+!$OMP END PARALLEL DO
     
   end subroutine StepE
 
