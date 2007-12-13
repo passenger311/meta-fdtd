@@ -46,9 +46,9 @@ ENG_TE=-te
 M4DEFINE+=-DM4_TE=1
 endif
 
-ENGINE=$(ENG_CF)$(ENG_NG)$(ENG_TE)$(ENG_MPI)$(ENG_MPELOG)$(ENG_OMP)$(ENG_DBG)
-BUILDPFX=meta3-build
-BUILDDIR=$(BUILDPFX)$(ENGINE)
+ENGINE=$(ARCH)$(ENG_CF)$(ENG_NG)$(ENG_TE)$(ENG_MPI)$(ENG_MPELOG)$(ENG_OMP)$(ENG_DBG)
+BUILDPFX=meta3
+BUILDDIR=$(BUILDPFX)-$(ENGINE)
 
 # ---------------------------------------------------------------------
 
