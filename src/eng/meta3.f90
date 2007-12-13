@@ -78,8 +78,11 @@ M4_IFELSE_MPELOG({
 
      write(6,*) "* ------------------------ META-3 ENGINE STARTS  ------------------------ "
      write(6,*) "*"
-     call DisplayVersionLine
+     call DisplayVersion
      write(6,*) "*"
+     write(6,*) "* ----------------------------------------------------------------------- "
+
+
   end if
 
   do l=0, numproc-1
@@ -88,6 +91,7 @@ M4_IFELSE_MPI({call MPI_BARRIER(MPI_COMM_WORLD,mpierr)},{})
 
      if (myrank .eq. l) then
 
+        write(6,*) "*"
         write(6,*) "* initialising modules: myrank = ", ranklbl
 
         write(6,*) "* -> InitializeList"
@@ -109,6 +113,14 @@ M4_IFELSE_MPI({call MPI_BARRIER(MPI_COMM_WORLD,mpierr)},{})
 
   end do
 
+                
+  if (myrank .eq. 0) then
+
+     write(6,*) "*"
+     write(6,*) "* ----------------------------------------------------------------------- "
+
+  end if
+
   mpisize=(IMAX-IMIN+1)*(JMAX-JMIN+1)  ! set mpisize
  
   do l=0, numproc-1
@@ -116,7 +128,7 @@ M4_IFELSE_MPI({call MPI_BARRIER(MPI_COMM_WORLD,mpierr)},{})
 M4_IFELSE_MPI({call MPI_BARRIER(MPI_COMM_WORLD,mpierr)})
 
      if (myrank .eq. l) then
-                
+        write(6,*) "* "
         write(6,*) "* process entering loop: myrank = ",ranklbl 
 
 
@@ -400,6 +412,14 @@ M4_IFELSE_MPELOG({call MPE_LOG_EVENT(6,"WAIT",mpierr)})
 
 ! end of time loop.
 
+  if (myrank .eq. 0) then
+
+     write(6,*) "*"
+     write(6,*) "* ----------------------------------------------------------------------- "
+     write(6,*) "*"
+
+  end if
+
 M4_IFELSE_MPI({call MPI_BARRIER(MPI_COMM_WORLD,mpierr)})
 
   do l=0, numproc-1
@@ -427,6 +447,8 @@ M4_IFELSE_MPI({
         write(6,*) ranklbl, "* time for Comms H = ", time_waited(1)
         write(6,*) ranklbl, "* time for Comms E = ", time_waited(2)
 })
+        write(6,*) "*"
+
 
      end if
 
