@@ -157,7 +157,7 @@ contains
       M4_REGLOOP_DECL(reg,p,i,j,k,w)  
 
       M4_WRITE_DBG({"WriteComp!"})
-      M4_IFELSE_DBG({call EchoRegObj(out%regidx)})
+      M4_IFELSE_DBG({call EchoRegObj(regobj(out%regidx))})
       reg = regobj(out%regidx)
 
        M4_REGLOOP_WRITE(reg,p,i,j,k,w,   
