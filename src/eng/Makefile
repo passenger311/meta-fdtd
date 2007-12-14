@@ -46,6 +46,7 @@ $(MATOBJ)\
 mat.o\
 $(DIAGOBJ)\
 diag.o\
+$(OUTGPLOBJ)\
 outgpl.o\
 out.o\
 config.o\

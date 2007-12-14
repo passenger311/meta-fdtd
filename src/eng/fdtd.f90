@@ -86,7 +86,7 @@ contains
       string = TRIM(ADJUSTL(line))
 
       if ( skiptill .ne. "" ) then 
-         M4_WRITE_DBG({"skipping line ",string})
+         M4_WRITE_DBG({"skipping line ",TRIM(string)})
          if ( string .eq. skiptill ) skiptill = ""  
          cycle              
       endif
