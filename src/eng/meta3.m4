@@ -7,6 +7,9 @@ include({diag.m4})
 include({outgpl.m4})
 include({modules.m4})
 
+
+define({M4_DIM},{3})
+
 define({M4_ISDBG},{ifdef({M4_DBG}, {.true.}, {.false.})})
 define({M4_ISMPI}, {ifdef({M4_MPI}, {.true.}, {.false.})})
 define({M4_ISMPELOG}, {ifdef({M4_MPELOG}, {.true.}, {.false.})})

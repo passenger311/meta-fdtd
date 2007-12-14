@@ -4,25 +4,9 @@
 !
 !  boundary conditions using uniform perfectly matched layers.
 !
-!  subs:
-!
-!    InitializePml
-!      ReadConfig
-!      Initialize
-!      AllocateFields
-!      CalcCoefficients
-!    FinalizePml 
-!    StepHPml 
-!      DoStepHPml
-!    StepEPml
-!      DoStepEPml
-!
 !----------------------------------------------------------------------
 
 !======================================================================
-!
-! m4 macro-preprocessor runs over this file and replaces
-! M4 FTYPE -> real(kind=8) or complex(kind=8)
 !
 
 module pml
@@ -31,6 +15,7 @@ module pml
   use strings
   use grid  
   use fdtd
+  use pec
 
   implicit none
   private
@@ -47,8 +32,8 @@ module pml
   public :: ReadConfigPml
   public :: InitializePml
   public :: FinalizePml
-  public :: StepEPml
-  public :: StepHPml
+  public :: StepEBoundPml
+  public :: StepHBoundPml
 
   ! --- Public Data
 
@@ -56,15 +41,12 @@ module pml
 
   ! --- Data
 
+  integer :: planepml(6)       ! 1 if pml applies 0 if not
   integer :: pmlpart           ! flag (inner/outer partition)
   integer :: PMLMAX            ! number of Pml layers
   real(kind=8) :: PotPml       ! exponent for sigma and kappa
   real(kind=8) :: SigmaMax     ! absorption coefficient 
   real(kind=8) :: KappaMax     ! absorption of evanescent waves 
-
-  ! do planes 1-6 have a Pml (yes=1, no=0)
-
-  integer, dimension(6) :: planepml=(/ 1,1,1,1,1,1 /)
 
   ! numeric Pml coefficients
 
@@ -95,8 +77,6 @@ contains
        M4_FATAL_ERROR({"BAD SECTION IDENTIFIER: ReadConfigPml"})
     endif
 
-    read(UNITTMP,*) (planepml(i),i=1, 6)
-    M4_WRITE_DBG({"read planepml(i): ",  (planepml(i),i=1, 6)})
     read(UNITTMP,*) PMLMAX
     M4_WRITE_DBG({"read PMLMAX: ",  PMLMAX})
     read(UNITTMP,*) PotPml
@@ -122,14 +102,31 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine InitializePml
+  subroutine InitializePml(planebound, num)
+
+    integer :: planebound(6), num
+    integer :: i
 
     M4_WRITE_DBG({". enter InitializePml"})
 
+    M4_WRITE_DBG({"got planebound(i): ",  (planebound(i),i=1, M4_DIM*2)})
+
     if ( .not. modconfigured ) then
-       M4_WRITE_WARN({"NO PMLS CONFIGURED!"})
-       return
+
+       M4_WRITE_WARN({"PMLS NOT CONFIGURED -> USING DEFAULT PARAMETERS!"})
+       PMLMAX = 8
+       PotPml = 3.2
+       SigmaMax = (real(POTPML)+1.0)*0.8/(3.0*DT)
+       KappaMax = 1.1
+
     end if
+
+    planepml = 0
+    do i = 1, 6
+       if ( planebound(i) .eq. num ) planepml(i) = 1
+    end do
+
+    M4_WRITE_DBG({"planepml : ",(planepml(i), i = 1,6)})
 
     if(planepml(1) .eq. 1) ISIG=IBEG+PMLMAX
     if(planepml(2) .eq. 1) IEIG=IMAX-PMLMAX
@@ -377,17 +374,27 @@ contains
 
   ! update the H-fields of all Pml layers
   
-  subroutine StepHPml
+  subroutine StepHBoundPml(i)
+    
+    integer :: i
 
     if ( .not. modinitialized ) return
 
-    call DoStepHPml(IBEG,ISIG-1,JBEG,JMAX-1,KBEG,KMAX-1,BE1) 
-    call DoStepHPml(IEIG,IMAX-1,JBEG,JMAX-1,KBEG,KMAX-1,BE2)
-    call DoStepHPml(ISIG,IEIG-1,JBEG,JSIG-1,KBEG,KMAX-1,BE3)
-    call DoStepHPml(ISIG,IEIG-1,JEIG,JMAX-1,KBEG,KMAX-1,BE4)
-    call DoStepHPml(ISIG,IEIG-1,JSIG,JEIG-1,KBEG,KSIG-1,BE5)
-    call DoStepHPml(ISIG,IEIG-1,JSIG,JEIG-1,KEIG,KMAX-1,BE6)
-
+    select case ( i )
+    case ( 1 ) 
+       call DoStepHPml(IBEG,ISIG-1,JBEG,JMAX-1,KBEG,KMAX-1,BE1)
+    case ( 2 )
+       call DoStepHPml(IEIG,IMAX-1,JBEG,JMAX-1,KBEG,KMAX-1,BE2)
+    case ( 3 )
+       call DoStepHPml(ISIG,IEIG-1,JBEG,JSIG-1,KBEG,KMAX-1,BE3)
+    case ( 4  )
+       call DoStepHPml(ISIG,IEIG-1,JEIG,JMAX-1,KBEG,KMAX-1,BE4)
+    case ( 5  )
+       call DoStepHPml(ISIG,IEIG-1,JSIG,JEIG-1,KBEG,KSIG-1,BE5)
+    case ( 6  )
+       call DoStepHPml(ISIG,IEIG-1,JSIG,JEIG-1,KEIG,KMAX-1,BE6)
+    end select
+    
   contains
     
     subroutine DoStepHPml(is,ie,js,je,ks,ke,B)
@@ -443,23 +450,35 @@ contains
 
     end subroutine DoStepHPml
     
-  end subroutine StepHPml
+  end subroutine StepHBoundPml
 
 !----------------------------------------------------------------------
 
   ! update the E-fields of all pml layers
   
-  subroutine StepEPml
-
+  subroutine StepEBoundPml(i)
+    
+    integer :: i
+    
     if ( .not. modinitialized ) return
 
-    call DoStepEPml(IBEG,ISIG-1,JBEG,JMAX-1,KBEG,KMAX-1,DE1)
-    call DoStepEPml(IEIG,IMAX-1,JBEG,JMAX-1,KBEG,KMAX-1,DE2)
-    call DoStepEPml(ISIG,IEIG-1,JBEG,JSIG-1,KBEG,KMAX-1,DE3)
-    call DoStepEPml(ISIG,IEIG-1,JEIG,JMAX-1,KBEG,KMAX-1,DE4)
-    call DoStepEPml(ISIG,IEIG-1,JSIG,JEIG-1,KBEG,KSIG-1,DE5)
-    call DoStepEPml(ISIG,IEIG-1,JSIG,JEIG-1,KEIG,KMAX-1,DE6)
-    
+    select case ( i )
+    case ( 1 ) 
+       call DoStepEPml(IBEG,ISIG-1,JBEG,JMAX-1,KBEG,KMAX-1,DE1)
+    case ( 2 ) 
+       call DoStepEPml(IEIG,IMAX-1,JBEG,JMAX-1,KBEG,KMAX-1,DE2)
+    case ( 3 ) 
+       call DoStepEPml(ISIG,IEIG-1,JBEG,JSIG-1,KBEG,KMAX-1,DE3)
+    case ( 4 )
+       call DoStepEPml(ISIG,IEIG-1,JEIG,JMAX-1,KBEG,KMAX-1,DE4)
+    case ( 5 ) 
+       call DoStepEPml(ISIG,IEIG-1,JSIG,JEIG-1,KBEG,KSIG-1,DE5)
+    case ( 6 ) 
+       call DoStepEPml(ISIG,IEIG-1,JSIG,JEIG-1,KEIG,KMAX-1,DE6)
+    end select
+
+    call StepEBoundPec(i) ! need to set electric conductor bcs
+
   contains
     
     subroutine DoStepEPml(is,ie,js,je,ks,ke,D)
@@ -521,7 +540,7 @@ contains
 
     end subroutine DoStepEPml
     
-  end subroutine StepEPml
+  end subroutine StepEBoundPml
   
 !----------------------------------------------------------------------
 

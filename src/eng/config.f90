@@ -23,7 +23,7 @@ module config
 
   use grid
   use fdtd
-  use pml
+  use bound
   use mat 
   use diag
 
@@ -88,9 +88,9 @@ contains
             M4_WRITE_DBG({"got token ",TRIM(string),"-> invoking ReadConfigFdtd"})
             call ReadConfigFdtd(UNITTMP,string)
             gotfdtd = .true.
-         case( "(PML" )
+         case( "(BOUND" )
             M4_WRITE_DBG({"got token ",TRIM(string),"-> invoking ReadConfigPml"})
-            call ReadConfigPml(UNITTMP,string)   
+            call ReadConfigBound(UNITTMP,string)    
          case("")
          case default
 

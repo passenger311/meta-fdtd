@@ -24,7 +24,8 @@
 
 
 ! -----------------------------------------------------------------------
-! GRID: this is a mandatory section. Note, that the lower index range 
+! (GRID-): this is a mandatory section. All grid parameters must be
+! given in order and are mandatory. Note, that the lower index range 
 ! must be 0 if an PML is implemented on that interface. <parititions> is
 ! overwritten to 1 if not compiled with mpi.
 ! -----------------------------------------------------------------------
@@ -41,8 +42,9 @@
 
 
 ! -----------------------------------------------------------------------
-! FDTD: this is  a mandatory section. FDTD can contain an arbitrary 
-! number of INIT, EPSILON and OUT blocks.
+! (FDTD-): this is a mandatory section. (FDTD-) itself has no mandatory 
+! parameters. (FDTD-) may contain an arbitrary number of (INIT-), 
+! (EPSILON-) and (OUT-) blocks.
 ! -----------------------------------------------------------------------
 
 (FDTD
@@ -124,22 +126,34 @@
 )FDTD
  
 ! -----------------------------------------------------------------------
-! PML: this is an optional section which specifies PMLs and on which
-! interfaces they are defined. If this section is commented out, PEC
-! boundary conditions will apply.
+! (BOUND-): this is a mandatory section which specifies the boundary 
+! condition type for each face of the grid domain.
+! 0 -> PEC
+! 1 -> PML
+! The (PML-) section which specifies pml parameters is optional. If not
+! given default parameters are used.
 ! -----------------------------------------------------------------------
 
-(PML
- 1 1 1 1 1 1   		! active pmls
+(BOUND
+ 1 0 1 1 1 1   		! active pmls
+ (!PML	
  8               	! pml cells
  3.2             	! pot parameter
  1.94444444444444       ! sigma parameter
  1.1             	! kappa parameter
-)PML
-
+ )PML	
+)BOUND
 
 ! -----------------------------------------------------------------------
-! MATSOURCE: hard electromagnetic field source. 
+! (MAT***-) and (DIAG***-): optional sections. Each material or 
+! diagnostic section has a set of mandatory parameters which must be
+! specified first. They are followed by a mandatory (REG-) section which
+! defines where the material is implemented. The (OUT-) sections are 
+! optional but require that the material implements and output module. 
+! -----------------------------------------------------------------------
+
+! -----------------------------------------------------------------------
+! (MATSOURCE-): hard electromagnetic field source. 
 ! -----------------------------------------------------------------------
 
 (MATSOURCE
@@ -161,8 +175,11 @@
 )OUT
 )MATSOURCE
 
+! -----------------------------------------------------------------------
+! (MAT2LVL-): example material. 
+! -----------------------------------------------------------------------
 
-(MAT2LVL
+(!MAT2LVL
 2
 (REG
 (BOX
@@ -176,6 +193,8 @@
 )VPOINT
 )REG
 )MAT2LVL
+
+
 
 !
 !

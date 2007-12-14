@@ -41,6 +41,7 @@ FOBJ=\
 fdtd.o\
 pec.o\
 pml.o\
+bound.o\
 fdtd_outgpl.o\
 $(MATOBJ)\
 mat.o\

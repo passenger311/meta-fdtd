@@ -4,12 +4,6 @@
 !
 !  set metallic boundary conditions.
 !
-!  subs:
-!
-!  InitializePec
-!  FinalizePec
-!  SetPec
-!
 !----------------------------------------------------------------------
  
 !======================================================================
@@ -35,7 +29,8 @@ module pec
 
   public :: InitializePec
   public :: FinalizePec
-  public :: SetPec
+  public :: StepHBoundPec
+  public :: StepEBoundPec
 
   ! --- Public Data
 
@@ -47,9 +42,15 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine InitializePec
+  subroutine InitializePec(planebound,num)
+
+    integer :: planebound(6), num
+    integer :: i
 
     M4_WRITE_DBG(". enter InitializePec")
+
+    M4_WRITE_DBG({"got planebound(i): ",  (planebound(i),i=1, M4_DIM*2)})
+
     M4_WRITE_DBG(". exit InitializePec")
 
   end subroutine InitializePec
@@ -65,62 +66,49 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine SetPec
-    
-    integer :: i,j,k
+  subroutine StepHBoundPec(i)
 
-! top, bottom
+    integer :: i
 
-    do k=KBEG, KMAX
-       do i=IBEG, IMAX
-          Ez(i,JBEG,k)=0.0
-          Ex(i,JBEG,k)=0.0
-          Ez(i,JMAX,k)=0.0
-          Ex(i,JMAX,k)=0.0
-       enddo
-       do j=JBEG, JMAX
-          Ez(IBEG,j,k)=0.0
-          Ey(IBEG,j,k)=0.0
-          Ez(IMAX,j,k)=0.0
-          Ey(IMAX,j,k)=0.0
-       enddo
-    enddo
+  end subroutine StepHBoundPec
 
+!----------------------------------------------------------------------
 
-! left
+  subroutine StepEBoundPec(i)
 
-    if ( myrank .eq. 0 ) then 
+    integer :: i
 
-       do j=JBEG, JMAX
-          do i=IBEG, IMAX
-             Ey(i,j,KBEG)=0.0
-             Ex(i,j,KBEG)=0.0
-          enddo
-       enddo
-    
-    endif
+    select case (i)
 
-! right
+       case ( 1 )
+          Ez(IBEG,JBEG:JMAX,KBEG:KMAX)=0.0
+          Ey(IBEG,JBEG:JMAX,KBEG:KMAX)=0.0
+       case ( 2 )
+          Ez(IMAX,JBEG:JMAX,KBEG:KMAX)=0.0
+          Ey(IMAX,JBEG:JMAX,KBEG:KMAX)=0.0
+       case ( 3 )
+          Ez(IBEG:IMAX,JBEG,KBEG:KMAX)=0.0
+          Ex(IBEG:IMAX,JBEG,KBEG:KMAX)=0.0
+       case ( 4 )
+          Ez(IBEG:IMAX,JMAX,KBEG:KMAX)=0.0
+          Ex(IBEG:IMAX,JMAX,KBEG:KMAX)=0.0
+       case ( 5 )
+          Ey(IBEG:IMAX,JBEG:JMAX,KBEG)=0.0
+          Ex(IBEG:IMAX,JBEG:JMAX,KBEG)=0.0
+       case ( 6 )
+          Ey(IBEG:IMAX,JBEG:JMAX,KMAX)=0.0
+          Ex(IBEG:IMAX,JBEG:JMAX,KMAX)=0.0
 
-    if ( myrank .eq. numproc-1 ) then 
+       end select
 
-       do j=JBEG, JMAX
-          do i=IBEG, IMAX
-             Ey(i,j,KMAX)=0.0
-             Ex(i,j,KMAX)=0.0
-          enddo
-       enddo
-    
-    endif
-
-  end subroutine SetPec
+  end subroutine StepEBoundPec
 
 !----------------------------------------------------------------------
 
 end module pec
 
 !
-! Authors:  S.Scholz, A.Klaedtke, J.Hamm 
+! Authors:  J.Hamm, S.Scholz, A.Klaedtke
 ! Modified: 4/12/2007
 !
 !======================================================================

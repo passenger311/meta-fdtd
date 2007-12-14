@@ -18,8 +18,7 @@ program meta3
   use mpiworld
   use grid
   use fdtd
-  use pec
-  use pml
+  use bound
   use mat
   use out
   use diag
@@ -57,7 +56,7 @@ M4_IFELSE_MPELOG({
 
   ! --- init logging
 
-     call MPE_INIT_LOG() 
+     call MPE_INIT_LOG 
 
      call MPE_Describe_state(1,2,"ISEND","red:gray0")
      call MPE_Describe_state(3,4,"IRECV","blue:gray1")
@@ -100,8 +99,8 @@ M4_IFELSE_MPI({call MPI_BARRIER(MPI_COMM_WORLD,mpierr)},{})
         call ReadConfig
         write(6,*) "* -> InitializeFdtd"
         call InitializeFdtd
-        write(6,*) "* -> InitializePml"
-        call InitializePml
+        write(6,*) "* -> InitializeBound"
+        call InitializeBound
         write(6,*) "* -> InitializeMat"
         call InitializeMat
         write(6,*) "* -> InitializeDiag"
@@ -171,7 +170,7 @@ M4_IFELSE_ARCH({PGI}, {
 
 M4_IFELSE_MPELOG({call MPE_LOG_EVENT(7,"StepH",mpierr)})
 
-     if ( ncyc .gt. 0 ) call StepH()
+     if ( ncyc .gt. 0 ) call StepH
 
 M4_IFELSE_MPELOG({call MPE_LOG_EVENT(8,"StepH",mpierr)})
 
@@ -185,11 +184,11 @@ M4_IFELSE_MPELOG({call MPE_LOG_EVENT(16,"StepHMat",mpierr)})
 
 ! ------------------------------ PMLH ---------------------------------
 
-M4_IFELSE_MPELOG({call MPE_LOG_EVENT(9,"StepHPml",mpierr)})
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(9,"StepHBound",mpierr)})
 
-     if ( ncyc .gt. 0 )  call StepHPml()
+     if ( ncyc .gt. 0 )  call StepHBound
 
-M4_IFELSE_MPELOG({call MPE_LOG_EVENT(10,"StepHPml",mpierr)})
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(10,"StepHBound",mpierr)})
 
 
 ! -------------------------- COMMS H -------------------------------
@@ -289,7 +288,7 @@ M4_IFELSE_MPELOG({call MPE_LOG_EVENT(6,"WAIT",mpierr)})
 
 M4_IFELSE_MPELOG({call MPE_LOG_EVENT(11,"StepE",mpierr)})
 
-      if ( ncyc .gt. 0 ) call StepE()
+      if ( ncyc .gt. 0 ) call StepE
 
 M4_IFELSE_MPELOG({call MPE_LOG_EVENT(12,"StepE",mpierr)})
 
@@ -303,12 +302,11 @@ M4_IFELSE_MPELOG({call MPE_LOG_EVENT(18,"StepEMat",mpierr)})
 
 ! ---------------------------- PMLE -----------------------------------
 
-M4_IFELSE_MPELOG({call MPE_LOG_EVENT(13,"StepEPml",mpierr)})
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(13,"StepEBound",mpierr)})
 
-      if ( ncyc .gt. 0 ) call StepEPml() 
-      if ( ncyc .gt. 0 ) call SetPec()
+      if ( ncyc .gt. 0 ) call StepEBound
 
-M4_IFELSE_MPELOG({call MPE_LOG_EVENT(14,"StepEPml",mpierr)})
+M4_IFELSE_MPELOG({call MPE_LOG_EVENT(14,"StepEBound",mpierr)})
 
 ! -------------------------- COMMS E ----------------------------------
 
@@ -434,8 +432,8 @@ M4_IFELSE_MPI({call MPI_BARRIER(MPI_COMM_WORLD,mpierr)})
         call FinalizeOut
         write(6,*) "* -> FinalizeMat"
         call FinalizeMat
-        write(6,*) "* -> FinalizePml"
-        call FinalizePml
+        write(6,*) "* -> FinalizeBound"
+        call FinalizeBound
         write(6,*) "* -> FinalizeFdtd"
         call FinalizeFdtd
         write(6,*) "* -> FinalizeGrid"
