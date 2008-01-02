@@ -1,4 +1,3 @@
-
 #======================================================================
 #
 # Makefile
@@ -19,11 +18,11 @@ include ../define.mk
 .PHONY: clean proper default install all
 
 INSTALLFILES=\
-stitch-outgpl
+material.pm
 
 default: all
 
-all: install
+all: install 
  
 install: 
 	@echo [INSTALL] $(INSTALLFILES)
@@ -44,11 +43,13 @@ install:
 	@echo [CC ] $*
 	@$(CC) $(CCFLAGS) $(INCLUDE) -c $<
 
+.PHONY: clean proper
+
 clean:
-	@rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod *_m4.f90 *_m4.F90
+	 @rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod *_m4.f90 *_m4.F90
 
 proper: clean
-	@rm -f $(EXE) $(PREEXE) *.o *.in *.out *~
+	 @rm -f $(EXE) $(PREEXE) *.o *.in *.out *~
 
 
 # ---------------------------------------------------------------------

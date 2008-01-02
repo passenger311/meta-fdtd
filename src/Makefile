@@ -9,31 +9,31 @@
 
 include ./define.mk
 
-.PHONY: default clean proper distclean eng pre post install all
+.PHONY: default clean proper distclean engine config post install all
 
 default: all
 
-all: eng pre post run install
+all: engine config post run install
 
-eng pre post:
+engine config post:
 	@cd $@ && $(MAKE) 
 
 
 clean install: 
-	@cd eng;  $(MAKE) $@; cd ..
-	@cd pre;  $(MAKE) $@; cd ..
+	@cd engine;  $(MAKE) $@; cd ..
+	@cd config;  $(MAKE) $@; cd ..
 	@cd post; $(MAKE) $@; cd ..
 	@cd run; $(MAKE) $@; cd ..
 
 proper: 
-	@cd eng;  $(MAKE) $@; cd ..
-	@cd pre;  $(MAKE) $@; cd ..
+	@cd engine;  $(MAKE) $@; cd ..
+	@cd config;  $(MAKE) $@; cd ..
 	@cd post; $(MAKE) $@; cd ..
 	@cd run; $(MAKE) $@; cd ..
 	@rm -f *~ \#*
 
 distclean: proper
-	@rm -rf meta3*
+	@rm -rf meta3* meta2*
 
 # ---------------------------------------------------------------------
 

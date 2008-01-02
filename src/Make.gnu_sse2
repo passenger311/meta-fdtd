@@ -2,11 +2,11 @@
 #
 # Make.default
 #
-# for gnu >= 4.1 compiler set
-
+# for gnu >= 4.2 compiler set
+#
 # ---------------------------------------------------------------------
 
-M4_ARCH=GNU
+M4_ARCH=GNU_SSE2
 
 # --- compiler set
 
@@ -49,8 +49,8 @@ endif
 
 ifeq ($(DBG),)
 
-OPTFLAGS=-O3 -ffast-math -funroll-loops -mtune=i686
-NOOPTFLAGS=-O1
+OPTFLAGS=-O3 -ffast-math -funroll-loops -ftree-vectorize -msse2
+NOOPTFLAGS=-O2
 LDOPTFLAGS=
 
 endif

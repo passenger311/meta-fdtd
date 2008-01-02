@@ -25,6 +25,10 @@ CC=mpicc
 
 endif
 
+# --- release flags
+
+RELFLAGS= -static
+
 # --- openmp flags
 
 ifneq ($(OMP),)
@@ -46,8 +50,9 @@ endif
 
 ifeq ($(DBG),)
 
-OPTFLAGS=-fpp -O3 -xW
-NOOPTFLAGS=-O0
+OPTFLAGS=-O3 -xW -fpp -V -ipo
+NOOPTFLAGS=-O2 -ipo
+LDOPTFLAGS= -ipo
 
 endif
 
@@ -61,7 +66,7 @@ CXXFLAGS+=$(NOOPTFLAGS) $(FLAGS)
 CXXFLAGS_OPT=$(OPTFLAGS) $(FLAGS)
 CCFLAGS+=$(NOOPTFLAGS) $(FLAGS)
 CCFLAGS_OPT= $(OPTFLAGS) $(FLAGS)
-LDFLAGS+=$(FLAGS)
+LDFLAGS+=$(LDOPTFLAGS) $(FLAGS)
 
 
 

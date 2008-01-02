@@ -2,11 +2,24 @@
 #
 # define.mk
 #
-
 # ---------------------------------------------------------------------
 
+ENG_ARCH=-$(ARCH)
 ifneq ($(M4_ARCH),)
 M4DEFINE+= -DM4_ARCH=$(M4_ARCH)
+endif
+
+ifeq ($(DIM),2)
+ENG_DIM=2
+M4DEFINE+= -DM4_DIM=2
+else
+ifeq ($(DIM),1)
+ENG_DIM=1
+M4DEFINE+= -DM4_DIM=1
+else
+ENG_DIM=3
+M4DEFINE+= -DM4_DIM=3
+endif
 endif
 
 ifneq ($(DBG),)
@@ -41,14 +54,19 @@ ENG_NG=-ng
 M4DEFINE+=-DM4_NG=1
 endif
 
+ifneq ($(WMU),)
+ENG_WMU=-wmu
+M4DEFINE+=-DM4_WMU=1
+endif
+
 ifneq ($(TE),)
 ENG_TE=-te
 M4DEFINE+=-DM4_TE=1
 endif
 
-ENGINE=$(ARCH)$(ENG_CF)$(ENG_NG)$(ENG_TE)$(ENG_MPI)$(ENG_MPELOG)$(ENG_OMP)$(ENG_DBG)
-BUILDPFX=meta3
-BUILDDIR=$(BUILDPFX)-$(ENGINE)
+ENGINE=$(ENG_DIM)$(ENG_CF)$(ENG_WMU)$(ENG_TE)$(ENG_NG)$(ENG_MPI)$(ENG_MPELOG)$(ENG_OMP)$(ENG_DBG)
+BUILDPFX=meta
+BUILDDIR=$(BUILDPFX)$(ENGINE)
 
 # ---------------------------------------------------------------------
 

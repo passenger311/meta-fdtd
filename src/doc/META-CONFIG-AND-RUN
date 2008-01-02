@@ -1,0 +1,38 @@
+
+------------------------------
+META: HOW-TO CONFIGURE AND RUN 
+------------------------------
+
+J. Hamm 8/12/2007
+
+
+1. THE BUILD DIRECTORY
+
+
+After a successful build the meta3-build directory contains everything 
+necessary to configure and run a simulation. As such it can be copied to
+a different (compatible) host or location.
+
+
+2. THE MASTER CONFIGURATION FILE
+
+
+Each simulation has a master configuration file which contains all the
+parameter and object definitions which are required by the engine. The 
+master configuration file is parsed by the Meta-3 pre-processesor.
+
+
+3. EXECUTION LAYERS
+
+
+* meta-config pre-processor: reads master configuration (.cfg) file, writes
+  engine input files (.in).
+
+* meta-engine: reads the engine input files (.in), computes and writes output 
+  data in formats as specified in the input (e.g. .gpl)
+
+* meta post-processing: the post-processor consists of a series of scripts 
+  which allow to process the engines output data. This is usually only 
+  necessary if a parallel engine is used. In that case the output data is
+  scattered over paritition files which need to be stitched together.
+

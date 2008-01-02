@@ -1,0 +1,6 @@
+define({M4_EPSINVX},{0.5*(EPSINV($1,$2,$3) +  EPSINV($1+1,$2,$3))})
+define({M4_EPSINVY},{M4_IFELSE_1D({EPSINV($1,$2,$3)}, {0.5*(EPSINV($1,$2,$3) +  EPSINV($1,$2+1,$3))})})
+define({M4_EPSINVZ},{M4_IFELSE_3D({ 0.5*(EPSINV($1,$2,$3) +  EPSINV($1,$2,$3+1)) }, {EPSINV($1,$2,$3)})})
+define({M4_MUINVX},{M4_IFELSE_WMU({0.5*(MUINV($1,$2,$3) +  MUINV($1+1,$2,$3))},{1.0})})
+define({M4_MUINVY},{M4_IFELSE_WMU({M4_IFELSE_1D({MUINV($1,$2,$3)}, {0.5*(MUINV($1,$2,$3) +  MUINV($1,$2+1,$3))})},{1.0})})
+define({M4_MUINVZ},{M4_IFELSE_WMU({M4_IFELSE_3D({ 0.5*(MUINV($1,$2,$3) +  MUINV($1,$2,$3+1)) }, {MUINV($1,$2,$3)})},{1.0})})

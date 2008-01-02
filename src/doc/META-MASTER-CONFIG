@@ -1,0 +1,83 @@
+
+--------------------------
+META: MASTER CONFIG FORMAT
+--------------------------
+
+J. Hamm 8/12/2007
+
+
+1. THE META-CONFIG PRE-PROCESSOR AND THE MASTER-CONFIG FILE
+
+
+The master config file (.cfg) contains all information required to run
+simulation. The meta-config preprocessor processes the content of the 
+master config file and produces the engine-config file. This two step 
+process has a couple of advantages:
+
+* The preprocessor can be run idependently from the engine, even on a different
+  host. 
+
+* Parameters can be verified in the .in files which makes debugging easier.
+ 
+* The engine input format is very simple and the engine is a straight 
+  efficient fortran code without too much overhead from the parser.
+
+* Parts of the preprocessor are written in C++, which makes heavy use of object
+  oriented features for the geometry setup.
+
+
+2. SOME COMMENTS ABOUT THE MASTER-CONFIG FORMAT
+
+
+The master config uses perl syntax to define data structures which are then
+parsed. In fact, the master config is a perl file that gets included and 
+executed by another perl file. The benefit is, that no seperate parser had 
+to be developed without compromising on flexible contructs.
+
+It is not necessary to know perl by heart in order to understand the input 
+file as most constructs are quite intuitive. In general it is sufficient to 
+read the comments in the template config file to create an appropriate master 
+config file. 
+
+The following sections describe the main parts of the config file:
+
+
+3. THE %GRID SECTION
+   
+
+The config master must contain a complete grid definition which defines the
+problem space on which the electromagnetic fields are calculated:
+
+%grid= (
+        imax    => 100,
+        jmax    => 100,
+        kmax    => 200,
+        dx      => 1.0,
+        dy      => 1.0,
+        dz      => 1.0
+);
+
+The %grid defines the number of nodes in each of the three spatial dimensions
+together with the grid spacing.
+
+
+4. THE %PML SECTION
+
+
+Perfectly matched layers (Pmls) represent open boundary conditions. The first
+four parameters in the %pml section are important to qualify the size and 
+damping parameters of the pmls:  
+
+%pml = (
+        cells   => 8,
+        pot     => 3.2,                          # set = 0 for optimal values
+        sigma   => (3.2+1)*0.8 / (3 * 0.576),
+        kappa   => 1.1,
+        i0      => 1,   i1     => 1,
+        j0      => 1,   j1     => 1,
+        k0      => 1,   k1     => 1
+);
+
+The bottom 8 values can be either 1 or 0. If 1, then a Pml layer is created
+on the respective interface of the box-shaped problem space, otherwise not.
+
