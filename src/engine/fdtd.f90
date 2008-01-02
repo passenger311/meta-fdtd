@@ -288,7 +288,7 @@ M4_IFELSE_WMU({
 
  subroutine ExtendRealField(field)
 
-   real(kind=8), dimension(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX) :: field
+   real(kind=8), dimension(:,:,:) :: field
 
    field(IEND+1,:,:) = field(IEND,:,:) 
    M4_IFELSE_2D({
