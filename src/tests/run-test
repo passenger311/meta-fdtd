@@ -10,12 +10,12 @@ if [ -f $1/run.sh ]; then
     ./run.sh
     if [ $? == 0 ]; then
 	echo " [OK]"
-	echo "$1 $SPAC [OK]" >>../TEST.LOG
+	echo "$1 $SPAC [OK]" >>../TESTED.LOG
     else
 	echo " [FAILED]"
-	echo "$1 $SPAC [FAILED]" >>../TEST.LOG
+	echo "$1 $SPAC [FAILED]" >>../TESTED.LOG
     fi	
 else
 echo " [SKIPPED]"
-echo "$1 $SPAC [SKIPPED]" >>../TEST.LOG
+echo "$1 $SPAC [SKIPPED]" >>../TESTED.LOG
 fi

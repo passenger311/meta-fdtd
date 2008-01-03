@@ -19,7 +19,7 @@ include ../define.mk
 .PHONY: clean proper all tests default install
 
 BUILDFILES=\
-TEST.LOG
+TESTED.LOG
 
 
 .PHONY: clean proper default install

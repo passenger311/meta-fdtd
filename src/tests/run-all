@@ -8,8 +8,8 @@ echo "BUILD NOT PRESENT: $1!"
 exit 0
 fi
 
-rm -f TEST.LOG
-touch TEST.LOG
+rm -f TESTED.LOG
+touch TESTED.LOG
 
 run-test passed
 run-test startup-1d
@@ -22,7 +22,7 @@ run-test pec-1d
 run-test pec-2d
 run-test pec-3d
 
-OK=`cat TEST.LOG | grep OK | wc -l` 
-FAILED=`cat TEST.LOG | grep FAILED | wc -l` 
+OK=`cat TESTED.LOG | grep OK | wc -l` 
+FAILED=`cat TESTED.LOG | grep FAILED | wc -l` 
 echo "."
 echo ". TESTS PASSED: $OK  FAILED: $FAILED"
