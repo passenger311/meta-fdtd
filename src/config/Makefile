@@ -23,15 +23,16 @@ material.pm
 
 default: all
 
-all: info install 
- 
+all: info install  
 
-info:
-	@echo "+---- BUILDING CONFIG PROCESSOR"
+info: 
+	@echo ". CREATE CONFIG PREPROCESSOR"
 
 install: build-dir
 	@echo [INSTALL] $(BUILDFILES)
 	@ cp $(BUILDFILES) ../$(BUILDDIR)
+
+
 
 %.o : %.f90
 	@echo [F90] $*

@@ -318,7 +318,7 @@ contains
          Hy(M4_COORD(i,j,k-1))**2+Hy(M4_COORD(i-1,j,k-1))**2)
     EHz = 0.25*(Hz(M4_COORD(i,j,k))**2+Hz(M4_COORD(i-1,j,k))**2 + &
          Hz(M4_COORD(i,j-1,k))**2+Hz(M4_COORD(i-1,j-1,k))**2)
-    buf%data(p,1) = buf%data(p,1) + (EEx+EEy+EEz+EHx+EHy+EHz)/(4.0*PI)
+    buf%data(p,1) = (EEx+EEy+EEz+EHx+EHy+EHz)/(4.0*PI)
     
     } )
     

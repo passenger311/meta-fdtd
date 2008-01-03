@@ -19,26 +19,28 @@ include ../define.mk
 .PHONY: clean proper all tests default install
 
 BUILDFILES=\
-qscript.mpi\
-mpiwrap.sh
+TEST.LOG
 
 
 .PHONY: clean proper default install
 
 default: all
 
-all: tests proper
+all: tests
 
 tests: 
-	@echo "+---- RUNNING TESTS FOR: $(BUILDDIR)"
+	@echo ". RUNNING TESTS FOR [$(BUILDDIR)]"
+	@echo "."
 	@./run-all $(BUILDDIR)
 
 install:
+	@echo [INSTALL] $(BUILDFILES)
+	@cp $(BUILDFILES) ../$(BUILDDIR)
 
 .PHONY: clean proper
 
 clean:
-	@rm -f build */*.gpl
+	@rm -f */*.gpl */log TEST.LOG
 
 proper: clean
 

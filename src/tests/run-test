@@ -1,12 +1,21 @@
 #!/bin/bash
+echo -n ". $1 "
+LEN=${#1}
+let DOTS=20-$LEN
+for i in `seq 1 $DOTS`; do SPAC=".$SPAC"; done
+echo -n $SPAC
+
 if [ -f $1/run.sh ]; then
     cd $1
     ./run.sh
     if [ $? == 0 ]; then
-	echo "[PASSED] $1"
+	echo " [OK]"
+	echo "$1 $SPAC [OK]" >>../TEST.LOG
     else
-	echo "[FAILED] $1"
+	echo " [FAILED]"
+	echo "$1 $SPAC [FAILED]" >>../TEST.LOG
     fi	
 else
-echo "[SKIPPED] $1"
+echo " [SKIPPED]"
+echo "$1 $SPAC [SKIPPED]" >>../TEST.LOG
 fi

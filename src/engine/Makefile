@@ -63,7 +63,7 @@ default: all
 all: info $(EXE)
 
 info:
-	@echo "+---- BUILDING ENGINE: $(ENGINE)"
+	@echo ". CREATE ENGINE FLAVOUR [$(ENGINE)]"
 
 install: build-dir
 	@echo [INSTALL] $(ENGINEFILES)

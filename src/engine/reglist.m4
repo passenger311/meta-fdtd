@@ -73,7 +73,7 @@ M4_REGLOOP_EXPR($1,$2,$3,$4,$5,$6,{
 if ( $1%isbox ) then
 write($7,"($8)") $9
 else
-write($7,"(I5,I5,I5,$8)") $3,$4,M4_IFELSE_3D({$5,})$9
+write($7,"(M4_SDIM({I5}),$8)") M4_DIM123({$3},{$3,$4},{$3,$4,$5}),$9
 endif
 },{if ( $1%is .ne. $1%ie ) write($7,*)}, {if ( $1%js .ne. $1%je ) write($7,*)} )
 })

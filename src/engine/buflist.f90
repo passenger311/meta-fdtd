@@ -114,9 +114,11 @@ contains
     if ( iscf ) then
       allocate(bufobj(numbufobj)%cdata(reg%numnodes,numslot), stat=err)
       M4_ALLOC_ERROR(err, {"CreatBufObj"})
+      bufobj(numbufobj)%cdata = 0.
     else
       allocate(bufobj(numbufobj)%rdata(reg%numnodes,numslot), stat=err)
       M4_ALLOC_ERROR(err, {"CreatBufObj"})    
+      bufobj(numbufobj)%rdata = 0.
     end if
     
 	M4_IFELSE_CF({

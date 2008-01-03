@@ -1,13 +1,28 @@
 #!/bin/bash
 
+rm -f build
 if [ -d ../$1 ]; then
-ln -sf ../$1 build
+ln -s ../$1 build
 else
 echo "BUILD NOT PRESENT: $1!"
 exit 0
 fi
 
+rm -f TEST.LOG
+touch TEST.LOG
 
-run-test pec-3d
 run-test passed
-run-test failed
+run-test startup-1d
+run-test startup-2d
+run-test startup-3d
+run-test startup-1d-cf
+run-test startup-2d-cf
+run-test startup-3d-cf
+run-test pec-1d
+run-test pec-2d
+run-test pec-3d
+
+OK=`cat TEST.LOG | grep OK | wc -l` 
+FAILED=`cat TEST.LOG | grep FAILED | wc -l` 
+echo "."
+echo ". TESTS PASSED: $OK  FAILED: $FAILED"
