@@ -1,5 +1,13 @@
 #!/bin/bash
 
+if [ -d ../$1 ]; then
+ln -sf ../$1 build
+else
+echo "BUILD NOT PRESENT: $1!"
+exit 0
+fi
+
+
 run-test pec-3d
 run-test passed
 run-test failed

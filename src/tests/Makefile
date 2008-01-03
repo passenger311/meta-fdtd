@@ -31,15 +31,14 @@ all: tests proper
 
 tests: 
 	@echo "+---- RUNNING TESTS FOR: $(BUILDDIR)"
-	@./run-all
+	@./run-all $(BUILDDIR)
 
 install:
 
 .PHONY: clean proper
 
 clean:
-	@echo "[CLEANUP]"
-	@rm -f */*.gpl
+	@rm -f build */*.gpl
 
 proper: clean
 
