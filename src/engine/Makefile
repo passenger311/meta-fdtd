@@ -15,7 +15,7 @@ include ../define.mk
 
 # ---------------------------------------------------------------------
 
-.PHONY: clean proper default install all
+.PHONY: clean proper default install all info
 
 M4= m4 $(M4DEFINE) meta.m4
 
@@ -55,27 +55,29 @@ meta.o
 
 EXE = meta
 
-INSTALLFILES=\
+ENGINEFILES=\
 $(EXE)
 
 default: all
 
-all: $(EXE)
+all: info $(EXE)
 
-install: 
-	@echo [INSTALL] $(INSTALLFILES)
-	@ [ -d ../$(BUILDDIR) ] || mkdir ../$(BUILDDIR)
-	@ cp $(INSTALLFILES) ../$(BUILDDIR)
+info:
+	@echo "+---- BUILDING ENGINE: $(ENGINE)"
+
+install: build-dir
+	@echo [INSTALL] $(ENGINEFILES)
+	@cp $(ENGINEFILES) ../$(ENGINEDIR)
 
 $(BOBJ) : %.o : %.f90
 	@echo [F90] $@
-	$(M4) $< >$*_m4.f90 
-	$(strip $(F90) $(F90FLAGS) -c $*_m4.f90 -o $*.o)
+	@$(M4) $< >$*_m4.f90 
+	@$(strip $(F90) $(F90FLAGS) -c $*_m4.f90 -o $*.o)
 
 $(FOBJ) : %.o : %.f90 $(BOBJ)
 	@echo [F90] $@
-	$(M4) $< >$*_m4.f90 
-	$(strip $(F90) $(F90FLAGS_OPT) -c $*_m4.f90 -o $*.o)
+	@$(M4) $< >$*_m4.f90 
+	@$(strip $(F90) $(F90FLAGS_OPT) -c $*_m4.f90 -o $*.o)
 
 
 $(EXE) : $(FOBJ) $(BOBJ)

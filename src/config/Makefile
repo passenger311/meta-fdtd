@@ -15,19 +15,23 @@ include ../define.mk
 
 # ---------------------------------------------------------------------
 
-.PHONY: clean proper default install all
+.PHONY: clean proper default install all info
 
-INSTALLFILES=\
+BUILDFILES=\
+meta-config\
 material.pm
 
 default: all
 
-all: install 
+all: info install 
  
-install: 
-	@echo [INSTALL] $(INSTALLFILES)
-	@ [ -d ../$(BUILDDIR) ] || mkdir ../$(BUILDDIR)
-	@ cp $(INSTALLFILES) ../$(BUILDDIR)
+
+info:
+	@echo "+---- BUILDING CONFIG PROCESSOR"
+
+install: build-dir
+	@echo [INSTALL] $(BUILDFILES)
+	@ cp $(BUILDFILES) ../$(BUILDDIR)
 
 %.o : %.f90
 	@echo [F90] $*

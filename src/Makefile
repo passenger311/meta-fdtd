@@ -9,31 +9,30 @@
 
 include ./define.mk
 
-.PHONY: default clean proper distclean engine config post install all
+.PHONY: default clean proper distclean engine config post run all build
 
-default: all
+build: 
+	-$(MAKE) config post run
+	-$(MAKE) proper engine DIM=1 
+	-$(MAKE) proper engine DIM=2 
+	-$(MAKE) proper engine DIM=3
+	-$(MAKE) proper engine DIM=1 CF=1
+	-$(MAKE) proper engine DIM=2 CF=1
+	-$(MAKE) proper engine DIM=3 CF=1
 
-all: engine config post run install
+all: config post run engine
 
-engine config post:
-	@cd $@ && $(MAKE) 
+engine config post run:
+	@cd $@ && $(MAKE) all install
 
-
-clean install: 
-	@cd engine;  $(MAKE) $@; cd ..
-	@cd config;  $(MAKE) $@; cd ..
+clean proper: 
+	@cd engine; $(MAKE) $@; cd ..
+	@cd config; $(MAKE) $@; cd ..
 	@cd post; $(MAKE) $@; cd ..
 	@cd run; $(MAKE) $@; cd ..
-
-proper: 
-	@cd engine;  $(MAKE) $@; cd ..
-	@cd config;  $(MAKE) $@; cd ..
-	@cd post; $(MAKE) $@; cd ..
-	@cd run; $(MAKE) $@; cd ..
-	@rm -f *~ \#*
 
 distclean: proper
-	@rm -rf meta3* meta2*
+	@rm -rf build-* build
 
 # ---------------------------------------------------------------------
 

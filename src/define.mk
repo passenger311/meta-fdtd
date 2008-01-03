@@ -64,9 +64,26 @@ ENG_TE=-te
 M4DEFINE+=-DM4_TE=1
 endif
 
-ENGINE=$(ENG_DIM)$(ENG_CF)$(ENG_WMU)$(ENG_TE)$(ENG_NG)$(ENG_MPI)$(ENG_MPELOG)$(ENG_OMP)$(ENG_DBG)
-BUILDPFX=meta
-BUILDDIR=$(BUILDPFX)$(ENGINE)
+ENGINE=meta$(ENG_DIM)$(ENG_CF)$(ENG_WMU)$(ENG_TE)$(ENG_NG)
+BUILDDIR=build$(ENG_MPI)$(ENG_MPELOG)$(ENG_OMP)$(ENG_DBG)
+ENGINEDIR=$(BUILDDIR)/$(ENGINE)
+
+.PHONY: build-dir
+
+default: all
+
+build-dir:
+	@if [ ! -d ../$(BUILDDIR) ]; then \
+	echo "[CREATE] $(BUILDDIR)"; \
+	mkdir ../$(BUILDDIR); \
+	fi
+	@if [ ! -d ../$(ENGINEDIR) ]; then \
+	mkdir ../$(ENGINEDIR); \
+	echo "[CREATE] $(ENGINEDIR)"; \
+	fi
+
+
+
 
 # ---------------------------------------------------------------------
 

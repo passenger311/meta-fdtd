@@ -18,10 +18,10 @@ include ../define.mk
 
 .PHONY: clean proper default install
 
-INSTALLFILES=\
+BUILDFILES=\
 qscript.mpi\
-mpiwrap.sh\
-config.0.in
+mpiwrap.sh
+
 
 .PHONY: clean proper default install
 
@@ -29,10 +29,9 @@ default: all
 
 all: install
 
-install: 
-	@echo [INSTALL] $(INSTALLFILES)
-	@ [ -d ../$(BUILDDIR) ] || mkdir ../$(BUILDDIR)
-	@ cp $(INSTALLFILES) ../$(BUILDDIR)
+install: build-dir
+	@echo [INSTALL] $(BUILDFILES)
+	@ cp $(BUILDFILES) ../$(BUILDDIR)
 
 .PHONY: clean proper
 

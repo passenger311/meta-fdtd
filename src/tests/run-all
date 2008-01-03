@@ -1,0 +1,5 @@
+#!/bin/bash
+
+run-test pec-3d
+run-test passed
+run-test failed

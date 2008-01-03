@@ -1,0 +1,12 @@
+#!/bin/bash
+if [ -f $1/run.sh ]; then
+    cd $1
+    ./run.sh
+    if [ $? == 0 ]; then
+	echo "[PASSED] $1"
+    else
+	echo "[FAILED] $1"
+    fi	
+else
+echo "[SKIPPED] $1"
+fi

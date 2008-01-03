@@ -312,7 +312,7 @@ contains
        ! k=const face: Finc(3) => Hx, Finc(4) => Hy       
        if ( mat%face .eq. 3 ) then
           
-          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{  
           
           Hx(i,j,k) = Hx(i,j,k) + mat%Finc(i,j,k,2) * DT/SZ * M4_MUINVX(i,j,k) * wavefct
           Hy(i,j,k) = Hy(i,j,k) + mat%Finc(i,j,k,1) * DT/SZ * M4_MUINVY(i,j,k) * wavefct
