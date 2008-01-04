@@ -29,9 +29,11 @@ default: all
 all: tests
 
 tests: 
+	@echo "."
 	@echo ". RUNNING TESTS FOR [$(BUILDDIR)]"
 	@echo "."
 	@./run-all $(BUILDDIR)
+	@echo "."
 
 install:
 	@echo [INSTALL] $(BUILDFILES)

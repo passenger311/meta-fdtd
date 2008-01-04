@@ -9,6 +9,7 @@ if [ -f $1/run ]; then
     cd $1
     echo "#!/bin/bash" >run_m4.sh
     m4 ../tests.m4 ./run >>run_m4.sh
+    chmod a+x ./run_m4.sh
     ./run_m4.sh
     ERR=$?
     if [ $ERR == 2 ]; then
