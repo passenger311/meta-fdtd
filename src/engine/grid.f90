@@ -90,6 +90,7 @@ contains
     read(funit,*) DT
     M4_WRITE_DBG({"read DT: ", DT})
     read(funit,*) IBEG, IEND    ! from ... to ranges
+    M4_WRITE_DBG({"read IBEG/IEND: ", IBEG, IEND})
 M4_IFELSE_2D({
     read(funit,*) JBEG, JEND
     M4_WRITE_DBG({"read JBEG/JEND: ", JBEG, JEND})
