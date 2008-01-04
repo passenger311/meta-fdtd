@@ -3,7 +3,7 @@ echo -n ". $1 "
 LEN=${#1}
 let DOTS=20-$LEN
 for i in `seq 1 $DOTS`; do SPAC=".$SPAC"; done
-echo -n $SPAC
+echo -n "$SPAC "
 
 if [ -f $1/run ]; then
     cd $1
@@ -13,18 +13,18 @@ if [ -f $1/run ]; then
     ./run_m4.sh
     ERR=$?
     if [ $ERR == 2 ]; then
-	echo " [SKIP]"
+	echo "[SKIP]"
 	echo "$1 $SPAC [SKIP]" >>../TESTED
 	exit 0
     fi	
     if [ $ERR == 0 ]; then
-	echo " [OK]"
+	echo "[OK]"
 	echo "$1 $SPAC [OK]" >>../TESTED
     else
-	echo " [FAILED]"
+	echo "[FAILED]"
 	echo "$1 $SPAC [FAILED]" >>../TESTED
     fi	
 else
-    echo " [SKIP]"
+    echo "[SKIP]"
     echo "$1 $SPAC [SKIP]" >>../TESTED
 fi
