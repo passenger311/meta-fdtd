@@ -11,15 +11,7 @@ fi
 rm -f TESTED
 touch TESTED
 
-run-test startup-1d
-run-test startup-2d
-run-test startup-3d
-run-test startup-1d-cf
-run-test startup-2d-cf
-run-test startup-3d-cf
-run-test pec-1d
-run-test pec-2d
-run-test pec-3d
+source ./tests.run
 
 OK=`cat TESTED | grep OK | wc -l` 
 FAILED=`cat TESTED | grep FAILED | wc -l` 
