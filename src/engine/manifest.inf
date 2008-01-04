@@ -1,0 +1,4 @@
+version: M4_VERSION [M4_DATE]
+authors: M4_AUTHORS
+build  : M4_BUILD
+flavour: M4_FLAVOUR
