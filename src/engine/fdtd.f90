@@ -343,13 +343,13 @@ M4_IFELSE_WMU({ deallocate(MUINV) })
     ! M4_IFELSE_3D({3D},{NOT 3D})
 
 M4_IFELSE_3D({!$OMP PARALLEL DO PRIVATE(Exh,Eyh,Ezh)})
-    do k=KSIG, KEIG-1
+    do k=KBIG, KEIG
 
 M4_IFELSE_2D({!$OMP PARALLEL DO PRIVATE(Exh,Eyh,Ezh)})
-       do j=JSIG, JEIG-1
+       do j=JBIG, JEIG
 
 M4_IFELSE_1D({!$OMP PARALLEL DO PRIVATE(Exh,Eyh,Ezh)})
-          do i=ISIG, IEIG-1
+          do i=IBIG, IEIG
 
              Exh=Ex(i,j,k)
              Eyh=Ey(i,j,k)
@@ -396,13 +396,13 @@ M4_IFELSE_3D({ !$OMP END PARALLEL DO })
     ! E in GT + DT
 
 M4_IFELSE_3D({!$OMP PARALLEL DO PRIVATE(Hxh,Hyh,Hzh)})
-   do k=KSIG, KEIG-1
+   do k=KBIG, KEIG
    
 M4_IFELSE_2D({!$OMP PARALLEL DO PRIVATE(Hxh,Hyh,Hzh)})
-       do j=JSIG, JEIG-1
+       do j=JBIG, JEIG
 
 M4_IFELSE_1D({!$OMP PARALLEL DO PRIVATE(Hxh,Hyh,Hzh)})
-          do i=ISIG, IEIG-1
+          do i=IBIG, IEIG
 
              Hxh=Hx(i,j,k)
              Hyh=Hy(i,j,k)

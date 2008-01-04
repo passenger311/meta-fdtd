@@ -32,21 +32,18 @@ module grid
 
   ! --- Public Variables  
 
-  integer :: IBEG, IEND
-  integer :: JBEG, JEND
-  integer :: KBEG, KEND
+  integer :: IBEG = 0, IEND = 1
+  integer :: JBEG = 0, JEND = 1
+  integer :: KBEG = 0, KEND = 1
   integer :: GRIDSIZE
 
   integer :: IMIN = -1, IMAX = 2
   integer :: JMIN = -1, JMAX = 2   
   integer :: KMIN = -1, KMAX = 2
 
-  integer :: ISIG = 0
-  integer :: IEIG = 2 
-  integer :: JSIG = 0
-  integer :: JEIG = 2
-  integer :: KSIG = 0
-  integer :: KEIG = 2
+  integer :: IBIG = 0, IEIG = 1 
+  integer :: JBIG = 0, JEIG = 1
+  integer :: KBIG = 0, KEIG = 1
 
   real(8) :: SX  = 1.0    
   real(8) :: SY  = 1.0
@@ -151,16 +148,16 @@ M4_IFELSE_3D({
     M4_WRITE_DBG({"init JMIN/JMAX: ", JMIN, JMAX})
     M4_WRITE_DBG({"init KMIN/KMAX: ", KMIN, KMAX})
 
-    ISIG=IBEG
+    IBIG=IBEG
     IEIG=IMAX
-    JSIG=IBEG
+    JBIG=IBEG
     JEIG=JMAX
-    KSIG=KBEG
+    KBIG=KBEG
     KEIG=KMAX
 
-    M4_WRITE_DBG({"set ISIG/IEIG: ", ISIG, IEIG})
-    M4_WRITE_DBG({"set JSIG/JEIG: ", JSIG, JEIG})
-    M4_WRITE_DBG({"set KSIG/KEIG: ", KSIG, KEIG})
+    M4_WRITE_DBG({"set IBIG/IEIG: ", IBIG, IEIG})
+    M4_WRITE_DBG({"set JBIG/JEIG: ", JBIG, JEIG})
+    M4_WRITE_DBG({"set KBIG/KEIG: ", KBIG, KEIG})
 
   
     GRIDSIZE = (IEND - IBEG + 1)*(JEND - JBEG + 1)*(KEND - KBEG + 1)
@@ -192,9 +189,9 @@ M4_IFELSE_3D({
     write(6,'(A20, 1E12.4)') 'DT: ', DT
     write(6,'(A20, 3E12.4)') 'SX, SY, SZ: ', SX, SY, SZ
     write(6,*) 'NCYCMAX:          ', NCYCMAX
-    write(6,*) 'ISIG, IEIx/G:       ', ISIG, IEIG
-    write(6,*) 'JSIG, JEIG:       ', JSIG, JEIG
-    write(6,*) 'KSIG, KEIG:       ', KSIG, KEIG
+    write(6,*) 'IBIG, IEIx/G:       ', IBIG, IEIG
+    write(6,*) 'JBIG, JEIG:       ', JBIG, JEIG
+    write(6,*) 'KBIG, KEIG:       ', KBIG, KEIG
 
   end subroutine EchoGrid
 

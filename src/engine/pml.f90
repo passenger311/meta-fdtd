@@ -131,33 +131,33 @@ contains
 
     M4_WRITE_DBG({"planepml : ",(planepml(i), i = 1,6)})
 
-    ! modify fdtd core ranges for PML sheets [ISIG,IEIG]
+    ! modify fdtd core ranges for PML sheets [IBIG,IEIG]
     
     ! the k planes are set 0 if in 2D mode
 
-    if(planepml(1) .eq. 1) ISIG=IBEG+PMLMAX
-    if(planepml(2) .eq. 1) IEIG=IMAX-PMLMAX
-    if(planepml(3) .eq. 1) JSIG=JBEG+PMLMAX
-    if(planepml(4) .eq. 1) JEIG=JMAX-PMLMAX
-    if(planepml(5) .eq. 1) KSIG=KBEG+PMLMAX
-    if(planepml(6) .eq. 1) KEIG=KMAX-PMLMAX
+    if(planepml(1) .eq. 1) IBIG=IBEG+PMLMAX
+    if(planepml(2) .eq. 1) IEIG=IEND-PMLMAX
+    if(planepml(3) .eq. 1) JBIG=JBEG+PMLMAX
+    if(planepml(4) .eq. 1) JEIG=JEND-PMLMAX
+    if(planepml(5) .eq. 1) KBIG=KBEG+PMLMAX
+    if(planepml(6) .eq. 1) KEIG=KEND-PMLMAX
     
-    M4_WRITE_DBG({"set ISIG/IEIG: ", ISIG, IEIG})
-    M4_WRITE_DBG({"set KSIG/KEIG: ", JSIG, JEIG})
-    M4_WRITE_DBG({"set KSIG/KEIG: ", KSIG, KEIG})
+    M4_WRITE_DBG({"set IBIG/IEIG: ", IBIG, IEIG})
+    M4_WRITE_DBG({"set KBIG/KEIG: ", JBIG, JEIG})
+    M4_WRITE_DBG({"set KBIG/KEIG: ", KBIG, KEIG})
 
-    if((IEIG.le.ISIG) & 
-M4_IFELSE_1D({},{    .or. (JEIG.le.JSIG) &    }) 
-M4_IFELSE_3D({       .or. (KEIG.le.KSIG) &    })
+    if((IEIG+1.le.IBIG) & 
+M4_IFELSE_1D({},{    .or. (JEIG+1.le.JBIG) &    }) 
+M4_IFELSE_3D({       .or. (KEIG+1.le.KBIG) &    })
     ) then
        write(STDERR,*) "OPPOSITE PML LAYERS OVERLAP!"
        stop
     endif    
 
     call AllocateFields
-    call CalcCoefficients(IBEG, IMAX, ISIG, IEIG, cexpml, cmxpml)
-    call CalcCoefficients(JBEG, JMAX, JSIG, JEIG, ceypml, cmypml)
-    call CalcCoefficients(KBEG, KMAX, KSIG, KEIG, cezpml, cmzpml)
+    call CalcCoefficients(IBEG, IMAX, IBIG, IEIG+1, cexpml, cmxpml)
+    call CalcCoefficients(JBEG, JMAX, JBIG, JEIG+1, ceypml, cmypml)
+    call CalcCoefficients(KBEG, KMAX, KBIG, KEIG+1, cezpml, cmzpml)
 
     M4_WRITE_DBG({". exit InitializePml"})
 
@@ -189,92 +189,71 @@ M4_IFELSE_3D({       .or. (KEIG.le.KSIG) &    })
       allocate(cmzpml(1:4,KBEG:KMAX), STAT=err)
       M4_ALLOC_ERROR(err,"AllocFields")
       
+
+      cexpml=1.0
+      ceypml=1.0
+      cezpml=1.0
+      cmxpml=1.0
+      cmypml=1.0
+      cmzpml=1.0
+
       !  B and D fields for each of the 6 layers 
       
-      allocate(BE1(1:3,IBEG:ISIG-1,JBEG:JMAX-1,KBEG:KMAX-1), STAT=err) 
+      allocate(BE1(1:3,IBEG:IBIG-1,JBEG:JEND,KBEG:KEND), STAT=err) 
       M4_ALLOC_ERROR(err,"AllocFields")
       
-      allocate(DE1(1:3,IBEG:ISIG-1,JBEG:JMAX-1,KBEG:KMAX-1), STAT=err)
+      allocate(DE1(1:3,IBEG:IBIG-1,JBEG:JEND,KBEG:KEND), STAT=err)
       M4_ALLOC_ERROR(err,"AllocFields")
       
-      allocate(BE2(1:3,IEIG:IMAX-1,JBEG:JMAX-1,KBEG:KMAX-1), STAT=err)
+      allocate(BE2(1:3,IEIG+1:IEND,JBEG:JEND,KBEG:KEND), STAT=err)
       M4_ALLOC_ERROR(err,"AllocFields")
       
-      allocate(DE2(1:3,IEIG:IMAX-1,JBEG:JMAX-1,KBEG:KMAX-1), STAT=err)
-      M4_ALLOC_ERROR(err,"AllocFields")
-      
-M4_IFELSE_1D({},{      
-      allocate(BE3(1:3,ISIG:IEIG-1,JBEG:JSIG-1,KBEG:KMAX-1), STAT=err) 
+      allocate(DE2(1:3,IEIG+1:IEND,JBEG:JEND,KBEG:KEND), STAT=err)
       M4_ALLOC_ERROR(err,"AllocFields")
 
-      allocate(DE3(1:3,ISIG:IEIG-1,JBEG:JSIG-1,KBEG:KMAX-1), STAT=err) 
+      BE1 = 0.0
+      BE2 = 0.0
+      DE1 = 0.0
+      DE2 = 0.0
+      
+M4_IFELSE_1D({},{      
+      allocate(BE3(1:3,IBIG:IEIG,JBEG:JBIG-1,KBEG:KEND), STAT=err) 
+      M4_ALLOC_ERROR(err,"AllocFields")
+
+      allocate(DE3(1:3,IBIG:IEIG,JBEG:JBIG-1,KBEG:KEND), STAT=err) 
       M4_ALLOC_ERROR(err,"AllocFields")
       
-      allocate(BE4(1:3,ISIG:IEIG-1,JEIG:JMAX-1,KBEG:KMAX-1), STAT=err)
+      allocate(BE4(1:3,IBIG:IEIG,JEIG+1:JEND,KBEG:KEND), STAT=err)
       M4_ALLOC_ERROR(err,"AllocFields")
       
-      allocate(DE4(1:3,ISIG:IEIG-1,JEIG:JMAX-1,KBEG:KMAX-1), STAT=err)
+      allocate(DE4(1:3,IBIG:IEIG,JEIG+1:JEND,KBEG:KEND), STAT=err)
       M4_ALLOC_ERROR(err,"AllocFields")
+
+      BE3 = 0.0
+      BE4 = 0.0
+      DE3 = 0.0
+      DE4 = 0.0
 })
       
 M4_IFELSE_3D({      
-      allocate(BE5(1:3,ISIG:IEIG-1,JSIG:JEIG-1,KBEG:KSIG-1), STAT=err) 
+      allocate(BE5(1:3,IBIG:IEIG,JBIG:JEIG,KBEG:KBIG-1), STAT=err) 
       M4_ALLOC_ERROR(err,"AllocFields")
       
-      allocate(DE5(1:3,ISIG:IEIG-1,JSIG:JEIG-1,KBEG:KSIG-1), STAT=err)
+      allocate(DE5(1:3,IBIG:IEIG,JBIG:JEIG,KBEG:KBIG-1), STAT=err)
       M4_ALLOC_ERROR(err,"AllocFields")
       
-      allocate(BE6(1:3,ISIG:IEIG-1,JSIG:JEIG-1,KEIG:KMAX-1), STAT=err)
+      allocate(BE6(1:3,IBIG:IEIG,JBIG:JEIG,KEIG+1:KEND), STAT=err)
       M4_ALLOC_ERROR(err,"AllocFields")
 
-      allocate(DE6(1:3,ISIG:IEIG-1,JSIG:JEIG-1,KEIG:KMAX-1), STAT=err)
+      allocate(DE6(1:3,IBIG:IEIG,JBIG:JEIG,KEIG+1:KEND), STAT=err)
       M4_ALLOC_ERROR(err,"AllocFields")
+
+      BE5 = 0.0
+      BE6 = 0.0
+      DE5 = 0.0
+      DE6 = 0.0
 })      
       
-      ! initialize fields
-      
-      cexpml=1.0; ceypml=1.0; cezpml=1.0
-      cmxpml=1.0; cmypml=1.0; cmzpml=1.0
-
-      do l = 1, 3
-         do j = JBEG, JMAX-1
-            do k = KBEG, KMAX-1
-               do i = IBEG, ISIG-1
-                  BE1(l,i,j,k) = 0.0; DE1(l,i,j,k) = 0.0;
-               enddo
-               
-               do i = IEIG, IMAX-1
-                  BE2(l,i,j,k) = 0.0; DE2(l,i,j,k) = 0.0;
-               enddo
-            enddo
-         enddo
-  
-         do i = ISIG, IEIG-1
-M4_IFELSE_1D({},{                
-            do k = KBEG, KMAX-1
-               do j = JBEG, JSIG-1
-                  BE3(l,i,j,k) = 0.0; DE3(l,i,j,k) = 0.0;
-               enddo
-                 
-               do j = JEIG, JMAX-1
-                  BE4(l,i,j,k) = 0.0; DE4(l,i,j,k) = 0.0; 
-               enddo
-            enddo
-})            
-            
-M4_IFELSE_3D({            
-            do j = JSIG, JEIG-1
-               do k = KBEG, KSIG-1
-                  BE5(l,i,j,k) = 0.0; DE5(l,i,j,k) = 0.0;
-               enddo
-               
-               do k = KEIG, KMAX-1
-                  BE6(l,i,j,k) = 0.0; DE6(l,i,j,k) = 0.0; 
-               enddo
-            enddo
-})
-         enddo
-      enddo
 
       M4_WRITE_DBG({". exit InitializePml.AllocateFields"})
       
@@ -394,17 +373,17 @@ M4_IFELSE_1D({},{
 
     select case ( i )
     case ( 1 ) 
-       call DoStepHPml(IBEG,ISIG-1,JBEG,JMAX-1,KBEG,KMAX-1,BE1)
+       call DoStepHPml(IBEG,IBIG-1,JBEG,JEND,KBEG,KEND,BE1)
     case ( 2 )
-       call DoStepHPml(IEIG,IMAX-1,JBEG,JMAX-1,KBEG,KMAX-1,BE2)
+       call DoStepHPml(IEIG+1,IEND,JBEG,JEND,KBEG,KEND,BE2)
     case ( 3 )
-       call DoStepHPml(ISIG,IEIG-1,JBEG,JSIG-1,KBEG,KMAX-1,BE3)
+       call DoStepHPml(IBIG,IEIG,JBEG,JBIG-1,KBEG,KEND,BE3)
     case ( 4  )
-       call DoStepHPml(ISIG,IEIG-1,JEIG,JMAX-1,KBEG,KMAX-1,BE4)
+       call DoStepHPml(IBIG,IEIG,JEIG+1,JEND,KBEG,KEND,BE4)
     case ( 5  )
-       call DoStepHPml(ISIG,IEIG-1,JSIG,JEIG-1,KBEG,KSIG-1,BE5)
+       call DoStepHPml(IBIG,IEIG,JBIG,JEIG,KBEG,KBIG-1,BE5)
     case ( 6  )
-       call DoStepHPml(ISIG,IEIG-1,JSIG,JEIG-1,KEIG,KMAX-1,BE6)
+       call DoStepHPml(IBIG,IEIG,JBIG,JEIG,KEIG+1,KEND,BE6)
     end select
     
   contains
@@ -486,17 +465,17 @@ M4_IFELSE_3D({!$OMP END PARALLEL DO})
 
     select case ( i )
     case ( 1 ) 
-       call DoStepEPml(IBEG,ISIG-1,JBEG,JMAX-1,KBEG,KMAX-1,DE1)
+       call DoStepEPml(IBEG,IBIG-1,  JBEG,JEND,KBEG,KEND,DE1)
     case ( 2 ) 
-       call DoStepEPml(IEIG,IMAX-1,JBEG,JMAX-1,KBEG,KMAX-1,DE2)
+       call DoStepEPml(IEIG+1,IEND,  JBEG,JEND,KBEG,KEND,DE2)
     case ( 3 ) 
-       call DoStepEPml(ISIG,IEIG-1,JBEG,JSIG-1,KBEG,KMAX-1,DE3)
+       call DoStepEPml(IBIG,IEIG,  JBEG,JBIG-1  ,KBEG,KEND,DE3)
     case ( 4 )
-       call DoStepEPml(ISIG,IEIG-1,JEIG,JMAX-1,KBEG,KMAX-1,DE4)
+       call DoStepEPml(IBIG,IEIG,  JEIG+1,JEND  ,KBEG,KEND,DE4)
     case ( 5 ) 
-       call DoStepEPml(ISIG,IEIG-1,JSIG,JEIG-1,KBEG,KSIG-1,DE5)
+       call DoStepEPml(IBIG,IEIG,JBIG,JEIG,  KBEG,KBIG-1,  DE5)
     case ( 6 ) 
-       call DoStepEPml(ISIG,IEIG-1,JSIG,JEIG-1,KEIG,KMAX-1,DE6)
+       call DoStepEPml(IBIG,IEIG,JBIG,JEIG,  KEIG+1,KEND,  DE6)
     end select
 
     call StepEBoundPec(i) ! need to set electric conductor bcs
