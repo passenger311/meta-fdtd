@@ -56,7 +56,8 @@ meta.o
 EXE = meta
 
 ENGINEFILES=\
-$(EXE)
+$(EXE)\
+MANIFEST
 
 default: all
 
@@ -65,9 +66,14 @@ all: info $(EXE)
 info:
 	@echo ". CREATE ENGINE FLAVOUR [$(ENGINE)]"
 
-install: build-dir
+install: MANIFEST build-dir
 	@echo [INSTALL] $(ENGINEFILES)
 	@cp $(ENGINEFILES) ../$(ENGINEDIR)
+
+MANIFEST: manifest.inf 
+	@echo [SIGN] $@
+	@$(M4) $< | tail -n 4 >$@
+	
 
 $(BOBJ) : %.o : %.f90
 	@echo [F90] $@

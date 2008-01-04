@@ -19,7 +19,7 @@ include ../define.mk
 .PHONY: clean proper all tests default install
 
 BUILDFILES=\
-TESTED.LOG
+TESTED
 
 
 .PHONY: clean proper default install
@@ -40,7 +40,7 @@ install:
 .PHONY: clean proper
 
 clean:
-	@rm -f */*.gpl */log TEST.LOG
+	@rm -f */*.gpl */log */*_m4.sh TESTED
 
 proper: clean
 

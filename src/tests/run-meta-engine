@@ -1,12 +1,15 @@
 #!/bin/bash
 
-
-$1/meta &>log
+if [ -f ../build/$1/meta ]; then
+../build/$1/meta &>log
+else
+exit 2  # skip this test!
+fi
 
 ENDS="`grep '(META) END' log`"
 
 if [ "x$ENDS" == "x" ]; then
-exit 1
+exit 1 # failed!
 fi
 
-exit 0
+exit 0 # ok!

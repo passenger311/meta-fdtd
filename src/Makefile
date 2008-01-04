@@ -10,10 +10,11 @@ ARCH=gnu
 endif
 include ./define.mk
 
-.PHONY: default clean proper distclean engine config post run all build tests
+.PHONY: default clean proper distclean engine config post run all all-tests build tests
 
 build: 
-	@echo ". CREATE FULL BUILD [$(BUILDDIR)]"
+	@echo ". CREATE BUILD [$(BUILDDIR)]"
+	-@$(MAKE) -s proper
 	-@$(MAKE) -s config post run
 	-@$(MAKE) -s engine DIM=1 
 	-@$(MAKE) -s engine DIM=2 
@@ -22,11 +23,11 @@ build:
 	-@$(MAKE) -s engine DIM=2 CF=1
 	-@$(MAKE) -s engine DIM=3 CF=1
 	-@$(MAKE) -s tests
-	-@$(MAKE) -s proper
-	@echo ". FULL BUILD COMPLETED [$(BUILDDIR)]"
+	@echo ". BUILD COMPLETED [$(BUILDDIR)]"
 
-all: config post run engine 
+all-tests: all tests
 
+all: config post run engine
 
 engine:
 	@cd $@ && $(MAKE) -s proper all install

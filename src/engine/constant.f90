@@ -30,14 +30,14 @@ module constant
   integer, parameter :: STDERR=0                   ! 6 for sr8000k, otherwise 0
   integer, parameter :: STDOUT=6                   ! 
 
-  character(len=STRLNG),parameter :: VERSION_NUMBER = "0.07.12.25"
-  character(len=STRLNG),parameter :: VERSION_DATE = "2007-2008"
+  character(len=STRLNG),parameter :: VERSION_NUMBER = "M4_VERSION"
+  character(len=STRLNG),parameter :: VERSION_DATE = "M4_DATE"
   character(len=STRLNG),parameter :: VERSION_AUTHORS = &
-       "J.Hamm, A.Klaedtke, S.Scholz, C.Hermann"
-  character(len=STRLNG),parameter :: BUILD_ARCH= &
-       "M4_ARCH() M4_IFELSE_DBG({DBG })M4_IFELSE_OMP({OMP })M4_IFELSE_MPI({MPI })M4_IFELSE_MPELOG({MPELOG })" 
-   character(len=STRLNG),parameter :: BUILD_FLAGS= &
-        "M4_SDIM({D })M4_IFELSE_CF({CF })M4_IFELSE_NG({NG })M4_IFELSE_TE({TE })" 
+       "M4_AUTHORS"
+  character(len=STRLNG),parameter :: BUILD= &
+       "M4_BUILD"
+  character(len=STRLNG),parameter :: FLAVOUR= &
+        "M4_FLAVOUR"
 
   character(len=20), parameter :: sfxin = ".in"
   character(len=20), parameter :: sfxout = ".out"
@@ -50,13 +50,13 @@ contains
 
   
     write(6,*) "* BUILD INFO" 
-    write(6,*) "*   %VERSION   : ",TRIM(VERSION_NUMBER), " (", TRIM(VERSION_DATE),")"
-    write(6,*) "*   %ARCH      : ",TRIM(BUILD_ARCH) 
-    write(6,*) "*   %FLAGS     : ",TRIM(BUILD_FLAGS) 
+    write(6,*) "*   %VERSION : ",TRIM(VERSION_NUMBER), " (", TRIM(VERSION_DATE),")"
+    write(6,*) "*   %BUILD   : ",TRIM(BUILD) 
+    write(6,*) "*   %FLAVOUR : ",TRIM(FLAVOUR) 
     write(6,*) "* MODULE INFO"
-    write(6,*) "*   %MAT       : M4_MATLIST"
-    write(6,*) "*   %DIAG      : M4_DIAGLIST"
-    write(6,*) "*   %OUTGPL    : M4_OUTGPLLIST"
+    write(6,*) "*   %MAT     : M4_MATLIST"
+    write(6,*) "*   %DIAG    : M4_DIAGLIST"
+    write(6,*) "*   %OUTGPL  : M4_OUTGPLLIST"
 
   end subroutine DisplayVersion
 

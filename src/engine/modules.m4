@@ -1,4 +1,3 @@
-
 define({M4_MODHEAD_DECL},{
 
   ! --- Module Identifier
