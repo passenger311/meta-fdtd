@@ -26,7 +26,9 @@ module out
 ! 1.
   use outgpl
   use outvtk
+M4_IFELSE_HD5({
   use outhd5
+})
 ! ! 2.
 ! **
 
@@ -74,8 +76,10 @@ contains
           call InitializeOutgplObj(outobj(n))
        case ( "VTK" ) 
           call InitializeOutvtkObj(outobj(n))
+M4_IFELSE_HD5({
        case ( "HD5" ) 
           call InitializeOuthd5Obj(outobj(n))
+})
 ! 2.
 ! **
        case default
@@ -106,8 +110,10 @@ contains
           call FinalizeOutgplObj(outobj(n))
        case ( "VTK" ) 
           call FinalizeOutvtkObj(outobj(n))
+M4_IFELSE_HD5({
        case ( "HD5" ) 
           call FinalizeOuthd5Obj(outobj(n))
+})
 ! 2.
 ! **
        case default
@@ -145,9 +151,10 @@ contains
           call WriteDataOutgplObj(outobj(n), ncyc, mode)
        case ( "VTK" ) 
           call WriteDataOutvtkObj(outobj(n), ncyc, mode)
+M4_IFELSE_HD5({
        case ( "HD5" ) 
           call WriteDataOuthd5Obj(outobj(n), ncyc, mode)
-
+})
 ! 2.
 ! **
        case default

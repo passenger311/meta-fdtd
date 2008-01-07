@@ -25,6 +25,12 @@ OUTGPLLIST=$(shell ./mlist.pl -s outgpl.def 2>/dev/null)
 MATOBJ= $(patsubst %,%.o,$(MATLIST))
 DIAGOBJ= $(patsubst %,%.o,$(DIAGLIST))
 OUTGPLOBJ= $(patsubst %,%_outgpl.o,$(OUTGPLLIST))
+OUTVTKOBJ= $(patsubst %,%_outgpl.o,$(OUTVTKLIST))
+ifneq ($(HD5),)
+OUTHD5OBJ= $(patsubst %,%_outgpl.o,$(OUTHD5LIST))
+OUTHD5= outhd5.o
+FDTD_OUTHD5= fdtd_outhd5.o
+endif
 
 BOBJ=\
 strings.o\
@@ -37,6 +43,7 @@ outlist.o\
 list.o\
 grid.o
 
+
 FOBJ=\
 fdtd.o\
 fdtd_calc.o\
@@ -46,15 +53,17 @@ pml.o\
 bound.o\
 fdtd_outgpl.o\
 fdtd_outvtk.o\
-fdtd_outhd5.o\
+$(FDTD_OUTHD5)\
 $(MATOBJ)\
 mat.o\
 $(DIAGOBJ)\
 diag.o\
 $(OUTGPLOBJ)\
+$(OUTVTKOBJ)\
+$(OUTHD5OBJ)\
 outgpl.o\
 outvtk.o\
-outhd5.o\
+$(OUTHD5)\
 out.o\
 config.o\
 mpicomms.o\

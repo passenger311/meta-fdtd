@@ -27,6 +27,11 @@ ENG_DBG=-dbg
 M4DEFINE+= -DM4_DBG=1
 endif
 
+ifneq ($(HD5),)
+ENG_DBG=-hd5
+M4DEFINE+= -DM4_HD5=1
+endif
+
 ifneq ($(MPI),)
 ENG_MPI=-mpi
 M4DEFINE+= -DM4_MPI=1
