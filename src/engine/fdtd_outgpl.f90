@@ -118,9 +118,10 @@ contains
 
     ! **************************************************************** !
 
-    subroutine WriteEH(out)
+    subroutine WriteEH(out,mode)
 
       type (T_OUT) :: out
+      logical :: mode
 
       M4_REGLOOP_DECL(reg,p,i,j,k,w(0))  
 
@@ -138,9 +139,11 @@ contains
 
     ! **************************************************************** !
 
-    subroutine WriteField(out,field)
+    subroutine WriteField(out,field,mode)
 
       type (T_OUT) :: out
+      logical :: mode
+
       M4_FTYPE, dimension(M4_RANGE(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX)) :: field
       M4_REGLOOP_DECL(reg,p,i,j,k,w(0))  
 
@@ -159,9 +162,10 @@ contains
 
     ! **************************************************************** !
 
-    subroutine WriteEpsilon(out)
+    subroutine WriteEpsilon(out,mode)
 
       type (T_OUT) :: out
+      logical :: mode
 
       M4_REGLOOP_DECL(reg,p,i,j,k,w(0))  
 
@@ -178,11 +182,10 @@ contains
 
     ! **************************************************************** !
 
-    subroutine WriteBufData(out)
+    subroutine WriteBufData(out, mode)
 
-      implicit none
-  
       type (T_OUT) :: out
+      logical :: mode
       M4_FTYPE :: sum = 0.0
       type (T_BUF) :: buf
       M4_REGLOOP_DECL(reg,p,i,j,k,w(0))  
@@ -219,7 +222,8 @@ contains
 end module fdtd_outgpl
 
 !
-! Authors:  S.Scholz,A.Klaedtke,C.Hermann,J.Hamm
+! Authors:  J.Hamm,S.Scholz,A.Klaedtke,C.Hermann
+
 ! Modified: 4/12/2007
 !
 !======================================================================
