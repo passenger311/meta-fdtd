@@ -29,7 +29,7 @@ module fdtd_calc
 
   public :: InitializeFdtdCalc
   public :: FinalizeFdtdCalc
-  public :: FdtdCalcEn, FdtdCalcPx
+  public :: FdtdCalcEn, FdtdCalcPx, FdtdCalcPy, FdtdCalcPz
 
 contains
 
