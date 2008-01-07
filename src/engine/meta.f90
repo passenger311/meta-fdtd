@@ -18,6 +18,7 @@ program meta
   use mpiworld
   use grid
   use fdtd
+  use fdtd_calc
   use bound
   use mat
   use out
@@ -66,6 +67,8 @@ M4_IFELSE_MPI(call SynchronizeMPIWorld)
         call ReadConfig
         write(6,*) "* -> InitializeFdtd"
         call InitializeFdtd
+        write(6,*) "* -> InitializeFdtdCalc"
+        call InitializeFdtdCalc
         write(6,*) "* -> InitializeBound"
         call InitializeBound
         write(6,*) "* -> InitializeMat"
@@ -139,16 +142,16 @@ M4_MPE_SECTION(4,{
 	if ( ncyc .gt. 0 ) call StepH
 })
 
-! -------------------------- StepHMat ---------------------------------
-
-M4_MPE_SECTION(8,{
-	if ( ncyc .gt. 0 ) call StepHMat(ncyc)
-})
-
 ! -------------------------- StepHBound -------------------------------
 
 M4_MPE_SECTION(7,{
 	if ( ncyc .gt. 0 )  call StepHBound
+})
+
+! -------------------------- StepHMat ---------------------------------
+
+M4_MPE_SECTION(8,{
+	if ( ncyc .gt. 0 ) call StepHMat(ncyc)
 })
 
 ! ---------------------------- COMMS H --------------------------------
@@ -183,16 +186,16 @@ M4_MPE_SECTION(6,{
 	if ( ncyc .gt. 0 ) call StepE 
 })
 
-! -------------------------- StepEMat ---------------------------------
-
-M4_MPE_SECTION(9,{
-	if ( ncyc .gt. 0 ) call StepEMat(ncyc)
-})
-
 ! -------------------------- StepEBound -------------------------------
 
 M4_MPE_SECTION(7,{
 	if ( ncyc .gt. 0 ) call StepEBound
+})
+
+! -------------------------- StepEMat ---------------------------------
+
+M4_MPE_SECTION(9,{
+	if ( ncyc .gt. 0 ) call StepEMat(ncyc)
 })
 
 ! -------------------------- COMMS E ----------------------------------
@@ -293,6 +296,6 @@ end program meta
 
 !
 ! Authors:  J.Hamm, A.Klaedtke, S.Scholz
-! Modified: 20/12/2007
+! Modified: 6/1/2008
 !
 !======================================================================

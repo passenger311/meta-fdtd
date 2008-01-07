@@ -4,8 +4,6 @@
 !
 !  a spatial box, mask or pointlist 
 !
-!  CF,1D,2D,3D
-!
 !----------------------------------------------------------------------
 
 !======================================================================
@@ -338,10 +336,10 @@ contains
              M4_FATAL_ERROR({"BAD TERMINATOR: ", TRIM(string), " in ReadRegObj"})
           end if
           if ( unit .ne. UNITTMP ) then
-	         M4_FATAL_ERROR({"TERMINATED IN FILE INCLUDED WITH LOAD!"})
-		  end if
-		  exit
-	  end select
+             M4_FATAL_ERROR({"TERMINATED IN FILE INCLUDED WITH LOAD!"})
+          end if
+          exit
+       end select
 
     end do
 

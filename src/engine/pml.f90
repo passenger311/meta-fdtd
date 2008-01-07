@@ -45,9 +45,9 @@ module pml
   integer :: planepml(6)       ! 1 if pml applies 0 if not
   integer :: pmlpart           ! flag (inner/outer partition)
   integer :: PMLMAX            ! number of Pml layers
-  real(kind=8) :: PotPml       ! exponent for sigma and kappa
-  real(kind=8) :: SigmaMax     ! absorption coefficient 
-  real(kind=8) :: KappaMax     ! absorption of evanescent waves 
+  real(kind=8) :: potpml       ! exponent for sigma and kappa
+  real(kind=8) :: sigmamax     ! absorption coefficient 
+  real(kind=8) :: kappamax     ! absorption of evanescent waves 
 
   ! numeric Pml coefficients
 
@@ -80,12 +80,12 @@ contains
 
     read(UNITTMP,*) PMLMAX
     M4_WRITE_DBG({"read PMLMAX: ",  PMLMAX})
-    read(UNITTMP,*) PotPml
-    M4_WRITE_DBG({"read PotPml: ",  PotPml})
-    read(UNITTMP,*) SigmaMax
-    M4_WRITE_DBG({"read SigmaMax: ",  SigmaMax})
-    read(UNITTMP,*) KappaMax 
-    M4_WRITE_DBG({"read KappaMax: ",  KappaMax})
+    read(UNITTMP,*) potpml
+    M4_WRITE_DBG({"read potpml: ",  potpml})
+    read(UNITTMP,*) sigmamax
+    M4_WRITE_DBG({"read sigmamax: ",  sigmamax})
+    read(UNITTMP,*) kappamax 
+    M4_WRITE_DBG({"read kappamax: ",  kappamax})
     read(UNITTMP,*,iostat=ios) string 
     M4_WRITE_DBG({"read terminator: ", TRIM(string)})
 
@@ -115,12 +115,12 @@ contains
     if ( .not. modconfigured ) then
 
        M4_WRITE_WARN({"PMLS NOT CONFIGURED -> USING DEFAULT PARAMETERS!"})
-    ! SigmaMax (= SigmaOpt, see Tavlove 2, pp 286)
+    ! sigmamax (= SigmaOpt, see Tavlove 2, pp 286)
     ! It is Sig = Sig[SI] / (!c*eps0)
        PMLMAX = 8
-       PotPml = 3.2
-       SigmaMax = (real(POTPML)+1.0)*0.8/(3.0*DT)
-       KappaMax = 1.1
+       potpml = 3.2
+       sigmamax = (real(POTPML)+1.0)*0.8/(3.0*DT)
+       kappamax = 1.1
 
     end if
 
@@ -155,9 +155,9 @@ M4_IFELSE_3D({       .or. (KEIG+1.le.KBIG) &    })
     endif    
 
     call AllocateFields
-    call CalcCoefficients(IBEG, IMAX, IBIG, IEIG+1, cexpml, cmxpml)
-    call CalcCoefficients(JBEG, JMAX, JBIG, JEIG+1, ceypml, cmypml)
-    call CalcCoefficients(KBEG, KMAX, KBIG, KEIG+1, cezpml, cmzpml)
+    call CalcCoefficients(IBEG, IEND, IBIG-1, IEIG+1, cexpml, cmxpml)
+    call CalcCoefficients(JBEG, JEND, JBIG-1, JEIG+1, ceypml, cmypml)
+    call CalcCoefficients(KBEG, KEND, KBIG-1, KEIG+1, cezpml, cmzpml)
 
     M4_WRITE_DBG({". exit InitializePml"})
 
@@ -171,25 +171,24 @@ M4_IFELSE_3D({       .or. (KEIG+1.le.KBIG) &    })
       
       ! numeric coefficient-fields
       
-      allocate(cexpml(1:4,IBEG:IMAX), STAT=err)
+      allocate(cexpml(1:4,IBEG:IEND), STAT=err)
       M4_ALLOC_ERROR(err,"AllocFields")
       
-      allocate(ceypml(1:4,JBEG:JMAX), STAT=err)
+      allocate(ceypml(1:4,JBEG:JEND), STAT=err)
       M4_ALLOC_ERROR(err,"AllocFields")
 
-      allocate(cezpml(1:4,KBEG:KMAX), STAT=err)
+      allocate(cezpml(1:4,KBEG:KEND), STAT=err)
       M4_ALLOC_ERROR(err,"AllocFields")
       
-      allocate(cmxpml(1:4,IBEG:IMAX), STAT=err)
+      allocate(cmxpml(1:4,IBEG:IEND), STAT=err)
       M4_ALLOC_ERROR(err,"AllocFields")
       
-      allocate(cmypml(1:4,JBEG:JMAX), STAT=err)
+      allocate(cmypml(1:4,JBEG:JEND), STAT=err)
       M4_ALLOC_ERROR(err,"AllocFields")
 
-      allocate(cmzpml(1:4,KBEG:KMAX), STAT=err)
+      allocate(cmzpml(1:4,KBEG:KEND), STAT=err)
       M4_ALLOC_ERROR(err,"AllocFields")
       
-
       cexpml=1.0
       ceypml=1.0
       cezpml=1.0
@@ -259,10 +258,10 @@ M4_IFELSE_3D({
       
     end subroutine AllocateFields
     
-    subroutine CalcCoefficients(lbeg, lmax, ls, le, ce, cm)
+    subroutine CalcCoefficients(lbeg, lend, ls, le, ce, cm)
       
-      integer, intent(in) :: lbeg, lmax, ls, le
-      real(kind=8), dimension(1:4,lbeg:lmax), intent(inout) :: ce, cm
+      integer, intent(in) :: lbeg, lend, ls, le
+      real(kind=8), dimension(1:4,lbeg:lend), intent(inout) :: ce, cm
       real(kind=8), dimension(-1:PMLMAX-1) :: val1,val1p,val2,val2p
       real(kind=8) :: x, sigma, kappa
       integer :: l
@@ -281,16 +280,16 @@ M4_IFELSE_3D({
          ! points on the grid corners
          
          x = real(l) / real(PMLMAX-1)
-         sigma = SigmaMax*x**POTPml
-         kappa = 1.0+(KappaMax-1.0)*x**POTPml
+         sigma = sigmamax*x**potpml
+         kappa = 1.0+(kappamax-1.0)*x**potpml
          val1(l) = kappa+0.5*sigma*DT
          val2(l) = kappa-0.5*sigma*DT
          
          ! points in the grid center
          
          x = (real(l)+0.5) / real(PMLMAX-1)
-         sigma = SigmaMax*x**POTPml
-         kappa = 1.0+(KappaMax-1.0)*x**POTPml
+         sigma = sigmamax*x**potpml
+         kappa = 1.0+(kappamax-1.0)*x**potpml
          val1p(l) = kappa+0.5*sigma*DT
          val2p(l) = kappa-0.5*sigma*DT
   
@@ -298,19 +297,19 @@ M4_IFELSE_3D({
       
       ! calculate coefficients
       
-      do l=lbeg, ls-1
-         ce(1,l) = val1p(ls-1-l-lbeg-1)
-         ce(3,l) = val2p(ls-1-l-lbeg-1)
-         ce(2,l) = 1.0 / val1(ls-1-l-lbeg)
-         ce(4,l) = val2(ls-1-l-lbeg) / val1(ls-1-l-lbeg)
+      do l=lbeg, ls
+         ce(1,l) = val1p(ls-l-lbeg-1)
+         ce(3,l) = val2p(ls-l-lbeg-1)
+         ce(2,l) = 1.0 / val1(ls-l-lbeg)
+         ce(4,l) = val2(ls-l-lbeg) / val1(ls-l-lbeg)
          
-         cm(1,l) = val1(ls-1-l-lbeg)
-         cm(3,l) = val2(ls-1-l-lbeg)
-         cm(2,l) = 1.0 / val1p(ls-1-l-lbeg-1)
-         cm(4,l) = val2p(ls-1-l-lbeg-1) / val1p(ls-1-l-lbeg-1)
+         cm(1,l) = val1(ls-l-lbeg)
+         cm(3,l) = val2(ls-l-lbeg)
+         cm(2,l) = 1.0 / val1p(ls-l-lbeg-1)
+         cm(4,l) = val2p(ls-l-lbeg-1) / val1p(ls-l-lbeg-1)
       enddo
 
-      do l=le, lmax-1
+      do l=le, lend
          ce(1,l) = val1p(l-le)
          ce(3,l) = val2p(l-le)
          ce(2,l) = 1.0 / val1(l-le)

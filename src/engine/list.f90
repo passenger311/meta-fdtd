@@ -21,6 +21,7 @@ module list
   use constant
   use strings
   use reglist
+  use vallist
   use buflist
   use outlist
 
@@ -52,6 +53,7 @@ contains
     M4_WRITE_DBG(". enter InitializeList")
 
     call InitializeRegList
+    call InitializeValList
     call InitializeBufList
     call InitializeOutList
 
@@ -66,6 +68,7 @@ contains
     M4_WRITE_DBG(". enter FinalizeList")
 
     call FinalizeRegList
+    call FinalizeValList
     call FinalizeBufList
     call FinalizeOutList
 

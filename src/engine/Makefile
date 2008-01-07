@@ -31,6 +31,7 @@ strings.o\
 constant.o\
 mpiworld.o\
 reglist.o\
+vallist.o\
 buflist.o\
 outlist.o\
 list.o\
@@ -38,7 +39,9 @@ grid.o
 
 FOBJ=\
 fdtd.o\
+fdtd_calc.o\
 pec.o\
+pbc.o\
 pml.o\
 bound.o\
 fdtd_outgpl.o\

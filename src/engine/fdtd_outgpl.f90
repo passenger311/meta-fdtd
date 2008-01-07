@@ -296,7 +296,8 @@ contains
     ! @ En[i,j,k] = En(i,j,k)
 
     type (T_OUT) :: out
-    M4_FTYPE :: EEx,EEy,EEz,EHx,EHy,EHz,eps
+    M4_FTYPE :: EEx,EEy,EEz,EHx,EHy,EHz
+    real(kind=8) :: eps
     type (T_BUF) :: buf
     M4_REGLOOP_DECL(reg,p,i,j,k,w(0))  
     

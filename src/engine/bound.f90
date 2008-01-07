@@ -19,6 +19,7 @@ module bound
   use grid  
   use fdtd
   use pec 
+  use pbc
   use pml
 
   implicit none
@@ -83,7 +84,11 @@ contains
        case( "(PML" )
           M4_WRITE_DBG({"got token ",TRIM(string),"-> invoking ReadConfigPml"})
           call ReadConfigPml(UNITTMP,string) 
-          
+   
+        case( "(PBC" )
+          M4_WRITE_DBG({"got token ",TRIM(string),"-> invoking ReadConfigPbc"})
+          call ReadConfigPbc(UNITTMP,string) 
+       
           ! add optional configs for other boundaries here
 
        case default	
@@ -126,6 +131,7 @@ contains
     
     call InitializePec(planebound,0)
     call InitializePml(planebound,1)
+    call InitializePbc(planebound,2)
 
     M4_WRITE_DBG({". exit InitializeBound"})
 
@@ -139,6 +145,7 @@ contains
 
     call FinalizePml
     call FinalizePec
+    call FinalizePbc
 
     M4_WRITE_DBG({". exit FinalizeBound"})
 
@@ -156,8 +163,7 @@ contains
 
 !       M4_WRITE_DBG({"step h bound",i})
 
-       if ( myrank .ne. 0 .and. i .eq. M4_SDIM*2-1 ) cycle
-       if ( myrank .ne. numproc-1 .and. i .eq.  M4_SDIM*2 ) cycle
+       if ( mpibound(i) ) cycle
 
        select case ( planebound(i) )
 
@@ -165,6 +171,8 @@ contains
              call StepHBoundPec(i)
           case ( 1 )
              call StepHBoundPml(i)
+          case ( 2 )
+             call StepHBoundPbc(i)
 
           case default
              M4_FATAL_ERROR({"BOUNDARY CONDITION # ",TRIM(i2str(planebound(i))),&
@@ -188,8 +196,7 @@ contains
 
  !      M4_WRITE_DBG({"step e bound",i})
 
-       if ( myrank .ne. 0 .and. i .eq. M4_SDIM*2-1 ) cycle
-       if ( myrank .ne. numproc-1 .and. i .eq.  M4_SDIM*2 ) cycle
+       if ( mpibound(i) ) cycle
 
        select case ( planebound(i) )
           
@@ -197,6 +204,8 @@ contains
           call StepEBoundPec(i)
        case ( 1 )
           call StepEBoundPml(i)
+       case ( 2 )
+          call StepEBoundPbc(i)
 
        case default
           M4_FATAL_ERROR({"BOUNDARY CONDITION # ",TRIM(i2str(planebound(i))),&

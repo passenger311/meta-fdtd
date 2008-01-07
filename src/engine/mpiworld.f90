@@ -25,6 +25,7 @@ M4_IFELSE_MPI({include 'mpif.h'})
   integer :: mpi_started = 0
   character(len=STRLNG) :: mpi_sfxin, mpi_sfxout, mpi_sfx
   character(len=20)   :: ranklbl
+  logical :: mpibound(6)
 
 M4_IFELSE_MPI({
   integer :: mpicomm
@@ -42,6 +43,8 @@ contains
 
   subroutine InitializeMPIWorld
 
+    integer :: i
+
 M4_IFELSE_MPI({
 
     mpicomm = MPI_COMM_WORLD
@@ -57,6 +60,7 @@ M4_IFELSE_MPI({
     mpi_sfxout = cat3(".",i2str(myrank),".out")
     mpi_sfx = cat2(".",i2str(myrank))
     ranklbl = cat5("(",i2str(myrank),"/",i2str(numproc),")")
+    mpibound = .false. ! this will be setup properly in mpicomms
 
 M4_IFELSE_MPI({
 
