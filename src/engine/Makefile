@@ -45,12 +45,16 @@ pbc.o\
 pml.o\
 bound.o\
 fdtd_outgpl.o\
+fdtd_outvtk.o\
+fdtd_outhd5.o\
 $(MATOBJ)\
 mat.o\
 $(DIAGOBJ)\
 diag.o\
 $(OUTGPLOBJ)\
 outgpl.o\
+outvtk.o\
+outhd5.o\
 out.o\
 config.o\
 mpicomms.o\
@@ -76,7 +80,6 @@ install: MANIFEST build-dir
 MANIFEST: manifest.inf 
 	@echo [SIGN] $@
 	@$(M4) $< | tail -n 4 >$@
-	
 
 $(BOBJ) : %.o : %.f90
 	@echo [F90] $@

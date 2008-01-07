@@ -5,13 +5,12 @@
 !  this module manages general output functionality independent of the
 !  specific output format.
 !
-!  CF,2D
-!
 !----------------------------------------------------------------------
 
 
 !======================================================================
 !
+! Note: currently supports GPL, VTK and HD5 formats.
 !
 
 module out
@@ -26,7 +25,9 @@ module out
 ! ** add output modules
 ! 1.
   use outgpl
-! 2.
+  use outvtk
+  use outhd5
+! ! 2.
 ! **
 
   implicit none
@@ -71,6 +72,10 @@ contains
 ! 1.
        case ( "GPL" ) 
           call InitializeOutgplObj(outobj(n))
+       case ( "VTK" ) 
+          call InitializeOutvtkObj(outobj(n))
+       case ( "HD5" ) 
+          call InitializeOuthd5Obj(outobj(n))
 ! 2.
 ! **
        case default
@@ -99,6 +104,10 @@ contains
 ! 1.
        case ( "GPL" ) 
           call FinalizeOutgplObj(outobj(n))
+       case ( "VTK" ) 
+          call FinalizeOutvtkObj(outobj(n))
+       case ( "HD5" ) 
+          call FinalizeOuthd5Obj(outobj(n))
 ! 2.
 ! **
        case default
@@ -134,6 +143,11 @@ contains
 ! 1.
        case ( "GPL" ) 
           call WriteDataOutgplObj(outobj(n), ncyc, mode)
+       case ( "VTK" ) 
+          call WriteDataOutvtkObj(outobj(n), ncyc, mode)
+       case ( "HD5" ) 
+          call WriteDataOuthd5Obj(outobj(n), ncyc, mode)
+
 ! 2.
 ! **
        case default
@@ -150,6 +164,6 @@ end module out
 
 !
 ! Authors:  J.Hamm 
-! Modified: 4/12/2007
+! Modified: 6/1/2008
 !
 !======================================================================
