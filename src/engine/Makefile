@@ -34,6 +34,7 @@ endif
 
 BOBJ=\
 strings.o\
+utils.o\
 constant.o\
 mpiworld.o\
 reglist.o\
@@ -100,10 +101,13 @@ $(FOBJ) : %.o : %.f90 $(BOBJ)
 	@$(M4) $< >$*_m4.f90 
 	@$(strip $(F90) $(F90FLAGS_OPT) -c $*_m4.f90 -o $*.o)
 
-
-$(EXE) : $(FOBJ) $(BOBJ)
+$(EXE) : $(FOBJ) $(BOBJ) second_wall.o
 	@echo [LD] $@
-	@$(strip @$(F90) $(LDFLAGS) $(FOBJ) $(BOBJ) -o $(EXE))
+	@$(strip @$(F90) $(LDFLAGS) $^ -o $(EXE))
+
+%.o : %.c
+	@echo [CC] $@
+	@$(strip @$(CC) $(CCFLAGS) -c $<)
 
 clean:
 	@rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod *_m4.f90 *_m4.F90
