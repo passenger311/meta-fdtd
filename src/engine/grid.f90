@@ -35,7 +35,7 @@ module grid
   integer :: IBEG = 0, IEND = 1
   integer :: JBEG = 0, JEND = 1
   integer :: KBEG = 0, KEND = 1
-  integer :: GRIDSIZE
+  integer :: GRIDSIZE, FIELDSIZE
 
   integer :: IMIN = -1, IMAX = 2
   integer :: JMIN = -1, JMAX = 2   
@@ -159,7 +159,7 @@ M4_IFELSE_3D({
     M4_WRITE_DBG({"set JBIG/JEIG: ", JBIG, JEIG})
     M4_WRITE_DBG({"set KBIG/KEIG: ", KBIG, KEIG})
 
-  
+    FIELDSIZE = (IMAX - IMIN + 1)*(JMAX - JMIN + 1)*(KMAX - KMIN + 1)
     GRIDSIZE = (IEND - IBEG + 1)*(JEND - JBEG + 1)*(KEND - KBEG + 1)
     M4_WRITE_DBG({"init GRIDSIZE: ", GRIDSIZE})
 

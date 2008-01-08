@@ -18,6 +18,7 @@ module fdtd_outgpl
   use grid 
   use fdtd
   use fdtd_calc
+  use out_calc
 
   implicit none
   private
@@ -53,6 +54,19 @@ contains
        M4_WRITE_DBG({"created data buffer # ",&
             TRIM(i2str(out%bufidx))," for out # ",TRIM(i2str(out%idx))})
 
+       return
+
+    endif
+
+    if ( out%fn .eq. 'P' ) then
+       
+       buf = CreateBufObj(regobj(out%regidx),M4_ISCF,3)
+
+       M4_WRITE_DBG({"created data buffer # ",&
+            TRIM(i2str(out%bufidx))," for out # ",TRIM(i2str(out%idx))})
+
+       return
+
     endif
 
   end subroutine InitializeFdtdOutgplObj
@@ -79,35 +93,53 @@ contains
 
     M4_WRITE_DBG({"write data ",TRIM(out%filename), " ",TRIM(out%fn)})
 
-    buf = bufobj(out%bufidx)
+    if ( out%bufidx .ge. 1 ) then 
+       M4_WRITE_DBG({"from buffer #",TRIM(i2str(out%bufidx))})
+       buf = bufobj(out%bufidx)
+    endif
 
     select case (out%fn)
-    case('Px')
-       call FdtdCalcPx(buf, 1, mode)
-       call WriteBufData(out, mode)
-    case('Py')
-       call FdtdCalcPy(buf, 1, mode)
-       call WriteBufData(out, mode) 
-    case('Pz')
-       call FdtdCalcPz(buf, 1, mode)
-       call WriteBufData(out, mode) 
     case('En')
        call FdtdCalcEn(buf, 1, mode)
-       call WriteBufData(out, mode) 
-    case('EH')
-       call WriteEH(out, mode)
+       call WriteBuffer(out, buf, 0, mode)
+    case('P')
+       call FdtdCalcPx(buf, 1, mode)
+       call FdtdCalcPy(buf, 2, mode)
+       call FdtdCalcPz(buf, 3, mode)
+       call WriteBuffer(out, buf, 0, mode)
+    case('Px')
+       call FdtdCalcPx(buf, 1, mode)
+       call WriteBuffer(out, buf, 0, mode)
+    case('Py')
+       call FdtdCalcPy(buf, 1, mode)
+       call WriteBuffer(out, buf, 0, mode)
+    case('Pz')
+       call FdtdCalcPz(buf, 1, mode)
+       call WriteBuffer(out, buf, 0, mode)
+    case('E')
+       call WriteVector(out, Ex,Ey,Ez, 0, mode)
+    case('Eamp')
+       call WriteVector(out, Ex,Ey,Ez, 1, mode)
+    case('Ephase')
+       call WriteVector(out, Ex,Ey,Ez, 2, mode)
+    case('H')
+       call WriteVector(out, Hx,Hy,Hz, 0, mode)
+    case('Hamp')
+       call WriteVector(out, Hx,Hy,Hz, 1, mode)
+    case('Hphase')
+       call WriteVector(out, Hx,Hy,Hz, 2, mode)
     case('Ex')
-       call WriteField(out, Ex, mode)
+       call WriteScalar(out, Ex, 0, mode)
     case('Ey')
-       call WriteField(out, Ey, mode)
+       call WriteScalar(out, Ey, 0, mode)
     case('Ez')
-       call WriteField(out, Ez, mode)
+       call WriteScalar(out, Ez, 0, mode)
     case('Hx')
-       call WriteField(out, Hx, mode)
+       call WriteScalar(out, Hx, 0, mode)
     case('Hy')
-       call WriteField(out, Hy, mode)
+       call WriteScalar(out, Hy, 0, mode)
     case('Hz')
-       call WriteField(out, Hz, mode)
+       call WriteScalar(out, Hz, 0, mode)
     case('Di')         
        call WriteEpsilon(out, mode)
     case default
@@ -118,54 +150,156 @@ contains
 
     ! **************************************************************** !
 
-    subroutine WriteEH(out,mode)
+    subroutine WriteScalar(out, fc, pa, mode)
 
       type (T_OUT) :: out
       logical :: mode
+      integer :: pa ! 0 : real part, 1: amplitude, 2: phase
 
+      M4_FTYPE, dimension(M4_RANGE(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX)) :: fc
       M4_REGLOOP_DECL(reg,p,i,j,k,w(0))  
+      real(kind=8) :: val, sum
 
       if ( .not. mode ) return
 
+      M4_WRITE_DBG({"WriteScalar!"})
+      M4_IFELSE_DBG({call EchoRegObj(regobj(out%regidx))})
+
+      sum = 0.0
+
       reg = regobj(out%regidx)
-      
-      M4_REGLOOP_WRITE(reg,p,i,j,k,w,   
-      out%funit,6E15.6E3, { real(Ex(i,j,k)),real(Ey(i,j,k)),real(Ez(i,j,k)), &
-           real(Hx(i,j,k)),real(Hy(i,j,k)),real(Hz(i,j,k)) }
-      )
-      
-    end subroutine WriteEH
+
+      M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+
+      call PaScalar(pa, fc(i,j,k), val)
+
+      if ( out%mode .ne. 'S' ) then
+ 
+         if ( reg%isbox ) then
+            write(out%funit,"(E15.6E3)") val
+         else
+            write(out%funit,"(M4_SDIM({I5}),(E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}),val
+         endif
+         
+      else
+         sum = sum + val
+      endif
+
+      },{if ( reg%is .ne. reg%ie ) write(out%funit,*)}, {if ( reg%js .ne. reg%je ) write(out%funit,*)} )
+   
+
+      if ( out%mode .eq. 'S' ) then
+         write(out%funit,"(E15.6E3)") sum
+      endif
+
+    end subroutine WriteScalar
+
+    ! **************************************************************** !
+
+    subroutine WriteVector(out, fx,fy,fz, pa, mode)
+
+      type (T_OUT) :: out
+      logical :: mode
+      integer :: pa
+      M4_FTYPE, dimension(M4_RANGE(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX)) :: fx,fy,fz
+      M4_REGLOOP_DECL(reg,p,i,j,k,w(0))  
+      real(kind=8) :: vx,vy,vz, sx,sy,sz
+
+      if ( .not. mode ) return
+
+      M4_WRITE_DBG({"WriteVector!"})
+      M4_IFELSE_DBG({call EchoRegObj(regobj(out%regidx))})
+
+      sx = 0.0
+      sy = 0.0
+      sz = 0.0
+
+      reg = regobj(out%regidx)
+
+      M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+
+      call PaVector(pa,fx(i,j,k),fy(i,j,k),fz(i,j,k),vx,vy,vz)
+
+      if ( out%mode .ne. 'S' ) then
+         if ( reg%isbox ) then
+            write(out%funit,"(E15.6E3)") vx, vy, vz
+         else
+            write(out%funit,"(M4_SDIM({I5}),(E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}),vx,vy,vz
+         endif
+      else
+         sx = sx + vx
+         sy = sy + vy
+         sz = sz + vz
+      endif
+
+      },{if ( reg%is .ne. reg%ie ) write(out%funit,*)}, {if ( reg%js .ne. reg%je ) write(out%funit,*)} )
+
+      if ( out%mode .eq. 'S' ) then
+          write(out%funit,"(E15.6E3)") sx, sy, sz
+      endif
+   
+    end subroutine WriteVector
 
 
     ! **************************************************************** !
 
-    subroutine WriteField(out,field,mode)
+    subroutine WriteBuffer(out, buf, pa, mode)
 
       type (T_OUT) :: out
+      type (T_BUF) :: buf
       logical :: mode
+      integer :: pa ! 0 : real part, 1: amplitude, 2: phase
 
-      M4_FTYPE, dimension(M4_RANGE(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX)) :: field
       M4_REGLOOP_DECL(reg,p,i,j,k,w(0))  
+      real(kind=8), allocatable :: val(:), sum(:)
 
       if ( .not. mode ) return
 
-      M4_WRITE_DBG({"WriteField!"})
+      allocate(val(buf%numslot),sum(buf%numslot))
+
+      M4_WRITE_DBG({"WriteScalar!"})
       M4_IFELSE_DBG({call EchoRegObj(regobj(out%regidx))})
+
+      sum = 0.0
+
       reg = regobj(out%regidx)
 
-       M4_REGLOOP_WRITE(reg,p,i,j,k,w,   
-       out%funit,M4_IFELSE_CF({2})E15.6E3, { M4_IFELSE_CF({real(field(i,j,k)),aimag(field(i,j,k))},{field(i,j,k)}) }
-       )
+      M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-    end subroutine WriteField
+      call PaBuffer(pa, buf, p, val)
+
+      if ( out%mode .ne. 'S' ) then
+ 
+         if ( reg%isbox ) then
+            write(out%funit,"(E15.6E3)") val
+         else
+            write(out%funit,"(M4_SDIM({I5}),(E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}),val
+         endif
+         
+      else
+         sum = sum + val
+      endif
+
+      },{if ( reg%is .ne. reg%ie ) write(out%funit,*)}, {if ( reg%js .ne. reg%je ) write(out%funit,*)} )
+   
+
+      if ( out%mode .eq. 'S' ) then
+         write(out%funit,"(E15.6E3)") sum
+      endif
+
+      deallocate(val,sum)
 
 
+    end subroutine WriteBuffer
+
+ 
     ! **************************************************************** !
 
     subroutine WriteEpsilon(out,mode)
 
       type (T_OUT) :: out
       logical :: mode
+      real(kind=8) :: val
 
       M4_REGLOOP_DECL(reg,p,i,j,k,w(0))  
 
@@ -173,6 +307,17 @@ contains
 
       reg = regobj(out%regidx)
       
+      M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+
+      val = 1./epsinv(i,j,k)
+      if ( reg%isbox ) then
+         write(out%funit,"(E15.6E3)") val
+      else
+         write(out%funit,"(M4_SDIM({I5}),(E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}),val
+      endif
+      
+      },{if ( reg%is .ne. reg%ie ) write(out%funit,*)}, {if ( reg%js .ne. reg%je ) write(out%funit,*)} )
+
       M4_REGLOOP_WRITE(reg,p,i,j,k,w,
       out%funit,E15.6E3, { 1.0/epsinv(i,j,k) }
       )
@@ -180,41 +325,7 @@ contains
     end subroutine WriteEpsilon
 
 
-    ! **************************************************************** !
-
-    subroutine WriteBufData(out, mode)
-
-      type (T_OUT) :: out
-      logical :: mode
-      M4_FTYPE :: sum = 0.0
-      type (T_BUF) :: buf
-      M4_REGLOOP_DECL(reg,p,i,j,k,w(0))  
-
-      if ( .not. mode ) return
-
-      reg = regobj(out%regidx)
-      buf = bufobj(out%bufidx)
-  
-      M4_WRITE_DBG({"write data buffer # ",&
-           TRIM(i2str(out%bufidx)),&
-           " for out # ",TRIM(i2str(out%idx))})
-
-      if ( out%mode .eq. 'S' ) then ! spatial integration
-         M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-         sum = sum + buf%data(p,1)
-         })
-         write(out%funit,"(M4_IFELSE_CF({2})E15.6E3)") M4_IFELSE_CF({real(sum),aimag(sum)},sum)
-      else
-         M4_REGLOOP_WRITE(reg,p,i,j,k,w,
-         out%funit, M4_IFELSE_CF({2})E15.6E3, { M4_IFELSE_CF({real(buf%data(p,1)),aimag(buf%data(p,1))},buf%data(p,1)) }
-         )
-      endif
-      ! clear buffer data after write
-      !	  buf%data(:,1) = 0.0	
-      
-    end subroutine WriteBufData
-
-    ! **************************************************************** !
+    ! *************************************************************** !
 
   end subroutine WriteDataFdtdOutgplObj
 
@@ -222,7 +333,7 @@ contains
 end module fdtd_outgpl
 
 !
-! Authors:  J.Hamm,S.Scholz,A.Klaedtke,C.Hermann
+! Authors:  J.Hamm
 
 ! Modified: 4/12/2007
 !

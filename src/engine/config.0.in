@@ -66,7 +66,7 @@
   )EPSILON
 
   (OUT
-    GPL F test1_xy_diel
+    VTK F test1_xy_diel
     Di S
     0 0 1
     (REG
@@ -77,7 +77,7 @@
   )OUT
 
   (OUT
-    GPL T test1_xy_en
+    VTK T test1_xy_en
     En N
     0 1000 100
     (REG
@@ -89,7 +89,7 @@
 
   
   (OUT
-    GPL T test1_xy_ez
+    VTK T test1_xy_ez
     Ez N
     0 1000 100
     (REG
@@ -100,8 +100,8 @@
   )OUT	
 
   (OUT
-    GPL F test1_points_en
-    En S
+    VTK F test1_points_en
+    En N
     0 500 10
     (REG
       (POINT

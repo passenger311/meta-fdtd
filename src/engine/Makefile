@@ -52,6 +52,7 @@ pec.o\
 pbc.o\
 pml.o\
 bound.o\
+out_calc.o\
 fdtd_outgpl.o\
 fdtd_outvtk.o\
 $(FDTD_OUTHD5)\

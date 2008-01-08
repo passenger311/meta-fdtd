@@ -27,6 +27,7 @@ module outvtk
   use mpiworld
   use reglist
   use outlist
+  use grid
 
 ! outvtk modules 
   use fdtd_outvtk
@@ -54,7 +55,8 @@ M4_FOREACH_OUTVTK({use }, {
 
   ! --- Constants
 
-  character(len=STRLNG), parameter :: outvtksfx = '.vtk'
+  character(len=STRLNG), parameter :: vtusfx = '.vtu' ! unstructured grid
+  character(len=STRLNG), parameter :: vtrsfx = '.vtr' ! rectilinear grid
 
   ! --- Data
 
@@ -65,6 +67,11 @@ contains
   subroutine InitializeOutvtkObj(out)
 
     type(T_OUT) :: out
+
+
+! override out%snap as vtk does not support multiple frames in one file
+
+    out%snap = .true.
 
 ! call various finalization methods
     select case ( out%modl ) 
@@ -114,8 +121,14 @@ contains
     type(T_OUT) :: out
     integer :: ncyc
     logical :: writehdr
-    character(len=STRLNG) :: name, stepstr
+    character(len=STRLNG) :: name, stepstr, outvtksfx
  
+    if ( regobj(out%regidx)%isbox ) then
+       outvtksfx = ".vtr"
+    else
+       outvtksfx = ".vtu"
+    endif
+
     if ( out%snap ) then
        stepstr = TRIM(i2str(ncyc))
        name = cat5(out%filename,"_",TRIM(i2str(ncyc)),mpi_sfx,outvtksfx)
@@ -158,29 +171,51 @@ contains
 
     type(T_OUT) :: out
     integer :: ncyc
-    type(T_REG) :: reg
+    character(len=STRLNG) :: dataset
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(0))
 
     reg = regobj(out%regidx)
     
-    M4_WRITE_DBG({"write header ",TRIM(out%filename)})
-
-    write(out%funit,*) '# ',out%fmt                 ! format
-    write(out%funit,*) '# ',out%snap                ! snapshot mode
-    write(out%funit,*) '# ',out%modl                ! module
-    write(out%funit,*) '# ',out%fn                  ! function
-    write(out%funit,*) '# ',out%mode                ! mode
-    if ( out%snap ) then
-       write(out%funit,*) '# ',1                    ! number of time points
-       write(out%funit,*) '# ',ncyc,ncyc,1          ! time frame
+    if ( reg%isbox ) then
+       dataset = "STRUCTURED_GRID"
     else
-       write(out%funit,*) '# ',out%numsteps         ! number of time points
-       write(out%funit,*) '# ',out%ns,out%ne,out%dn ! time frame
+       dataset = "UNSTRUCTURED_GRID"
     endif
-    write(out%funit,*) '# ',reg%isbox               ! mode
-    write(out%funit,*) '# ',reg%numnodes            ! number of points
-    write(out%funit,*) '# ',reg%is,reg%ie,reg%di    ! space box
-    write(out%funit,*) '# ',reg%js,reg%je,reg%dj
-    write(out%funit,*) '# ',reg%ks,reg%ke,reg%dk
+
+    M4_WRITE_DBG({"write header ",TRIM(out%filename)})
+    
+    write(out%funit,*) '# vtk DataFile Version 2.0'
+    write(out%funit,*) "META: M4_VERSION(), M4_FLAVOUR()"
+    write(out%funit,*) 'ASCII'
+    if ( out%mode .eq. 'S' ) then
+       write(out%funit,*) 'FIELD Sum 1'
+       return
+    endif
+    if ( reg%isbox ) then
+       write(out%funit,*) 'DATASET RECTILINEAR_GRID'
+       write(out%funit,*) 'DIMENSIONS ', (reg%ie-reg%is)/reg%di+1,(reg%je-reg%js)/reg%dj+1,(reg%ke-reg%ks)/reg%dk+1
+       write(out%funit,*) 'X_COORDINATES float'
+       write(out%funit,"(E15.6E3)") (SX*i, i=IBEG,IEND,1)
+       write(out%funit,*) 'Y_COORDINATES float'
+       write(out%funit,"(E15.6E3)") (SY*i, i=JBEG,JEND,1)
+       write(out%funit,*) 'Z_COORDINATES float'
+       write(out%funit,"(E15.6E3)") (SZ*i, i=KBEG,KEND,1)
+    else
+       write(out%funit,*) 'DATASET UNSTRUCTURED_GRID'
+       write(out%funit,*) 'POINTS ',reg%numnodes,' float'
+       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+       write(out%funit,"(M4_SDIM({I5}))") M4_DIM123({i},{i,j},{i,j,k})
+       })
+       write(out%funit,*) 'CELLS ',reg%numnodes,2*reg%numnodes
+       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+       write(out%funit,*) "1 ",p
+       })
+       write(out%funit,*) 'CELLS_TYPES ',reg%numnodes
+       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+       write(out%funit,*) "1"
+       })
+       write(out%funit,*) 'POINT_DATA ',reg%numnodes
+    endif
 
   end subroutine WriteHeaderOutvtkObj
 

@@ -164,7 +164,8 @@ contains
     
     M4_WRITE_DBG({"write header ",TRIM(out%filename)})
 
-    write(out%funit,*) '# ',out%fmt                 ! format
+    write(out%funit,*) '# gnuplot ascii DataFile'   ! format
+    write(out%funit,*) "# META: M4_VERSION(), M4_FLAVOUR()"
     write(out%funit,*) '# ',out%snap                ! snapshot mode
     write(out%funit,*) '# ',out%modl                ! module
     write(out%funit,*) '# ',out%fn                  ! function
