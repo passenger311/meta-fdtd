@@ -170,8 +170,8 @@ contains
       reg = regobj(out%regidx)
 
       if ( out%mode .ne. 'S' ) then
-         write(out%funit,*) "SCALARS scalar float 1"
-         write(out%funit,*) "LOOKUP_TABLE default"
+         write(out%funit,"(A)") "SCALARS scalar float 1"
+         write(out%funit,"(A)") "LOOKUP_TABLE default"
       endif
 
       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
@@ -186,11 +186,11 @@ contains
          sum = sum + val
       endif
 
-      },{if ( reg%is .ne. reg%ie ) write(out%funit,*)}, {if ( reg%js .ne. reg%je ) write(out%funit,*)} )
+      },{}, {} )
    
 
       if ( out%mode .eq. 'S' ) then
-         write(out%funit,*) "FIELD FieldSum 1"
+         write(out%funit,"(A)") "FIELD FieldSum 1"
          write(out%funit,"(E15.6E3)") sum
       endif
 
@@ -219,8 +219,8 @@ contains
       reg = regobj(out%regidx)
       
       if ( out%mode .ne. 'S' ) then
-         write(out%funit,*) "VECTORS vectors float"
-         write(out%funit,*) "LOOKUP_TABLE default"
+         write(out%funit,"(A)") "VECTORS vectors float"
+         write(out%funit,"(A)") "LOOKUP_TABLE default"
       end if
 
       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
@@ -268,15 +268,14 @@ contains
 
       reg = regobj(out%regidx)
 
-      write(out%funit,*) "LOOKUP_TABLE default"
-
       if ( out%mode .ne. 'S' ) then
          if ( buf%numslot .eq. 3 ) then
-            write(out%funit,*) "VECTORS vectors float"
+            write(out%funit,"(A)") "VECTORS vectors float"
          else
-            write(out%funit,*) "SCALARS scalars float ",TRIM(i2str(buf%numslot))
+            write(out%funit,"(A,A)") "SCALARS scalars float ",TRIM(i2str(buf%numslot))
          endif
       endif
+      write(out%funit,*) "LOOKUP_TABLE default"
 
       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
@@ -314,14 +313,15 @@ contains
 
       if ( .not. mode ) return
 
+      write(out%funit,"(A)") "SCALARS scalar float 1"
+      write(out%funit,"(A)") "LOOKUP_TABLE default"
+
       reg = regobj(out%regidx)
       
       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
       val = 1./epsinv(i,j,k)
-      if ( reg%isbox ) then
-         write(out%funit,"(I5,(E15.6E3))") p,val
-      endif
+      write(out%funit,"(E15.6E3)") val
       
       },{}, {} )
 

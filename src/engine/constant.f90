@@ -59,6 +59,7 @@ contains
     write(6,*) "*   %MAT     : M4_MATLIST"
     write(6,*) "*   %DIAG    : M4_DIAGLIST"
     write(6,*) "*   %OUTGPL  : M4_OUTGPLLIST"
+    write(6,*) "*   %OUTVTK  : M4_OUTVTKLIST"
 
   end subroutine DisplayVersion
 

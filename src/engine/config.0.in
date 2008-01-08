@@ -67,7 +67,7 @@
 
   (OUT
     VTK F test1_xy_diel
-    Di S
+    Di N
     0 0 1
     (REG
       (BOX

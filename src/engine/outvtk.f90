@@ -55,8 +55,7 @@ M4_FOREACH_OUTVTK({use }, {
 
   ! --- Constants
 
-  character(len=STRLNG), parameter :: vtusfx = '.vtu' ! unstructured grid
-  character(len=STRLNG), parameter :: vtrsfx = '.vtr' ! rectilinear grid
+  character(len=STRLNG), parameter :: outvtksfx = '.vtk'
 
   ! --- Data
 
@@ -121,14 +120,8 @@ contains
     type(T_OUT) :: out
     integer :: ncyc
     logical :: writehdr
-    character(len=STRLNG) :: name, stepstr, outvtksfx
+    character(len=STRLNG) :: name, stepstr
  
-    if ( regobj(out%regidx)%isbox ) then
-       outvtksfx = ".vtr"
-    else
-       outvtksfx = ".vtu"
-    endif
-
     if ( out%snap ) then
        stepstr = TRIM(i2str(ncyc))
        name = cat5(out%filename,"_",TRIM(i2str(ncyc)),mpi_sfx,outvtksfx)
@@ -184,37 +177,40 @@ contains
 
     M4_WRITE_DBG({"write header ",TRIM(out%filename)})
     
-    write(out%funit,*) '# vtk DataFile Version 2.0'
-    write(out%funit,*) "META: M4_VERSION(), M4_FLAVOUR()"
-    write(out%funit,*) 'ASCII'
+    write(out%funit,"(A)") "# vtk DataFile Version 2.0"
+    write(out%funit,"(A)") "META: M4_VERSION(), M4_FLAVOUR()"
+    write(out%funit,"(A)") "ASCII"
     if ( out%mode .eq. 'S' ) then
-       write(out%funit,*) 'FIELD Sum 1'
+       write(out%funit,"(A)") "FIELD Sum 1"
        return
     endif
     if ( reg%isbox ) then
-       write(out%funit,*) 'DATASET RECTILINEAR_GRID'
-       write(out%funit,*) 'DIMENSIONS ', (reg%ie-reg%is)/reg%di+1,(reg%je-reg%js)/reg%dj+1,(reg%ke-reg%ks)/reg%dk+1
-       write(out%funit,*) 'X_COORDINATES float'
-       write(out%funit,"(E15.6E3)") (SX*i, i=IBEG,IEND,1)
-       write(out%funit,*) 'Y_COORDINATES float'
-       write(out%funit,"(E15.6E3)") (SY*i, i=JBEG,JEND,1)
-       write(out%funit,*) 'Z_COORDINATES float'
-       write(out%funit,"(E15.6E3)") (SZ*i, i=KBEG,KEND,1)
+       write(out%funit,"(A)") "DATASET RECTILINEAR_GRID"
+       write(out%funit,"(6A)") "DIMENSIONS ", TRIM(i2str((reg%ie-reg%is)/reg%di+1))," ", &
+            TRIM(i2str((reg%je-reg%js)/reg%dj+1))," ", &
+            TRIM(i2str((reg%ke-reg%ks)/reg%dk+1))
+       write(out%funit,"(3A)") "X_COORDINATES ",TRIM(i2str((reg%ie-reg%is)/reg%di+1))," float"
+       write(out%funit,*) (SX*i, i=reg%is,reg%ie,reg%di)
+       write(out%funit,"(3A)") "Y_COORDINATES ",TRIM(i2str((reg%je-reg%js)/reg%dj+1))," float"
+       write(out%funit,*) (SY*j, j=reg%js,reg%je,reg%dj)
+       write(out%funit,"(3A)") "Z_COORDINATES ",TRIM(i2str((reg%ke-reg%ks)/reg%dk+1))," float"
+       write(out%funit,*) (SZ*k, k=reg%ks,reg%ke,reg%dk)
+       write(out%funit,"(2A)") "POINT_DATA ",TRIM(i2str(reg%numnodes))
     else
-       write(out%funit,*) 'DATASET UNSTRUCTURED_GRID'
-       write(out%funit,*) 'POINTS ',reg%numnodes,' float'
+       write(out%funit,"(A)") "DATASET UNSTRUCTURED_GRID"
+       write(out%funit,"(3A)") "POINTS ",TRIM(i2str(reg%numnodes))," float"
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
        write(out%funit,"(M4_SDIM({I5}))") M4_DIM123({i},{i,j},{i,j,k})
        })
-       write(out%funit,*) 'CELLS ',reg%numnodes,2*reg%numnodes
+       write(out%funit,"(4A)") "CELLS ",TRIM(i2str(reg%numnodes))," ", TRIM(i2str(2*reg%numnodes))
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
        write(out%funit,*) "1 ",p
        })
-       write(out%funit,*) 'CELLS_TYPES ',reg%numnodes
+       write(out%funit,"(2A)") "CELLS_TYPES ",TRIM(i2str(reg%numnodes))
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
        write(out%funit,*) "1"
        })
-       write(out%funit,*) 'POINT_DATA ',reg%numnodes
+       write(out%funit,"(2A)") "POINT_DATA ",TRIM(i2str(reg%numnodes))
     endif
 
   end subroutine WriteHeaderOutvtkObj
@@ -239,7 +235,7 @@ contains
 
        if ( mode ) then 
           call OpenOutvtkObj(out, ncyc, out%snap)
-          if ( out%numnodes .gt. 0 ) write(out%funit,*)
+!          if ( out%numnodes .gt. 0 ) write(out%funit,*)
        end if
        call WriteDataFdtdOutvtkObj(out,mode)
        if ( mode ) call CloseOutvtkObj(out)
@@ -247,7 +243,7 @@ contains
     M4_FOREACH_OUTVTK2({case ("},{")
        if ( mode ) then 
           call OpenOutvtkObj(out, ncyc, out%snap)
-          if ( out%numnodes .gt. 0 ) write(out%funit,*) 
+!         if ( out%numnodes .gt. 0 ) write(out%funit,*) 
        endif
        call WriteData},{OutvtkObj(out,mode)
        if ( mode ) call CloseOutvtkObj(out)
