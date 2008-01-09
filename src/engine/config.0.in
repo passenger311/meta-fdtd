@@ -86,8 +86,29 @@
       )BOX
     )REG
   )OUT	
-
-  
+ 
+   (OUT
+    VTK T test1_xy_e
+    E N
+    0 1000 100
+    (REG
+      (BOX
+	 1 100 1 1 100 1 50 50 1
+      )BOX
+    )REG
+  )OUT	
+ 
+   (OUT
+    VTK T test1_xy_p
+    P N
+    0 1000 100
+    (REG
+      (BOX
+	 1 100 1 1 100 1 50 50 1
+      )BOX
+    )REG
+  )OUT	
+ 
   (OUT
     VTK T test1_xy_ez
     Ez N

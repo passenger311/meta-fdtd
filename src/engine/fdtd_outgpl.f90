@@ -61,6 +61,7 @@ contains
     if ( out%fn .eq. 'P' ) then
        
        buf = CreateBufObj(regobj(out%regidx),M4_ISCF,3)
+       out%bufidx = buf%idx
 
        M4_WRITE_DBG({"created data buffer # ",&
             TRIM(i2str(out%bufidx))," for out # ",TRIM(i2str(out%idx))})

@@ -61,6 +61,7 @@ contains
     if ( out%fn .eq. 'P' ) then
        
        buf = CreateBufObj(regobj(out%regidx),M4_ISCF,3)
+       out%bufidx = buf%idx
 
        M4_WRITE_DBG({"created data buffer # ",&
             TRIM(i2str(out%bufidx))," for out # ",TRIM(i2str(out%idx))})
@@ -220,7 +221,6 @@ contains
       
       if ( out%mode .ne. 'S' ) then
          write(out%funit,"(A)") "VECTORS vectors float"
-         write(out%funit,"(A)") "LOOKUP_TABLE default"
       end if
 
       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
@@ -273,9 +273,9 @@ contains
             write(out%funit,"(A)") "VECTORS vectors float"
          else
             write(out%funit,"(A,A)") "SCALARS scalars float ",TRIM(i2str(buf%numslot))
+            write(out%funit,*) "LOOKUP_TABLE default"
          endif
       endif
-      write(out%funit,*) "LOOKUP_TABLE default"
 
       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
