@@ -40,10 +40,12 @@ module matjdrude
   M4_MODHEAD_DECL({MATJDRUDE},100,{
 
   ! input parameters
-  real(kind=8) :: omegapl, gamma
+  real(kind=8) :: lambdapl, gamma
 
+  real(kind=8) :: omegapl
   ! coefficients
   real(kind=8) :: c1, c2
+  
 
   ! current field: J
   M4_FTYPE, dimension(:), pointer :: Jx, Jy, Jz
@@ -63,7 +65,7 @@ contains
     M4_MODREAD_EXPR({MATJDRUDE},funit,mat,reg,3,out,{ 
 
     ! read mat parameters here, as defined in mat data structure
-    read(funit,*) mat%omegapl
+    read(funit,*) mat%lambdapl
     read(funit,*) mat%gamma
     
     })
@@ -86,6 +88,8 @@ contains
     
        ! initialize mat object here
        M4_IFELSE_DBG({call EchoMatJDrudeObj(mat)})
+
+       mat%omegapl = 2. * PI * 1. / ( mat%lambdapl * DT )
 
        mat%c1 = ( 2. - DT * mat%gamma ) / ( 2. + DT * mat%gamma )
        mat%c2 = ( 2. * DT ) / ( 2. + DT * mat%gamma ) * mat%omegapl**2

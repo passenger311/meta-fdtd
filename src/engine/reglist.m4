@@ -18,7 +18,12 @@ do $4 = $1%js, $1%je, $1%dj
 do $3 = $1%is, $1%ie, $1%di
 $2 = $2 + 1	     
 
+if ( $1%compressval ) then 
+$6(:) = $1%val(:,$1%valptr($2))
+else
 $6(:) = $1%val(:,$2)
+endif
+
 $7
 	   
 enddo !i

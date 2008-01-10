@@ -779,22 +779,28 @@ contains
 
     if ( reg%idx .eq. -1 ) return
     
+    if ( reg%numnodes .eq. 0 ) return
+
     M4_WRITE_DBG(". enter DestroyRegObjEnd")
 
     M4_IFELSE_DBG({call EchoRegObj(reg)})
 
+    M4_WRITE_DBG("deallocating reg%val")
     if ( reg%numval .gt. 0 ) then
        deallocate(reg%val)
     end if
 
     if ( reg%compressval ) then
+       M4_WRITE_DBG("deallocating reg%valptr")
        deallocate(reg%valptr)
     end if
 
-    if ( .not. reg%isbox .and. numnodes .gt. 0) then
+    if ( .not. reg%isbox ) then
        if ( .not. reg%islist ) then
+          M4_WRITE_DBG("deallocating reg%mask")
           deallocate(reg%mask)
        else
+          M4_WRITE_DBG("deallocating reg%i reg%j reg%k")
           deallocate(reg%i, reg%j, reg%k)
        end if
     end if
@@ -856,9 +862,12 @@ contains
     deallocate(reg%val)
 
     ! set to new compressed value field
+
     reg%val => newval
 
     reg%compressval = .true.
+
+    regobj(reg%idx) = reg
 
   end subroutine CompressValRegObj
 
@@ -900,6 +909,7 @@ contains
     M4_WRITE_INFO({"is ie di = ", reg%is, reg%ie, reg%di })
     M4_WRITE_INFO({"js je dj = ", reg%js, reg%je, reg%dj })
     M4_WRITE_INFO({"ks ke dk = ", reg%ks, reg%ke, reg%dk })
+    M4_WRITE_INFO({"compressval = ", reg%compressval })
 
   end subroutine EchoRegObj
 
