@@ -192,6 +192,24 @@ T		   	    ! time (T) or wavelength (F) parameters for gaussian
 
 
 
+! -----------------------------------------------------------------------
+! (MATJDRUDE-): drude model using J 
+! -----------------------------------------------------------------------
+
+    
+(MATJDRUDE
+0.01     	    ! omegapl: frequency in units of [1/dt]
+0.01 		    ! gamma: damping constant in units [1/dt]
+(REG
+  (POINT
+     50 50 50
+  )POINT
+)REG
+)MATSOURCE
+
+
+
+
 
 
 !

@@ -185,9 +185,9 @@ contains
          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
          M4_WRITE_DBG({"source @ ",i,j,k})
-           Ex(i,j,k) = Ex(i,j,k) + w(1) * M4_EPSINVX(i,j,k) * mat%vec(1) * wavefct
-           Ey(i,j,k) = Ey(i,j,k) + w(1) * M4_EPSINVY(i,j,k) * mat%vec(2) * wavefct
-           Ez(i,j,k) = Ez(i,j,k) + w(1) * M4_EPSINVZ(i,j,k) * mat%vec(3) * wavefct
+           Ex(i,j,k) = Ex(i,j,k) + w(1) * epsinvx(i,j,k) * mat%vec(1) * wavefct
+           Ey(i,j,k) = Ey(i,j,k) + w(1) * epsinvy(i,j,k) * mat%vec(2) * wavefct
+           Ez(i,j,k) = Ez(i,j,k) + w(1) * epsinvz(i,j,k) * mat%vec(3) * wavefct
          })
 
        end if      

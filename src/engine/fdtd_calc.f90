@@ -69,15 +69,14 @@ contains
 
     M4_REGLOOP_EXPR(reg,p,i,j,k,w, {
     
-    eps = 1.0/epsinv(i,j,k)
-    EEx = 0.5*eps*(Ex(M4_COORD(i,j,k))**2+Ex(M4_COORD(i-1,j,k))**2)
-    EEy = 0.5*eps*(Ey(M4_COORD(i,j,k))**2+Ey(M4_COORD(i,j-1,k))**2)
-    EEz = 0.5*eps*(Ez(M4_COORD(i,j,k))**2+Ez(M4_COORD(i,j,k-1))**2)
-    EHx = 0.25*(Hx(M4_COORD(i,j,k))**2+Hx(M4_COORD(i,j,k-1))**2 + &
+    EEx = 0.5/epsinvx(i,j,k) * (Ex(M4_COORD(i,j,k))**2+Ex(M4_COORD(i-1,j,k))**2)
+    EEy = 0.5/epsinvy(i,j,k) * (Ey(M4_COORD(i,j,k))**2+Ey(M4_COORD(i,j-1,k))**2)
+    EEz = 0.5/epsinvz(i,j,k) * (Ez(M4_COORD(i,j,k))**2+Ez(M4_COORD(i,j,k-1))**2)
+    EHx = 0.25/M4_MUINVX(i,j,k) * (Hx(M4_COORD(i,j,k))**2+Hx(M4_COORD(i,j,k-1))**2 + &
          Hx(M4_COORD(i,j-1,k))**2+Hx(M4_COORD(i,j-1,k-1))**2)
-    EHy = 0.25*(Hy(M4_COORD(i,j,k))**2+Hy(M4_COORD(i-1,j,k))**2 + &
+    EHy = 0.25/M4_MUINVY(i,j,k) * (Hy(M4_COORD(i,j,k))**2+Hy(M4_COORD(i-1,j,k))**2 + &
          Hy(M4_COORD(i,j,k-1))**2+Hy(M4_COORD(i-1,j,k-1))**2)
-    EHz = 0.25*(Hz(M4_COORD(i,j,k))**2+Hz(M4_COORD(i-1,j,k))**2 + &
+    EHz = 0.25/M4_MUINVZ(i,j,k) * (Hz(M4_COORD(i,j,k))**2+Hz(M4_COORD(i-1,j,k))**2 + &
          Hz(M4_COORD(i,j-1,k))**2+Hz(M4_COORD(i-1,j-1,k))**2)
     buf%data(p,slot) = (EEx+EEy+EEz+EHx+EHy+EHz)/(4.0*PI)
     

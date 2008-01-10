@@ -217,8 +217,8 @@ contains
             
             M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
             
-            Ey(i,j,k) = Ey(i,j,k) + mat%Finc(i,j,k,4) * DT/SX * M4_EPSINVY(i,j,k) * wavefct
-            Ez(i,j,k) = Ez(i,j,k) + mat%Finc(i,j,k,3) * DT/SX * M4_EPSINVZ(i,j,k) * wavefct
+            Ey(i,j,k) = Ey(i,j,k) + mat%Finc(i,j,k,4) * DT/SX * epsinvy(i,j,k) * wavefct
+            Ez(i,j,k) = Ez(i,j,k) + mat%Finc(i,j,k,3) * DT/SX * epsinvz(i,j,k) * wavefct
             
             })
             
@@ -229,8 +229,8 @@ contains
             
             M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
             
-            Ex(i,j,k) = Ex(i,j,k) + mat%Finc(i,j,k,4) * DT/SY * M4_EPSINVX(i,j,k) * wavefct
-            Ez(i,j,k) = Ez(i,j,k) + mat%Finc(i,j,k,3) * DT/SY * M4_EPSINVZ(i,j,k) * wavefct
+            Ex(i,j,k) = Ex(i,j,k) + mat%Finc(i,j,k,4) * DT/SY * epsinvx(i,j,k) * wavefct
+            Ez(i,j,k) = Ez(i,j,k) + mat%Finc(i,j,k,3) * DT/SY * epsinvz(i,j,k) * wavefct
             
             })
 
@@ -241,8 +241,8 @@ contains
             
             M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
             
-            Ex(i,j,k) = Ex(i,j,k) + mat%Finc(i,j,k,4) * DT/SZ * M4_EPSINVX(i,j,k) * wavefct
-            Ey(i,j,k) = Ey(i,j,k) + mat%Finc(i,j,k,3) * DT/SZ * M4_EPSINVY(i,j,k) * wavefct
+            Ex(i,j,k) = Ex(i,j,k) + mat%Finc(i,j,k,4) * DT/SZ * epsinvx(i,j,k) * wavefct
+            Ey(i,j,k) = Ey(i,j,k) + mat%Finc(i,j,k,3) * DT/SZ * epsinvy(i,j,k) * wavefct
             
             })
 

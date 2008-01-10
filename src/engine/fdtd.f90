@@ -11,11 +11,32 @@
 
 !======================================================================
 !
-! Note: MUINV and EPSINV are cell centered with respect to the H and E
+! 1. note: (outdated) -> 2.
+!
+! MUINV and EPSINV are cell centered with respect to the H and E
 ! subgrids. This means we need to average in the respective direction
 ! of the component to retrieve the proper face-centered values.
 !
-
+! 2. update to 1.: 
+!
+! Instead of 1., read in 3 fields, epsinvx epsinvy, epsinvz which are
+! each centered at the same node than Ex, Ey, Ez. Same for muinv. This
+! implies that no average needs to be used. The effort of calculating
+! the epsilons on the various faces has to be done when configuring the
+! engine for a simulation.
+!
+! 3. note:
+!
+! StepH : update eq. H(n+1/2) = H(n-1/2) + ... E(n) ...
+! StepE : update eq. E(n+1) = E(n) + ... H(n+1/2) ...
+!
+! StepE, StepH only include the static (epsilon/mu) medium response.
+! The contributions of the dynamic parts (P and Q or J and K) are added
+! just after StepE and StepH respectively.
+!
+!
+!
+!
 module fdtd
  
   use constant
@@ -42,9 +63,10 @@ module fdtd
 
   ! --- Public Data
 
-  public :: Ex, Ey, Ez, Hx, Hy, Hz, EPSINV
+  public :: Ex, Ey, Ez, Hx, Hy, Hz
+  public :: epsinvx, epsinvy, epsinvz
 M4_IFELSE_WMU({
-  public :: MUINV
+  public :: muinvx, muinvy, muinvz
 })
   public :: pfxepsilon
 
@@ -56,10 +78,14 @@ M4_IFELSE_WMU({
 
   M4_FTYPE, allocatable, dimension(:, :, :) :: Ex, Ey, Ez
   M4_FTYPE, allocatable, dimension(:, :, :) :: Hx, Hy, Hz
-  real(kind=8), allocatable, dimension(:, :, :) :: EPSINV
+  real(kind=8), allocatable, dimension(:, :, :) :: epsinvx
+  real(kind=8), allocatable, dimension(:, :, :) :: epsinvy
+  real(kind=8), allocatable, dimension(:, :, :) :: epsinvz
   
   M4_IFELSE_WMU({
-  real(kind=8), allocatable, dimension(:, :, :) :: MUINV
+  real(kind=8), allocatable, dimension(:, :, :) :: muinvx
+  real(kind=8), allocatable, dimension(:, :, :) :: muinvy
+  real(kind=8), allocatable, dimension(:, :, :) :: muinvz
   })
 
   integer :: reginitidx = -1, regepsidx = -1, regmuidx = -1
@@ -100,11 +126,11 @@ contains
          call ReadRegObj(reg, fdtdreg, funit, 6)
 		 reginitidx = reg%idx
       case("(EPSILON") 
-         call ReadRegObj(reg, fdtdreg, funit, 1)
+         call ReadRegObj(reg, fdtdreg, funit, 3)
 		 regepsidx = reg%idx
       M4_IFELSE_WMU({           
       case("(MU") 
-         call ReadRegObj(reg, fdtdreg, funit, 1)
+         call ReadRegObj(reg, fdtdreg, funit, 3)
 		 regmuidx = reg%idx
       })
       case("(OUT") 
@@ -156,36 +182,47 @@ M4_IFELSE_WMU({ call InitializeMu })
 
  subroutine InitializeEpsilon
 
-   M4_REGLOOP_DECL(reg,p,i,j,k,v(1))  
+   M4_REGLOOP_DECL(reg,p,i,j,k,v(3))  
    integer :: err
 
    M4_WRITE_DBG({"allocate epsilon"}) 
 
-   allocate(EPSINV(M4_RANGE(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX)), STAT=err)
+   allocate(epsinvx(M4_RANGE(IBEG:IEND, JBEG:JEND, KBEG:KEND)), STAT=err)
+   M4_ALLOC_ERROR(err, "InitializeEpsilon")
+
+   allocate(epsinvy(M4_RANGE(IBEG:IEND, JBEG:JEND, KBEG:KEND)), STAT=err)
+   M4_ALLOC_ERROR(err, "InitializeEpsilon")
+
+   allocate(epsinvz(M4_RANGE(IBEG:IEND, JBEG:JEND, KBEG:KEND)), STAT=err)
    M4_ALLOC_ERROR(err, "InitializeEpsilon")
      
-   M4_WRITE_DBG({"setting epsilon = 1.0"})   
-   EPSINV = 1.0
+   M4_WRITE_DBG({"pre-initializing all epsilon = 1.0"})   
+   epsinvx = 1.0
+   epsinvy = 1.0
+   epsinvz = 1.0
 
    if ( regepsidx .ge. 1 ) then
-     ! overwrite epsilon field with values from (EPSILON definition block
-	  M4_WRITE_DBG({"initializing epsilon"})   
+
+      M4_WRITE_DBG({"initializing epsilon from input"})   
       reg = regobj(regepsidx)
 
       M4_REGLOOP_EXPR(reg,p,i,j,k,v, {
 
-         EPSINV(i,j,k) = 1./v(1)
+         epsinvx(i,j,k) = 1./v(1)
+         epsinvx(i,j,k) = 1./v(2)
+         epsinvx(i,j,k) = 1./v(3)
          
       } )
-      ! get rid of initialization fields!
+
+      ! free the memory of the reg object
       if ( regobj(regepsidx)%numnodes .gt. 0 ) call DestroyRegObj(regobj(regepsidx))
       
    else
       M4_WRITE_WARN({"EPSILON NOT INITIALIZED, USING 1.0!"})   
    end if
-   
-   call ExtendRealField(EPSINV)
- 
+
+   M4_WRITE_DBG({"extend epsilon towards boundary"})   
+    
  end subroutine InitializeEpsilon
  
 !----------------------------------------------------------------------
@@ -199,31 +236,42 @@ M4_IFELSE_WMU({
 
    M4_WRITE_DBG({"allocate mu"})   
 
-   allocate(MUINV(M4_RANGE(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX)), STAT=err)
-   M4_ALLOC_ERROR(err, "AllocateMuField")
+   allocate(muinvx(M4_RANGE(IBEG:IEND, JBEG:JEND, KBEG:KEND)), STAT=err)
+   M4_ALLOC_ERROR(err, "InitializeMu")
+
+   allocate(muinvy(M4_RANGE(IBEG:IEND, JBEG:JEND, KBEG:KEND)), STAT=err)
+   M4_ALLOC_ERROR(err, "InitializeMu")
+
+   allocate(muinvz(M4_RANGE(IBEG:IEND, JBEG:JEND, KBEG:KEND)), STAT=err)
+   M4_ALLOC_ERROR(err, "InitializeMu")
      
-   
-   M4_WRITE_DBG({"setting mu = 1.0"})   
-   MUINV = 1.0
+   M4_WRITE_DBG({"pre-initializing all epsilon = 1.0"})   
+   muinvx = 1.0
+   muinvy = 1.0
+   muinvz = 1.0
 
    if ( regmuidx .ge. 1 ) then
-     ! overwrite epsilon field with values from (EPSILON definition block
-	  M4_WRITE_DBG({"initializing mu"})   
+
+      M4_WRITE_DBG({"initializing mu from input"})   
       reg = regobj(regmuidx)
 
       M4_REGLOOP_EXPR(reg,p,i,j,k,v, {
 
-         MUINV(i,j,k) = 1./v(1)
+         muinvx(i,j,k) = 1./v(1)
+         muinvy(i,j,k) = 1./v(2)
+         muinvz(i,j,k) = 1./v(3)
          
       } )
-      ! get rid of initialization fields!
+
+      ! free memory allocated by reg object
       if ( regobj(regmuidx)%numnodes .gt. 0 ) call DestroyRegObj(regobj(regmuidx))
       
    else
       M4_WRITE_WARN({"MU NOT INITIALIZED, USING 1.0!"})   
    end if
    
-   call ExtendRealField(MUINV)
+
+   M4_WRITE_DBG({"extend epsilon towards boundary"})   
 
  end subroutine InitializeMu
 
@@ -283,26 +331,6 @@ M4_IFELSE_WMU({
    end if
 
  end subroutine InitializeEHFields
-
-!----------------------------------------------------------------------
-
- subroutine ExtendRealField(field)
-
-   real(kind=8), dimension(:,:,:) :: field
-
-   field(IEND+1,:,:) = field(IEND,:,:) 
-   M4_IFELSE_2D({
-   field(:,JEND+1,:) = field(:,JEND,:) 
-   field(IEND+1,JEND+1,:) = field(IEND,JEND,:)
-   })
-   M4_IFELSE_3D({
-   field(:,:,KEND+1) = field(:,:,KEND) 
-   field(IEND+1,:,KEND+1) = field(IEND,:,KEND)
-   field(:,JEND+1,KEND+1) = field(:,JEND,KEND)
-   field(IEND+1,JEND+1,KEND+1) = field(IEND,JEND,KEND)
-   })
-
- end subroutine ExtendRealField
  
 !----------------------------------------------------------------------
 
@@ -316,8 +344,14 @@ M4_IFELSE_WMU({
    deallocate(Ez)
    deallocate(Ey)
    deallocate(Ex)
-   deallocate(EPSINV)
-M4_IFELSE_WMU({ deallocate(MUINV) })
+   deallocate(epsinvx)
+   deallocate(epsinvy)
+   deallocate(epsinvz)
+M4_IFELSE_WMU({ 
+   deallocate(muinvx)
+   deallocate(muinvy)
+   deallocate(muinvz)
+})
 
    M4_WRITE_DBG({". exit FinalizeFdtd"})
    
@@ -327,8 +361,6 @@ M4_IFELSE_WMU({ deallocate(MUINV) })
 
   subroutine StepH
 
-    implicit none
-    
     real(kind=8) :: dtx, dty, dtz
     M4_FTYPE :: Exh,Eyh,Ezh
     integer :: i, j, k
@@ -408,15 +440,15 @@ M4_IFELSE_1D({!$OMP PARALLEL DO PRIVATE(Hxh,Hyh,Hzh)})
              Hyh=Hy(i,j,k)
              Hzh=Hz(i,j,k) 
 
-             Ex(i,j,k) =  Ex(i,j,k) + M4_EPSINVX(i,j,k) *( &
+             Ex(i,j,k) =  Ex(i,j,k) + epsinvx(i,j,k) *( &
 M4_IFELSE_1D({0.&},{ + dty*( Hzh - Hz(i,j-1,k) ) &             })
 M4_IFELSE_3D({       - dtz*( Hyh - Hy(i,j,k-1) ) &          },{})
                      )
-             Ey(i,j,k) =  Ey(i,j,k) + M4_EPSINVY(i,j,k) * ( &
+             Ey(i,j,k) =  Ey(i,j,k) + epsinvy(i,j,k) * ( &
                      - dtx*( Hzh - Hz(i-1,j,k) ) &
 M4_IFELSE_3D({       + dtz*( Hxh - Hx(i,j,k-1) ) &             })
                     )
-             Ez(i,j,k) =  Ez(i,j,k) + M4_EPSINVZ(i,j,k) * ( &
+             Ez(i,j,k) =  Ez(i,j,k) + epsinvz(i,j,k) * ( &
                      + dtx*( Hyh - Hy(i-1,j,k) )  &
 M4_IFELSE_1D({},{    - dty*( Hxh - Hx(i,j-1,k) )  &            })
                      )

@@ -141,8 +141,10 @@ contains
        call WriteScalar(out, Hy, 0, mode)
     case('Hz')
        call WriteScalar(out, Hz, 0, mode)
-    case('Di')         
-       call WriteEpsilon(out, mode)
+    case('Eps')         
+       call WriteEps(out, mode)
+    case('Mu')         
+       call WriteMu(out, mode)
     case default
        write(out%funit,*) "OUTPUT FUNCTION NOT IMPLEMENTED" 
     end select
@@ -303,7 +305,7 @@ contains
  
     ! **************************************************************** !
 
-    subroutine WriteEpsilon(out,mode)
+    subroutine WriteEps(out,mode)
 
       type (T_OUT) :: out
       logical :: mode
@@ -313,19 +315,45 @@ contains
 
       if ( .not. mode ) return
 
-      write(out%funit,"(A)") "SCALARS scalar float 1"
+      write(out%funit,"(A)") "SCALARS scalar float 3"
       write(out%funit,"(A)") "LOOKUP_TABLE default"
 
       reg = regobj(out%regidx)
       
       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-      val = 1./epsinv(i,j,k)
-      write(out%funit,"(E15.6E3)") val
+      write(out%funit,"(E15.6E3)") &
+           1./epsinvx(i,j,k),1./epsinvy(i,j,k),1./epsinvz(i,j,k)
       
       },{}, {} )
 
-    end subroutine WriteEpsilon
+    end subroutine WriteEps
+
+    ! **************************************************************** !
+
+    subroutine WriteMu(out,mode)
+
+      type (T_OUT) :: out
+      logical :: mode
+      real(kind=8) :: val
+
+      M4_REGLOOP_DECL(reg,p,i,j,k,w(0))  
+
+      if ( .not. mode ) return
+
+      write(out%funit,"(A)") "SCALARS scalar float 3"
+      write(out%funit,"(A)") "LOOKUP_TABLE default"
+
+      reg = regobj(out%regidx)
+      
+      M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+
+      write(out%funit,"(3E15.6E3)") &
+           1./M4_MUINVX(i,j,k),1./M4_MUINVY(i,j,k),1./M4_MUINVZ(i,j,k)
+
+      },{}, {} )
+
+    end subroutine WriteMu
 
 
     ! *************************************************************** !

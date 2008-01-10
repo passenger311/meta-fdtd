@@ -141,8 +141,10 @@ contains
        call WriteScalar(out, Hy, 0, mode)
     case('Hz')
        call WriteScalar(out, Hz, 0, mode)
-    case('Di')         
-       call WriteEpsilon(out, mode)
+    case('Eps')
+       call WriteEps(out, mode)
+    case('Mu')
+       call WriteMu(out, mode)
     case default
        write(out%funit,*) "OUTPUT FUNCTION NOT IMPLEMENTED" 
     end select
@@ -293,10 +295,9 @@ contains
 
     end subroutine WriteBuffer
 
- 
     ! **************************************************************** !
 
-    subroutine WriteEpsilon(out,mode)
+    subroutine WriteEps(out,mode)
 
       type (T_OUT) :: out
       logical :: mode
@@ -310,20 +311,47 @@ contains
       
       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-      val = 1./epsinv(i,j,k)
       if ( reg%isbox ) then
-         write(out%funit,"(E15.6E3)") val
+         write(out%funit,"(E15.6E3)") &
+              1./epsinvx(i,j,k),1./epsinvy(i,j,k),1./epsinvz(i,j,k) 
       else
-         write(out%funit,"(M4_SDIM({I5}),(E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}),val
+         write(out%funit,"(M4_SDIM({I5}),(E15.6E3))") &
+              M4_DIM123({i},{i,j},{i,j,k}), &
+              1./epsinvx(i,j,k),1./epsinvy(i,j,k),1./epsinvz(i,j,k) 
       endif
       
       },{if ( reg%is .ne. reg%ie ) write(out%funit,*)}, {if ( reg%js .ne. reg%je ) write(out%funit,*)} )
 
-      M4_REGLOOP_WRITE(reg,p,i,j,k,w,
-      out%funit,E15.6E3, { 1.0/epsinv(i,j,k) }
-      )
+    end subroutine WriteEps
 
-    end subroutine WriteEpsilon
+    ! **************************************************************** !
+
+    subroutine WriteMu(out,mode)
+
+      type (T_OUT) :: out
+      logical :: mode
+      real(kind=8) :: val
+
+      M4_REGLOOP_DECL(reg,p,i,j,k,w(0))  
+
+      if ( .not. mode ) return
+
+      reg = regobj(out%regidx)
+      
+      M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+
+      if ( reg%isbox ) then
+         write(out%funit,"(E15.6E3)")  &
+              1./M4_MUINVX(i,j,k),1./M4_MUINVY(i,j,k),1./M4_MUINVZ(i,j,k)
+      else
+         write(out%funit,"(M4_SDIM({I5}),(E15.6E3))") &
+              M4_DIM123({i},{i,j},{i,j,k}), &
+              1./M4_MUINVX(i,j,k),1./M4_MUINVY(i,j,k),1./M4_MUINVZ(i,j,k)
+      endif
+      
+      },{if ( reg%is .ne. reg%ie ) write(out%funit,*)}, {if ( reg%js .ne. reg%je ) write(out%funit,*)} )
+
+    end subroutine WriteMu
 
 
     ! *************************************************************** !

@@ -489,7 +489,6 @@ M4_IFELSE_3D({!$OMP END PARALLEL DO})
       integer :: i, j, k
       real(kind=8) :: dtx, dty, dtz
       M4_FTYPE :: Dxo, Dyo, Dzo, Hxh, Hyh, Hzh    
-      real(kind=8) :: epsinvx, epsinvy, epsinvz
   
       dtx = DT/SX
       dty = DT/SY
@@ -530,11 +529,11 @@ M4_IFELSE_1D({},{   - dty * ( Hxh - Hx(i,j-1,k) )           &    })
                ! Calc E
 
                Ex(i,j,k) = cezpml(4,k)*Ex(i,j,k) + cezpml(2,k) * &
-                    M4_EPSINVX(i,j,k)*(cexpml(1,i)*D(1,i,j,k) - cexpml(3,i)*Dxo)
+                    epsinvx(i,j,k)*(cexpml(1,i)*D(1,i,j,k) - cexpml(3,i)*Dxo)
                Ey(i,j,k) = cexpml(4,i)*Ey(i,j,k) + cexpml(2,i) * &
-                    M4_EPSINVY(i,j,k)*(ceypml(1,j)*D(2,i,j,k) - ceypml(3,j)*Dyo)
+                    epsinvy(i,j,k)*(ceypml(1,j)*D(2,i,j,k) - ceypml(3,j)*Dyo)
                Ez(i,j,k) = ceypml(4,j)*Ez(i,j,k) + ceypml(2,j) * &
-                    M4_EPSINVZ(i,j,k)*(cezpml(1,k)*D(3,i,j,k) - cezpml(3,k)*Dzo)
+                    epsinvz(i,j,k)*(cezpml(1,k)*D(3,i,j,k) - cezpml(3,k)*Dzo)
            
             enddo
 M4_IFELSE_1D({!$OMP END PARALLEL DO})
