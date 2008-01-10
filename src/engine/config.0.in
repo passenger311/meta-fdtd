@@ -202,7 +202,7 @@ T		   	    ! time (T) or wavelength (F) parameters for gaussian
 0.01 		    ! gamma: damping constant in units [1/dt]
 (REG
   (POINT
-     50 50 50
+     50 50 50 1.0 1.0 1.0
   )POINT
 )REG
 )MATSOURCE

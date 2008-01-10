@@ -113,6 +113,7 @@ module reglist
   public :: CreateRegObjStart
   public :: CreateRegObjEnd
   public :: CreateBoxRegObj
+  public :: CompressValRegObj
   public :: DestroyRegObj
   public :: EchoRegObj
   public :: DisplayRegObj
@@ -141,6 +142,9 @@ module reglist
      integer :: numval                          ! number of values
      real(kind=8),pointer,dimension(:,:) :: val ! values field
      integer :: ps = 0, pe = 0                  ! linear list start, end
+
+     logical :: compressval
+     integer, pointer,dimension(:) :: valptr
 
   end type T_REG
 
@@ -360,6 +364,7 @@ contains
     M4_WRITE_DBG(". enter CreateBoxRegObj")
     
     numregobj = numregobj + 1
+    regobj(numregobj)%compressval = .false.
     regobj(numregobj)%idx = numregobj
     regobj(numregobj)%is = is
     regobj(numregobj)%ie = ie
@@ -433,6 +438,7 @@ contains
     regobj(numregobj)%numval = numval
     regobj(numregobj)%isbox = .false.
     regobj(numregobj)%islist = .false.
+    regobj(numregobj)%compressval = .false.
     CreateRegObjStart = regobj(numregobj)
 
     M4_WRITE_DBG(". exit CreateRegObjStart")
@@ -776,7 +782,15 @@ contains
     M4_WRITE_DBG(". enter DestroyRegObjEnd")
 
     M4_IFELSE_DBG({call EchoRegObj(reg)})
-    deallocate(reg%val)
+
+    if ( reg%numval .gt. 0 ) then
+       deallocate(reg%val)
+    end if
+
+    if ( reg%compressval ) then
+       deallocate(reg%valptr)
+    end if
+
     if ( .not. reg%isbox .and. numnodes .gt. 0) then
        if ( .not. reg%islist ) then
           deallocate(reg%mask)
@@ -784,12 +798,69 @@ contains
           deallocate(reg%i, reg%j, reg%k)
        end if
     end if
+    
 
     reg%idx = -1
     
     M4_WRITE_DBG(". exit DestroyRegObjEnd")
     
   end subroutine DestroyRegObj
+
+!----------------------------------------------------------------------
+
+! materials read values sets which are mostly 1.0,1.0,1.0 (cell 
+! filling factor). To reduce memory usage indirect addressing with is 
+! valptr is used.
+
+  subroutine CompressValRegObj(reg)
+
+    type(T_REG) :: reg
+    integer :: p,v, p_new, err
+    logical :: isunit
+    real(kind=8), pointer, dimension(:,:) :: newval
+    
+    if ( reg%numval .eq. 0 ) return
+
+    allocate(reg%valptr(1:reg%numnodes), stat = err)
+    M4_ALLOC_ERROR(err,{"CompressValRegObj"})
+
+    p_new = 1
+    do p = 1, reg%numnodes
+       
+       isunit = .true.
+       do v = 1, reg%numval
+          if ( reg%val(v,p) .ne. 1.0 ) then
+             isunit = .false.
+             exit ! break out
+          end if
+       end do
+
+       if ( isunit ) then 
+          reg%valptr(p) = 1 ! unit tuple will be placed at pos 1
+       else
+          p_new = p_new + 1
+          reg%valptr(p) = p_new ! new pos of value in field
+       end if
+
+    end do
+
+    ! new value field
+    allocate(newval(1:reg%numval,1:p_new), stat = err)
+    M4_ALLOC_ERROR(err,{"CompressValRegObj"})
+
+    do p = 1, reg%numnodes
+       newval(:,reg%valptr(p)) = reg%val(:,p)
+    end do
+    
+    ! free old value field
+    deallocate(reg%val)
+
+    ! set to new compressed value field
+    reg%val => newval
+
+    reg%compressval = .true.
+
+  end subroutine CompressValRegObj
 
 !----------------------------------------------------------------------
 

@@ -31,33 +31,42 @@ else !isbox
 
 if ( $1%islist ) then
  
-do $2 = 1, $1%pe
+do $2 = 1, $1%pe ! -> p
 
-$3 = $1%i(p)
-$4 = $1%j(p)
-$5 = $1%k(p)
-$6(:) = $1%val(:,p)
+$3 = $1%i($2) ! -> i
+$4 = $1%j($2) ! -> j
+$5 = $1%k($2) ! -> k
+
+if ( $1%compressval ) then 
+$6(:) = $1%val(:,$1%valptr($2))
+else
+$6(:) = $1%val(:,$2)
+endif
 
 $7
 
-enddo !p
+enddo ! p
 
 else !islist
 
-$2 = 0
-do $5 = $1%ks, $1%ke, $1%dk
-do $4 = $1%js, $1%je, $1%dj
-do $3 = $1%is, $1%ie, $1%di
-if ( $1%mask(i,j,k) .gt. 0 ) then
-$6(:) = $1%val(:,$1%mask(i,j,k)) 
-$2 = $2 + 1	     
+do $5 = $1%ks, $1%ke, $1%dk ! -> k
+do $4 = $1%js, $1%je, $1%dj ! -> j
+do $3 = $1%is, $1%ie, $1%di ! -> i
+$2 = $1%mask($3,$4,$5) ! -> p
+if ( $2 .gt. 0 ) then
+
+if ( $1%compressval ) then 
+$6(:) = $1%val(:,$1%valptr($2))
+else
+$6(:) = $1%val(:,$2)
+endif
 
 $7
 	   
-endif !mask
-enddo !i
-enddo !j
-enddo !k
+endif 
+enddo ! i
+enddo ! j
+enddo ! k
 
 endif !islist
 
