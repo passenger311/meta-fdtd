@@ -51,6 +51,8 @@ contains
 
   subroutine FdtdCalcEn(buf, slot, mode)
 
+    ! Localization: En[i,j,k] = En(i,j,k)
+
     type (T_BUF) :: buf
     integer :: slot
     logical :: mode
@@ -87,6 +89,8 @@ contains
 
 !----------------------------------------------------------------------
 
+! Localization: Px[i,j,k] = Px(i+1/2,j,k)
+
   subroutine FdtdCalcPx(buf, slot, mode)
 
     type (T_BUF) :: buf
@@ -109,10 +113,10 @@ contains
 
     M4_REGLOOP_EXPR(reg,p,i,j,k,w, {
 
-     val = 0.125*((Ey(M4_COORD(i,j,k))+Ey(M4_COORD(i+1,j,k)))*Hz(M4_COORD(i,j,k)) &
-         + (Ey(M4_COORD(i,j-1,k))+Ey(M4_COORD(i+1,j-1,k)))* Hz(M4_COORD(i,j-1,k)) &
-         - (Ez(M4_COORD(i,j,k))+Ez(M4_COORD(i+1,j,k)))*Hy(M4_COORD(i,j,k)) &
-         - (Ez(M4_COORD(i,j,k-1))+Ez(M4_COORD(i+1,j,k-1)))* Hy(M4_COORD(i,j,k-1)) &
+     val = 0.125*((Ey(M4_COORD(i,j,k))+Ey(M4_COORD(i+1,j,k)))*M4_CONJ(Hz(M4_COORD(i,j,k))) &
+         + (Ey(M4_COORD(i,j-1,k))+Ey(M4_COORD(i+1,j-1,k)))* M4_CONJ(Hz(M4_COORD(i,j-1,k))) &
+         - (Ez(M4_COORD(i,j,k))+Ez(M4_COORD(i+1,j,k)))*M4_CONJ(Hy(M4_COORD(i,j,k))) &
+         - (Ez(M4_COORD(i,j,k-1))+Ez(M4_COORD(i+1,j,k-1)))* M4_CONJ(Hy(M4_COORD(i,j,k-1))) &
          ) 
     buf%data(p,slot) = buf%data(p,slot) + val/(4.0*PI)
     
@@ -122,6 +126,8 @@ contains
   end subroutine FdtdCalcPx
 
 !----------------------------------------------------------------------
+
+! Localization: Py[i,j,k] = Py(i-1/2,j+1,k+1/2) where Ey sits at n = n + 1/2
 
   subroutine FdtdCalcPy(buf, slot, mode)
 
@@ -145,10 +151,10 @@ contains
 
     M4_REGLOOP_EXPR(reg,p,i,j,k,w, {
 
-    val = 0.125*( (Ez(M4_COORD(i,j,k))+Ez(M4_COORD(i,j+1,k)))*Hx(M4_COORD(i,j,k)) &
-         + (Ez(M4_COORD(i,j,k-1))+Ez(M4_COORD(i,j+1,k-1)))*Hx(M4_COORD(i,j,k-1)) &
-         - (Ex(M4_COORD(i,j,k))+Ex(M4_COORD(i,j+1,k)))*Hz(M4_COORD(i,j,k)) &
-         - (Ex(M4_COORD(i-1,j,k))+Ex(M4_COORD(i-1,j+1,k)))*Hz(M4_COORD(i-1,j,k)) &
+    val = 0.125*( (Ez(M4_COORD(i,j,k))+Ez(M4_COORD(i,j+1,k)))*M4_CONJ(Hx(M4_COORD(i,j,k))) &
+         + (Ez(M4_COORD(i,j,k-1))+Ez(M4_COORD(i,j+1,k-1)))*M4_CONJ(Hx(M4_COORD(i,j,k-1))) &
+         - (Ex(M4_COORD(i,j,k))+Ex(M4_COORD(i,j+1,k)))*M4_CONJ(Hz(M4_COORD(i,j,k))) &
+         - (Ex(M4_COORD(i-1,j,k))+Ex(M4_COORD(i-1,j+1,k)))*M4_CONJ(Hz(M4_COORD(i-1,j,k))) &
          )
     buf%data(p,slot) = buf%data(p,slot) + val/(4.0*PI)
     
@@ -159,6 +165,8 @@ contains
 
 !----------------------------------------------------------------------
 
+! Localization: Pz[i,j,k] = Pz(i-1/2,j+1/2,k+1).where Ez sits at n = n + 1/2
+ 
   subroutine FdtdCalcPz(buf, slot, mode)
 
     type (T_BUF) :: buf
@@ -181,10 +189,10 @@ contains
 
     M4_REGLOOP_EXPR(reg,p,i,j,k,w, {
 
-    val = 0.125*( (Ex(M4_COORD(i,j,k))+Ex(M4_COORD(i,j,k+1)))*Hy(M4_COORD(i,j,k)) &
-         +(Ex(M4_COORD(i-1,j,k))+Ex(M4_COORD(i-1,j,k+1)))*Hy(M4_COORD(i-1,j,k)) &
-         - (Ey(M4_COORD(i,j,k))+Ey(M4_COORD(i,j,k+1)))*Hx(M4_COORD(i,j,k)) &
-         - (Ey(M4_COORD(i,j-1,k))+Ey(M4_COORD(i,j-1,k+1)))* Hx(M4_COORD(i,j-1,k)) &
+    val = 0.125*( (Ex(M4_COORD(i,j,k))+Ex(M4_COORD(i,j,k+1)))*M4_CONJ(Hy(M4_COORD(i,j,k))) &
+         +(Ex(M4_COORD(i-1,j,k))+Ex(M4_COORD(i-1,j,k+1)))*M4_CONJ(Hy(M4_COORD(i-1,j,k))) &
+         - (Ey(M4_COORD(i,j,k))+Ey(M4_COORD(i,j,k+1)))*M4_CONJ(Hx(M4_COORD(i,j,k))) &
+         - (Ey(M4_COORD(i,j-1,k))+Ey(M4_COORD(i,j-1,k+1)))*M4_CONJ(Hx(M4_COORD(i,j-1,k))) &
          )
 
     buf%data(p,slot) = buf%data(p,slot) + val/(4.0*PI)
