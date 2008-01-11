@@ -179,8 +179,8 @@ contains
 
     else ! 2. order equation
 
-       n = mod(ncyc-1,2)
-       m = mod(ncyc,2) 
+       n = mod(ncyc-1,2) + 1
+       m = mod(ncyc,2) + 1
 
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
@@ -233,8 +233,8 @@ contains
 
     else ! 2. order equation
 
-       n = mod(ncyc-1,2) 
-       m = mod(ncyc,2) 
+       n = mod(ncyc-1,2) + 1
+       m = mod(ncyc,2) + 1
 
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
        
