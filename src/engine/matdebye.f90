@@ -1,44 +1,37 @@
 !-*- F90 -*------------------------------------------------------------
 !
-!  module: matdrude / meta
+!  module: matdebye / meta
 !
-!  JDrude material module.
+!  JDebye material module.
 !
 !  subs:
 !
-!    InitializeMatdrude
-!    FinalizeMatdrude
-!    ReadMatdrudeObj
-!    StepEMatdrude
-!    StepHMatdrude
+!    InitializeMatdebye
+!    FinalizeMatdebye
+!    ReadMatdebyeObj
+!    StepEMatdebye
+!    StepHMatdebye
 !
 !----------------------------------------------------------------------
 
 
 ! =====================================================================
 !
-! The MatDrude calculates the material response of a Drude pole. 
+! The MatDebye calculates the material response of a Debye pole. 
 !
-! d/dt J + gammapl * J = omegapl**2 * E
+! taud * d/dt J + J = deltaepsd * E
 ! E = E* + J
 !
 ! where E* is the electric field as calculated without the sources.  
 !
-! A first order (calculating J) or second order approach (calculating
-! P) can be chosen.
-!
 ! 1. order method
 !
-! StepHMatDrude: update eq. J(n+1/2) = c1 * J(n-1/2) + c2 * E(n)
-! StepEMatDrude: update eq. E(n+1)* = E(n+1) - epsinv * DT * J(n+1/2)
+! StepHMatDebye: update eq. J(n+1/2) = c1 * J(n-1/2) + c2 * E(n)
+! StepEMatDebye: update eq. E(n+1)* = E(n+1) - epsinv * DT * J(n+1/2)
 !
-! 2. order method (see matlorentz)
-!
-! StepHMatPdrude: update eq. P(n+1) = c1 * P(n) + c2 * P(n-1) + c3 * E(n)
-! StepEMatPdrude: update eq. E(n+1)* = E(n+1) - epsinv * (P(n+1) - P(n))
 !
 
-module matdrude
+module matdebye
 
   use constant
   use mpiworld
@@ -51,7 +44,7 @@ module matdrude
   private
   save
 
-  M4_MODHEAD_DECL({MATDRUDE},100,{
+  M4_MODHEAD_DECL({MATDEBYE},100,{
 
   ! input parameters
   real(kind=8) :: lambdapl, abslenpl ! vac. plasma wavelength and abs. length
@@ -72,13 +65,13 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine ReadMatDrudeObj(funit)
+  subroutine ReadMatDebyeObj(funit)
 
-    M4_MODREAD_DECL({MATDRUDE}, funit,mat,reg,out)
+    M4_MODREAD_DECL({MATDEBYE}, funit,mat,reg,out)
 
-    M4_WRITE_DBG(". enter ReadMatDrudeObj")
+    M4_WRITE_DBG(". enter ReadMatDebyeObj")
     
-    M4_MODREAD_EXPR({MATDRUDE},funit,mat,reg,3,out,{ 
+    M4_MODREAD_EXPR({MATDEBYE},funit,mat,reg,3,out,{ 
 
     ! read mat parameters here, as defined in mat data structure
     read(funit,*) mat%lambdapl
@@ -89,19 +82,19 @@ contains
 
     call CompressValRegObj(reg) ! compress filling factors
 
-    M4_WRITE_DBG(". exit ReadMatDrudeObj")
+    M4_WRITE_DBG(". exit ReadMatDebyeObj")
 
-  end subroutine ReadMatDrudeObj
+  end subroutine ReadMatDebyeObj
 
 !----------------------------------------------------------------------
 
-  subroutine InitializeMatDrude
+  subroutine InitializeMatDebye
 
     type (T_REG) :: reg
     integer :: err
-    M4_MODLOOP_DECL({MATDRUDE},mat) 
-    M4_WRITE_DBG(". enter InitializeMatDrude")
-    M4_MODLOOP_EXPR({MATDRUDE},mat,{
+    M4_MODLOOP_DECL({MATDEBYE},mat) 
+    M4_WRITE_DBG(". enter InitializeMatDebye")
+    M4_MODLOOP_EXPR({MATDEBYE},mat,{
     
        ! initialize mat object here
 
@@ -115,7 +108,7 @@ contains
        endif
 
        allocate(mat%Jx(reg%numnodes,mat%order),mat%Jy(reg%numnodes,mat%order),mat%Jz(reg%numnodes,mat%order), stat = err)
-       M4_ALLOC_ERROR(err,"InitializeMatDrude")
+       M4_ALLOC_ERROR(err,"InitializeMatDebye")
 
        mat%Jx = 0.
        mat%Jy = 0.
@@ -136,39 +129,39 @@ contains
 
        endif
 
-       call EchoMatDrudeObj(mat)
-       M4_IFELSE_DBG({call EchoMatDrudeObj(mat)})
+       call EchoMatDebyeObj(mat)
+       M4_IFELSE_DBG({call EchoMatDebyeObj(mat)})
 
     })
-    M4_WRITE_DBG(". exit InitializeMatDrude")
+    M4_WRITE_DBG(". exit InitializeMatDebye")
 
-  end subroutine InitializeMatDrude
+  end subroutine InitializeMatDebye
 
 !----------------------------------------------------------------------
 
-  subroutine FinalizeMatDrude
+  subroutine FinalizeMatDebye
 
-    M4_MODLOOP_DECL({MATDRUDE},mat)
-    M4_WRITE_DBG(". enter FinalizeMatDrude")
-    M4_MODLOOP_EXPR({MATDRUDE},mat,{
+    M4_MODLOOP_DECL({MATDEBYE},mat)
+    M4_WRITE_DBG(". enter FinalizeMatDebye")
+    M4_MODLOOP_EXPR({MATDEBYE},mat,{
 
     ! finalize mat object here
     deallocate(mat%Jx,mat%Jy,mat%Jz)
 
     })
-    M4_WRITE_DBG(". exit FinalizeMatDrude")
+    M4_WRITE_DBG(". exit FinalizeMatDebye")
 
-  end subroutine FinalizeMatDrude
+  end subroutine FinalizeMatDebye
 
 !----------------------------------------------------------------------
 
-  subroutine StepHMatDrude(ncyc)
+  subroutine StepHMatDebye(ncyc)
 
     integer :: ncyc, m, n
-    M4_MODLOOP_DECL({MATDRUDE},mat)
+    M4_MODLOOP_DECL({MATDEBYE},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
 
-    M4_MODLOOP_EXPR({MATDRUDE},mat,{
+    M4_MODLOOP_EXPR({MATDEBYE},mat,{
 
     ! this loops over all mat structures, setting mat
 
@@ -210,19 +203,19 @@ contains
     endif
     })
   
-  end subroutine StepHMatDrude
+  end subroutine StepHMatDebye
 
 
 !----------------------------------------------------------------------
 
 
-  subroutine StepEMatDrude(ncyc)
+  subroutine StepEMatDebye(ncyc)
 
     integer :: ncyc, m, n
-    M4_MODLOOP_DECL({MATDRUDE},mat)
+    M4_MODLOOP_DECL({MATDEBYE},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
 
-    M4_MODLOOP_EXPR({MATDRUDE},mat,{
+    M4_MODLOOP_EXPR({MATDEBYE},mat,{
 
        ! this loops over all mat structures, setting mat
 
@@ -262,16 +255,16 @@ contains
 
     })
 
-  end subroutine StepEMatDrude
+  end subroutine StepEMatDebye
 
 
 !----------------------------------------------------------------------
 
-   subroutine EchoMatDrudeObj(mat)
+   subroutine EchoMatDebyeObj(mat)
 
-    type(T_MATDRUDE) :: mat
+    type(T_MATDEBYE) :: mat
 
-    M4_WRITE_INFO({"--- matdrude # ",&
+    M4_WRITE_INFO({"--- matdebye # ",&
          TRIM(i2str(mat%idx))," ", TRIM(mat%type)})
 
     ! -- write parameters to console 
@@ -288,12 +281,12 @@ contains
     call EchoRegObj(regobj(mat%regidx))
     
 
-  end subroutine EchoMatDrudeObj
+  end subroutine EchoMatDebyeObj
 
   
 !----------------------------------------------------------------------
 
-end module matdrude
+end module matdebye
 
 ! =====================================================================
 
