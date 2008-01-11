@@ -100,7 +100,7 @@ contains
        M4_IFELSE_DBG({call EchoMatDrudeObj(mat)})
 
        mat%omegapl = 2. * PI * 1. / ( mat%lambdapl * DT )
-       mat%gammapl = DT * mat%abslenpl
+       mat%gammapl = DT / mat%abslenpl
 
        reg = regobj(mat%regidx)
 

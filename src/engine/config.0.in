@@ -202,7 +202,7 @@ T		! time (T) or wavelength (F) parameters for gaussian
     
 (MATDRUDE
 62.0    	    ! lambdapl: plasma freq wavelength [dx]
-15.0 		    ! abslenpl: damping constant [dx]
+35.0 		    ! abslenpl: damping constant [dx]
 2		    ! order: 1 (=J) or 2 (=P)
 (REG
   (VBOX
