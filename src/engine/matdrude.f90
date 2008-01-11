@@ -28,7 +28,7 @@
 ! 2. order
 !
 ! StepHMatPdrude: update eq. P(n+1) = c1 * P(n) + c2 * P(n-1) + c3 * E(n)
-! StepEMatPdrude: update eq. E(n+1)* = E(n+1) - epsinv * (P(n+1) + P(n))
+! StepEMatPdrude: update eq. E(n+1)* = E(n+1) - epsinv * (P(n+1) - P(n))
 !
 
 module matdrude
@@ -97,10 +97,9 @@ contains
     M4_MODLOOP_EXPR({MATDRUDE},mat,{
     
        ! initialize mat object here
-       M4_IFELSE_DBG({call EchoMatDrudeObj(mat)})
 
        mat%omegapl = 2. * PI * 1. / ( mat%lambdapl * DT )
-       mat%gammapl = 1. / ( mat%abslenpl * DT )
+       mat%gammapl = 2. / ( mat%abslenpl * DT )
 
        reg = regobj(mat%regidx)
 
@@ -129,7 +128,10 @@ contains
           mat%c3 = ( 2. * DT**2 * mat%omegapl**2) / ( 2. + DT * mat%gammapl )
 
        endif
- 
+
+       call EchoMatDrudeObj(mat)
+       M4_IFELSE_DBG({call EchoMatDrudeObj(mat)})
+
     })
     M4_WRITE_DBG(". exit InitializeMatDrude")
 
@@ -190,12 +192,12 @@ contains
 
        mat%Jx(p,m) = mat%c1 * mat%Jx(p,n) + mat%c2 * mat%Jx(p,m) + mat%c3 * Ex(i,j,k)
        mat%Jy(p,m) = mat%c1 * mat%Jy(p,n) + mat%c2 * mat%Jy(p,m) + mat%c3 * Ey(i,j,k)
-       mat%Jz(p,m) = mat%c1 * mat%Jz(p,n) + mat%c2 * mat%Jy(p,m) + mat%c3 * Ez(i,j,k)
+       mat%Jz(p,m) = mat%c1 * mat%Jz(p,n) + mat%c2 * mat%Jz(p,m) + mat%c3 * Ez(i,j,k)
 
        ! after: J(*,m) is now P(n+1)
        
        ! m and n will be flipped in the next timestep!
-       
+
        })      
 
     endif
@@ -240,7 +242,7 @@ contains
        
        ! correct E(n+1) using E(n+1)_fdtd and P(n+1),P(n)
 
-       ! J(*,m) is P(n+1) and J(*,n) is P(n)
+       ! J(*,m) is P(n+1) and J(*,n) is P(n)      
 
        Ex(i,j,k) = Ex(i,j,k) - w(1) * epsinvx(i,j,k) * ( mat%Jx(p,m) - mat%Jx(p,n) )
        Ey(i,j,k) = Ey(i,j,k) - w(2) * epsinvy(i,j,k) * ( mat%Jy(p,m) - mat%Jy(p,n) )
@@ -270,6 +272,9 @@ contains
     M4_WRITE_INFO({"abslenpl = ",mat%abslenpl })
     M4_WRITE_INFO({"omegapl = ",mat%omegapl })
     M4_WRITE_INFO({"gammapl = ",mat%gammapl })
+    M4_WRITE_INFO({"c1 = ",mat%c1 })
+    M4_WRITE_INFO({"c2 = ",mat%c2 })
+    M4_WRITE_INFO({"c3 = ",mat%c3 })
     M4_WRITE_INFO({"order = ",mat%order })
 
     M4_WRITE_INFO({"defined over:"})
