@@ -75,7 +75,7 @@ contains
 
     ! read mat parameters here, as defined in mat data structure
     read(funit,*) mat%lambdapl
-    read(funit,*) mat%gammapl
+    read(funit,*) mat%abslenpl
     read(funit,*) mat%order
 
     })
