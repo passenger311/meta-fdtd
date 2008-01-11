@@ -47,10 +47,10 @@ module matdrude
   M4_MODHEAD_DECL({MATDRUDE},100,{
 
   ! input parameters
-  real(kind=8) :: lambdapl, gamma  ! plasma vac. wavelength + damping factor
+  real(kind=8) :: lambdapl, abslenpl ! vac. plasma wavelength and abs. length
   integer :: order ! use 1. or 2. order solver?
 
-  real(kind=8) :: omegapl
+  real(kind=8) :: omegapl, gammapl
 
   ! coefficients
   real(kind=8) :: c1, c2, c3
@@ -75,10 +75,9 @@ contains
 
     ! read mat parameters here, as defined in mat data structure
     read(funit,*) mat%lambdapl
-    read(funit,*) mat%gamma
+    read(funit,*) mat%gammapl
     read(funit,*) mat%order
 
-    
     })
 
     call CompressValRegObj(reg) ! compress filling factors
@@ -101,6 +100,7 @@ contains
        M4_IFELSE_DBG({call EchoMatDrudeObj(mat)})
 
        mat%omegapl = 2. * PI * 1. / ( mat%lambdapl * DT )
+       mat%gammapl = DT * mat%abslenpl
 
        reg = regobj(mat%regidx)
 
@@ -118,15 +118,15 @@ contains
 
        if ( mat%order .eq. 1 ) then
 
-          mat%c1 = ( 2. - DT * mat%gamma ) / ( 2. + DT * mat%gamma )
-          mat%c2 = ( 2. * DT ) / ( 2. + DT * mat%gamma ) * mat%omegapl**2
+          mat%c1 = ( 2. - DT * mat%gammapl ) / ( 2. + DT * mat%gammapl )
+          mat%c2 = ( 2. * DT ) / ( 2. + DT * mat%gammapl ) * mat%omegapl**2
           mat%c3 = 0
           
        else
 
-          mat%c1 = 4. / ( 2. + DT * mat%gamma )
-          mat%c2 = ( -2. + DT * mat%gamma ) / ( 2. + DT * mat%gamma )
-          mat%c3 = ( 2. * DT**2 * mat%omegapl**2) / ( 2. + DT * mat%gamma )
+          mat%c1 = 4. / ( 2. + DT * mat%gammapl )
+          mat%c2 = ( -2. + DT * mat%gammapl ) / ( 2. + DT * mat%gammapl )
+          mat%c3 = ( 2. * DT**2 * mat%omegapl**2) / ( 2. + DT * mat%gammapl )
 
        endif
  
@@ -267,8 +267,9 @@ contains
 
     ! -- write parameters to console 
     M4_WRITE_INFO({"lambdapl = ",mat%lambdapl })
+    M4_WRITE_INFO({"abslenpl = ",mat%abslenpl })
     M4_WRITE_INFO({"omegapl = ",mat%omegapl })
-    M4_WRITE_INFO({"gamma = ",mat%gamma })
+    M4_WRITE_INFO({"gammapl = ",mat%gammapl })
     M4_WRITE_INFO({"order = ",mat%order })
 
     M4_WRITE_INFO({"defined over:"})
