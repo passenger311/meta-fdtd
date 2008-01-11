@@ -21,7 +21,7 @@
 ! field equations
 !
 ! StepHMatPdrude: update eq. P(n+1) = c1 * P(n) + c2 * Pold(n) + c3 * E(n)
-! StepEMatPdrude: update eq. E(n+1)* = E(n+1) - epsinv * (P(n+1) + P(n))
+! StepEMatPdrude: update eq. E(n+1)* = E(n+1) - epsinv * (P(n+1) - P(n))
 
 
 module matpdrude
@@ -59,7 +59,7 @@ contains
 
   subroutine ReadMatPdrudeObj(funit)
 
-    M4_MODREAD_DECL({MATPDRUDE}, funit,mat,reg,out)
+    M4_MODREAD_DECL({MATPDRUDE},funit,mat,reg,out)
 
     M4_WRITE_DBG(". enter ReadMatPdrudeObj")
     
@@ -92,7 +92,7 @@ contains
 
        mat%c1 = 4. / ( 2. + DT * mat%gamma )
        mat%c2 = ( -2. + DT * mat%gamma ) / ( 2. + DT * mat%gamma )
-       mat%c3 = ( 2. * DT**2 * mat%omegapl**2) / ( 2. + DT * mat%gamma )
+       mat%c3 = 2. * DT**2 * mat%omegapl**2 / ( 2. + DT * mat%gamma )
 
        mat%Pxbuffer = 0.
        mat%Pybuffer = 0.
@@ -153,7 +153,7 @@ contains
 
        mat%Px(p) = mat%c1 * mat%Px(p) + mat%c2 * mat%Pxold(p) + mat%c3 * Ex(i,j,k)
        mat%Py(p) = mat%c1 * mat%Py(p) + mat%c2 * mat%Pyold(p) + mat%c3 * Ey(i,j,k)
-       mat%Pz(p) = mat%c1 * mat%Pz(p) + mat%c2 * mat%Pyold(p) + mat%c3 * Ez(i,j,k)
+       mat%Pz(p) = mat%c1 * mat%Pz(p) + mat%c2 * mat%Pzold(p) + mat%c3 * Ez(i,j,k)
        
        mat%Pxold(p) = Pxbuffer
        mat%Pyold(p) = Pybuffer
@@ -185,9 +185,9 @@ contains
        
        ! this loops over all points of the region 
 
-       Ex(i,j,k) = Ex(i,j,k) - epsinvx(i,j,k) * ( mat%Px(p) - mat%Pxold(p) )
-       Ey(i,j,k) = Ey(i,j,k) - epsinvy(i,j,k) * ( mat%Py(p) - mat%Pyold(p) )
-       Ez(i,j,k) = Ez(i,j,k) - epsinvz(i,j,k) * ( mat%Pz(p) - mat%Pzold(p) )
+       Ex(i,j,k) = Ex(i,j,k) - epsinvx(i,j,k) * w(1) * ( mat%Px(p) - mat%Pxold(p) )
+       Ey(i,j,k) = Ey(i,j,k) - epsinvy(i,j,k) * w(2) * ( mat%Py(p) - mat%Pyold(p) )
+       Ez(i,j,k) = Ez(i,j,k) - epsinvz(i,j,k) * w(3) * ( mat%Pz(p) - mat%Pzold(p) )
 
        })      
     })
