@@ -1,6 +1,7 @@
 ! list all mat* modules here
-! matdummy
 matsource
 mattfsf
 matdrude
+matdebye
 matlorentz
+matlhm
