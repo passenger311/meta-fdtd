@@ -93,7 +93,7 @@ contains
 
        mat%c1 = ( 2. - omegal**2 * DT**2 ) / ( 1. + DT * mat%gamma )
        mat%c2 = ( -1. + DT * mat%gamma ) / ( 1. + DT * mat%gamma )
-       mat%c3 = DT**2 * mat%omegapl**2 * mat%deltaepsl / ( 1. + DT * mat%gamma )
+       mat%c3 = DT**2 * mat%omegal**2 * mat%deltaepsl / ( 1. + DT * mat%gamma )
 
        mat%Pxbuffer = 0.
        mat%Pybuffer = 0.
@@ -206,7 +206,7 @@ contains
          TRIM(i2str(mat%idx))," ", TRIM(mat%type)})
 
     ! -- write parameters to console 
-    M4_WRITE_INFO({"omegapl = ",mat%omegapl })
+    M4_WRITE_INFO({"omegal = ",mat%omegal })
     M4_WRITE_INFO({"gamma = ",mat%gamma })
     M4_WRITE_INFO({"deltaepsl = ",mat%deltaepsl })
 
