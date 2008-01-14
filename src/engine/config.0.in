@@ -74,7 +74,7 @@
     0 0 1
     (REG
       (BOX
-	 1 100 1 1 100 1 50 50 1
+	 0 100 1 0 100 1 50 50 1
       )BOX
     )REG
   )OUT
@@ -85,7 +85,7 @@
     0 1000 100
     (REG
       (BOX
-	 1 100 1 1 100 1 50 50 1
+	 0 100 1 0 100 1 50 50 1
       )BOX
     )REG
   )OUT	
@@ -96,7 +96,7 @@
     0 1000 100
     (REG
       (BOX
-	 1 100 1 1 100 1 50 50 1
+	 0 100 1 0 100 1 50 50 1
       )BOX
     )REG
   )OUT	
@@ -107,7 +107,7 @@
     0 1000 100
     (REG
       (BOX
-	 1 100 1 1 100 1 50 50 1
+	 0 100 1 0 100 1 50 50 1
       )BOX
     )REG
   )OUT	
@@ -118,7 +118,7 @@
     0 1000 100
     (REG
       (BOX
-	 1 100 1 1 100 1 50 50 1
+	 0 100 1 0 100 1 50 50 1
       )BOX
     )REG
   )OUT	
@@ -210,7 +210,6 @@ T		! time (T) or wavelength (F) parameters for gaussian
 ! (MATDRUDE-): drude pole equation 
 ! -----------------------------------------------------------------------
 
-    
 (MATDRUDE
 60.0    	    	! lambdapl: plasma freq wavelength [dx]
 0. 		    	! gammapl: damping constant [1/dt] 
@@ -227,16 +226,46 @@ T		! time (T) or wavelength (F) parameters for gaussian
 ! (MATLORENTZ-): lorentz pole equation
 ! -----------------------------------------------------------------------
 
-(!MATLORENTZ
+(MATLORENTZ
 60.0    	    	! lambdal: plasma freq wavelength [dx]
-1e-5 		    	! gammal: damping constant [1/dt] 
-0.01		    	! deltaepsl: delta epsilon
+1e-15 		    	! gammal: damping constant [1/dt] 
+1.		    	! deltaepsl: delta epsilon
 (REG
   (VBOX
-	70 90 1 10 90 1 21 79 1 [ 1.0 1.0 1.0 ]
+	0 30 1 10 90 1 21 79 1 [ 1.0 1.0 1.0 ]
   )VBOX
 )REG
 )MATLORENTZ
+
+
+! -----------------------------------------------------------------------
+! (MATLHM-): left-handed materials pole equation 
+! -----------------------------------------------------------------------
+    
+(!MATLHM
+42.43    	    	! lambdapl: plasma freq wavelength [dx]
+0. 		    	! gammapl: damping constant [1/dt] 
+2		    	! order: 1 (=J) or 2 (=P)
+(REG
+  (VBOX
+	70 100 1 0 100 1 21 79 1 [ 1.0 1.0 1.0 ]
+  )VBOX
+)REG
+)MATLHM
+
+! -----------------------------------------------------------------------
+! (MATDEBYE-): debye pole equation 
+! -----------------------------------------------------------------------
+    
+(!MATDEBYE
+50. 		    	! taud: relaxation time [dt] 
+0.1			! deltaepsd : delta epsilon
+(REG
+  (VBOX
+	70 100 1 0 100 1 21 79 1 [ 1.0 1.0 1.0 ]
+  )VBOX
+)REG
+)MATDEBYE
 
 
 

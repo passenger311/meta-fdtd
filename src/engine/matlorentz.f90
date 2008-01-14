@@ -6,11 +6,11 @@
 !
 !  subs:
 !
-!    InitializeMatlorentz
-!    FinalizeMatlorentz
-!    ReadMatlorentzObj
-!    StepEMatlorentz
-!    StepHMatlorentz
+!    InitializeMatLorentz
+!    FinalizeMatLorentz
+!    ReadMatLorentzObj
+!    StepEMatLorentz
+!    StepHMatLorentz
 !
 !----------------------------------------------------------------------
 

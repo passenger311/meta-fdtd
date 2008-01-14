@@ -294,6 +294,9 @@ contains
 
 end module matdrude
 
+! Authors:  K.Boehringer, J.Hamm 
+! Modified: 14/1/2008
+!
 ! =====================================================================
 
 
