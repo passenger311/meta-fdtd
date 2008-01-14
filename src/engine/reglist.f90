@@ -195,6 +195,7 @@ contains
     integer :: v, i,j,k, i0, i1, di, j0, j1, dj, k0, k1, dk
     real(kind=8),dimension(:),allocatable :: val,dval
     character(len=STRLNG) :: string, line, loadfn, skiptill
+    character :: bc, ec
     logical :: auto
 
     M4_WRITE_DBG(". enter ReadRegObj")
@@ -205,10 +206,13 @@ contains
     allocate(val(1:numval),dval(1:numval), stat=err)
     M4_ALLOC_ERROR(err,{"ReadRegObj"})
     
-    ! the default value is (1.,0.,0.,0. ...)
-    dval = 0.0
-    if ( numval .ne. 0 ) dval(1) = 1.0
+ !  ! the default weight value is (1.,0.,0.,0. ...)
+ !  dval = 0.0
+ !  if ( numval .ne. 0 ) dval(1) = 1.0
+ !  default weight value = (1,1,1, ..)
+    if ( numval .ne. 0 ) dval = 1.0
     
+  
     auto = .true.
     ! read until an unexpected line is encountered, eg ")"
     skiptill = ""
@@ -257,11 +261,14 @@ contains
           end do
        case( "(VPOINT" ) 
           do 
-             read(unit,*,iostat = ios)  M4_READCOORD(i,j,k), (val(v),v=1,numval)
+             read(unit,*,iostat = ios)  M4_READCOORD(i,j,k), bc, (val(v),v=1,numval), ec
              if ( ios .ne. 0 ) then
                 M4_WRITE_DBG({"end of point list"})
                 exit
              end if
+             if ( bc .ne. '[' .or. ec .ne. ']' ) then
+                M4_FATAL_ERROR("VALUE LIST MUST BE EMBEDDED IN [ ]")
+             endif
              call SetPointRegObj(reg, i,j,k, val)
           end do
        case( "(BOX" ) 
@@ -276,11 +283,14 @@ contains
        case( "(VBOX" ) 
           do 
              read(unit,*,iostat = ios) M4_READCOORD({i0, i1, di},{j0, j1, dj},{k0, k1, dk}), &
-             		(val(v),v=1,numval)
+             		bc, (val(v),v=1,numval), ec
              if ( ios .ne. 0 ) then
                 M4_WRITE_DBG({"end of box list"})
                 exit
              end if
+             if ( bc .ne. '[' .or. ec .ne. ']' ) then
+                M4_FATAL_ERROR("VALUE LIST MUST BE EMBEDDED IN [ ]")
+             endif
              call SetBoxRegObj(reg, i0, i1, di, j0, j1, dj, k0, k1, dk, val)
           end do
        case("(LOAD")    
@@ -305,20 +315,26 @@ contains
 		  numvalues = numnodes + 1 	
        case("(FILL") ! a list of values
           do 
-             read(unit,*,iostat = ios) (val(v),v=1,numval)
+             read(unit,*,iostat = ios) bc, (val(v),v=1,numval), ec
              if ( ios .ne. 0 ) then
                 M4_WRITE_DBG({"end of value list"})
                 exit
              end if
+             if ( bc .ne. '[' .or. ec .ne. ']' ) then
+                M4_FATAL_ERROR("VALUE LIST MUST BE EMBEDDED IN [ ]")
+             endif
              call FillValueRegObj(reg, val)
           end do       
        case("(SET") ! a list of values
           do 
-             read(unit,*,iostat = ios) (val(v),v=1,numval)
+             read(unit,*,iostat = ios) bc, (val(v),v=1,numval), ec
              if ( ios .ne. 0 ) then
                 M4_WRITE_DBG({"end of value list"})
                 exit
              end if
+             if ( bc .ne. '[' .or. ec .ne. ']' ) then
+                M4_FATAL_ERROR("VALUE LIST MUST BE EMBEDDED IN [ ]")
+             endif
              call SetValueRegObj(reg, val)
           end do
        case("LIST") ! force list mode
