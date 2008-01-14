@@ -296,6 +296,23 @@ contains
 
   end function i2str
 
+  ! ---- f2str, convert float to str
+
+  character(len=255) function f2str(f)
+
+    implicit none
+
+    real(kind=8) :: f
+
+    character(len=1024) :: str
+
+    write(str,"(E8.3E2)") f
+!    i2str = wipe(str)
+    f2str = TRIM(ADJUSTL(str))
+    return
+
+  end function f2str
+
 
 
   ! ---- ltrim, removes leading spaces

@@ -208,8 +208,8 @@ contains
     type(T_MATDEBYE) :: mat
  
     M4_WRITE_INFO({"#",TRIM(i2str(mat%idx)),&
-    	" taud=",TRIM(i2str(int(mat%taud))),&
-    	" deltaepsd=",TRIM(i2str(int(mat%deltaepsd)))
+    	" taud=",TRIM(f2str((mat%taud))),&
+    	" deltaepsd=",TRIM(f2str((mat%deltaepsd)))
     })
     call DisplayRegObj(regobj(mat%regidx))
     	

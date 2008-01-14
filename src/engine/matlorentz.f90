@@ -216,10 +216,10 @@ contains
     type(T_MATLORENTZ) :: mat
  
     M4_WRITE_INFO({"#",TRIM(i2str(mat%idx)),&
-    	" lambdal=",TRIM(i2str(int(mat%lambdal))),&
-    	" omegal=",TRIM(i2str(int(mat%omegal))),&
-    	" gammal=",TRIM(i2str(int(mat%gammal))),&
-    	" deltaepsl=",TRIM(i2str(int(mat%deltaepsl)))
+    	" lambdal=",TRIM(f2str((mat%lambdal))),&
+    	" omegal=",TRIM(f2str((mat%omegal))),&
+    	" gammal=",TRIM(f2str((mat%gammal))),&
+    	" deltaepsl=",TRIM(f2str((mat%deltaepsl)))
     })
     call DisplayRegObj(regobj(mat%regidx))
     	
