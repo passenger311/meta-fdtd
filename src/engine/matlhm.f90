@@ -142,7 +142,6 @@ contains
 
        endif
 
-       call EchoMatLhmObj(mat)
        M4_IFELSE_DBG({call EchoMatLhmObj(mat)})
 
     })

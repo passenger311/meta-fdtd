@@ -113,7 +113,6 @@ contains
        mat%c2 = ( -1. + DT * mat%gammal ) / ( 1. + DT * mat%gammal )
        mat%c3 = DT**2 * mat%omegal**2 * mat%deltaepsl / ( 1. + DT * mat%gammal )
 
-       call EchoMatLorentzObj(mat)
        M4_IFELSE_DBG({call EchoMatLorentzObj(mat)})
 
     })

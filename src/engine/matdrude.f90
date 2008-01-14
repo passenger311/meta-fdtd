@@ -137,7 +137,6 @@ contains
 
        endif
 
-       call EchoMatDrudeObj(mat)
        M4_IFELSE_DBG({call EchoMatDrudeObj(mat)})
 
     })

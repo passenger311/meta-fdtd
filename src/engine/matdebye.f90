@@ -106,7 +106,6 @@ contains
        mat%c1 = ( 2. * mat%taud - DT ) / ( 2. * mat%taud + DT )
        mat%c2 = 2. * DT * mat%deltaepsd
 
-       call EchoMatDebyeObj(mat)
        M4_IFELSE_DBG({call EchoMatDebyeObj(mat)})
 
     })
