@@ -2,15 +2,15 @@
 !
 !  module: matdrude / meta
 !
-!  JDrude material module.
+!  Drude material module.
 !
 !  subs:
 !
-!    InitializeMatdrude
-!    FinalizeMatdrude
-!    ReadMatdrudeObj
-!    StepEMatdrude
-!    StepHMatdrude
+!    InitializeMatDrude
+!    FinalizeMatDrude
+!    ReadMatDrudeObj
+!    StepEMatDrude
+!    StepHMatDrude
 !
 !----------------------------------------------------------------------
 
@@ -54,10 +54,11 @@ module matdrude
   M4_MODHEAD_DECL({MATDRUDE},100,{
 
   ! input parameters
-  real(kind=8) :: lambdapl, abslenpl ! vac. plasma wavelength and abs. length
-  integer :: order ! use 1. or 2. order solver?
+  real(kind=8) :: lambdapl ! vac. plasma wavelength [dx]
+  real(kind=8) :: gammapl  ! current damping [1/dt]
+  integer :: order         ! use 1. or 2. order solver?
 
-  real(kind=8) :: omegapl, gammapl
+  real(kind=8) :: omegapl
 
   ! coefficients
   real(kind=8) :: c1, c2, c3
@@ -82,7 +83,7 @@ contains
 
     ! read mat parameters here, as defined in mat data structure
     read(funit,*) mat%lambdapl
-    read(funit,*) mat%abslenpl
+    read(funit,*) mat%gammapl
     read(funit,*) mat%order
 
     })
@@ -106,7 +107,7 @@ contains
        ! initialize mat object here
 
        mat%omegapl = 2. * PI * 1. / ( mat%lambdapl * DT )
-       mat%gammapl = 2. / ( mat%abslenpl * DT )
+!       mat%gammapl = 2. / ( mat%abslenpl * DT )
 
        reg = regobj(mat%regidx)
 
@@ -126,7 +127,7 @@ contains
 
           mat%c1 = ( 2. - DT * mat%gammapl ) / ( 2. + DT * mat%gammapl )
           mat%c2 = ( 2. * DT ) / ( 2. + DT * mat%gammapl ) * mat%omegapl**2
-          mat%c3 = 0
+          mat%c3 = 0.
           
        else
 
@@ -276,7 +277,6 @@ contains
 
     ! -- write parameters to console 
     M4_WRITE_INFO({"lambdapl = ",mat%lambdapl })
-    M4_WRITE_INFO({"abslenpl = ",mat%abslenpl })
     M4_WRITE_INFO({"omegapl = ",mat%omegapl })
     M4_WRITE_INFO({"gammapl = ",mat%gammapl })
     M4_WRITE_INFO({"c1 = ",mat%c1 })

@@ -19,7 +19,7 @@
 !
 ! The MatLorentz module calculates the reponse of a Lorentz pole
 !
-! d/dt d/dt P + gammal * d/dt P + omegal**2 P = deltaepsl * omegal**2 * E
+! d/dt d/dt P + 2 * gammal * d/dt P + omegal**2 P = deltaepsl * omegal**2 * E
 ! d/dt E = d/dt E* - epsinv * d/dt P 
 !
 ! where E* is the electric field as calculated without the sources.  
@@ -46,10 +46,11 @@ module matlorentz
   M4_MODHEAD_DECL({MATLORENTZ},100,{
 
   ! input parameters
-  real(kind=8) :: lambdal, abslenl ! vac. plasma wavelength and abs. length
-  real(kind=8) :: deltaepsl        ! delta epsilon
+  real(kind=8) :: lambdal    ! vac. plasma wavelength and abs. length
+  real(kind=8) :: gammal     ! resonance width
+  real(kind=8) :: deltaepsl  ! delta epsilon
 
-  real(kind=8) :: omegal, gammal
+  real(kind=8) :: omegal
 
   ! coefficients
   real(kind=8) :: c1, c2, c3
@@ -73,7 +74,7 @@ contains
 
     ! read mat parameters here, as defined in mat data structure
     read(funit,*) mat%lambdal
-    read(funit,*) mat%abslenl
+    read(funit,*) mat%gammal
     read(funit,*) mat%deltaepsl
 
     })
@@ -97,7 +98,7 @@ contains
        ! initialize mat object here
 
        mat%omegal = 2. * PI * 1. / ( mat%lambdal * DT )
-       mat%gammal = 2. / ( mat%abslenl * DT )
+!       mat%gammal = 2. / ( mat%abslenl * DT )
 
        reg = regobj(mat%regidx)
 
@@ -220,9 +221,8 @@ contains
 
     ! -- write parameters to console 
     M4_WRITE_INFO({"lambdal = ",mat%lambdal })
-    M4_WRITE_INFO({"abslenl = ",mat%abslenl })
-    M4_WRITE_INFO({"deltaepsl = ",mat%abslenl })
     M4_WRITE_INFO({"omegal = ",mat%omegal })
+    M4_WRITE_INFO({"deltaepsl = ",mat%deltaepsl })
     M4_WRITE_INFO({"gammal = ",mat%gammal })
     M4_WRITE_INFO({"c1 = ",mat%c1 })
     M4_WRITE_INFO({"c2 = ",mat%c2 })
@@ -239,6 +239,9 @@ contains
 
 end module matlorentz
 
+! Authors:  K.Boehringer, J.Hamm 
+! Modified: 14/1/2008
+!
 ! =====================================================================
 
 
