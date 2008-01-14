@@ -188,7 +188,7 @@
 
     
 (MATSOURCE
-80.0     	! vacuum wavelength in units of [dx]
+60.0     	! vacuum wavelength in units of [dx]
 0 500 		! time offset till attack and cw duration (sustain)
 T		! time (T) or wavelength (F) parameters for gaussian
 500		! peak of gaussian (n0) or fraction of peak (a0)

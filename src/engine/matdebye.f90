@@ -106,7 +106,7 @@ contains
        mat%c1 = ( 2. * mat%taud - DT ) / ( 2. * mat%taud + DT )
        mat%c2 = 2. * DT * mat%deltaepsd
 
-       M4_IFELSE_DBG({call EchoMatDebyeObj(mat)})
+       M4_IFELSE_DBG({call EchoMatDebyeObj(mat)},{call DisplayMatDebyeObj(mat)})
 
     })
     M4_WRITE_DBG(". exit InitializeMatDebye")
@@ -201,7 +201,20 @@ contains
 
   end subroutine StepEMatDebye
 
+!----------------------------------------------------------------------
 
+  subroutine DisplayMatDebyeObj(mat)
+
+    type(T_MATDEBYE) :: mat
+ 
+    M4_WRITE_INFO({"#",TRIM(i2str(mat%idx)),&
+    	" taud=",TRIM(i2str(int(mat%taud))),&
+    	" deltaepsd=",TRIM(i2str(int(mat%deltaepsd)))
+    })
+    call DisplayRegObj(regobj(mat%regidx))
+    	
+  end subroutine DisplayMatDebyeObj
+  
 !----------------------------------------------------------------------
 
    subroutine EchoMatDebyeObj(mat)

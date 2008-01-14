@@ -137,7 +137,8 @@ contains
 
        endif
 
-       M4_IFELSE_DBG({call EchoMatDrudeObj(mat)})
+       M4_IFELSE_DBG({call EchoMatDrudeObj(mat)},{call DisplayMatDrudeObj(mat)})
+
 
     })
     M4_WRITE_DBG(". exit InitializeMatDrude")
@@ -264,7 +265,21 @@ contains
 
   end subroutine StepEMatDrude
 
+!----------------------------------------------------------------------
 
+  subroutine DisplayMatDrudeObj(mat)
+
+    type(T_MATDRUDE) :: mat
+ 
+    M4_WRITE_INFO({"#",TRIM(i2str(mat%idx)),&
+    	" lambdapl=",TRIM(i2str(int(mat%lambdapl))),&
+    	" omegapl=",TRIM(i2str(int(mat%omegapl))),&
+    	" gammapl=",TRIM(i2str(int(mat%gammapl)))
+    })
+    call DisplayRegObj(regobj(mat%regidx))
+    	
+  end subroutine DisplayMatDrudeObj
+  
 !----------------------------------------------------------------------
 
    subroutine EchoMatDrudeObj(mat)

@@ -113,7 +113,7 @@ contains
        mat%c2 = ( -1. + DT * mat%gammal ) / ( 1. + DT * mat%gammal )
        mat%c3 = DT**2 * mat%omegal**2 * mat%deltaepsl / ( 1. + DT * mat%gammal )
 
-       M4_IFELSE_DBG({call EchoMatLorentzObj(mat)})
+       M4_IFELSE_DBG({call EchoMatLorentzObj(mat)},{call DisplayMatLorentzObj(mat)})
 
     })
     M4_WRITE_DBG(". exit InitializeMatLorentz")
@@ -208,6 +208,22 @@ contains
 
   end subroutine StepEMatLorentz
 
+
+!----------------------------------------------------------------------
+
+  subroutine DisplayMatLorentzObj(mat)
+
+    type(T_MATLORENTZ) :: mat
+ 
+    M4_WRITE_INFO({"#",TRIM(i2str(mat%idx)),&
+    	" lambdal=",TRIM(i2str(int(mat%lambdal))),&
+    	" omegal=",TRIM(i2str(int(mat%omegal))),&
+    	" gammal=",TRIM(i2str(int(mat%gammal))),&
+    	" deltaepsl=",TRIM(i2str(int(mat%deltaepsl)))
+    })
+    call DisplayRegObj(regobj(mat%regidx))
+    	
+  end subroutine DisplayMatLorentzObj
 
 !----------------------------------------------------------------------
 

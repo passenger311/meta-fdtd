@@ -142,7 +142,7 @@ contains
 
        endif
 
-       M4_IFELSE_DBG({call EchoMatLhmObj(mat)})
+       M4_IFELSE_DBG({call EchoMatLhmObj(mat)},{call DisplayMatLhmObj(mat)})
 
     })
     M4_WRITE_DBG(". exit InitializeMatLhm")
@@ -288,7 +288,21 @@ contains
 
   end subroutine StepEMatLhm
 
+!----------------------------------------------------------------------
 
+  subroutine DisplayMatLhmObj(mat)
+
+    type(T_MATLHM) :: mat
+ 
+    M4_WRITE_INFO({"#",TRIM(i2str(mat%idx)),&
+    	" lambdapl=",TRIM(i2str(int(mat%lambdapl))),&
+    	" omegapl=",TRIM(i2str(int(mat%omegapl))),&
+    	" gammapl=",TRIM(i2str(int(mat%gammapl)))
+    })
+    call DisplayRegObj(regobj(mat%regidx))
+    	
+  end subroutine DisplayMatLhmObj
+  
 !----------------------------------------------------------------------
 
    subroutine EchoMatLhmObj(mat)
