@@ -71,6 +71,9 @@ config.o\
 mpicomms.o\
 meta.o
 
+OBJ=$(BOBJ) $(FOBJ)
+M4OBJ=$(patsubst %.o,%_m4.f90,$(OBJ))
+
 EXE = meta
 
 ENGINEFILES=\
@@ -79,10 +82,17 @@ MANIFEST
 
 default: all
 
-all: info $(EXE)
+all: info check $(EXE)
 
 info:
-	@echo ". CREATE ENGINE FLAVOUR [$(ENGINE)]"
+	@echo ". CREATE ENGINE [$(BUILDDIR)/$(ENGINE)]"
+
+check:
+	@if [ "`cat OPTIONS 2>/dev/null`" != "$(BUILDDIR)/$(ENGINE)" ]; then \
+	echo "$(BUILDDIR)/$(ENGINE)" >OPTIONS; \
+	else \
+	touch OPTIONS; \
+	fi
 
 install: MANIFEST build-dir
 	@echo [INSTALL] $(ENGINEFILES)
@@ -92,15 +102,24 @@ MANIFEST: manifest.inf
 	@echo [SIGN] $@
 	@$(M4) $< | tail -n 4 >$@
 
-$(BOBJ) : %.o : %.f90
-	@echo [F90] $@
-	@$(M4) $< >$*_m4.f90 
-	@$(strip $(F90) $(F90FLAGS) -c $*_m4.f90 -o $*.o)
 
-$(FOBJ) : %.o : %.f90 $(BOBJ)
+$(M4OBJ): %_m4.f90: %.f90 OPTIONS
+	@$(M4) $< >$*_m4.tmp; \
+	if [ -f $@ ]; then \
+	if [ "`diff $*_m4.tmp $@`x" != "x" ]; then \
+	mv $*_m4.tmp $@; \
+	fi \
+	else \
+	mv $*_m4.tmp $@; \
+	fi
+
+$(BOBJ) : %.o : %_m4.f90
 	@echo [F90] $@
-	@$(M4) $< >$*_m4.f90 
-	@$(strip $(F90) $(F90FLAGS_OPT) -c $*_m4.f90 -o $*.o)
+	@$(strip $(F90) $(F90FLAGS) -c $< -o $@)
+
+$(FOBJ) : %.o : %_m4.f90 $(BOBJ)
+	@echo [F90] $@
+	@$(strip $(F90) $(F90FLAGS_OPT) -c $< -o $@)
 
 $(EXE) : $(FOBJ) $(BOBJ) second_wall.o
 	@echo [LD] $@
@@ -111,7 +130,7 @@ $(EXE) : $(FOBJ) $(BOBJ) second_wall.o
 	@$(strip @$(CC) $(CCFLAGS) -c $<)
 
 clean:
-	@rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod *_m4.f90 *_m4.F90
+	@rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod *_m4.f90 *_m4.F90 *_m4.tmp OPTIONS
 
 proper: clean
 	@rm -f $(EXE) $(PREEXE) *.o *~ *.gpl

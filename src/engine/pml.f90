@@ -261,7 +261,7 @@ M4_IFELSE_3D({
     subroutine CalcCoefficients(lbeg, lend, ls, le, ce, cm)
       
       integer, intent(in) :: lbeg, lend, ls, le
-      real(kind=8), dimension(1:4,lbeg:lend), intent(inout) :: ce, cm
+      real(kind=8), dimension(1:4,lbeg:lend) :: ce, cm
       real(kind=8), dimension(-1:PMLMAX-1) :: val1,val1p,val2,val2p
       real(kind=8) :: x, sigma, kappa
       integer :: l
@@ -295,30 +295,31 @@ M4_IFELSE_3D({
   
       enddo
       
-      ! calculate coefficients
-      
-      do l=lbeg, ls
-         ce(1,l) = val1p(ls-l-lbeg-1)
-         ce(3,l) = val2p(ls-l-lbeg-1)
-         ce(2,l) = 1.0 / val1(ls-l-lbeg)
-         ce(4,l) = val2(ls-l-lbeg) / val1(ls-l-lbeg)
-         
-         cm(1,l) = val1(ls-l-lbeg)
-         cm(3,l) = val2(ls-l-lbeg)
-         cm(2,l) = 1.0 / val1p(ls-l-lbeg-1)
-         cm(4,l) = val2p(ls-l-lbeg-1) / val1p(ls-l-lbeg-1)
+
+! coefficients for bottom pml sheet
+      do l=0, ls - lbeg
+         ce(1,ls-l) = val1p(l-1)
+         ce(3,ls-l) = val2p(l-1)
+         ce(2,ls-l) = 1.0 / val1(l)
+         ce(4,ls-l) = val2(l) / val1(l)
+        
+         cm(1,ls-l) = val1(l)
+         cm(3,ls-l) = val2(l)
+         cm(2,ls-l) = 1.0 / val1p(l-1)
+         cm(4,ls-l) = val2p(l-1) / val1p(l-1)
       enddo
 
-      do l=le, lend
-         ce(1,l) = val1p(l-le)
-         ce(3,l) = val2p(l-le)
-         ce(2,l) = 1.0 / val1(l-le)
-         ce(4,l) = val2(l-le) / val1(l-le)
+! coefficients for top pml sheet
+      do l=0, lend - le
+         ce(1,le+l) = val1p(l)
+         ce(3,le+l) = val2p(l)
+         ce(2,le+l) = 1.0 / val1(l)
+         ce(4,le+l) = val2(l) / val1(l)
          
-         cm(1,l) = val1(l-le)
-         cm(3,l) = val2(l-le)
-         cm(2,l) = 1.0 / val1p(l-le)
-         cm(4,l) = val2p(l-le) / val1p(l-le)
+         cm(1,le+l) = val1(l)
+         cm(3,le+l) = val2(l)
+         cm(2,le+l) = 1.0 / val1p(l)
+         cm(4,le+l) = val2p(l) / val1p(l)
       enddo
 
       M4_WRITE_DBG({". exit InitializePml.CalcCoefficients"})

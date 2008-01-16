@@ -30,7 +30,7 @@ all-tests: all tests
 all: config post run engine
 
 engine:
-	@cd $@ && $(MAKE) -s proper all install
+	@cd $@ && $(MAKE) -s all install
 
 config post run tests:
 	@cd $@ && $(MAKE) -s all install
