@@ -85,13 +85,13 @@ default: all
 all: info check $(EXE)
 
 info:
-	@echo ". CREATE ENGINE [$(BUILDDIR)/$(ENGINE)]"
+	@echo ". BUILD ENGINE [$(BUILDDIR)/$(ENGINE)]"
 
 check:
-	@if [ "`cat OPTIONS 2>/dev/null`" != "$(BUILDDIR)/$(ENGINE)" ]; then \
-	echo "$(BUILDDIR)/$(ENGINE)" >OPTIONS; \
+	@if [ "`cat BUILD 2>/dev/null`" != "$(BUILDDIR)/$(ENGINE)" ]; then \
+	echo "$(BUILDDIR)/$(ENGINE)" >BUILD; \
 	else \
-	touch OPTIONS; \
+	touch BUILD; \
 	fi
 
 install: MANIFEST build-dir
@@ -103,7 +103,7 @@ MANIFEST: manifest.inf
 	@$(M4) $< | tail -n 4 >$@
 
 
-$(M4OBJ): %_m4.f90: %.f90 OPTIONS
+$(M4OBJ): %_m4.f90: %.f90 BUILD
 	@$(M4) $< >$*_m4.tmp; \
 	if [ -f $@ ]; then \
 	if [ "`diff $*_m4.tmp $@`x" != "x" ]; then \
@@ -130,10 +130,10 @@ $(EXE) : $(FOBJ) $(BOBJ) second_wall.o
 	@$(strip @$(CC) $(CCFLAGS) -c $<)
 
 clean:
-	@rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod *_m4.f90 *_m4.F90 *_m4.tmp OPTIONS
+	@rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod *_m4.f90 *_m4.F90 *_m4.tmp
 
 proper: clean
-	@rm -f $(EXE) $(PREEXE) *.o *~ *.gpl
+	@rm -f $(EXE) $(PREEXE) *.o *~ *.gpl *.vtk BUILD
 
 
 # ---------------------------------------------------------------------
