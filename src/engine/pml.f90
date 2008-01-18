@@ -43,6 +43,7 @@ module pml
   ! --- Data
 
   integer :: planepml(6)       ! 1 if pml applies 0 if not
+  integer :: pmlcount          ! pml count
   integer :: pmlpart           ! flag (inner/outer partition)
   integer :: PMLMAX            ! number of Pml layers
   real(kind=8) :: potpml       ! exponent for sigma and kappa
@@ -125,9 +126,15 @@ contains
     end if
 
     planepml = 0
+    pmlcount = 0
     do i = 1, 6
-       if ( planebound(i) .eq. num ) planepml(i) = 1
+       if ( planebound(i) .eq. num ) then 
+          planepml(i) = 1
+          pmlcount = pmlcount + 1
+       endif
     end do
+
+    if ( pmlcount .eq. 0 ) return
 
     M4_WRITE_DBG({"planepml : ",(planepml(i), i = 1,6)})
 
@@ -296,18 +303,6 @@ M4_IFELSE_3D({
       enddo
       
 
-! coefficients for bottom pml sheet
-      do l=0, ls - lbeg
-         ce(1,ls-l) = val1p(l-1)
-         ce(3,ls-l) = val2p(l-1)
-         ce(2,ls-l) = 1.0 / val1(l)
-         ce(4,ls-l) = val2(l) / val1(l)
-        
-         cm(1,ls-l) = val1(l)
-         cm(3,ls-l) = val2(l)
-         cm(2,ls-l) = 1.0 / val1p(l-1)
-         cm(4,ls-l) = val2p(l-1) / val1p(l-1)
-      enddo
 
 ! coefficients for top pml sheet
       do l=0, lend - le
@@ -322,6 +317,26 @@ M4_IFELSE_3D({
          cm(4,le+l) = val2p(l) / val1p(l)
       enddo
 
+
+! coefficients for bottom pml sheet
+      do l=0, ls - lbeg
+         ce(1,ls-l) = val1p(l-1)
+         ce(3,ls-l) = val2p(l-1)
+         ce(2,ls-l) = 1.0 / val1(l)
+         ce(4,ls-l) = val2(l) / val1(l)
+        
+         cm(1,ls-l) = val1(l)
+         cm(3,ls-l) = val2(l)
+         cm(2,ls-l) = 1.0 / val1p(l-1)
+         cm(4,ls-l) = val2p(l-1) / val1p(l-1)
+      enddo
+
+! these are:
+!         ce(1,ls) = 1.0
+!         ce(3,ls) = 1.0
+!         cm(2,ls) = 1.0
+!         cm(4,ls) = 1.0
+
       M4_WRITE_DBG({". exit InitializePml.CalcCoefficients"})
       
     end subroutine CalcCoefficients
@@ -334,18 +349,22 @@ M4_IFELSE_3D({
 
     M4_WRITE_DBG({". FinalizePml"})
 
+    if ( pmlcount .eq. 0 ) return
+
 M4_IFELSE_3D({
     deallocate(DE6)
     deallocate(BE6)
     deallocate(DE5)
     deallocate(BE5)
 })
+
 M4_IFELSE_1D({},{
     deallocate(DE4)
     deallocate(BE4)
     deallocate(DE3)
     deallocate(BE3)
 })
+
     deallocate(DE2)
     deallocate(BE2)
     deallocate(DE1)
@@ -368,7 +387,7 @@ M4_IFELSE_1D({},{
     
     integer :: i
 
-  	if ( i .gt. 2 .and. M4_IS1D ) return
+    if ( i .gt. 2 .and. M4_IS1D ) return
     if ( i .gt. 4 .and. M4_IS2D ) return
 
     select case ( i )
@@ -463,6 +482,8 @@ M4_IFELSE_3D({!$OMP END PARALLEL DO})
   	if ( i .gt. 2 .and. M4_IS1D ) return
     if ( i .gt. 4 .and. M4_IS2D ) return
 
+    call StepEBoundPec(i) ! need to set electric conductor bcs
+
     select case ( i )
     case ( 1 ) 
        call DoStepEPml(IBEG,IBIG-1,  JBEG,JEND,KBEG,KEND,DE1)
@@ -535,7 +556,7 @@ M4_IFELSE_1D({},{   - dty * ( Hxh - Hx(i,j-1,k) )           &    })
                     epsinvy(i,j,k)*(ceypml(1,j)*D(2,i,j,k) - ceypml(3,j)*Dyo)
                Ez(i,j,k) = ceypml(4,j)*Ez(i,j,k) + ceypml(2,j) * &
                     epsinvz(i,j,k)*(cezpml(1,k)*D(3,i,j,k) - cezpml(3,k)*Dzo)
-           
+
             enddo
 M4_IFELSE_1D({!$OMP END PARALLEL DO})
          enddo
@@ -548,7 +569,44 @@ M4_IFELSE_3D({!$OMP END PARALLEL DO})
     end subroutine DoStepEPml
     
   end subroutine StepEBoundPml
-  
+ 
+ 
+ !----------------------------------------------------------------------
+ 
+  ! restore fields f1r,f2r,f3r from buffer f and store f1s,f2s,f3s inside instead
+
+    subroutine SaveRestorePml(is,ie,js,je,ks,ke, f1s, f2s, f3s, F, f1r, f2r,f3r )
+
+      integer :: is, ie, js, je, ks, ke
+      M4_FTYPE, dimension(M4_RANGE(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX)) :: f1s,f2s,f3s,f1r,f2r,f3r
+      M4_FTYPE, dimension(is:ie,js:je,ks:ke,3) :: f
+      integer :: i,j,k
+
+      M4_IFELSE_3D({!$OMP PARALLEL DO PRIVATE(Hxh,Hyh,Hzh,Dxo,Dyo,Dzo,epsinvx,epsinvy,epsinvz)}) 
+      do k=ks, ke
+M4_IFELSE_2D({!$OMP PARALLEL DO PRIVATE(Hxh,Hyh,Hzh,Dxo,Dyo,Dzo,epsinvx,epsinvy,epsinvz)}) 
+         do j=js, je
+M4_IFELSE_1D({!$OMP PARALLEL DO PRIVATE(Hxh,Hyh,Hzh,Dxo,Dyo,Dzo,epsinvx,epsinvy,epsinvz)}) 
+            do i=is, ie
+
+               f1r(i,j,k) = f(i,j,k,1)
+               f2r(i,j,k) = f(i,j,k,2)
+               f3r(i,j,k) = f(i,j,k,3)
+
+               f(i,j,k,1) = f1s(i,j,k)
+               f(i,j,k,2) = f2s(i,j,k)
+               f(i,j,k,3) = f3s(i,j,k)
+ 
+            enddo
+M4_IFELSE_1D({!$OMP END PARALLEL DO})
+         enddo
+M4_IFELSE_2D({!$OMP END PARALLEL DO})
+      enddo
+M4_IFELSE_3D({!$OMP END PARALLEL DO})
+
+  end subroutine SaveRestorePml
+
+
 !----------------------------------------------------------------------
 
 end module pml

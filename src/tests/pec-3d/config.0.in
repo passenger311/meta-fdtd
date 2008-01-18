@@ -57,10 +57,11 @@
 T			! time (T) or wavelength (F) parameters for gaussian
 50			! peak of gaussian (n0) or fraction of peak (a0)
 20             		! half width in timedomain (dn) or wavelength dom (dlambda)
-0.0 0.0 1.0 		! 	vector components of source
+0.0 0.0 1.0 		! vector components of source
 (REG
   (POINT
      25 25 25
+     25 25 24
   )POINT
 )REG
 (!OUT
