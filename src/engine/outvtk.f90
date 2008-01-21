@@ -204,7 +204,7 @@ contains
        })
        write(out%funit,"(4A)") "CELLS ",TRIM(i2str(reg%numnodes))," ", TRIM(i2str(2*reg%numnodes))
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-       write(out%funit,*) "1 ",p
+       write(out%funit,*) "1 ",p-1
        })
        write(out%funit,"(2A)") "CELL_TYPES ",TRIM(i2str(reg%numnodes))
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{

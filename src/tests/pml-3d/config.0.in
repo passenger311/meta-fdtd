@@ -61,6 +61,7 @@ T			! time (T) or wavelength (F) parameters for gaussian
 (REG
   (POINT
      25 25 25
+     25 25 24
   )POINT
 )REG
 (!OUT

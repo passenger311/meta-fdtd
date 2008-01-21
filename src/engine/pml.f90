@@ -142,12 +142,12 @@ contains
     
     ! the k planes are set 0 if in 2D mode
 
-    if(planepml(1) .eq. 1) IBIG=IBEG+PMLMAX
-    if(planepml(2) .eq. 1) IEIG=IEND-PMLMAX
-    if(planepml(3) .eq. 1) JBIG=JBEG+PMLMAX
-    if(planepml(4) .eq. 1) JEIG=JEND-PMLMAX
-    if(planepml(5) .eq. 1) KBIG=KBEG+PMLMAX
-    if(planepml(6) .eq. 1) KEIG=KEND-PMLMAX
+    if(planepml(1) .eq. 1) IBIG=IBEG+PMLMAX+1
+    if(planepml(2) .eq. 1) IEIG=IMAX-PMLMAX-1
+    if(planepml(3) .eq. 1) JBIG=JBEG+PMLMAX+1
+    if(planepml(4) .eq. 1) JEIG=JMAX-PMLMAX-1
+    if(planepml(5) .eq. 1) KBIG=KBEG+PMLMAX+1
+    if(planepml(6) .eq. 1) KEIG=KMAX-PMLMAX-1
     
     M4_WRITE_DBG({"set IBIG/IEIG: ", IBIG, IEIG})
     M4_WRITE_DBG({"set KBIG/KEIG: ", JBIG, JEIG})

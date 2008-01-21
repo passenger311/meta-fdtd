@@ -100,6 +100,28 @@
       )BOX
     )REG
   )OUT	
+
+   (OUT
+    VTK T test1_xz_e
+    E N
+    0 1000 100
+    (REG
+      (BOX
+	 0 99 1 50 50 1 0 99 1
+      )BOX
+    )REG
+  )OUT	
+
+   (OUT
+    VTK T test1_yz_e
+    E N
+    0 1000 100
+    (REG
+      (BOX
+	 50 50 1 0 99 1 0 99 1
+      )BOX
+    )REG
+  )OUT	
  
    (OUT
     VTK T test1_xy_p
