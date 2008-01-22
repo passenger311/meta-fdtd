@@ -37,6 +37,7 @@ module mat
   public :: FinalizeMat
   public :: StepEMat
   public :: StepHMat
+  public :: MatSumJE, MatSumKH
 
   ! --- Public Data
 
@@ -104,6 +105,25 @@ contains
     })
 
   end subroutine StepHMat
+
+!----------------------------------------------------------------------
+
+  real(kind=8 ) function MatSumJE
+
+
+    MatSumJE = 0.
+
+  end function MatSumJE
+
+!----------------------------------------------------------------------
+
+  real(kind=8 ) function MatSumKH
+
+
+    MatSumKH = 0.
+
+  end function MatSumKH
+
 
 !----------------------------------------------------------------------
 

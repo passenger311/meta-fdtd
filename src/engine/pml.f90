@@ -269,7 +269,7 @@ M4_IFELSE_3D({
       
       integer, intent(in) :: lbeg, lend, ls, le
       real(kind=8), dimension(1:4,lbeg:lend) :: ce, cm
-      real(kind=8), dimension(-1:PMLMAX-1) :: val1,val1p,val2,val2p
+      real(kind=8), dimension(-1:PMLMAX) :: val1,val1p,val2,val2p
       real(kind=8) :: x, sigma, kappa
       integer :: l
 
