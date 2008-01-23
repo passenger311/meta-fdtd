@@ -42,7 +42,7 @@ module matdebye
   private
   save
 
-  M4_MODHEAD_DECL({MATDEBYE},100,{
+  M4_MATHEAD_DECL({MATDEBYE},100,{
 
   ! input parameters
   real(kind=8) :: taud       ! relaxation time
@@ -200,6 +200,50 @@ contains
     })
 
   end subroutine StepEMatDebye
+
+!----------------------------------------------------------------------
+
+  real(kind=8) function SumJEKHMatDebye(mask, ncyc)
+
+    logical, dimension(IBEG:IEND,JBEG:JEND,KBEG:KEND) :: mask
+    real(kind=8) :: sum
+    integer :: ncyc, m, n
+   
+    M4_MODLOOP_DECL({MATDEBYE},mat)
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
+
+    sum = 0
+
+    M4_MODLOOP_EXPR({MATDEBYE},mat,{
+
+       ! this loops over all mat structures, setting mat
+
+    M4_MODOBJ_GETREG(mat,reg)
+
+       n = mod(ncyc-1,2) + 1
+       m = mod(ncyc,2) + 1
+
+       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+       
+       ! correct E(n+1) using E(n+1)_fdtd and P(n+1),P(n)
+
+       ! J(*,m) is P(n+1) and J(*,n) is P(n)      
+
+       if ( mask(i,j,k) ) then
+
+          sum = sum + w(1) * Ex(i,j,k) * ( mat%Px(p,m) - mat%Px(p,n) ) / DT + &
+               w(2) * Ey(i,j,k) * ( mat%Py(p,m) - mat%Py(p,n) ) / DT + &
+               w(3) * Ez(i,j,k) * ( mat%Pz(p,m) - mat%Pz(p,n) ) / DT
+
+       endif
+
+       })      
+
+    })
+    
+    SumJEKHMatDebye = sum
+    
+  end function SumJEKHMatDebye
 
 !----------------------------------------------------------------------
 

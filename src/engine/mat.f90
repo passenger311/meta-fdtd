@@ -19,6 +19,9 @@ module mat
 
   use strings
   use constant
+  use reglist
+  use grid
+
   M4_FOREACH_MAT({use },{
   })
 
@@ -37,7 +40,7 @@ module mat
   public :: FinalizeMat
   public :: StepEMat
   public :: StepHMat
-  public :: MatSumJE, MatSumKH
+  public :: SumJEKHMat
 
   ! --- Public Data
 
@@ -108,22 +111,20 @@ contains
 
 !----------------------------------------------------------------------
 
-  real(kind=8 ) function MatSumJE
+  real(kind=8 ) function SumJEKHMat(mask,ncyc)
+    
+    logical, dimension(IBEG:IEND,JBEG:JEND,KBEG:KEND) :: mask
+    integer :: ncyc
+    real(kind=8) :: sum
 
+    sum = 0.
 
-    MatSumJE = 0.
+    M4_FOREACH_MAT({sum = sum + SumJEKH},{(mask,ncyc)
+    })
 
-  end function MatSumJE
+    SumJEKHMat = sum
 
-!----------------------------------------------------------------------
-
-  real(kind=8 ) function MatSumKH
-
-
-    MatSumKH = 0.
-
-  end function MatSumKH
-
+  end function SumJEKHMat
 
 !----------------------------------------------------------------------
 

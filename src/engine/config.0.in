@@ -270,7 +270,7 @@ T		! time (T) or wavelength (F) parameters for gaussian
 ! (MATDRUDE-): drude pole equation 
 ! -----------------------------------------------------------------------
 
-(!MATDRUDE
+(MATDRUDE
 55.0    	    	! lambdapl: plasma freq wavelength [dx]
 0. 		    	! gammapl: damping constant [1/dt] 
 2		    	! order: 1 (=J) or 2 (=P)
@@ -286,7 +286,7 @@ T		! time (T) or wavelength (F) parameters for gaussian
 ! (MATLORENTZ-): lorentz pole equation
 ! -----------------------------------------------------------------------
 
-(!MATLORENTZ
+(MATLORENTZ
 60.0    	    	! lambdal: plasma freq wavelength [dx]
 1e-15 		    	! gammal: damping constant [1/dt] 
 1.		    	! deltaepsl: delta epsilon
@@ -326,6 +326,19 @@ T		! time (T) or wavelength (F) parameters for gaussian
   )VBOX
 )REG
 )MATDEBYE
+
+! -----------------------------------------------------------------------
+! (DIAGEBAL-): energy balance diagnostics 
+! -----------------------------------------------------------------------
+    
+(DIAGEBAL
+0 100 1   ! time window
+(REG
+  (BOX
+	0 99 1 0 99 1 0 99 1
+  )BOX
+)REG
+)DIAGEBAL
 
 
 

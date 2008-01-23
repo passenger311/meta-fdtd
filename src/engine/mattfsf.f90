@@ -39,7 +39,7 @@ module mattfsf
   save
 
 
-  M4_MODHEAD_DECL({MATTFSF},100,{
+  M4_MATHEAD_DECL({MATTFSF},100,{
 
      real(kind=8) :: lambda0       ! vacuum wavelength in units of [dx]
 
@@ -326,6 +326,19 @@ contains
     
     
   end subroutine StepHMatTfsf
+
+!----------------------------------------------------------------------
+
+  real(kind=8) function SumJEKHMatTfsf(mask, ncyc)
+
+    logical, dimension(IBEG:IEND,JBEG:JEND,KBEG:KEND) :: mask
+    real(kind=8) :: sum
+    integer :: ncyc, m, n
+   
+    SumJEKHMatTfsf = 0.
+
+  end function SumJEKHMatTfsf
+
 
  !----------------------------------------------------------------------
 

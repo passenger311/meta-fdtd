@@ -18,7 +18,7 @@
 ! spatially centered to the center of the Yee cell, while the components 
 ! of S are sitting on the respective faces of the Yee cell. 
 !
-! dudt + divs + jdote + kdoth = def
+! dudt + divs + jekh = def
 !
 ! where def = 0 should hold at each point at each timestep.  
 
@@ -41,16 +41,16 @@ module diagebal
   integer :: ns, ne, dn  ! time stepping 
 
   ! spatially integrated energy contributions
-  real(kind=8) :: dudt, divs, jdote, kdoth, res
+  real(kind=8) :: dudt, divs, jekh, res
   ! spatially and time integrated energy contributions
-  real(kind=8) :: sumdudt, sumdivs, sumjdote, sumkdoth, sumres
+  real(kind=8) :: sumdudt, sumdivs, sumjekh, sumres
   
   ! h field at previous timestep
   real(kind=8), pointer, dimension(:) :: hxo, hyo, hzo
+  logical, pointer, dimension(:,:,:) :: mask
   
   ! partial contributions to energy terms
-  real(kind=8) :: hb1(3), hb2(3), ed1(3), divs1, divs2, jdote1, jdote2, kdoth1, kdoth2
-  
+  real(kind=8) :: hb1(3), hb2(3), ed1(3), divs1, divs2, jekh1, jekh2
 
   })
 
@@ -88,23 +88,30 @@ contains
     
     diag%dudt = 0.
     diag%divs = 0.
-    diag%jdote = 0.
+    diag%jekh = 0.
     diag%res = 0.
 
     diag%sumdudt = 0.
     diag%sumdivs = 0.
-    diag%sumjdote = 0.
-    diag%sumkdoth = 0.
+    diag%sumjekh = 0.
     diag%sumres = 0.
 
     reg = regobj(diag%regidx)
 
+    M4_WRITE_DBG("allocate h field")
     allocate(diag%hxo(reg%numnodes),diag%hyo(reg%numnodes),diag%hzo(reg%numnodes), stat = err)
     M4_ALLOC_ERROR(err,"InitializeDiagEBal")
 
     diag%hxo = 0.
     diag%hyo = 0.
     diag%hzo = 0.
+
+    M4_WRITE_DBG("allocate mask")
+    allocate(diag%mask(IBEG:IEND,JBEG:JEND,KBEG:KEND), stat = err)
+    M4_ALLOC_ERROR(err,"InitializeDiagEBal")
+ 
+    M4_WRITE_DBG("initialize mask")
+    call SetMaskRegObj(reg,diag%mask,IBEG,IEND,JBEG,JEND,KBEG,KEND)
 
     M4_IFELSE_DBG({call EchoDiagEBalObj(diag)})
 
@@ -121,7 +128,7 @@ contains
     M4_WRITE_DBG(". enter FinalizeMatEBal")
     M4_MODLOOP_EXPR({DIAGEBAL},diag,{
 
-    deallocate(diag%hxo, diag%hyo, diag%hzo)
+    deallocate(diag%hxo, diag%hyo, diag%hzo, diag%mask )
 
     })
     M4_WRITE_DBG(". exit FinalizeMatEBal")
@@ -137,14 +144,16 @@ contains
     M4_MODLOOP_DECL({DIAGEBAL},diag)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(0))
 
-    m = mod(ncyc,3) + 1
-    mo = mod(ncyc-1,3) + 1
-    moo = mod(ncyc-2,3) + 1
+    write(6,*) "H: ", ncyc
+
+    m = mod(ncyc+3,3) + 1
+    mo = mod(ncyc+3-1,3) + 1
+    moo = mod(ncyc+3-2,3) + 1
     
     diag%hb1(m) = 0.
     diag%hb2(m) = 0.
     diag%divs2 = 0.
-    diag%jdote2 = 0.
+    diag%jekh2 = 0.
 
     M4_MODLOOP_EXPR({DIAGEBAL},diag,{
 
@@ -174,7 +183,7 @@ contains
        bzc = 0.25 * real( ( ( 1./M4_MUINVZ(i,j,k)*Hz(M4_COORD(i,j,k)) + 1./M4_MUINVZ(i-1,j,k)*Hz(M4_COORD(i-1,j,k)) ) &
             + ( 1./M4_MUINVZ(i,j-1,k)*Hz(M4_COORD(i,j-1,k)) + 1./M4_MUINVZ(i-1,j-1,k)*Hz(M4_COORD(i-1,j-1,k)) ) )
 
-       }.{
+       },{
 
        bxc = hxc
        byc = hyc
@@ -185,24 +194,27 @@ contains
 
        diag%hb1(m) = diag%hb1(m) + 0.125/DT * ( bxc*hxc + byc*hyc + bzc*hzc )
        diag%hb2(m) = diag%hb2(m) + 0.125/DT * 2. * ( bxc*diag%hxo(p) + byc*diag%hyo(p) + bzc*diag%hzo(p) )
-
+       
+       })
 
        ! add up contributions at time step n+3/2 ------------------------------------------------------------------
        ! 
        
        diag%dudt = diag%hb1(m) + diag%hb2(m) - diag%hb2(mo) - diag%hb1(moo) + diag%ed1(mo) - diag%ed1(moo)
        diag%divs = diag%divs1 +  diag%divs2
-       diag%jdote = diag%jdote1 +  diag%jdote2
-       diag%kdoth = diag%kdoth1 +  diag%kdoth2
-       diag%res = diag%dudt + diag%divs + diag%jdote  + diag%kdoth
+       diag%jekh = diag%jekh1 +  diag%jekh2
+       diag%res = diag%dudt + diag%divs + diag%jekh
+
+       write(6,*) diag%dudt, diag%divs, diag%jekh, diag%res
 
        ! time integration
 
        diag%sumdudt = diag%sumdudt + diag%dudt * DT
        diag%sumdivs = diag%sumdivs + diag%divs * DT
-       diag%sumjdote = diag%sumjdote + diag%jdote * DT
-       diag%sumkdoth = diag%sumkdoth + diag%kdoth * DT
+       diag%sumjekh = diag%sumjekh + diag%jekh * DT
        diag%sumres = diag%sumres + diag%res * DT
+
+       write(6,*) diag%sumdudt, diag%sumdivs, diag%sumjekh, diag%sumres
 
        !  --------------------------------------------------------------------------------------------------------
 
@@ -211,6 +223,8 @@ contains
        dsx = 0.
        dsy = 0.
        dsz = 0.
+
+       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
        ! loop over front / back face
        do s = 0, 1
@@ -242,10 +256,9 @@ contains
        diag%hyo(p) = hyc
        diag%hzo(p) = hzc
 
-       })      
-       
-       diag%jdote2 = 0.5 * MatSumJE(reg)
-       diag%kdoth2 = 0.5 * MatSumKH(reg)
+       })
+
+       diag%jekh2 = 0.5 * SumJEKHMat(diag%mask,ncyc)
 
     })
   
@@ -262,13 +275,15 @@ contains
     M4_MODLOOP_DECL({DIAGEBAL},diag)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(0))
 
-    m = mod(ncyc,3) + 1
-    mo = mod(ncyc-1,3) + 1
-    moo = mod(ncyc-2,3) + 1
+    write(6,*) "E: ", ncyc
+
+    m = mod(ncyc+3,3) + 1
+    mo = mod(ncyc+3-1,3) + 1
+    moo = mod(ncyc+3-2,3) + 1
 
     diag%ed1(m) = 0.
     diag%divs1 = 0.
-    diag%jdote1 = 0.
+    diag%jekh1 = 0.
 
     M4_MODLOOP_EXPR({DIAGEBAL},diag,{
 
@@ -324,9 +339,7 @@ contains
       
        })
 
-       diag%jdote1 = 0.5 * MatSumJE(reg)
-       diag%kdoth1 = 0.5 * MatSumKH(reg)
-
+       diag%jekh1 = 0.5 * SumJEKHMat(diag%mask,ncyc)
       
     })
 
@@ -354,6 +367,10 @@ contains
 
 end module diagebal
 
+!
+! Authors:  E.Kirby, J.Hamm
+! Modified: 23/01/2007
+!
 ! =====================================================================
 
 

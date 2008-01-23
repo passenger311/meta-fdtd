@@ -40,7 +40,7 @@ module matsource
   save
 
 
-  M4_MODHEAD_DECL({MATSOURCE},100,{
+  M4_MATHEAD_DECL({MATSOURCE},100,{
 
      real(kind=8) :: lambda0       ! vacuum wavelength in units of [dx]
 
@@ -202,6 +202,20 @@ contains
     integer :: ncyc
     
   end subroutine StepHMatSource
+
+
+!----------------------------------------------------------------------
+
+  real(kind=8) function SumJEKHMatSource(mask, ncyc)
+
+    logical, dimension(IBEG:IEND,JBEG:JEND,KBEG:KEND) :: mask
+    real(kind=8) :: sum
+    integer :: ncyc, m, n
+   
+    SumJEKHMatSource = 0.
+
+  end function SumJEKHMatSource
+
 
  !----------------------------------------------------------------------
 

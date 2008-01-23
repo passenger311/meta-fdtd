@@ -24,7 +24,6 @@
 !    (VBOX
 !     0 10 20 1 6 20 100 0.25 1
 !    )VBOX
-!    LIST | MASK | AUTO
 !  )REG
 !
 !  A regobj is a set of points with float values. BOX, POINT set the 
@@ -33,17 +32,14 @@
 !  masks will be used. Instead the "isbox" value of the regobj is set
 !  to true. 
 !
-!  In MASK mode each regobj allocates a field of integers within a bounding
-!  box (is,js,ks)(ie,je,ke). The field values are zero if the point is not
+!  Each regobj allocates a field of integers within a bounding box 
+!  (is,js,ks)(ie,je,ke). The field values are zero if the point is not
 !  set, otherwise p>0 where the value is the point index to the weight 
 !  stored in val(p). 
 !
-!  In LIST mode a list of coordinates i(p),j(p),k(p) and values val(p) are
-!  supplied for each point p=1..pe.
+!  A list of coordinates i(p),j(p),k(p) and values val(p) are supplied for 
+!  each point p=1..pe.
 !
-!  In AUTO mode (default) either LIST or MASK mode is chosen depending on
-!  which one has the lower memory usage. 
-! 
 !  A loop over a region should always utilize the M4 macros as defined in
 !  reglist.m4.
 !
@@ -119,6 +115,7 @@ module reglist
   public :: DisplayRegObj
   public :: SetBoxRegObj
   public :: SetPointRegObj
+  public :: SetMaskRegObj
 
   ! --- Public Data
 
@@ -131,7 +128,7 @@ module reglist
   type T_REG
 
      logical :: isbox = .false.                 ! is it a box?
-     logical :: islist = .false.                ! is it a list?
+     logical :: islist = .false.                ! list loop mode
      integer :: idx = 0                         ! this objects index
      integer :: is = 0, ie = 0, di = 0          ! bounding box start,end
      integer :: js = 0, je = 0, dj = 0
@@ -213,11 +210,13 @@ contains
     if ( numval .ne. 0 ) dval = 1.0
     
   
-    auto = .true.
+    auto = .false.
+    reg%islist = .false.
+
     ! read until an unexpected line is encountered, eg ")"
     skiptill = ""
     do
-  	   ! defaults for 1D or 2D
+       ! defaults for 1D or 2D
        k0 = 0
        k1 = 0
        k =  0
@@ -337,15 +336,14 @@ contains
              endif
              call SetValueRegObj(reg, val)
           end do
-       case("LIST") ! force list mode
+       case ("LIST")
+          auto = .false.
           reg%islist = .true.
+       case ("MASK")
           auto = .false.
-          reg%isbox = .false.
-       case("MASK") ! force mask mode
           reg%islist = .false.
-          reg%isbox = .false.
-          auto = .false.
-       case("AUTO") 
+       case ("AUTO")
+          auto = .true.
        case default
           if ( string(1:2) .eq. "(!" ) then
             skiptill = cat2(")",string(3:))
@@ -392,7 +390,6 @@ contains
     regobj(numregobj)%ke = ke
     regobj(numregobj)%dk = dk
     regobj(numregobj)%isbox = .true.
-    regobj(numregobj)%islist = .false.
     regobj(numregobj)%numnodes = ( (ie - is)/di + 1 ) * ( (je - js)/dj + 1 ) * &
          ( (ke - ks)/dk + 1 )
     regobj(numregobj)%numval = 0
@@ -453,7 +450,6 @@ contains
 
     regobj(numregobj)%numval = numval
     regobj(numregobj)%isbox = .false.
-    regobj(numregobj)%islist = .false.
     regobj(numregobj)%compressval = .false.
     CreateRegObjStart = regobj(numregobj)
 
@@ -479,6 +475,17 @@ contains
        deallocate(tmpval)
        return
     endif
+
+    if ( auto ) then ! try to figure out the best loop mode
+       masksz =  (reg%ie - reg%is + 1) * (reg%je - reg%js + 1) * (reg%ke - reg%ks + 1)
+       listsz = reg%numnodes * 3
+       if ( masksz .gt. listsz ) then 
+          reg%islist = .false.
+       else
+          reg%islist = .true.
+       end if
+    end if
+
 
     ! if the domain is a box then nothing needs to be done. If not
     ! then the list of points needs to be filtered!
@@ -508,20 +515,6 @@ contains
        numnodes = num ! new node number
     end if
 
-    ! decide whether a list or a mask is favorable
-
-    if ( auto  ) then
-       M4_WRITE_DBG({"auto mode, trying to find best allocation scheme"})
-       masksz = (reg%ie - reg%is + 1) * (reg%je - reg%js + 1) * (reg%ke - reg%ks + 1)
-       listsz = numnodes * 3 
-       M4_WRITE_DBG({"list size = ", listsz, " / mask size = ", masksz})
-       if ( listsz .lt. masksz ) then 
-          reg%islist = .true.
-       else 
-          reg%islist = .false.
-       endif
-    end if
-       
     reg%numnodes = numnodes
 
     allocate(reg%val(reg%numval,numnodes) , stat = err)
@@ -542,65 +535,37 @@ contains
          end do
       end do
 
-    else
+    else ! A MASK/LIST
    
-       if ( .not. reg%islist ) then ! A MASK
+       M4_WRITE_DBG({"setting up reg in list/mask mode", numnodes})
+       allocate(reg%mask(reg%is:reg%ie,reg%js:reg%je,reg%ks:reg%ke),stat = err ) ! allocate mask
+       M4_ALLOC_ERROR(err, {"CreateRegObjEnd"})
+       reg%pe = numnodes
+       allocate(reg%i(numnodes),reg%j(numnodes),reg%k(numnodes),reg%val(reg%numval,numnodes),stat = err) ! allocate coord list
+       M4_ALLOC_ERROR(err,{"CreateRegObjEnd"})
+       
+       reg%mask = 0 ! empty mask
 
-          M4_WRITE_DBG({"setting up reg in mask mode", numnodes})
-          allocate(reg%mask(reg%is:reg%ie,reg%js:reg%je,reg%ks:reg%ke),stat = err )
-          M4_ALLOC_ERROR(err, {"CreateRegObjEnd"})
-          reg%mask = 0
-          ! 1 point
-          reg%pe = 1
-
-          num = 0
-          do k = reg%ks, reg%ke
-             do j = reg%js, reg%je
-                do i = reg%is, reg%ie
-                   p = tmpmask(i,j,k)
-                   if ( p .gt. 0 ) then
-                      num = num + 1
-                      reg%mask(i,j,k) = p
-                      reg%val(:,p) = tmpval(:,p)
-                   end if
-                end do
+       num = 0
+       do k = reg%ks, reg%ke
+          do j = reg%js, reg%je
+             do i = reg%is, reg%ie
+                p = tmpmask(i,j,k)
+                if ( p .gt. 0 ) then
+                   num = num + 1
+                   reg%mask(i,j,k) = p ! set mask value
+                   reg%i(num) = i ! set coords
+                   reg%j(num) = j
+                   reg%k(num) = k
+                   reg%val(:,p) = tmpval(:,p) ! set values
+                end if
              end do
           end do
-          if ( num .ne. numnodes ) then
-             M4_FATAL_ERROR({"BAD NODE COUNT!"})
-          endif
-          
-       else ! A LIST
+       end do
 
-          M4_WRITE_DBG({"setting up reg in list mode", numnodes})
-          reg%pe = numnodes
-          allocate(reg%i(numnodes),reg%j(numnodes),reg%k(numnodes),reg%val(reg%numval,numnodes) , stat = err)
-          M4_ALLOC_ERROR(err,{"CreateRegObjEnd"})
-          ! 1 step stepping!
-          reg%di = reg%ie - reg%is + 1
-          reg%dj = reg%je - reg%js + 1
-          reg%dk = reg%ke - reg%ks + 1
-          
-          num = 0
-          do k = reg%ks, reg%ke
-             do j = reg%js, reg%je
-                do i = reg%is, reg%ie
-                   p = tmpmask(i,j,k)
-                   if ( p .gt. 0 ) then
-                      num = num + 1
-                      reg%i(num) = i
-                      reg%j(num) = j
-                      reg%k(num) = k
-                      reg%val(:,num) = tmpval(:,p)
-                   end if
-                end do
-             end do
-          end do
-          if ( num .ne. numnodes ) then
-             M4_FATAL_ERROR({"BAD NODE COUNT!"})
-          endif
-
-       end if
+       if ( num .ne. numnodes ) then
+          M4_FATAL_ERROR({"BAD NODE COUNT!"})
+       endif
        
     end if
 
@@ -749,15 +714,15 @@ contains
   subroutine SetValueRegObj(reg, val)
   
     type(T_REG) :: reg
-	real(kind=8) :: val(:)
-	integer :: v
-
+    real(kind=8) :: val(:)
+    integer :: v
+    
     if ( reg%idx .eq. -1 ) return
 
     M4_WRITE_DBG({"set value at ",numvalues," of ",numnodes," nodes"})
 	
-	if ( numvalues .gt. numnodes ) return
-	
+    if ( numvalues .gt. numnodes ) return
+    
     do v = 1, reg%numval
        tmpval(:,numvalues) = val(:)
     end do
@@ -772,18 +737,18 @@ contains
   subroutine FillValueRegObj(reg, val)
   
     type(T_REG) :: reg
-	real(kind=8) :: val(:)
-	integer :: v,p
-	
+    real(kind=8) :: val(:)
+    integer :: v,p
+    
     M4_WRITE_DBG({"fill values from ",numvalues," to ",numnodes," nodes"})
-
+    
     do p = numvalues, numnodes	
-      do v = 1, reg%numval
-         tmpval(v,p) = val(v)
-      end do
-	end do
-	
-	numvalues = numnodes + 1
+       do v = 1, reg%numval
+          tmpval(v,p) = val(v)
+       end do
+    end do
+   
+   numvalues = numnodes + 1
 	
   end subroutine FillValueRegObj
 
@@ -812,16 +777,12 @@ contains
     end if
 
     if ( .not. reg%isbox ) then
-       if ( .not. reg%islist ) then
-          M4_WRITE_DBG("deallocating reg%mask")
-          deallocate(reg%mask)
-       else
-          M4_WRITE_DBG("deallocating reg%i reg%j reg%k")
-          deallocate(reg%i, reg%j, reg%k)
-       end if
+       M4_WRITE_DBG("deallocating reg%mask")
+       deallocate(reg%mask)
+       M4_WRITE_DBG("deallocating reg%i reg%j reg%k")
+       deallocate(reg%i, reg%j, reg%k)
     end if
     
-
     reg%idx = -1
     
     M4_WRITE_DBG(". exit DestroyRegObjEnd")
@@ -889,6 +850,20 @@ contains
 
 !----------------------------------------------------------------------
 
+  subroutine SetMaskRegObj(reg,mask,ib,ie,jb,je,kb,ke)
+
+    integer:: ib,ie,jb,je,kb,ke
+    logical :: mask(ib:ie,jb:je,kb:ke)
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(6))
+
+    M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+         mask(i,j,k) = .true.
+    })
+
+  end subroutine SetMaskRegObj
+
+!----------------------------------------------------------------------
+
   subroutine DisplayRegObj(reg)
 
     type(T_REG) :: reg
@@ -919,7 +894,6 @@ contains
 
     M4_WRITE_INFO({"--- reg # ", TRIM(i2str(reg%idx)) })
     M4_WRITE_INFO({"isbox = ", reg%isbox })
-    M4_WRITE_INFO({"islist = ", reg%islist })
     M4_WRITE_INFO({"numnodes = ", reg%numnodes })
     M4_WRITE_INFO({"numval   = ", reg%numval })
     M4_WRITE_INFO({"is ie di = ", reg%is, reg%ie, reg%di })
@@ -943,10 +917,10 @@ contains
        if ( reg%idx .eq. -1 .or. reg%numnodes .eq. 0 ) cycle
        
        memusage = memusage + reg%numnodes * reg%numval * 8
-       if ( .not. reg%islist ) then
+       
+       if ( .not. reg%isbox ) then
           masksz =  (reg%ie - reg%is + 1) * (reg%je - reg%js + 1) * (reg%ke - reg%ks + 1)
           memusage = memusage +  masksz * 4
-       else
           memusage = memusage + reg%numnodes * 3 * 4
        end if
        

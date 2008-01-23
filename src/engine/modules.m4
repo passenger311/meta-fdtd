@@ -41,6 +41,10 @@ define({M4_MODHEAD_DECL},{
 })
 
 
+define({M4_MATHEAD_DECL},{
+public :: SumJEKH$1
+M4_MODHEAD_DECL({$1},{$2},{$3})})
+
 define({M4_MODLOOP_DECL},{
     integer :: m4_n
     type(T_$1) :: $2   

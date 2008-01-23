@@ -34,7 +34,7 @@ enddo !k
 
 else !isbox
 
-if ( $1%islist ) then
+if ( $1%islist ) then ! list loop mode
  
 do $2 = 1, $1%pe ! -> p
 
@@ -52,7 +52,7 @@ $7
 
 enddo ! p
 
-else !islist
+else ! mask loop mode
 
 do $5 = $1%ks, $1%ke, $1%dk ! -> k
 do $4 = $1%js, $1%je, $1%dj ! -> j
