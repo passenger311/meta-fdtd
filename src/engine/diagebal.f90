@@ -146,7 +146,7 @@ contains
   subroutine StepHDiagEBal(ncyc)
 
     integer :: ncyc, m, mo, moo, s
-    real(kind=8) :: hxc, hyc, hzc, bxc, byc, bzc, dsx, dsy, dsz
+    real(kind=8) :: hxc, hyc, hzc, bxc, byc, bzc, dsx(0:1), dsy(0:1), dsz(0:1)
     M4_MODLOOP_DECL({DIAGEBAL},diag)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(0))
 
@@ -154,18 +154,18 @@ contains
     mo = mod(ncyc+3-1,3) + 1
     moo = mod(ncyc+3-2,3) + 1
     
-    diag%hb1(m) = 0.
-    diag%hb2(m) = 0.
-    diag%divsx2 = 0.
-    diag%divsy2 = 0.
-    diag%divsz2 = 0.
-    diag%jekh2 = 0.
-
     M4_MODLOOP_EXPR({DIAGEBAL},diag,{
 
        ! this loops over all diag structures, setting diag
 
        if (  ncyc .lt. diag%ns .or. ncyc .gt. diag%ne ) cycle
+
+       diag%hb1(m) = 0.
+       diag%hb2(m) = 0.
+       diag%divsx2 = 0.
+       diag%divsy2 = 0.
+       diag%divsz2 = 0.
+       diag%jekh2 = 0.
 
        M4_MODOBJ_GETREG(diag,reg)
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
@@ -182,11 +182,11 @@ contains
 
        M4_IFELSE_WMU({
 
-       bxc = 0.25 * real( ( ( 1./M4_MUINVX(i,j,k)*Hx(M4_COORD(i,j,k)) +  1./M4_MUINVX(i,j-1,k)*Hx(M4_COORD(i,j-1,k)) ) &
+       bxc = 0.25 * real( ( 1./M4_MUINVX(i,j,k)*Hx(M4_COORD(i,j,k)) +  1./M4_MUINVX(i,j-1,k)*Hx(M4_COORD(i,j-1,k)) ) &
             + ( 1./M4_MUINVX(i,j,k-1)*Hx(M4_COORD(i,j,k-1)) + 1./M4_MUINVX(i,j-1,k-1)*Hx(M4_COORD(i,j-1,k-1)) ) )
-       byc = 0.25 * real( ( ( 1./M4_MUINVY(i,j,k)*Hy(M4_COORD(i,j,k)) + 1./M4_MUINVY(i,j,k-1)*Hy(M4_COORD(i,j,k-1)) ) &
+       byc = 0.25 * real( ( 1./M4_MUINVY(i,j,k)*Hy(M4_COORD(i,j,k)) + 1./M4_MUINVY(i,j,k-1)*Hy(M4_COORD(i,j,k-1)) ) &
             + ( 1./M4_MUINVY(i-1,j,k)*Hy(M4_COORD(i-1,j,k)) + 1./M4_MUINVY(i-1,j,k-1)*Hy(M4_COORD(i-1,j,k-1)) ) )
-       bzc = 0.25 * real( ( ( 1./M4_MUINVZ(i,j,k)*Hz(M4_COORD(i,j,k)) + 1./M4_MUINVZ(i-1,j,k)*Hz(M4_COORD(i-1,j,k)) ) &
+       bzc = 0.25 * real( ( 1./M4_MUINVZ(i,j,k)*Hz(M4_COORD(i,j,k)) + 1./M4_MUINVZ(i-1,j,k)*Hz(M4_COORD(i-1,j,k)) ) &
             + ( 1./M4_MUINVZ(i,j-1,k)*Hz(M4_COORD(i,j-1,k)) + 1./M4_MUINVZ(i-1,j-1,k)*Hz(M4_COORD(i-1,j-1,k)) ) )
 
        },{
@@ -199,14 +199,21 @@ contains
 
 
        diag%hb1(m) = diag%hb1(m) + 0.125/DT * ( bxc*hxc + byc*hyc + bzc*hzc )
-       diag%hb2(m) = diag%hb2(m) + 0.125/DT * 2. * ( bxc*diag%hxo(p) + byc*diag%hyo(p) + bzc*diag%hzo(p) )
+       diag%hb2(m) = diag%hb2(m) + 0.125/DT * ( bxc*diag%hxo(p) + byc*diag%hyo(p) + bzc*diag%hzo(p) )
+
+       !diag%hb2(m) = diag%hb2(m) + 0.5/DT * ( bxc*diag%hxo(p) + byc*diag%hyo(p) + bzc*diag%hzo(p) )
+
+       diag%hxo(p) = hxc
+       diag%hyo(p) = hyc
+       diag%hzo(p) = hzc
        
        })
 
        ! add up contributions at time step n+3/2 ------------------------------------------------------------------
        ! 
 
-       diag%dudt = diag%hb1(m) + diag%hb2(m) - diag%hb2(mo) - diag%hb1(moo) + diag%ed1(mo) - diag%ed1(moo)
+!       diag%dudt = diag%hb2(m) - diag%hb2(mo) + diag%ed1(mo) - diag%ed1(moo)
+       diag%dudt = diag%hb1(m) + 2. * diag%hb2(m) - 2.* diag%hb2(mo) - diag%hb1(moo) + diag%ed1(mo) - diag%ed1(moo)
        diag%divs = diag%divsx1 + diag%divsy1 + diag%divsz1 + diag%divsx2 + diag%divsy2 + diag%divsz2
        diag%jekh = diag%jekh1 +  diag%jekh2
        diag%res = diag%dudt + diag%divs + diag%jekh
@@ -235,34 +242,30 @@ contains
        ! loop over front / back face
        do s = 0, 1
 
-          dsx = dsx + (-1)**s * 0.25 * ( &
+          dsx(s) = 0.125 * ( &
                real(Ey(M4_COORD(i-s,j,k)) + Ey(M4_COORD(i-s+1,j,k)) + Ey(M4_COORD(i-s,j-1,k)) + Ey(M4_COORD(i-s+1,j-1,k)))* &
-               2.*real(Hz(M4_COORD(i-s,j,k)) + Hz(M4_COORD(i-s,j-1,k)) ) -  &
+               real(Hz(M4_COORD(i-s,j,k)) + Hz(M4_COORD(i-s,j-1,k)) ) -  &
                real(Ez(M4_COORD(i-s,j,k)) + Ez(M4_COORD(i-s+1,j,k)) + Ez(M4_COORD(i-s,j,k-1)) + Ez(M4_COORD(i-s+1,j,k-1)))* &
-               2.*real(Hy(M4_COORD(i-s,j,k)) + Hy(M4_COORD(i-s,j,k-1)) ) &
+               real(Hy(M4_COORD(i-s,j,k)) + Hy(M4_COORD(i-s,j,k-1)) ) &
                )
-          dsy = dsy + (-1)**s * 0.25 * ( &
+          dsy(s) = 0.125 * ( &
                real(Ez(M4_COORD(i,j-s,k)) + Ez(M4_COORD(i,j-s+1,k)) + Ez(M4_COORD(i,j-s,k-1)) + Ez(M4_COORD(i,j-s+1,k-1)))* &
-               2.*real(Hx(M4_COORD(i,j-s,k)) + Hx(M4_COORD(i,j-s,k-1)) ) - &
+               real(Hx(M4_COORD(i,j-s,k)) + Hx(M4_COORD(i,j-s,k-1)) ) - &
                real(Ex(M4_COORD(i,j-s,k)) + Ex(M4_COORD(i,j-s+1,k)) + Ex(M4_COORD(i-1,j-s,k)) + Ex(M4_COORD(i-1,j-s+1,k)))* &
-               2.*real(Hz(M4_COORD(i,j-s,k)) + Hz(M4_COORD(i-1,j-s,k)) ) &
+               real(Hz(M4_COORD(i,j-s,k)) + Hz(M4_COORD(i-1,j-s,k)) ) &
                )
-          dsz = dsz +  (-1)**s * 0.25 * ( &
+          dsz(s) = 0.125 * ( &
                real(Ex(M4_COORD(i,j,k-s)) + Ex(M4_COORD(i,j,k-s+1)) + Ex(M4_COORD(i-1,j,k-s)) + Ex(M4_COORD(i-1,j,k-s+1)))* &
-               2.*real(Hy(M4_COORD(i,j,k-s)) + Hy(M4_COORD(i-1,j,k-s)) ) - &
+               real(Hy(M4_COORD(i,j,k-s)) + Hy(M4_COORD(i-1,j,k-s)) ) - &
                real(Ey(M4_COORD(i,j,k-s)) + Ey(M4_COORD(i,j,k-s+1)) + Ey(M4_COORD(i,j-1,k-s)) + Ey(M4_COORD(i,j-1,k-s+1)))* &
-               2.*real(Hx(M4_COORD(i,j,k-s)) + Hx(M4_COORD(i,j-1,k-s)) ) &
+               real(Hx(M4_COORD(i,j,k-s)) + Hx(M4_COORD(i,j-1,k-s)) ) &
                )
        
        end do
 
-       diag%divsx2 = diag%divsx2 + 0.5/SX * dsx
-       diag%divsy2 = diag%divsy2 + 0.5/SY * dsy
-       diag%divsz2 = diag%divsz2 + 0.5/SZ * dsz
-
-       diag%hxo(p) = hxc
-       diag%hyo(p) = hyc
-       diag%hzo(p) = hzc
+       diag%divsx2 = diag%divsx2 + 0.5/SX * ( dsx(0) - dsx(1) )
+       diag%divsy2 = diag%divsy2 + 0.5/SY * ( dsy(0) - dsy(1) )
+       diag%divsz2 = diag%divsz2 + 0.5/SZ * ( dsz(0) - dsz(1) )
 
        })
 
@@ -279,7 +282,7 @@ contains
   subroutine StepEDiagEBal(ncyc)
 
     integer :: ncyc, m, mo, moo, s
-    real(kind=8) :: exc, eyc, ezc, dxc, dyc, dzc, dsx, dsy, dsz
+    real(kind=8) :: exc, eyc, ezc, dxc, dyc, dzc, dsx(0:1), dsy(0:1), dsz(0:1)
     M4_MODLOOP_DECL({DIAGEBAL},diag)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(0))
 
@@ -287,16 +290,16 @@ contains
     mo = mod(ncyc+3-1,3) + 1
     moo = mod(ncyc+3-2,3) + 1
 
-    diag%ed1(m) = 0.
-    diag%divsx1 = 0.
-    diag%divsy1 = 0.
-    diag%divsz1 = 0.
-    diag%jekh1 = 0.
-
     M4_MODLOOP_EXPR({DIAGEBAL},diag,{
 
        ! this loops over all diag structures, setting diag
        if (  ncyc .lt. diag%ns .or. ncyc .gt. diag%ne ) cycle
+
+       diag%ed1(m) = 0.
+       diag%divsx1 = 0.
+       diag%divsy1 = 0.
+       diag%divsz1 = 0.
+       diag%jekh1 = 0.
 
        M4_MODOBJ_GETREG(diag,reg)
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
@@ -319,32 +322,32 @@ contains
        ! loop over front / back face
        do s = 0, 1
           
-          dsx = dsx + (-1)**s * 0.25 * ( &
+          dsx(s) = 0.125 * ( &
                real(Ey(M4_COORD(i-s,j,k)) + Ey(M4_COORD(i-s+1,j,k)) + Ey(M4_COORD(i-s,j-1,k)) + Ey(M4_COORD(i-s+1,j-1,k)))* &
-               2.*real(Hz(M4_COORD(i-s,j,k)) + Hz(M4_COORD(i-s,j-1,k)) ) -  &
+               real(Hz(M4_COORD(i-s,j,k)) + Hz(M4_COORD(i-s,j-1,k)) ) -  &
                real(Ez(M4_COORD(i-s,j,k)) + Ez(M4_COORD(i-s+1,j,k)) + Ez(M4_COORD(i-s,j,k-1)) + Ez(M4_COORD(i-s+1,j,k-1)))* &
-               2.*real(Hy(M4_COORD(i-s,j,k)) + Hy(M4_COORD(i-s,j,k-1)) ) &
+               real(Hy(M4_COORD(i-s,j,k)) + Hy(M4_COORD(i-s,j,k-1)) ) &
                )
-          dsy = dsy + (-1)**s * 0.25 * ( &
+          dsy(s) = 0.125 * ( &
                real(Ez(M4_COORD(i,j-s,k)) + Ez(M4_COORD(i,j-s+1,k)) + Ez(M4_COORD(i,j-s,k-1)) + Ez(M4_COORD(i,j-s+1,k-1)))* &
-               2.*real(Hx(M4_COORD(i,j-s,k)) + Hx(M4_COORD(i,j-s,k-1)) ) - &
+               real(Hx(M4_COORD(i,j-s,k)) + Hx(M4_COORD(i,j-s,k-1)) ) - &
                real(Ex(M4_COORD(i,j-s,k)) + Ex(M4_COORD(i,j-s+1,k)) + Ex(M4_COORD(i-1,j-s,k)) + Ex(M4_COORD(i-1,j-s+1,k)))* &
-               2.*real(Hz(M4_COORD(i,j-s,k)) + Hz(M4_COORD(i-1,j-s,k)) ) &
+               real(Hz(M4_COORD(i,j-s,k)) + Hz(M4_COORD(i-1,j-s,k)) ) &
                )
-          dsz = dsz +  (-1)**s * 0.25 * ( &
+          dsz(s) = 0.125 * ( &
                real(Ex(M4_COORD(i,j,k-s)) + Ex(M4_COORD(i,j,k-s+1)) + Ex(M4_COORD(i-1,j,k-s)) + Ex(M4_COORD(i-1,j,k-s+1)))* &
-               2.*real(Hy(M4_COORD(i,j,k-s)) + Hy(M4_COORD(i-1,j,k-s)) ) - &
+               real(Hy(M4_COORD(i,j,k-s)) + Hy(M4_COORD(i-1,j,k-s)) ) - &
                real(Ey(M4_COORD(i,j,k-s)) + Ey(M4_COORD(i,j,k-s+1)) + Ey(M4_COORD(i,j-1,k-s)) + Ey(M4_COORD(i,j-1,k-s+1)))* &
-               2.*real(Hx(M4_COORD(i,j,k-s)) + Hx(M4_COORD(i,j-1,k-s)) ) &
+               real(Hx(M4_COORD(i,j,k-s)) + Hx(M4_COORD(i,j-1,k-s)) ) &
                )
 
        
        end do
 
 
-       diag%divsx1 = diag%divsx1 + 0.5/SX * dsx
-       diag%divsy1 = diag%divsy1 + 0.5/SY * dsy
-       diag%divsz1 = diag%divsz1 + 0.5/SZ * dsz
+       diag%divsx1 = diag%divsx1 + 0.5/SX * ( dsx(0) - dsx(1) )
+       diag%divsy1 = diag%divsy1 + 0.5/SY * ( dsy(0) - dsy(1) )
+       diag%divsz1 = diag%divsz1 + 0.5/SZ * ( dsz(0) - dsz(1) )
        
       
        })
