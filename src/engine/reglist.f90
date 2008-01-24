@@ -872,9 +872,9 @@ contains
     if ( reg%idx .eq. -1 ) return
 
     if ( reg%isbox ) then
-    	tstr = "filled"
-	else
-		tstr = "points"
+       tstr = "B"
+    else
+       tstr = "P"
     end if
     
     M4_WRITE_INFO({"@",TRIM(i2str(reg%idx)),&

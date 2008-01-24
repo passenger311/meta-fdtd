@@ -185,13 +185,13 @@ M4_IFELSE_WMU({ call InitializeMu })
 
    M4_WRITE_DBG({"allocate epsilon"}) 
 
-   allocate(epsinvx(M4_RANGE(IBEG:IEND, JBEG:JEND, KBEG:KEND)), STAT=err)
+   allocate(epsinvx(M4_RANGE(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX)), STAT=err)
    M4_ALLOC_ERROR(err, "InitializeEpsilon")
 
-   allocate(epsinvy(M4_RANGE(IBEG:IEND, JBEG:JEND, KBEG:KEND)), STAT=err)
+   allocate(epsinvy(M4_RANGE(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX)), STAT=err)
    M4_ALLOC_ERROR(err, "InitializeEpsilon")
 
-   allocate(epsinvz(M4_RANGE(IBEG:IEND, JBEG:JEND, KBEG:KEND)), STAT=err)
+   allocate(epsinvz(M4_RANGE(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX)), STAT=err)
    M4_ALLOC_ERROR(err, "InitializeEpsilon")
      
    M4_WRITE_DBG({"pre-initializing all epsilon = 1.0"})   
@@ -220,6 +220,10 @@ M4_IFELSE_WMU({ call InitializeMu })
    end if
 
    M4_WRITE_DBG({"extend epsilon towards boundary"})   
+
+   call ExtendField(epsinvx)
+   call ExtendField(epsinvy)
+   call ExtendField(epsinvz)
     
  end subroutine InitializeEpsilon
  
@@ -234,13 +238,13 @@ M4_IFELSE_WMU({
 
    M4_WRITE_DBG({"allocate mu"})   
 
-   allocate(muinvx(M4_RANGE(IBEG:IEND, JBEG:JEND, KBEG:KEND)), STAT=err)
+   allocate(muinvx(M4_RANGE(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX)), STAT=err)
    M4_ALLOC_ERROR(err, "InitializeMu")
 
-   allocate(muinvy(M4_RANGE(IBEG:IEND, JBEG:JEND, KBEG:KEND)), STAT=err)
+   allocate(muinvy(M4_RANGE(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX)), STAT=err)
    M4_ALLOC_ERROR(err, "InitializeMu")
 
-   allocate(muinvz(M4_RANGE(IBEG:IEND, JBEG:JEND, KBEG:KEND)), STAT=err)
+   allocate(muinvz(M4_RANGE(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX)), STAT=err)
    M4_ALLOC_ERROR(err, "InitializeMu")
      
    M4_WRITE_DBG({"pre-initializing all epsilon = 1.0"})   
@@ -268,12 +272,34 @@ M4_IFELSE_WMU({
       M4_WRITE_WARN({"MU NOT INITIALIZED, USING 1.0!"})   
    end if
    
+   M4_WRITE_DBG({"extend mu towards boundary"})   
 
-   M4_WRITE_DBG({"extend epsilon towards boundary"})   
+   call ExtendField(muinvx)
+   call ExtendField(muinvy)
+   call ExtendField(muinvz)
 
  end subroutine InitializeMu
 
 })
+
+!----------------------------------------------------------------------
+
+subroutine ExtendField(field)
+
+  real(kind=8) :: field(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX)
+
+  field(IMIN,:,:) = field(IBEG,:,:)
+  field(IMAX,:,:) = field(IEND,:,:)
+
+  field(:,JMIN,:) = field(:,JBEG,:)
+  field(:,JMAX,:) = field(:,JEND,:)
+
+  field(:,:,KMIN) = field(:,:,KBEG)
+  field(:,:,KMAX) = field(:,:,KEND)
+
+
+end subroutine ExtendField
+
 
 !----------------------------------------------------------------------
 
