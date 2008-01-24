@@ -335,7 +335,7 @@ T		! time (T) or wavelength (F) parameters for gaussian
 0 1000 1   ! time window
 (REG
   (BOX
-	60 80 1 20 80 1 20 80 1
+	60 90 1 20 80 1 20 80 1
   )BOX
 )REG
 )DIAGEBAL

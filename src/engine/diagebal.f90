@@ -195,9 +195,7 @@ contains
        })
 
 
-!       diag%hb1(m) = diag%hb1(m) + 0.125/DT * ( bxc*hxc + byc*hyc + bzc*hzc )
-!       diag%hb2(m) = diag%hb2(m) + 0.125/DT * ( bxc*diag%hxo(p) + byc*diag%hyo(p) + bzc*diag%hzo(p) )
-
+       diag%hb1(m) = diag%hb1(m) + 0.5/DT * ( bxc*hxc + byc*hyc + bzc*hzc )
        diag%hb2(m) = diag%hb2(m) + 0.5/DT * ( bxc*diag%hxo(p) + byc*diag%hyo(p) + bzc*diag%hzo(p) )
 
        diag%hxo(p) = hxc
@@ -209,12 +207,15 @@ contains
        ! add up contributions at time step n+3/2 ------------------------------------------------------------------
        ! 
 
-       diag%dudt = diag%hb2(m) - diag%hb2(mo) + diag%ed1(mo) - diag%ed1(moo)
-!       diag%dudt = diag%hb1(m) + 2. * diag%hb2(m) - 2.* diag%hb2(mo) - diag%hb1(moo) + diag%ed1(mo) - diag%ed1(moo)
+       !diag%dudt = diag%hb2(m) - diag%hb2(mo) + diag%ed1(mo) - diag%ed1(moo)
+       diag%dudt = 0.25*diag%hb1(m) + .5 * diag%hb2(m) - .5* diag%hb2(mo) - 0.25 * diag%hb1(moo) + diag%ed1(mo) - diag%ed1(moo)
+
        diag%divs = diag%divsx1(0) + diag%divsy1(0) + diag%divsz1(0) + diag%divsx2(0) + diag%divsy2(0) + diag%divsz2(0) - ( &
             diag%divsx1(1) + diag%divsy1(1) + diag%divsz1(1) + diag%divsx2(1) + diag%divsy2(1) + diag%divsz2(1) )
        diag%jekh = diag%jekh1 +  diag%jekh2
-       diag%res = diag%dudt + diag%divs + diag%jekh
+       if ( diag%dudt .ne. 0.0 ) then
+          diag%res = abs(diag%dudt + diag%divs + diag%jekh)/abs(diag%dudt)
+       end if
 
        write(6,*) diag%dudt, diag%divs, diag%jekh, diag%res
 
@@ -223,9 +224,9 @@ contains
        diag%sumdudt = diag%sumdudt + diag%dudt * DT
        diag%sumdivs = diag%sumdivs + diag%divs * DT
        diag%sumjekh = diag%sumjekh + diag%jekh * DT
-       diag%sumres = diag%sumres + diag%res * DT
+       diag%sumres =  diag%sumres + diag%res
 
-       write(6,*) diag%sumdudt, diag%sumdivs, diag%sumjekh, diag%sumres
+       write(6,*) diag%sumdudt, diag%sumdivs, diag%sumjekh, diag%sumres/(ncyc - diag%ns + 1 )
 
        !  --------------------------------------------------------------------------------------------------------
 
