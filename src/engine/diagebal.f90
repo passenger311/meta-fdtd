@@ -51,8 +51,8 @@ module diagebal
   
   ! partial contributions to energy terms
   real(kind=8) :: hb1(3), hb2(3), ed1(3),jekh1, jekh2
-  real(kind=8) ::  divsx1, divsy1, divsz1
-  real(kind=8) ::  divsx2, divsy2, divsz2
+  real(kind=8), dimension(0:1) ::  divsx1, divsy1, divsz1
+  real(kind=8), dimension(0:1) ::  divsx2, divsy2, divsz2
 
   })
 
@@ -162,9 +162,6 @@ contains
 
        diag%hb1(m) = 0.
        diag%hb2(m) = 0.
-       diag%divsx2 = 0.
-       diag%divsy2 = 0.
-       diag%divsz2 = 0.
        diag%jekh2 = 0.
 
        M4_MODOBJ_GETREG(diag,reg)
@@ -198,10 +195,10 @@ contains
        })
 
 
-       diag%hb1(m) = diag%hb1(m) + 0.125/DT * ( bxc*hxc + byc*hyc + bzc*hzc )
-       diag%hb2(m) = diag%hb2(m) + 0.125/DT * ( bxc*diag%hxo(p) + byc*diag%hyo(p) + bzc*diag%hzo(p) )
+!       diag%hb1(m) = diag%hb1(m) + 0.125/DT * ( bxc*hxc + byc*hyc + bzc*hzc )
+!       diag%hb2(m) = diag%hb2(m) + 0.125/DT * ( bxc*diag%hxo(p) + byc*diag%hyo(p) + bzc*diag%hzo(p) )
 
-       !diag%hb2(m) = diag%hb2(m) + 0.5/DT * ( bxc*diag%hxo(p) + byc*diag%hyo(p) + bzc*diag%hzo(p) )
+       diag%hb2(m) = diag%hb2(m) + 0.5/DT * ( bxc*diag%hxo(p) + byc*diag%hyo(p) + bzc*diag%hzo(p) )
 
        diag%hxo(p) = hxc
        diag%hyo(p) = hyc
@@ -212,9 +209,10 @@ contains
        ! add up contributions at time step n+3/2 ------------------------------------------------------------------
        ! 
 
-!       diag%dudt = diag%hb2(m) - diag%hb2(mo) + diag%ed1(mo) - diag%ed1(moo)
-       diag%dudt = diag%hb1(m) + 2. * diag%hb2(m) - 2.* diag%hb2(mo) - diag%hb1(moo) + diag%ed1(mo) - diag%ed1(moo)
-       diag%divs = diag%divsx1 + diag%divsy1 + diag%divsz1 + diag%divsx2 + diag%divsy2 + diag%divsz2
+       diag%dudt = diag%hb2(m) - diag%hb2(mo) + diag%ed1(mo) - diag%ed1(moo)
+!       diag%dudt = diag%hb1(m) + 2. * diag%hb2(m) - 2.* diag%hb2(mo) - diag%hb1(moo) + diag%ed1(mo) - diag%ed1(moo)
+       diag%divs = diag%divsx1(0) + diag%divsy1(0) + diag%divsz1(0) + diag%divsx2(0) + diag%divsy2(0) + diag%divsz2(0) - ( &
+            diag%divsx1(1) + diag%divsy1(1) + diag%divsz1(1) + diag%divsx2(1) + diag%divsy2(1) + diag%divsz2(1) )
        diag%jekh = diag%jekh1 +  diag%jekh2
        diag%res = diag%dudt + diag%divs + diag%jekh
 
@@ -232,6 +230,10 @@ contains
        !  --------------------------------------------------------------------------------------------------------
 
        ! ------ calculate part of div S 
+
+       diag%divsx2 = 0.
+       diag%divsy2 = 0.
+       diag%divsz2 = 0.
 
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
@@ -260,12 +262,13 @@ contains
                real(Ey(M4_COORD(i,j,k-s)) + Ey(M4_COORD(i,j,k-s+1)) + Ey(M4_COORD(i,j-1,k-s)) + Ey(M4_COORD(i,j-1,k-s+1)))* &
                real(Hx(M4_COORD(i,j,k-s)) + Hx(M4_COORD(i,j-1,k-s)) ) &
                )
-       
+
+          diag%divsx2(s) = diag%divsx2(s) + 0.5/SX * dsx(s)
+          diag%divsy2(s) = diag%divsy2(s) + 0.5/SY * dsy(s)
+          diag%divsz2(s) = diag%divsz2(s) + 0.5/SZ * dsz(s)
+          
        end do
 
-       diag%divsx2 = diag%divsx2 + 0.5/SX * ( dsx(0) - dsx(1) )
-       diag%divsy2 = diag%divsy2 + 0.5/SY * ( dsy(0) - dsy(1) )
-       diag%divsz2 = diag%divsz2 + 0.5/SZ * ( dsz(0) - dsz(1) )
 
        })
 
@@ -341,13 +344,11 @@ contains
                real(Hx(M4_COORD(i,j,k-s)) + Hx(M4_COORD(i,j-1,k-s)) ) &
                )
 
-       
+          diag%divsx1(s) = diag%divsx1(s) + 0.5/SX * dsx(s)
+          diag%divsy1(s) = diag%divsy1(s) + 0.5/SY * dsy(s)
+          diag%divsz1(s) = diag%divsz1(s) + 0.5/SZ * dsz(s)
+           
        end do
-
-
-       diag%divsx1 = diag%divsx1 + 0.5/SX * ( dsx(0) - dsx(1) )
-       diag%divsy1 = diag%divsy1 + 0.5/SY * ( dsy(0) - dsy(1) )
-       diag%divsz1 = diag%divsz1 + 0.5/SZ * ( dsz(0) - dsz(1) )
        
       
        })
