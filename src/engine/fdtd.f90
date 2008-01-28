@@ -286,22 +286,23 @@ M4_IFELSE_WMU({
 
 subroutine ExtendField(field)
 
-  real(kind=8) :: field(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX)
+  real(kind=8) :: field(M4_RANGE(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX))
 
-  field(IMIN,:,:) = field(IBEG,:,:)
-  field(IMAX,:,:) = field(IEND,:,:)
+
+  field(IMIN,JBEG:JEND,KBEG:KEND) = field(IBEG,JBEG:JEND,KBEG:KEND)
+  field(IMAX,JBEG:JEND,KBEG:KEND) = field(IEND,JBEG:JEND,KBEG:KEND)
 
   M4_IFELSE_1D({},{
 
-  field(:,JMIN,:) = field(:,JBEG,:)
-  field(:,JMAX,:) = field(:,JEND,:)
+  field(IBEG:IEND,JMIN,KBEG:KEND) = field(IBEG:IEND,JBEG,KBEG:KEND)
+  field(IBEG:IEND,JMAX,KBEG:KEND) = field(IBEG:IEND,JEND,KBEG:KEND)
 
   })
 
   M4_IFELSE_3D({
 
-  field(:,:,KMIN) = field(:,:,KBEG)
-  field(:,:,KMAX) = field(:,:,KEND)
+  field(IBEG:IEND,JBEG:JEND,KMIN) = field(IBEG:IEND,JBEG:JEND,KBEG)
+  field(IBEG:IEND,JBEG:JEND,KMAX) = field(IBEG:IEND,JBEG:JEND,KEND)
 
   })
 

@@ -12,7 +12,6 @@
 
 program meta
 
-  use constant
   use strings
   use list
   use mpiworld
@@ -25,6 +24,7 @@ program meta
   use diag
   use config
   use mpicomms
+  use manifest
 
   implicit none
 
@@ -45,7 +45,7 @@ program meta
 
      write(6,*) "* ------------------------- META-ENGINE STARTS -------------------------- "
      write(6,*) "*"
-     call DisplayVersion
+     call DisplayManifest
      write(6,*) "*"
      write(6,*) "* ----------------------------------------------------------------------- "
   	 M4_WRITE_INFO("START")

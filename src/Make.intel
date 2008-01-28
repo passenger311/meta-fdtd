@@ -50,9 +50,9 @@ endif
 
 ifeq ($(DBG),)
 
-OPTFLAGS=-O3 -xW -fpp -V -ipo
+OPTFLAGS=-O3 -xW -fpp -ipo
 NOOPTFLAGS=-O2 -ipo
-LDOPTFLAGS= -ipo
+LDOPTFLAGS= -ipo -xW 
 
 endif
 

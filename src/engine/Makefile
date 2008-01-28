@@ -33,9 +33,9 @@ FDTD_OUTHD5= fdtd_outhd5.o
 endif
 
 BOBJ=\
+constant.o\
 strings.o\
 utils.o\
-constant.o\
 mpiworld.o\
 reglist.o\
 vallist.o\
@@ -70,6 +70,7 @@ $(OUTHD5)\
 out.o\
 config.o\
 mpicomms.o\
+manifest.o\
 meta.o
 
 OBJ=$(BOBJ) $(FOBJ)
