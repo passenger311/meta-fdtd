@@ -63,8 +63,8 @@ M4_IFELSE_MPI(call SynchronizeMPIWorld)
 
         write(6,*) "* -> InitializeList"
         call InitializeList
-        write(6,*) "* -> ReadConfig"
-        call ReadConfig
+        write(6,*) "* -> ReadConfig(M4_SDIM{})"
+        call ReadConfig(M4_SDIM{})
         write(6,*) "* -> InitializeFdtd"
         call InitializeFdtd
         write(6,*) "* -> InitializeFdtdCalc"

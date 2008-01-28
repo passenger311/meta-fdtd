@@ -19,6 +19,7 @@ module bound
   use grid  
   use fdtd
   use pec 
+  use sbc
   use pbc
   use pml
 
@@ -172,6 +173,8 @@ contains
           case ( 1 )
              call StepHBoundPml(i)
           case ( 2 )
+             call StepHBoundSbc(i)
+          case ( 3 )
              call StepHBoundPbc(i)
 
           case default

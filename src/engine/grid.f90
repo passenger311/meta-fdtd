@@ -53,6 +53,8 @@ module grid
   real(8) :: GT  = 0.0
   real(8) :: DT  = 0.577
 
+  integer :: DIM
+
   integer :: PARTITIONS
 
   type(T_REG) :: fdtdreg
@@ -61,10 +63,11 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine ReadConfigGrid(funit,string)
+  subroutine ReadConfigGrid(funit,string,sdim)
 
     integer :: funit
     character(len=*) :: string
+    integer :: sdim
     
     integer :: ios
 
@@ -74,6 +77,8 @@ contains
     if ( string .ne. "(GRID" ) then
        M4_FATAL_ERROR({"BAD SECTION IDENTIFIER: ReadConfigGrid"})
     endif
+
+    DIM = sdim
 
     JBEG = 0
     JEND = 0
@@ -88,16 +93,14 @@ contains
     M4_WRITE_DBG({"read DT: ", DT})
     read(funit,*) IBEG, IEND    ! from ... to ranges
     M4_WRITE_DBG({"read IBEG/IEND: ", IBEG, IEND})
-M4_IFELSE_2D({
-    read(funit,*) JBEG, JEND
-    M4_WRITE_DBG({"read JBEG/JEND: ", JBEG, JEND})
-})
-M4_IFELSE_3D({
-    read(funit,*) JBEG, JEND
-    M4_WRITE_DBG({"read JBEG/JEND: ", JBEG, JEND})
-    read(funit,*) KBEG, KEND
-    M4_WRITE_DBG({"read KBEG/KEND: ", KBEG, KEND})
-})
+    if ( DIM .ge. 2 ) then
+       read(funit,*) JBEG, JEND
+       M4_WRITE_DBG({"read JBEG/JEND: ", JBEG, JEND})
+    endif
+    if ( DIM .ge. 3 ) then
+       read(funit,*) KBEG, KEND
+       M4_WRITE_DBG({"read KBEG/KEND: ", KBEG, KEND})
+    end if
 
 
     read(funit,*,iostat=ios) string
@@ -169,7 +172,6 @@ M4_IFELSE_3D({
 
 !----------------------------------------------------------------------
 
-
   subroutine FinalizeGrid
 
     M4_WRITE_DBG({". FinalizeGrid"})
@@ -188,8 +190,9 @@ M4_IFELSE_3D({
     write(6,*) 'IMAX, JMAX, KMAX: ', IMAX, JMAX, KMAX
     write(6,'(A20, 1E12.4)') 'DT: ', DT
     write(6,'(A20, 3E12.4)') 'SX, SY, SZ: ', SX, SY, SZ
+    write(6,*) 'DIM:              ', DIM
     write(6,*) 'NCYCMAX:          ', NCYCMAX
-    write(6,*) 'IBIG, IEIx/G:       ', IBIG, IEIG
+    write(6,*) 'IBIG, IEIx/G:     ', IBIG, IEIG
     write(6,*) 'JBIG, JEIG:       ', JBIG, JEIG
     write(6,*) 'KBIG, KEIG:       ', KBIG, KEIG
 

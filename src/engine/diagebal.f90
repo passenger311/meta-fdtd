@@ -214,10 +214,10 @@ contains
             diag%divsx1(1) + diag%divsy1(1) + diag%divsz1(1) + diag%divsx2(1) + diag%divsy2(1) + diag%divsz2(1) )
        diag%jekh = diag%jekh1 +  diag%jekh2
        if ( diag%dudt .ne. 0.0 ) then
-          diag%res = abs(diag%dudt + diag%divs + diag%jekh)/abs(diag%dudt)
+          diag%res = abs(diag%dudt + diag%divs + diag%jekh)/( abs(diag%dudt) + abs(diag%divs) + abs(diag%jekh) )
        end if
 
-       write(6,*) diag%dudt, diag%divs, diag%jekh, diag%res
+       write(6,*) diag%dudt, diag%divs, diag%jekh, diag%dudt + diag%divs + diag%jekh
 
        ! time integration
 
@@ -226,7 +226,7 @@ contains
        diag%sumjekh = diag%sumjekh + diag%jekh * DT
        diag%sumres =  diag%sumres + diag%res
 
-       write(6,*) diag%sumdudt, diag%sumdivs, diag%sumjekh, diag%sumres/(ncyc - diag%ns + 1 )
+       write(6,*) diag%sumdudt, diag%sumdivs, diag%sumjekh, diag%sumdudt + diag%sumdivs + diag%sumjekh
 
        !  --------------------------------------------------------------------------------------------------------
 

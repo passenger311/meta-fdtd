@@ -163,8 +163,8 @@ M4_IFELSE_3D({       .or. (KEIG+1.le.KBIG) &    })
 
     call AllocateFields
     call CalcCoefficients(IBEG, IEND, IBIG-1, IEIG+1, cexpml, cmxpml)
-    call CalcCoefficients(JBEG, JEND, JBIG-1, JEIG+1, ceypml, cmypml)
-    call CalcCoefficients(KBEG, KEND, KBIG-1, KEIG+1, cezpml, cmzpml)
+    if ( DIM .ge. 2 ) call CalcCoefficients(JBEG, JEND, JBIG-1, JEIG+1, ceypml, cmypml)
+    if ( DIM .ge. 3 ) call CalcCoefficients(KBEG, KEND, KBIG-1, KEIG+1, cezpml, cmzpml)
 
     M4_WRITE_DBG({". exit InitializePml"})
 
@@ -176,33 +176,49 @@ M4_IFELSE_3D({       .or. (KEIG+1.le.KBIG) &    })
 
       M4_WRITE_DBG({". enter InitializePml.AllocateFields"})
       
+
+      M4_WRITE_DBG({". allocating coefficient fields ",IBEG,IEND,JBEG,JEND,KBEG,KEND})
+     
       ! numeric coefficient-fields
       
+
+      M4_WRITE_DBG({"cexpml"})
       allocate(cexpml(1:4,IBEG:IEND), STAT=err)
       M4_ALLOC_ERROR(err,"AllocFields")
       
+      M4_WRITE_DBG({"cmxpml"})
+      allocate(cmxpml(1:4,IBEG:IEND), STAT=err)
+      M4_ALLOC_ERROR(err,"AllocFields")
+
+      cexpml=1.0
+      cmxpml=1.0
+
+      M4_WRITE_DBG({"ceypml"})
       allocate(ceypml(1:4,JBEG:JEND), STAT=err)
       M4_ALLOC_ERROR(err,"AllocFields")
 
-      allocate(cezpml(1:4,KBEG:KEND), STAT=err)
-      M4_ALLOC_ERROR(err,"AllocFields")
-      
-      allocate(cmxpml(1:4,IBEG:IEND), STAT=err)
-      M4_ALLOC_ERROR(err,"AllocFields")
-      
+      M4_WRITE_DBG({"cmypml"})
       allocate(cmypml(1:4,JBEG:JEND), STAT=err)
       M4_ALLOC_ERROR(err,"AllocFields")
 
+      ceypml=1.0
+      cmypml=1.0
+
+      M4_WRITE_DBG({"cezpml"})
+      allocate(cezpml(1:4,KBEG:KEND), STAT=err)
+      M4_ALLOC_ERROR(err,"AllocFields")
+      
+      M4_WRITE_DBG({"cmzpml"})
       allocate(cmzpml(1:4,KBEG:KEND), STAT=err)
       M4_ALLOC_ERROR(err,"AllocFields")
       
-      cexpml=1.0
-      ceypml=1.0
+    
       cezpml=1.0
-      cmxpml=1.0
-      cmypml=1.0
       cmzpml=1.0
 
+
+      M4_WRITE_DBG({". allocating B/D fields"})
+     
       !  B and D fields for each of the 6 layers 
       
       allocate(BE1(1:3,IBEG:IBIG-1,JBEG:JEND,KBEG:KEND), STAT=err) 

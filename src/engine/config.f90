@@ -4,8 +4,6 @@
 !
 !  config file reader. 
 !
-!  CF,1D,2D,3D
-!
 !----------------------------------------------------------------------
 
 
@@ -47,8 +45,9 @@ contains
 !----------------------------------------------------------------------
 
 
-  subroutine ReadConfig
+  subroutine ReadConfig(dim)
       
+      integer :: dim
       character(len=STRLNG) :: file, string, line, skiptill
       logical :: gotgrid = .false.
       logical :: gotfdtd = .false.
@@ -81,7 +80,7 @@ contains
             
          case( "(GRID" )
             M4_WRITE_INFO({"-> ReadConfigGrid"})
-            call ReadConfigGrid(UNITTMP,string)
+            call ReadConfigGrid(UNITTMP,string,dim)
             gotgrid = .true.
          case( "(FDTD" )
 			M4_WRITE_INFO({"-> ReadConfigFdtd"})

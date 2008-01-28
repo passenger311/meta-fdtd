@@ -49,6 +49,7 @@ FOBJ=\
 fdtd.o\
 fdtd_calc.o\
 pec.o\
+sbc.o\
 pbc.o\
 pml.o\
 bound.o\

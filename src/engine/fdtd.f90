@@ -291,12 +291,19 @@ subroutine ExtendField(field)
   field(IMIN,:,:) = field(IBEG,:,:)
   field(IMAX,:,:) = field(IEND,:,:)
 
+  M4_IFELSE_1D({},{
+
   field(:,JMIN,:) = field(:,JBEG,:)
   field(:,JMAX,:) = field(:,JEND,:)
+
+  })
+
+  M4_IFELSE_3D({
 
   field(:,:,KMIN) = field(:,:,KBEG)
   field(:,:,KMAX) = field(:,:,KEND)
 
+  })
 
 end subroutine ExtendField
 
