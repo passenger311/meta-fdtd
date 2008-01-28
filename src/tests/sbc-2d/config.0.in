@@ -1,0 +1,66 @@
+
+(GRID
+  1             	! partitions
+  250	          	! ncyc
+  0.576           	! dt
+  0 49	         	! i range
+  0 49        		! j range
+)GRID
+
+
+! -----------------------------------------------------------------------
+! (FDTD-): this is a mandatory section. (FDTD-) itself has no mandatory 
+! parameters. (FDTD-) may contain one (EHFIELDS-), one (EPSILON-) and an
+! arbitrrary number of (OUT-) blocks. The (EHFIELDS-) and (EPSILON-) 
+! sections are (REG-) type sections with 6 and 1 values respectively.
+! -----------------------------------------------------------------------
+
+(FDTD
+
+  (OUT
+    GPL F out
+    En N
+    0 250 10
+    (REG
+      (POINT
+	5 5 
+	5 45
+	45 5
+	45 45
+      )POINT
+    )REG
+  )OUT	
+
+)FDTD
+ 
+
+(BOUND
+ 2 2 2 2    		! boundary conditions
+)BOUND
+
+    
+(MATSOURCE
+60.0     		! vacuum wavelength in units of [dx]
+0 50 			! time offset till attack and cw duration (sustain)
+T			! time (T) or wavelength (F) parameters for gaussian
+50			! peak of gaussian (n0) or fraction of peak (a0)
+20             		! half width in timedomain (dn) or wavelength dom (dlambda)
+0.0 0.0 1.0 		! 	vector components of source
+(REG
+  (POINT
+     25 25
+  )POINT
+)REG
+(!OUT
+	
+)OUT
+)MATSOURCE
+
+
+
+
+
+!
+!
+!
+! =======================================================================

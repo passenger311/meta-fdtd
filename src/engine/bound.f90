@@ -208,6 +208,8 @@ contains
        case ( 1 )
           call StepEBoundPml(i)
        case ( 2 )
+          call StepEBoundSbc(i)
+       case ( 3 )
           call StepEBoundPbc(i)
 
        case default
