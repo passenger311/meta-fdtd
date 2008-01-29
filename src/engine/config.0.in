@@ -225,7 +225,7 @@
 ! -----------------------------------------------------------------------
 
 (BOUND
- 2 2 2 2 1 1   		! active pmls
+ 2 2 2 2 2 2   		! active pmls
  (PML	
  8               	! pml cells
  3.2             	! pot parameter
@@ -332,7 +332,7 @@ T		! time (T) or wavelength (F) parameters for gaussian
 ! (DIAGEBAL-): energy balance diagnostics 
 ! -----------------------------------------------------------------------
     
-(DIAGEBAL
+(!DIAGEBAL
 0 1000 1   ! time window
 (REG
   (BOX

@@ -132,7 +132,8 @@ contains
     
     call InitializePec(planebound,0)
     call InitializePml(planebound,1)
-    call InitializePbc(planebound,2)
+    call InitializeSbc(planebound,2)
+    call InitializePbc(planebound,3)
 
     M4_WRITE_DBG({". exit InitializeBound"})
 
@@ -146,6 +147,7 @@ contains
 
     call FinalizePml
     call FinalizePec
+    call FinalizeSbc
     call FinalizePbc
 
     M4_WRITE_DBG({". exit FinalizeBound"})
@@ -160,9 +162,16 @@ contains
 
     integer :: i
 
+
+    ! do pmls first!
     do i = 1, M4_SDIM*2
 
-!       M4_WRITE_DBG({"step h bound",i})
+       if ( mpibound(i) ) cycle
+       if ( planebound(i) .eq. 1 ) call StepHBoundPml(i)
+
+    end do
+
+    do i = 1, M4_SDIM*2
 
        if ( mpibound(i) ) cycle
 
@@ -171,7 +180,7 @@ contains
           case ( 0 )
              call StepHBoundPec(i)
           case ( 1 )
-             call StepHBoundPml(i)
+             ! call StepHBoundPml(i)
           case ( 2 )
              call StepHBoundSbc(i)
           case ( 3 )
@@ -195,9 +204,15 @@ contains
 
     integer :: i
 
+    ! do pmls first!
     do i = 1, M4_SDIM*2
 
- !      M4_WRITE_DBG({"step e bound",i})
+       if ( mpibound(i) ) cycle
+       if ( planebound(i) .eq. 1 ) call StepEBoundPml(i)
+
+    end do
+
+    do i = 1, M4_SDIM*2
 
        if ( mpibound(i) ) cycle
 
@@ -206,7 +221,7 @@ contains
        case ( 0 )
           call StepEBoundPec(i)
        case ( 1 )
-          call StepEBoundPml(i)
+          ! call StepEBoundPml(i)
        case ( 2 )
           call StepEBoundSbc(i)
        case ( 3 )

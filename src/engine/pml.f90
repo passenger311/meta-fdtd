@@ -116,8 +116,8 @@ contains
     if ( .not. modconfigured ) then
 
        M4_WRITE_WARN({"PMLS NOT CONFIGURED -> USING DEFAULT PARAMETERS!"})
-    ! sigmamax (= SigmaOpt, see Tavlove 2, pp 286)
-    ! It is Sig = Sig[SI] / (!c*eps0)
+       ! sigmamax (= SigmaOpt, see Tavlove 2, pp 286)
+       ! It is Sig = Sig[SI] / (!c*eps0)
        PMLMAX = 8
        potpml = 3.2
        sigmamax = (real(POTPML)+1.0)*0.8/(3.0*DT)
@@ -150,12 +150,12 @@ contains
     if(planepml(6) .eq. 1) KEIG=KMAX-PMLMAX-1
     
     M4_WRITE_DBG({"set IBIG/IEIG: ", IBIG, IEIG})
-    M4_WRITE_DBG({"set KBIG/KEIG: ", JBIG, JEIG})
+    M4_WRITE_DBG({"set JBIG/JEIG: ", JBIG, JEIG})
     M4_WRITE_DBG({"set KBIG/KEIG: ", KBIG, KEIG})
 
-    if((IEIG+1.le.IBIG) & 
-M4_IFELSE_1D({},{    .or. (JEIG+1.le.JBIG) &    }) 
-M4_IFELSE_3D({       .or. (KEIG+1.le.KBIG) &    })
+    if((IEIG+1 .le. IBIG) & 
+M4_IFELSE_1D({},{    .or. (JEIG+1 .le. JBIG) &    }) 
+M4_IFELSE_3D({       .or. (KEIG+1 .le. KBIG) &    })
     ) then
        write(STDERR,*) "OPPOSITE PML LAYERS OVERLAP!"
        stop
@@ -163,8 +163,8 @@ M4_IFELSE_3D({       .or. (KEIG+1.le.KBIG) &    })
 
     call AllocateFields
     call CalcCoefficients(IBEG, IEND, IBIG-1, IEIG+1, cexpml, cmxpml)
-    if ( DIM .ge. 2 ) call CalcCoefficients(JBEG, JEND, JBIG-1, JEIG+1, ceypml, cmypml)
-    if ( DIM .ge. 3 ) call CalcCoefficients(KBEG, KEND, KBIG-1, KEIG+1, cezpml, cmzpml)
+    call CalcCoefficients(JBEG, JEND, JBIG-1, JEIG+1, ceypml, cmypml)
+    call CalcCoefficients(KBEG, KEND, KBIG-1, KEIG+1, cezpml, cmzpml)
 
     M4_WRITE_DBG({". exit InitializePml"})
 
@@ -182,37 +182,27 @@ M4_IFELSE_3D({       .or. (KEIG+1.le.KBIG) &    })
       ! numeric coefficient-fields
       
 
-      M4_WRITE_DBG({"cexpml"})
       allocate(cexpml(1:4,IBEG:IEND), STAT=err)
       M4_ALLOC_ERROR(err,"AllocFields")
-      
-      M4_WRITE_DBG({"cmxpml"})
       allocate(cmxpml(1:4,IBEG:IEND), STAT=err)
       M4_ALLOC_ERROR(err,"AllocFields")
 
       cexpml=1.0
       cmxpml=1.0
 
-      M4_WRITE_DBG({"ceypml"})
       allocate(ceypml(1:4,JBEG:JEND), STAT=err)
       M4_ALLOC_ERROR(err,"AllocFields")
-
-      M4_WRITE_DBG({"cmypml"})
       allocate(cmypml(1:4,JBEG:JEND), STAT=err)
       M4_ALLOC_ERROR(err,"AllocFields")
 
       ceypml=1.0
       cmypml=1.0
 
-      M4_WRITE_DBG({"cezpml"})
       allocate(cezpml(1:4,KBEG:KEND), STAT=err)
       M4_ALLOC_ERROR(err,"AllocFields")
-      
-      M4_WRITE_DBG({"cmzpml"})
       allocate(cmzpml(1:4,KBEG:KEND), STAT=err)
       M4_ALLOC_ERROR(err,"AllocFields")
-      
-    
+          
       cezpml=1.0
       cmzpml=1.0
 
@@ -347,7 +337,7 @@ M4_IFELSE_3D({
          cm(4,ls-l) = val2p(l-1) / val1p(l-1)
       enddo
 
-! these are:
+! note that these are:
 !         ce(1,ls) = 1.0
 !         ce(3,ls) = 1.0
 !         cm(2,ls) = 1.0
@@ -435,7 +425,7 @@ M4_IFELSE_1D({},{
       dty = DT/SY
       dtz = DT/SZ   
 
-!      M4_WRITE_DBG({"STEP PML H: ", is, ie, js, je, ks, ke})
+      M4_WRITE_DBG({"STEP PML H: ", is, ie, js, je, ks, ke})
         
 M4_IFELSE_3D({!$OMP PARALLEL DO PRIVATE(Exh,Eyh,Ezh,Bxo,Byo,Bzo)})
       do k=ks, ke     
@@ -495,24 +485,22 @@ M4_IFELSE_3D({!$OMP END PARALLEL DO})
     
     integer :: i
     
-  	if ( i .gt. 2 .and. M4_IS1D ) return
+    if ( i .gt. 2 .and. M4_IS1D ) return
     if ( i .gt. 4 .and. M4_IS2D ) return
-
-    call StepEBoundPec(i) ! need to set electric conductor bcs
 
     select case ( i )
     case ( 1 ) 
-       call DoStepEPml(IBEG,IBIG-1,  JBEG,JEND,KBEG,KEND,DE1)
+       call DoStepEPml(IBEG,IBIG-1,JBEG,JEND,KBEG,KEND,DE1)
     case ( 2 ) 
-       call DoStepEPml(IEIG+1,IEND,  JBEG,JEND,KBEG,KEND,DE2)
+       call DoStepEPml(IEIG+1,IEND,JBEG,JEND,KBEG,KEND,DE2)
     case ( 3 ) 
-       call DoStepEPml(IBIG,IEIG,  JBEG,JBIG-1  ,KBEG,KEND,DE3)
+       call DoStepEPml(IBIG,IEIG,JBEG,JBIG-1,KBEG,KEND,DE3)
     case ( 4 )
-       call DoStepEPml(IBIG,IEIG,  JEIG+1,JEND  ,KBEG,KEND,DE4)
+       call DoStepEPml(IBIG,IEIG,JEIG+1,JEND,KBEG,KEND,DE4)
     case ( 5 ) 
-       call DoStepEPml(IBIG,IEIG,JBIG,JEIG,  KBEG,KBIG-1,  DE5)
+       call DoStepEPml(IBIG,IEIG,JBIG,JEIG,KBEG,KBIG-1,DE5)
     case ( 6 ) 
-       call DoStepEPml(IBIG,IEIG,JBIG,JEIG,  KEIG+1,KEND,  DE6)
+       call DoStepEPml(IBIG,IEIG,JBIG,JEIG,KEIG+1,KEND,DE6)
     end select
 
     call StepEBoundPec(i) ! need to set electric conductor bcs
@@ -532,7 +520,7 @@ M4_IFELSE_3D({!$OMP END PARALLEL DO})
       dty = DT/SY
       dtz = DT/SZ
 
-!      M4_WRITE_DBG({"STEP PML E: ", is, ie, js, je, ks, ke})
+      M4_WRITE_DBG({"STEP PML E: ", is, ie, js, je, ks, ke})
   
 M4_IFELSE_3D({!$OMP PARALLEL DO PRIVATE(Hxh,Hyh,Hzh,Dxo,Dyo,Dzo,epsinvx,epsinvy,epsinvz)}) 
       do k=ks, ke
@@ -585,42 +573,6 @@ M4_IFELSE_3D({!$OMP END PARALLEL DO})
     end subroutine DoStepEPml
     
   end subroutine StepEBoundPml
- 
- 
- !----------------------------------------------------------------------
- 
-  ! restore fields f1r,f2r,f3r from buffer f and store f1s,f2s,f3s inside instead
-
-    subroutine SaveRestorePml(is,ie,js,je,ks,ke, f1s, f2s, f3s, F, f1r, f2r,f3r )
-
-      integer :: is, ie, js, je, ks, ke
-      M4_FTYPE, dimension(M4_RANGE(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX)) :: f1s,f2s,f3s,f1r,f2r,f3r
-      M4_FTYPE, dimension(is:ie,js:je,ks:ke,3) :: f
-      integer :: i,j,k
-
-      M4_IFELSE_3D({!$OMP PARALLEL DO PRIVATE(Hxh,Hyh,Hzh,Dxo,Dyo,Dzo,epsinvx,epsinvy,epsinvz)}) 
-      do k=ks, ke
-M4_IFELSE_2D({!$OMP PARALLEL DO PRIVATE(Hxh,Hyh,Hzh,Dxo,Dyo,Dzo,epsinvx,epsinvy,epsinvz)}) 
-         do j=js, je
-M4_IFELSE_1D({!$OMP PARALLEL DO PRIVATE(Hxh,Hyh,Hzh,Dxo,Dyo,Dzo,epsinvx,epsinvy,epsinvz)}) 
-            do i=is, ie
-
-               f1r(i,j,k) = f(i,j,k,1)
-               f2r(i,j,k) = f(i,j,k,2)
-               f3r(i,j,k) = f(i,j,k,3)
-
-               f(i,j,k,1) = f1s(i,j,k)
-               f(i,j,k,2) = f2s(i,j,k)
-               f(i,j,k,3) = f3s(i,j,k)
- 
-            enddo
-M4_IFELSE_1D({!$OMP END PARALLEL DO})
-         enddo
-M4_IFELSE_2D({!$OMP END PARALLEL DO})
-      enddo
-M4_IFELSE_3D({!$OMP END PARALLEL DO})
-
-  end subroutine SaveRestorePml
 
 
 !----------------------------------------------------------------------
