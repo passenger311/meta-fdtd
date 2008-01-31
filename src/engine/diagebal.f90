@@ -152,30 +152,30 @@ contains
 
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
        
-       diag%divs1 = diag%divs1 + Hx(i,j,k) * ( &
+       diag%divs1 = diag%divs1 + real(Hx(i,j,k)) * real( &
             M4_IFELSE_1D({0.&},{ + 1./SY*( Ez(i,j+1,k) - Ez(i,j,k) ) & })
-            M4_IFELSE_3D({- 1./SZ*( Ey(i,j,k+1) - Ey(i,j,k) ) & },{0. &})
+            M4_IFELSE_3D({- 1./SZ*( Ey(i,j,k+1) - Ey(i,j,k) ) & },{+ 0. &})
        ) 
-       diag%divs1 = diag%divs1 + Hy(i,j,k) * ( &
+       diag%divs1 = diag%divs1 + real(Hy(i,j,k)) * real( &
             - 1./SX*( Ez(i+1,j,k) - Ez(i,j,k) ) &
             M4_IFELSE_3D({ + 1./SZ*( Ex(i,j,k+1) - Ex(i,j,k) ) & })
        )
-       diag%divs1 = diag%divs1 + Hz(i,j,k) * ( &
+       diag%divs1 = diag%divs1 + real(Hz(i,j,k)) * real( &
             + 1./SX*( Ey(i+1,j,k) - Ey(i,j,k) ) &
             M4_IFELSE_1D({},{   - 1./SY*( Ex(i,j+1,k) - Ex(i,j,k) ) & })
        )
        
-       diag%divs4 = diag%divs4 + Ex(i,j,k) * ( &
+       diag%divs4 = diag%divs4 + real(Ex(i,j,k)) * real( &
             M4_IFELSE_1D({0.&},{ + 1./SY*( Hz(i,j,k) - Hz(i,j-1,k) ) & })
-            M4_IFELSE_3D({  - 1./SZ*( Hy(i,j,k) - Hy(i,j,k-1) ) & },{0. &})
+            M4_IFELSE_3D({  - 1./SZ*( Hy(i,j,k) - Hy(i,j,k-1) ) & },{+ 0. &})
        )
        
-       diag%divs4 = diag%divs4 + Ey(i,j,k) * ( &
+       diag%divs4 = diag%divs4 + real(Ey(i,j,k)) * real( &
             - 1./SX*( Hz(i,j,k) - Hz(i-1,j,k) ) &
             M4_IFELSE_3D({  + 1./SZ*( Hx(i,j,k) - Hx(i,j,k-1) ) & })
        )
 
-       diag%divs4 = diag%divs4 + Ez(i,j,k) * ( &
+       diag%divs4 = diag%divs4 + real(Ez(i,j,k)) * real( &
             + 1./SX*( Hy(i,j,k) - Hy(i-1,j,k) ) &
             M4_IFELSE_1D({},{  - 1./SY*( Hx(i,j,k) - Hx(i,j-1,k) )  & })
        )
@@ -215,39 +215,39 @@ contains
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
 
-       diag%divs2(m) = diag%divs2(m) + Hx(i,j,k) * ( &
+       diag%divs2(m) = diag%divs2(m) + real(Hx(i,j,k)) * real( &
             M4_IFELSE_1D({0.&},{ + 1./SY*( Ez(i,j+1,k) - Ez(i,j,k) ) & })
-            M4_IFELSE_3D({ - 1./SZ*( Ey(i,j,k+1) - Ey(i,j,k) ) & },{0. &})
+            M4_IFELSE_3D({ - 1./SZ*( Ey(i,j,k+1) - Ey(i,j,k) ) & },{+ 0. &})
        ) 
-       diag%divs2(m) = diag%divs2(m) + Hy(i,j,k) * ( &
+       diag%divs2(m) = diag%divs2(m) + real(Hy(i,j,k)) * real( &
             - 1./SX*( Ez(i+1,j,k) - Ez(i,j,k) ) &
             M4_IFELSE_3D({ + 1./SZ*( Ex(i,j,k+1) - Ex(i,j,k) ) & })
        )
-       diag%divs2(m) = diag%divs2(m) + Hz(i,j,k) * ( &
+       diag%divs2(m) = diag%divs2(m) + real(Hz(i,j,k)) * real( &
             + 1./SX*( Ey(i+1,j,k) - Ey(i,j,k) ) &
             M4_IFELSE_1D({},{   - 1./SY*( Ex(i,j+1,k) - Ex(i,j,k) ) & })
        )
        
-       diag%divs3 = diag%divs3 + Ex(i,j,k) * ( &
+       diag%divs3 = diag%divs3 + real(Ex(i,j,k)) * real( &
             M4_IFELSE_1D({0.&},{ + 1./SY*( Hz(i,j,k) - Hz(i,j-1,k) ) & })
-            M4_IFELSE_3D({  - 1./SZ*( Hy(i,j,k) - Hy(i,j,k-1) ) & },{0. &})
+            M4_IFELSE_3D({  - 1./SZ*( Hy(i,j,k) - Hy(i,j,k-1) ) & },{+ 0. &})
        )
-       diag%divs3 = diag%divs3 + Ey(i,j,k) * ( &
+       diag%divs3 = diag%divs3 + real(Ey(i,j,k)) * real( &
             - 1./SX*( Hz(i,j,k) - Hz(i-1,j,k) ) &
             M4_IFELSE_3D({  + 1./SZ*( Hx(i,j,k) - Hx(i,j,k-1) ) & })
        )
-       diag%divs3 = diag%divs3 + Ez(i,j,k) * ( &
+       diag%divs3 = diag%divs3 + real(Ez(i,j,k)) * real( &
             + 1./SX*( Hy(i,j,k) - Hy(i-1,j,k) ) &
             M4_IFELSE_1D({},{  - 1./SY*( Hx(i,j,k) - Hx(i,j-1,k) )  & })
        )
 
        diag%en(m) =  diag%en(m) + &
-            epsinvx(i,j,k) * Ex(i,j,k)*Ex(i,j,k) + &
-            epsinvy(i,j,k) * Ey(i,j,k)*Ey(i,j,k) + &
-            epsinvz(i,j,k) * Ez(i,j,k)*Ez(i,j,k) + &
-            M4_MUINVX(i,j,k) * Hx(i,j,k)*Hx(i,j,k) + &
-            M4_MUINVY(i,j,k) * Hy(i,j,k)*Hy(i,j,k) + &
-            M4_MUINVZ(i,j,k) * Hz(i,j,k)*Hz(i,j,k)
+            epsinvx(i,j,k) * real(Ex(i,j,k))*real(Ex(i,j,k)) + &
+            epsinvy(i,j,k) * real(Ey(i,j,k))*real(Ey(i,j,k)) + &
+            epsinvz(i,j,k) * real(Ez(i,j,k))*real(Ez(i,j,k)) + &
+            M4_MUINVX(i,j,k) * real(Hx(i,j,k))*real(Hx(i,j,k)) + &
+            M4_MUINVY(i,j,k) * real(Hy(i,j,k))*real(Hy(i,j,k)) + &
+            M4_MUINVZ(i,j,k) * real(Hz(i,j,k))*real(Hz(i,j,k))
              
        })
 
@@ -273,7 +273,7 @@ contains
 
 
        ! ---------------------------------------------------
-
+ 
       
     })
 

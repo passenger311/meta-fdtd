@@ -231,9 +231,9 @@ contains
 
        if ( mask(i,j,k) ) then
 
-          sum = sum + w(1) * Ex(i,j,k) * ( mat%Px(p,m) - mat%Px(p,n) ) / DT + &
-               w(2) * Ey(i,j,k) * ( mat%Py(p,m) - mat%Py(p,n) ) / DT + &
-               w(3) * Ez(i,j,k) * ( mat%Pz(p,m) - mat%Pz(p,n) ) / DT
+          sum = sum + w(1) * real(Ex(i,j,k)) * real( mat%Px(p,m) - mat%Px(p,n) ) / DT + &
+               w(2) * real(Ey(i,j,k)) * real( mat%Py(p,m) - mat%Py(p,n) ) / DT + &
+               w(3) * real(Ez(i,j,k)) * real( mat%Pz(p,m) - mat%Pz(p,n) ) / DT
 
        endif
 

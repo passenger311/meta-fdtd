@@ -298,16 +298,16 @@ contains
           if ( mat%order .eq. 1 ) then ! 1. order equation
 
              sum = sum + &
-                  w(1) * Ex(i,j,k) * mat%Jx(p,1) + &
-                  w(2) * Ey(i,j,k) * mat%Jy(p,1) + &
-                  w(3) * Ez(i,j,k) * mat%Jz(p,1)
+                  w(1) * real(Ex(i,j,k)) * real(mat%Jx(p,1)) + &
+                  w(2) * real(Ey(i,j,k)) * real(mat%Jy(p,1)) + &
+                  w(3) * real(Ez(i,j,k)) * real(mat%Jz(p,1))
              
           else
 
              sum = sum + &
-                  w(1) * Ex(i,j,k) * ( mat%Jx(p,m) - mat%Jx(p,n) ) / DT + &
-                  w(2) * Ey(i,j,k) * ( mat%Jy(p,m) - mat%Jy(p,n) ) / DT + &
-                  w(3) * Ez(i,j,k) * ( mat%Jz(p,m) - mat%Jz(p,n) ) / DT
+                  w(1) * real(Ex(i,j,k)) * real( mat%Jx(p,m) - mat%Jx(p,n) ) / DT + &
+                  w(2) * real(Ey(i,j,k)) * real( mat%Jy(p,m) - mat%Jy(p,n) ) / DT + &
+                  w(3) * real(Ez(i,j,k)) * real( mat%Jz(p,m) - mat%Jz(p,n) ) / DT
 
           end if
 
