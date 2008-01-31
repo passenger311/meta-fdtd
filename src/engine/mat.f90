@@ -40,7 +40,8 @@ module mat
   public :: FinalizeMat
   public :: StepEMat
   public :: StepHMat
-  public :: SumJEKHMat
+  public :: SumJEMat
+  public :: SumKHMat
 
   ! --- Public Data
 
@@ -111,7 +112,7 @@ contains
 
 !----------------------------------------------------------------------
 
-  real(kind=8 ) function SumJEKHMat(mask,ncyc)
+  real(kind=8 ) function SumJEMat(mask,ncyc)
     
     logical, dimension(IBEG:IEND,JBEG:JEND,KBEG:KEND) :: mask
     integer :: ncyc
@@ -119,12 +120,29 @@ contains
 
     sum = 0.
 
-    M4_FOREACH_MAT({sum = sum + SumJEKH},{(mask,ncyc)
+    M4_FOREACH_MAT({sum = sum + SumJE},{(mask,ncyc)
     })
 
-    SumJEKHMat = sum
+    SumJEMat = sum
 
-  end function SumJEKHMat
+  end function SumJEMat
+
+!----------------------------------------------------------------------
+
+  real(kind=8 ) function SumKHMat(mask,ncyc)
+    
+    logical, dimension(IBEG:IEND,JBEG:JEND,KBEG:KEND) :: mask
+    integer :: ncyc
+    real(kind=8) :: sum
+
+    sum = 0.
+
+    M4_FOREACH_MAT({sum = sum + SumKH},{(mask,ncyc)
+    })
+
+    SumKHMat = sum
+
+  end function SumKHMat
 
 !----------------------------------------------------------------------
 

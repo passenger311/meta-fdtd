@@ -203,7 +203,7 @@ contains
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumJEKHMatDebye(mask, ncyc)
+  real(kind=8) function SumJEMatDebye(mask, ncyc)
 
     logical, dimension(IBEG:IEND,JBEG:JEND,KBEG:KEND) :: mask
     real(kind=8) :: sum
@@ -241,10 +241,21 @@ contains
 
     })
     
-    SumJEKHMatDebye = sum
+    SumJEMatDebye = sum
     
-  end function SumJEKHMatDebye
+  end function SumJEMatDebye
 
+!----------------------------------------------------------------------
+
+  real(kind=8) function SumKHMatDebye(mask, ncyc)
+
+    logical, dimension(IBEG:IEND,JBEG:JEND,KBEG:KEND) :: mask
+    integer :: ncyc
+
+    SumKHMatDebye = 0.
+
+  end function SumKHMatDebye
+ 
 !----------------------------------------------------------------------
 
   subroutine DisplayMatDebyeObj(mat)

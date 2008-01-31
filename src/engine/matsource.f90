@@ -206,15 +206,27 @@ contains
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumJEKHMatSource(mask, ncyc)
+  real(kind=8) function SumJEMatSource(mask, ncyc)
 
     logical, dimension(IBEG:IEND,JBEG:JEND,KBEG:KEND) :: mask
     real(kind=8) :: sum
     integer :: ncyc, m, n
    
-    SumJEKHMatSource = 0.
+    SumJEMatSource = 0.
 
-  end function SumJEKHMatSource
+  end function SumJEMatSource
+
+!----------------------------------------------------------------------
+
+  real(kind=8) function SumKHMatSource(mask, ncyc)
+
+    logical, dimension(IBEG:IEND,JBEG:JEND,KBEG:KEND) :: mask
+    real(kind=8) :: sum
+    integer :: ncyc, m, n
+   
+    SumKHMatSource = 0.
+
+  end function SumKHMatSource
 
 
  !----------------------------------------------------------------------

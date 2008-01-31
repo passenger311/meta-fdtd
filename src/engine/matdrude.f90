@@ -267,7 +267,7 @@ contains
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumJEKHMatDrude(mask, ncyc)
+  real(kind=8) function SumJEMatDrude(mask, ncyc)
 
     logical, dimension(IBEG:IEND,JBEG:JEND,KBEG:KEND) :: mask
     real(kind=8) :: sum
@@ -317,10 +317,21 @@ contains
 
     })
     
-    SumJEKHMatDrude = sum
+    SumJEMatDrude = sum
     
-  end function SumJEKHMatDrude
+  end function SumJEMatDrude
 
+!----------------------------------------------------------------------
+
+  real(kind=8) function SumKHMatDrude(mask, ncyc)
+
+    logical, dimension(IBEG:IEND,JBEG:JEND,KBEG:KEND) :: mask
+    integer :: ncyc
+
+    SumKHMatDrude = 0.
+
+  end function SumKHMatDrude
+ 
 !----------------------------------------------------------------------
 
   subroutine DisplayMatDrudeObj(mat)

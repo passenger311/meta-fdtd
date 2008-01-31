@@ -329,15 +329,27 @@ contains
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumJEKHMatTfsf(mask, ncyc)
+  real(kind=8) function SumJEMatTfsf(mask, ncyc)
 
     logical, dimension(IBEG:IEND,JBEG:JEND,KBEG:KEND) :: mask
     real(kind=8) :: sum
     integer :: ncyc, m, n
    
-    SumJEKHMatTfsf = 0.
+    SumJEMatTfsf = 0.
 
-  end function SumJEKHMatTfsf
+  end function SumJEMatTfsf
+
+!----------------------------------------------------------------------
+
+  real(kind=8) function SumKHMatTfsf(mask, ncyc)
+
+    logical, dimension(IBEG:IEND,JBEG:JEND,KBEG:KEND) :: mask
+    real(kind=8) :: sum
+    integer :: ncyc, m, n
+   
+    SumKHMatTfsf = 0.
+
+  end function SumKHMatTfsf
 
 
  !----------------------------------------------------------------------

@@ -210,7 +210,7 @@ contains
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumJEKHMatLorentz(mask, ncyc)
+  real(kind=8) function SumJEMatLorentz(mask, ncyc)
 
     logical, dimension(IBEG:IEND,JBEG:JEND,KBEG:KEND) :: mask
     real(kind=8) :: sum
@@ -248,10 +248,21 @@ contains
 
     })
     
-    SumJEKHMatLorentz = sum
+    SumJEMatLorentz = sum
     
-  end function SumJEKHMatLorentz
+  end function SumJEMatLorentz
 
+!----------------------------------------------------------------------
+
+  real(kind=8) function SumKHMatLorentz(mask, ncyc)
+
+    logical, dimension(IBEG:IEND,JBEG:JEND,KBEG:KEND) :: mask
+    integer :: ncyc
+
+    SumKHMatLorentz = 0.
+
+  end function SumKHMatLorentz
+ 
 !----------------------------------------------------------------------
 
   subroutine DisplayMatLorentzObj(mat)

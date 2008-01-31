@@ -290,7 +290,7 @@ contains
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumJEKHMatLhm(mask, ncyc)
+  real(kind=8) function SumJEMatLhm(mask, ncyc)
 
     logical, dimension(IBEG:IEND,JBEG:JEND,KBEG:KEND) :: mask
     real(kind=8) :: sum
@@ -325,17 +325,63 @@ contains
                   w(2) * Ey(i,j,k) * mat%Jy(p,1) + &
                   w(3) * Ez(i,j,k) * mat%Jz(p,1)
 
-             sum = sum + &
-                  w(4) * Hx(i,j,k) * mat%Kx(p,1)  + &
-                  w(5) * Hy(i,j,k) * mat%Ky(p,1) + &
-                  w(6) * Hz(i,j,k) * mat%Kz(p,1)
-
           else
 
              sum = sum + &
                   w(1) * Ex(i,j,k) * ( mat%Jx(p,m) - mat%Jx(p,n) ) / DT + &
                   w(2) * Ey(i,j,k) * ( mat%Jy(p,m) - mat%Jy(p,n) ) / DT + &
                   w(3) * Ez(i,j,k) * ( mat%Jz(p,m) - mat%Jz(p,n) ) / DT
+            
+          end if
+
+       endif
+
+       })      
+
+    })
+    
+    SumJEMatLhm = sum
+    
+  end function SumJEMatLhm
+
+!----------------------------------------------------------------------
+
+  real(kind=8) function SumKHMatLhm(mask, ncyc)
+
+    logical, dimension(IBEG:IEND,JBEG:JEND,KBEG:KEND) :: mask
+    real(kind=8) :: sum
+    integer :: ncyc, m, n
+   
+    M4_MODLOOP_DECL({MATLHM},mat)
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(6))
+
+    sum = 0
+
+    M4_MODLOOP_EXPR({MATLHM},mat,{
+
+       ! this loops over all mat structures, setting mat
+
+    M4_MODOBJ_GETREG(mat,reg)
+
+       n = mod(ncyc-1,2) + 1
+       m = mod(ncyc,2) + 1
+
+       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+       
+       ! correct E(n+1) using E(n+1)_fdtd and P(n+1),P(n)
+
+       ! J(*,m) is P(n+1) and J(*,n) is P(n)      
+
+       if ( mask(i,j,k)  ) then
+
+          if ( mat%order .eq. 1 ) then ! 1. order equation
+
+             sum = sum + &
+                  w(4) * Hx(i,j,k) * mat%Kx(p,1)  + &
+                  w(5) * Hy(i,j,k) * mat%Ky(p,1) + &
+                  w(6) * Hz(i,j,k) * mat%Kz(p,1)
+
+          else
 
               sum = sum + & 
                    w(4) * Hx(i,j,k) * ( mat%Kx(p,m) - mat%Kx(p,n) ) / DT + &
@@ -350,9 +396,9 @@ contains
 
     })
     
-    SumJEKHMatLhm = sum
+    SumKHMatLhm = sum
     
-  end function SumJEKHMatLhm
+  end function SumKHMatLhm
 
 !----------------------------------------------------------------------
 
