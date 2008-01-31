@@ -142,16 +142,16 @@ M4_MPE_SECTION(4,{
 	if ( ncyc .gt. 0 ) call StepH
 })
 
-! -------------------------- StepHBound -------------------------------
-
-M4_MPE_SECTION(7,{
-	if ( ncyc .gt. 0 )  call StepHBound
-})
-
 ! -------------------------- StepHMat ---------------------------------
 
 M4_MPE_SECTION(8,{
 	if ( ncyc .gt. 0 ) call StepHMat(ncyc)
+})
+
+! -------------------------- StepHBound -------------------------------
+
+M4_MPE_SECTION(7,{
+	if ( ncyc .gt. 0 )  call StepHBound
 })
 
 ! ---------------------------- COMMS H --------------------------------
@@ -186,17 +186,18 @@ M4_MPE_SECTION(6,{
 	if ( ncyc .gt. 0 ) call StepE 
 })
 
+! -------------------------- StepEMat ---------------------------------
+
+M4_MPE_SECTION(9,{
+	if ( ncyc .gt. 0 ) call StepEMat(ncyc)
+})
+
 ! -------------------------- StepEBound -------------------------------
 
 M4_MPE_SECTION(7,{
 	if ( ncyc .gt. 0 ) call StepEBound
 })
 
-! -------------------------- StepEMat ---------------------------------
-
-M4_MPE_SECTION(9,{
-	if ( ncyc .gt. 0 ) call StepEMat(ncyc)
-})
 
 ! -------------------------- COMMS E ----------------------------------
 
