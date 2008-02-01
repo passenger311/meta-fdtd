@@ -270,13 +270,13 @@ T		! time (T) or wavelength (F) parameters for gaussian
 ! (MATDRUDE-): drude pole equation 
 ! -----------------------------------------------------------------------
 
-(!MATDRUDE
+(MATDRUDE
 55.0    	    	! lambdapl: plasma freq wavelength [dx]
 0. 		    	! gammapl: damping constant [1/dt] 
 2		    	! order: 1 (=J) or 2 (=P)
 (REG
   (VBOX
-	65 99 1 25 75 1 25 75 1 [ 1.0 1.0 1.0 ]
+	65 99 1 25 99 1 25 99 1 [ 1.0 1.0 1.0 ]
   )VBOX
 )REG
 )MATDRUDE
@@ -335,9 +335,14 @@ T		! time (T) or wavelength (F) parameters for gaussian
 0 1000 1   ! time window
 (REG
   (BOX
-	60 99 1 1 99 1 1 99 1
+	60 91 1 9 91 1 9 91 1
   )BOX
 )REG
+(OUT
+  GPL F test_ebal
+  I N
+  0 1000 1
+)OUT	
 )DIAGEBAL
  
 

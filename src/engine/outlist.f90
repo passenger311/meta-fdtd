@@ -56,6 +56,7 @@ module outlist
      integer :: numsteps =0            ! number of time steps 
      integer :: regidx = 0             ! region index
      integer :: bufidx = 0             ! buffer index
+     integer :: objidx = 0             ! associated object index
      integer :: idx = 0                ! this objects index
 
   end type T_OUT

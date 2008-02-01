@@ -115,6 +115,7 @@ define({M4_MODREAD_EXPR},{
       case("(OUT") 
 	M4_WRITE_DBG({"got token (OUT -> ReadOutObj"})
        call ReadOutObj($6, $4, modname, $2)
+       outobj($6%idx)%objidx = num$1obj
        $3%regidx = $4%idx
       case default	
 	if ( m4_string(1:2) .eq. "(!" ) then

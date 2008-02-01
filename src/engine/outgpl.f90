@@ -30,7 +30,7 @@ module outgpl
 
 ! outgpl modules 
   use fdtd_outgpl
-M4_FOREACH_OUTGPL({use }, {
+M4_FOREACH_OUTGPL({use }, {_OUTGPL
   })
 
   implicit none
@@ -73,7 +73,7 @@ contains
        call  InitializeFdtdOutgplObj(out)
 
     M4_FOREACH_OUTGPL2({case ("},{")
-       call Initialize},{OutgplObj(UNITTMP)
+       call Initialize},{OutgplObj(out)
              })
     end select
 
@@ -100,7 +100,7 @@ contains
     case ("FDTD")
        call FinalizeFdtdOutgplObj(out)
        M4_FOREACH_OUTGPL2({case ("},{")
-             call Finalize},{OutgplObj
+             call Finalize},{OutgplObj(out)
              })
     end select
 
@@ -205,7 +205,7 @@ contains
 
        if ( mode ) then 
           call OpenOutgplObj(out, ncyc, out%snap)
-          if ( out%numnodes .gt. 0 ) write(out%funit,*)
+          if ( out%numnodes .gt. 1 ) write(out%funit,*)
        end if
        call WriteDataFdtdOutgplObj(out,mode)
        if ( mode ) call CloseOutgplObj(out)
@@ -213,7 +213,7 @@ contains
     M4_FOREACH_OUTGPL2({case ("},{")
        if ( mode ) then 
           call OpenOutgplObj(out, ncyc, out%snap)
-          if ( out%numnodes .gt. 0 ) write(out%funit,*) 
+          if ( out%numnodes .gt. 1 ) write(out%funit,*) 
        endif
        call WriteData},{OutgplObj(out,mode)
        if ( mode ) call CloseOutgplObj(out)

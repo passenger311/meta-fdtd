@@ -31,7 +31,7 @@ module outvtk
 
 ! outvtk modules 
   use fdtd_outvtk
-M4_FOREACH_OUTVTK({use }, {
+M4_FOREACH_OUTVTK({use }, {_OUTVTK
   })
 
   implicit none
@@ -79,7 +79,7 @@ contains
        call  InitializeFdtdOutvtkObj(out)
 
     M4_FOREACH_OUTVTK2({case ("},{")
-       call Initialize},{OutvtkObj(UNITTMP)
+       call Initialize},{OutvtkObj(out)
              })
     end select
 
@@ -106,7 +106,7 @@ contains
     case ("FDTD")
        call FinalizeFdtdOutvtkObj(out)
        M4_FOREACH_OUTVTK2({case ("},{")
-             call Finalize},{OutvtkObj
+             call Finalize},{OutvtkObj(out)
              })
     end select
 

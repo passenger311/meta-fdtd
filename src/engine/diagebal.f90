@@ -268,8 +268,8 @@ contains
        diag%sumjekh = diag%sumjekh + DT * diag%jekh
        diag%sumres = diag%sumdudt + diag%sumdivs + diag%sumjekh
 
-       write(6,*) diag%dudt, diag%divs, diag%jekh, diag%res
-       write(6,*) diag%sumdudt, diag%sumdivs, diag%sumjekh, diag%sumres
+!       write(6,*) diag%dudt, diag%divs, diag%jekh, diag%res
+!       write(6,*) diag%sumdudt, diag%sumdivs, diag%sumjekh, diag%sumres
 
 
        ! ---------------------------------------------------
