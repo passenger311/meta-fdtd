@@ -168,28 +168,33 @@ contains
        M4_MODOBJ_GETREG(diag,reg)
 
        diag%dsx1p(m) = 0.
-       diag%dsx1m(m) = 0.
        diag%dsx2p(m) = 0.
-       diag%dsx2m(m) = 0.
-       diag%dsx3p(m) = 0.
-       diag%dsx3m(m) = 0.
+       diag%dsx3p(m) = 0. 
        diag%dsx4p(m) = 0.
+
+       diag%dsx1m(m) = 0.
+       diag%dsx2m(m) = 0.
+       diag%dsx3m(m) = 0.
        diag%dsx4m(m) = 0.
+
        diag%dsy1p(m) = 0.
-       diag%dsy1m(m) = 0.
-       diag%dsy2p(m) = 0.
-       diag%dsy2m(m) = 0.
+       diag%dsy2p(m) = 0. 
        diag%dsy3p(m) = 0.
-       diag%dsy3m(m) = 0.
        diag%dsy4p(m) = 0.
+
+       diag%dsy1m(m) = 0.
+       diag%dsy2m(m) = 0.
+       diag%dsy3m(m) = 0.
        diag%dsy4m(m) = 0.
+
        diag%dsz1p(m) = 0.
-       diag%dsz1m(m) = 0.
        diag%dsz2p(m) = 0.
-       diag%dsz2m(m) = 0.
-       diag%dsz3p(m) = 0.
-       diag%dsz3m(m) = 0.
+       diag%dsz3p(m) = 0. 
        diag%dsz4p(m) = 0.
+
+       diag%dsz1m(m) = 0.
+       diag%dsz2m(m) = 0.
+       diag%dsz3m(m) = 0.
        diag%dsz4m(m) = 0.
        
 
@@ -281,28 +286,33 @@ M4_IFELSE_3D({
        diag%en(m) = 0.
 
        diag%dsx1p(m) = 0.
-       diag%dsx1m(m) = 0.
        diag%dsx2p(m) = 0.
-       diag%dsx2m(m) = 0.
-       diag%dsx3p(m) = 0.
-       diag%dsx3m(m) = 0.
+       diag%dsx3p(m) = 0. 
        diag%dsx4p(m) = 0.
+
+       diag%dsx1m(m) = 0.
+       diag%dsx2m(m) = 0.
+       diag%dsx3m(m) = 0.
        diag%dsx4m(m) = 0.
+
        diag%dsy1p(m) = 0.
-       diag%dsy1m(m) = 0.
-       diag%dsy2p(m) = 0.
-       diag%dsy2m(m) = 0.
+       diag%dsy2p(m) = 0. 
        diag%dsy3p(m) = 0.
-       diag%dsy3m(m) = 0.
        diag%dsy4p(m) = 0.
+
+       diag%dsy1m(m) = 0.
+       diag%dsy2m(m) = 0.
+       diag%dsy3m(m) = 0.
        diag%dsy4m(m) = 0.
+
        diag%dsz1p(m) = 0.
-       diag%dsz1m(m) = 0.
        diag%dsz2p(m) = 0.
-       diag%dsz2m(m) = 0.
-       diag%dsz3p(m) = 0.
-       diag%dsz3m(m) = 0.
+       diag%dsz3p(m) = 0. 
        diag%dsz4p(m) = 0.
+
+       diag%dsz1m(m) = 0.
+       diag%dsz2m(m) = 0.
+       diag%dsz3m(m) = 0.
        diag%dsz4m(m) = 0.
 
        M4_MODOBJ_GETREG(diag,reg)
