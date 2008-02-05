@@ -95,11 +95,11 @@ contains
 
       if ( sum ) then
 
-         write(out%funit,"(4E15.6E3)") diag%sumdudt, diag%sumdivs, diag%sumjekh, diag%sumres
+         write(out%funit,"(5E15.6E3)") diag%sumdudt, diag%sumds, diag%sumje, diag%sumkh, diag%sumres
          
       else
 
-         write(out%funit,"(4E15.6E3)") diag%dudt, diag%divs, diag%jekh, diag%res
+         write(out%funit,"(5E15.6E3)") diag%dudt, diag%ds, diag%je, diag%kh, diag%res
 
       end if
 

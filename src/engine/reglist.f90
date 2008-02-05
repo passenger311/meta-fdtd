@@ -854,11 +854,37 @@ contains
 
     integer:: ib,ie,jb,je,kb,ke
     logical :: mask(ib:ie,jb:je,kb:ke)
-    M4_REGLOOP_DECL(reg,p,i,j,k,w(6))
+    
+    type(T_REG) :: reg
+    integer :: p,i,j,k
 
-    M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-         mask(i,j,k) = .true.
-    })
+    if ( reg%numnodes .le. 0 ) return
+
+    if ( reg%isbox ) then
+
+       do k = reg%ks, reg%ke, reg%dk
+          do j = reg%js, reg%je, reg%dj
+             do i = reg%is, reg%ie, reg%di
+                
+                mask(i,j,k) = .true.
+
+             enddo !i
+          enddo !j
+       enddo !k
+       
+    else !isbox
+
+       do p = 1, reg%pe ! -> p
+
+          i = reg%i(p) ! -> i
+          j = reg%j(p) ! -> j
+          k = reg%k(p) ! -> k
+
+          mask(i,j,k) = .true.
+
+       enddo ! p
+
+    end if
 
   end subroutine SetMaskRegObj
 
