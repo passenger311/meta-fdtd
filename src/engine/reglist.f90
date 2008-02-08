@@ -702,8 +702,8 @@ contains
        numnodes = numnodes + 1
        tmpmask(i,j,k) = numnodes
        tmpval(:,numnodes) = val(:)
-	else
-	   tmpval(:,p) = val(:)
+    else
+       tmpval(:,p) = val(:)
     end if
     M4_WRITE_DBG({"point set!"})
 

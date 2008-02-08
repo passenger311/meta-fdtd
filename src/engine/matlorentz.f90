@@ -212,7 +212,7 @@ contains
 
   real(kind=8) function SumJEMatLorentz(mask, ncyc)
 
-    logical, dimension(IBEG:IEND,JBEG:JEND,KBEG:KEND) :: mask
+    logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
     real(kind=8) :: sum
     integer :: ncyc, m, n
    
@@ -256,7 +256,7 @@ contains
 
   real(kind=8) function SumKHMatLorentz(mask, ncyc)
 
-    logical, dimension(IBEG:IEND,JBEG:JEND,KBEG:KEND) :: mask
+    logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
     integer :: ncyc
 
     SumKHMatLorentz = 0.

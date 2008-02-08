@@ -205,7 +205,7 @@ contains
 
   real(kind=8) function SumJEMatDebye(mask, ncyc)
 
-    logical, dimension(IBEG:IEND,JBEG:JEND,KBEG:KEND) :: mask
+    logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
     real(kind=8) :: sum
     integer :: ncyc, m, n
    
@@ -249,7 +249,7 @@ contains
 
   real(kind=8) function SumKHMatDebye(mask, ncyc)
 
-    logical, dimension(IBEG:IEND,JBEG:JEND,KBEG:KEND) :: mask
+    logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
     integer :: ncyc
 
     SumKHMatDebye = 0.

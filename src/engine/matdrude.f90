@@ -269,7 +269,7 @@ contains
 
   real(kind=8) function SumJEMatDrude(mask, ncyc)
 
-    logical, dimension(IBEG:IEND,JBEG:JEND,KBEG:KEND) :: mask
+    logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
     real(kind=8) :: sum
     integer :: ncyc, m, n
    
@@ -325,7 +325,7 @@ contains
 
   real(kind=8) function SumKHMatDrude(mask, ncyc)
 
-    logical, dimension(IBEG:IEND,JBEG:JEND,KBEG:KEND) :: mask
+    logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
     integer :: ncyc
 
     SumKHMatDrude = 0.

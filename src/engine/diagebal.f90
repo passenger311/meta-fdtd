@@ -43,22 +43,25 @@ module diagebal
   integer :: ns, ne, dn  ! time stepping 
 
   ! spatially integrated energy contributions
-  real(kind=8) :: dudt, ds, je, kh, res
-  real(kind=8) :: dsxp, dsxm, dsyp, dsym, dszp, dszm
+  real(kind=8) :: dudt, ds, ds2, je, kh, res
+  real(kind=8) :: dsx, dsy, dsz, dsxp, dsxm, dsyp, dsym, dszp, dszm
   ! spatially and time integrated energy contributions
-  real(kind=8) :: sumdudt, sumds, sumje, sumkh, sumres
+  real(kind=8) :: sumdudt, sumds, sumds2, sumje, sumkh, sumres
   real(kind=8) :: sumdsxp, sumdsxm, sumdsyp, sumdsym, sumdszp, sumdszm
   
   logical, pointer, dimension(:,:,:) :: mask
   
   ! partial contributions to energy terms
   real(kind=8), dimension(3) :: en, skh, sje
-  real(kind=8), dimension(3) :: dsx1p, dsx2p, dsx3p, dsx4p
-  real(kind=8), dimension(3) :: dsy1p, dsy2p, dsy3p, dsy4p
-  real(kind=8), dimension(3) :: dsz1p, dsz2p, dsz3p, dsz4p
-  real(kind=8), dimension(3) :: dsx1m, dsx2m, dsx3m, dsx4m
-  real(kind=8), dimension(3) :: dsy1m, dsy2m, dsy3m, dsy4m
-  real(kind=8), dimension(3) :: dsz1m, dsz2m, dsz3m, dsz4m
+  real(kind=8), dimension(3) :: dsx1, dsx2
+  real(kind=8), dimension(3) :: dsy1, dsy2
+  real(kind=8), dimension(3) :: dsz1, dsz2
+  real(kind=8), dimension(3) :: dsx1p, dsx2p
+  real(kind=8), dimension(3) :: dsy1p, dsy2p
+  real(kind=8), dimension(3) :: dsz1p, dsz2p
+  real(kind=8), dimension(3) :: dsx1m, dsx2m
+  real(kind=8), dimension(3) :: dsy1m, dsy2m
+  real(kind=8), dimension(3) :: dsz1m, dsz2m
 
   })
 
@@ -96,6 +99,7 @@ contains
     
     diag%dudt = 0.
     diag%ds = 0.
+    diag%ds2 = 0.
     diag%je = 0.
     diag%kh = 0.
     diag%res = 0.
@@ -108,6 +112,7 @@ contains
 
     diag%sumdudt = 0.
     diag%sumds = 0.
+    diag%sumds2 = 0.
     diag%sumje = 0.
     diag%sumkh = 0.
     diag%sumres = 0.
@@ -167,98 +172,105 @@ contains
 
        M4_MODOBJ_GETREG(diag,reg)
 
-       diag%dsx1p(m) = 0.
+       diag%dsx1(m) = 0.
+       diag%dsx2(m) = 0.
+       diag%dsx1p(m) = 0. 
        diag%dsx2p(m) = 0.
-       diag%dsx3p(m) = 0. 
-       diag%dsx4p(m) = 0.
-
        diag%dsx1m(m) = 0.
        diag%dsx2m(m) = 0.
-       diag%dsx3m(m) = 0.
-       diag%dsx4m(m) = 0.
 
+       diag%dsy1(m) = 0.
+       diag%dsy2(m) = 0. 
        diag%dsy1p(m) = 0.
        diag%dsy2p(m) = 0. 
-       diag%dsy3p(m) = 0.
-       diag%dsy4p(m) = 0.
-
        diag%dsy1m(m) = 0.
        diag%dsy2m(m) = 0.
-       diag%dsy3m(m) = 0.
-       diag%dsy4m(m) = 0.
 
+       diag%dsz1(m) = 0.
+       diag%dsz2(m) = 0.
        diag%dsz1p(m) = 0.
        diag%dsz2p(m) = 0.
-       diag%dsz3p(m) = 0. 
-       diag%dsz4p(m) = 0.
-
        diag%dsz1m(m) = 0.
        diag%dsz2m(m) = 0.
-       diag%dsz3m(m) = 0.
-       diag%dsz4m(m) = 0.
-       
 
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
    
       ! poynting vector
  
+       diag%dsx1(m) = diag%dsx1(m) + &
+            SY*SZ * ( real(Ey(i,j,k)) * real( Hz(i,j,k) - Hz(i-1,j,k) ) - real(Ez(i,j,k)) * real( Hy(i,j,k) - Hy(i-1,j,k) ) )
+       diag%dsx2(m) = diag%dsx2(m) + &
+            SY*SZ * ( real(Hz(i,j,k)) * real( Ey(i+1,j,k) - Ey(i,j,k) ) - real(Hy(i,j,k)) * real( Ez(i+1,j,k) - Ez(i,j,k) ) )
+
        if ( .not. diag%mask(i+1,j,k) ) then 
-          diag%dsx1p(m) = diag%dsx1p(m) + 1./SX * real(Ey(i,j,k)) * real(Hz(i,j,k))
-          diag%dsx2p(m) = diag%dsx2p(m) + 1./SX * real(Hz(i,j,k)) * real(Ey(i+1,j,k))
-          diag%dsx3p(m) = diag%dsx3p(m) - 1./SX * real(Ez(i,j,k)) * real(Hy(i,j,k))
-          diag%dsx4p(m) = diag%dsx4p(m) - 1./SX * real(Hy(i,j,k)) * real(Ez(i+1,j,k))
+          diag%dsx1p(m) = diag%dsx1p(m) + &
+               .5*SY*SZ * ( real(Ey(i,j,k)) * real( Hz(i,j,k) + Hz(i-1,j,k) ) - real(Ez(i,j,k)) * real( Hy(i,j,k) + Hy(i-1,j,k) ) )
+          diag%dsx2p(m) = diag%dsx2p(m) + &
+               .5*SY*SZ * ( real(Hz(i,j,k)) * real( Ey(i+1,j,k) + Ey(i,j,k) ) - real(Hy(i,j,k)) * real( Ez(i+1,j,k) + Ez(i,j,k) ) )
        end if
 
-       if ( .not. diag%mask(i-1,j,k) ) then
-          diag%dsx1m(m) = diag%dsx1m(m) - 1./SX * real(Ey(i,j,k)) * real(Hz(i-1,j,k))
-          diag%dsx2m(m) = diag%dsx2m(m) - 1./SX * real(Hz(i,j,k)) * real(Ey(i,j,k))        
-          diag%dsx3m(m) = diag%dsx3m(m) + 1./SX * real(Ez(i,j,k)) * real(Hy(i-1,j,k))
-          diag%dsx4m(m) = diag%dsx4m(m) + 1./SX * real(Hy(i,j,k)) * real(Ez(i,j,k))
+       if ( .not. diag%mask(i-1,j,k) ) then 
+          diag%dsx1m(m) = diag%dsx1m(m) - &
+               .5*SY*SZ * ( real(Ey(i,j,k)) * real( Hz(i,j,k) + Hz(i-1,j,k) ) - real(Ez(i,j,k)) * real( Hy(i,j,k) + Hy(i-1,j,k) ) )
+          diag%dsx2m(m) = diag%dsx2m(m) - &
+               .5*SY*SZ * ( real(Hz(i,j,k)) * real( Ey(i+1,j,k) + Ey(i,j,k) ) - real(Hy(i,j,k)) * real( Ez(i+1,j,k) + Ez(i,j,k) ) )
        end if
-
+          
 
 M4_IFELSE_1D({},{
 
 
+       diag%dsy1(m) = diag%dsy1(m) + &
+            SX*SZ*( real(Ez(i,j,k)) * real( Hx(i,j,k) - Hx(i,j-1,k) ) - real(Ex(i,j,k)) * real( Hz(i,j,k) - Hz(i,j-1,k) ) ) 
+       diag%dsy2(m) = diag%dsy2(m) + &
+            SX*SZ*( real(Hx(i,j,k)) * real( Ez(i,j+1,k) - Ez(i,j,k) ) - real(Hz(i,j,k)) * real( Ex(i,j+1,k) - Ex(i,j,k) ) )
+
        if ( .not. diag%mask(i,j+1,k) ) then 
-          diag%dsy1p(m) = diag%dsy1p(m) + 1./SY * real(Ez(i,j,k)) * real(Hx(i,j,k))
-          diag%dsy2p(m) = diag%dsy2p(m) + 1./SY * real(Hx(i,j,k)) * real(Ez(i,j+1,k))
-          diag%dsy3p(m) = diag%dsy3p(m) - 1./SY * real(Ex(i,j,k)) * real(Hz(i,j,k))
-          diag%dsy4p(m) = diag%dsy4p(m) - 1./SY * real(Hz(i,j,k)) * real(Ex(i,j+1,k))
+          diag%dsy1p(m) = diag%dsy1p(m) + &
+               .5*SX*SZ*( real(Ez(i,j,k)) * real( Hx(i,j,k) + Hx(i,j-1,k) ) - real(Ex(i,j,k)) * real( Hz(i,j,k) + Hz(i,j-1,k) ) ) 
+          diag%dsy2p(m) = diag%dsy2p(m) + &
+               .5*SX*SZ*( real(Hx(i,j,k)) * real( Ez(i,j+1,k) + Ez(i,j,k) ) - real(Hz(i,j,k)) * real( Ex(i,j+1,k) + Ex(i,j,k) ) )
        end if
 
-       if ( .not. diag%mask(i,j-1,k) ) then 
-          diag%dsy1m(m) = diag%dsy1m(m) - 1./SY * real(Ez(i,j,k)) * real(Hx(i,j-1,k))
-          diag%dsy2m(m) = diag%dsy2m(m) - 1./SY * real(Hx(i,j,k)) * real(Ez(i,j,k))
-          diag%dsy3m(m) = diag%dsy3m(m) + 1./SY * real(Ex(i,j,k)) * real(Hz(i,j-1,k))
-          diag%dsy4m(m) = diag%dsy4m(m) + 1./SY * real(Hz(i,j,k)) * real(Ex(i,j,k))
+      if ( .not. diag%mask(i,j-1,k) ) then 
+          diag%dsy1m(m) = diag%dsy1m(m) - &
+               .5*SX*SZ*( real(Ez(i,j,k)) * real( Hx(i,j,k) + Hx(i,j-1,k) ) - real(Ex(i,j,k)) * real( Hz(i,j,k) + Hz(i,j-1,k) ) ) 
+          diag%dsy2m(m) = diag%dsy2m(m) - &
+               .5*SX*SZ*( real(Hx(i,j,k)) * real( Ez(i,j+1,k) + Ez(i,j,k) ) - real(Hz(i,j,k)) * real( Ex(i,j+1,k) + Ex(i,j,k) ) )
        end if
 
 })
 
 M4_IFELSE_3D({
 
+       diag%dsz1(m) = diag%dsz1(m) + &
+            SX*SY*( real(Ex(i,j,k)) * real( Hy(i,j,k) - Hy(i,j,k-1) ) - real(Ey(i,j,k)) * real( Hx(i,j,k) - Hx(i,j,k-1) ) )
+       diag%dsz2(m) = diag%dsz2(m) + &
+            SX*SY*( real(Hy(i,j,k)) * real( Ex(i,j,k+1) - Ex(i,j,k) ) - real(Hx(i,j,k)) * real( Ey(i,j,k+1) - Ey(i,j,k) ) )
+
        if ( .not. diag%mask(i,j,k+1) ) then 
-          diag%dsz1p(m) = diag%dsz1p(m) + 1./SZ * real(Ex(i,j,k)) * real(Hy(i,j,k))
-          diag%dsz2p(m) = diag%dsz2p(m) + 1./SZ * real(Hy(i,j,k)) * real(Ex(i,j,k+1))
-          diag%dsz3p(m) = diag%dsz3p(m) - 1./SZ * real(Ey(i,j,k)) * real(Hx(i,j,k))
-          diag%dsz4p(m) = diag%dsz4p(m) - 1./SZ * real(Hx(i,j,k)) * real(Ey(i,j,k+1))
+          diag%dsz1p(m) = diag%dsz1p(m) + &
+            .5*SX*SY*( real(Ex(i,j,k)) * real( Hy(i,j,k) + Hy(i,j,k-1) ) - real(Ey(i,j,k)) * real( Hx(i,j,k) + Hx(i,j,k-1) ) )
+          diag%dsz2p(m) = diag%dsz2p(m) + &
+            .5*SX*SY*( real(Hy(i,j,k)) * real( Ex(i,j,k+1) + Ex(i,j,k) ) - real(Hx(i,j,k)) * real( Ey(i,j,k+1) + Ey(i,j,k) ) )
        end if
 
-       if ( .not. diag%mask(i,j,k-1) ) then 
-          diag%dsz1m(m) = diag%dsz1m(m) - 1./SZ * real(Ex(i,j,k)) * real(Hy(i,j,k-1))
-          diag%dsz2m(m) = diag%dsz2m(m) - 1./SZ * real(Hy(i,j,k)) * real(Ex(i,j,k))
-          diag%dsz3m(m) = diag%dsz3m(m) + 1./SZ * real(Ey(i,j,k)) * real(Hx(i,j,k-1))
-          diag%dsz4m(m) = diag%dsz4m(m) + 1./SZ * real(Hx(i,j,k)) * real(Ey(i,j,k))
+       if ( .not. diag%mask(i,j,k+1) ) then 
+          diag%dsz1m(m) = diag%dsz1m(m) - &
+            .5*SX*SY*( real(Ex(i,j,k)) * real( Hy(i,j,k) + Hy(i,j,k-1) ) - real(Ey(i,j,k)) * real( Hx(i,j,k) + Hx(i,j,k-1) ) )
+          diag%dsz2m(m) = diag%dsz2m(m) - &
+            .5*SX*SY*( real(Hy(i,j,k)) * real( Ex(i,j,k+1) + Ex(i,j,k) ) - real(Hx(i,j,k)) * real( Ey(i,j,k+1) + Ey(i,j,k) ) )
        end if
+          
+
 })
 
        })
 
        ! material sources
 
-       diag%skh(m) = SumKHMat(diag%mask,ncyc)
        diag%sje(m) = SumJEMat(diag%mask,ncyc)
+       diag%skh(m) = SumKHMat(diag%mask,ncyc)
 
     })
   
@@ -285,109 +297,118 @@ M4_IFELSE_3D({
 
        diag%en(m) = 0.
 
-       diag%dsx1p(m) = 0.
+       diag%dsx1(m) = 0.
+       diag%dsx2(m) = 0.
+       diag%dsx1p(m) = 0. 
        diag%dsx2p(m) = 0.
-       diag%dsx3p(m) = 0. 
-       diag%dsx4p(m) = 0.
-
        diag%dsx1m(m) = 0.
        diag%dsx2m(m) = 0.
-       diag%dsx3m(m) = 0.
-       diag%dsx4m(m) = 0.
 
+       diag%dsy1(m) = 0.
+       diag%dsy2(m) = 0. 
        diag%dsy1p(m) = 0.
        diag%dsy2p(m) = 0. 
-       diag%dsy3p(m) = 0.
-       diag%dsy4p(m) = 0.
-
        diag%dsy1m(m) = 0.
        diag%dsy2m(m) = 0.
-       diag%dsy3m(m) = 0.
-       diag%dsy4m(m) = 0.
 
+       diag%dsz1(m) = 0.
+       diag%dsz2(m) = 0.
        diag%dsz1p(m) = 0.
        diag%dsz2p(m) = 0.
-       diag%dsz3p(m) = 0. 
-       diag%dsz4p(m) = 0.
-
        diag%dsz1m(m) = 0.
        diag%dsz2m(m) = 0.
-       diag%dsz3m(m) = 0.
-       diag%dsz4m(m) = 0.
 
        M4_MODOBJ_GETREG(diag,reg)
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
        ! energy density
 
-       diag%en(m) =  diag%en(m) + &
+       diag%en(m) =  diag%en(m) + SX*SY*SZ* ( &
             epsinvx(i,j,k) * real(Ex(i,j,k))*real(Ex(i,j,k)) + &
             epsinvy(i,j,k) * real(Ey(i,j,k))*real(Ey(i,j,k)) + &
             epsinvz(i,j,k) * real(Ez(i,j,k))*real(Ez(i,j,k)) + &
             M4_MUINVX(i,j,k) * real(Hx(i,j,k))*real(Hx(i,j,k)) + &
             M4_MUINVY(i,j,k) * real(Hy(i,j,k))*real(Hy(i,j,k)) + &
-            M4_MUINVZ(i,j,k) * real(Hz(i,j,k))*real(Hz(i,j,k))
-
+            M4_MUINVZ(i,j,k) * real(Hz(i,j,k))*real(Hz(i,j,k)) &
+            )
+       
        ! poynting vector
+
     
+       diag%dsx1(m) = diag%dsx1(m) + &
+            SY*SZ * ( real(Ey(i,j,k)) * real( Hz(i,j,k) - Hz(i-1,j,k) ) - real(Ez(i,j,k)) * real( Hy(i,j,k) - Hy(i-1,j,k) ) )
+       diag%dsx2(m) = diag%dsx2(m) + &
+            SY*SZ * ( real(Hz(i,j,k)) * real( Ey(i+1,j,k) - Ey(i,j,k) ) - real(Hy(i,j,k)) * real( Ez(i+1,j,k) - Ez(i,j,k) ) )
+
        if ( .not. diag%mask(i+1,j,k) ) then 
-          diag%dsx1p(m) = diag%dsx1p(m) + 1./SX * real(Ey(i,j,k)) * real(Hz(i,j,k))
-          diag%dsx2p(m) = diag%dsx2p(m) + 1./SX * real(Hz(i,j,k)) * real(Ey(i+1,j,k))
-          diag%dsx3p(m) = diag%dsx3p(m) - 1./SX * real(Ez(i,j,k)) * real(Hy(i,j,k))
-          diag%dsx4p(m) = diag%dsx4p(m) - 1./SX * real(Hy(i,j,k)) * real(Ez(i+1,j,k))
+          diag%dsx1p(m) = diag%dsx1p(m) + &
+               .5*SY*SZ * ( real(Ey(i,j,k)) * real( Hz(i,j,k) + Hz(i-1,j,k) ) - real(Ez(i,j,k)) * real( Hy(i,j,k) + Hy(i-1,j,k) ) )
+          diag%dsx2p(m) = diag%dsx2p(m) + &
+               .5*SY*SZ * ( real(Hz(i,j,k)) * real( Ey(i+1,j,k) + Ey(i,j,k) ) - real(Hy(i,j,k)) * real( Ez(i+1,j,k) + Ez(i,j,k) ) )
        end if
 
-       if ( .not. diag%mask(i-1,j,k) ) then
-          diag%dsx1m(m) = diag%dsx1m(m) - 1./SX * real(Ey(i,j,k)) * real(Hz(i-1,j,k))
-          diag%dsx2m(m) = diag%dsx2m(m) - 1./SX * real(Hz(i,j,k)) * real(Ey(i,j,k))        
-          diag%dsx3m(m) = diag%dsx3m(m) + 1./SX * real(Ez(i,j,k)) * real(Hy(i-1,j,k))
-          diag%dsx4m(m) = diag%dsx4m(m) + 1./SX * real(Hy(i,j,k)) * real(Ez(i,j,k))
+       if ( .not. diag%mask(i-1,j,k) ) then 
+          diag%dsx1m(m) = diag%dsx1m(m) - &
+               .5*SY*SZ * ( real(Ey(i,j,k)) * real( Hz(i,j,k) + Hz(i-1,j,k) ) - real(Ez(i,j,k)) * real( Hy(i,j,k) + Hy(i-1,j,k) ) )
+          diag%dsx2m(m) = diag%dsx2m(m) - &
+               .5*SY*SZ * ( real(Hz(i,j,k)) * real( Ey(i+1,j,k) + Ey(i,j,k) ) - real(Hy(i,j,k)) * real( Ez(i+1,j,k) + Ez(i,j,k) ) )
        end if
-
+          
 
 M4_IFELSE_1D({},{
 
 
+       diag%dsy1(m) = diag%dsy1(m) + &
+            SX*SZ*( real(Ez(i,j,k)) * real( Hx(i,j,k) - Hx(i,j-1,k) ) - real(Ex(i,j,k)) * real( Hz(i,j,k) - Hz(i,j-1,k) ) ) 
+       diag%dsy2(m) = diag%dsy2(m) + &
+            SX*SZ*( real(Hx(i,j,k)) * real( Ez(i,j+1,k) - Ez(i,j,k) ) - real(Hz(i,j,k)) * real( Ex(i,j+1,k) - Ex(i,j,k) ) )
+
        if ( .not. diag%mask(i,j+1,k) ) then 
-          diag%dsy1p(m) = diag%dsy1p(m) + 1./SY * real(Ez(i,j,k)) * real(Hx(i,j,k))
-          diag%dsy2p(m) = diag%dsy2p(m) + 1./SY * real(Hx(i,j,k)) * real(Ez(i,j+1,k))
-          diag%dsy3p(m) = diag%dsy3p(m) - 1./SY * real(Ex(i,j,k)) * real(Hz(i,j,k))
-          diag%dsy4p(m) = diag%dsy4p(m) - 1./SY * real(Hz(i,j,k)) * real(Ex(i,j+1,k))
+          diag%dsy1p(m) = diag%dsy1p(m) + &
+               .5*SX*SZ*( real(Ez(i,j,k)) * real( Hx(i,j,k) + Hx(i,j-1,k) ) - real(Ex(i,j,k)) * real( Hz(i,j,k) + Hz(i,j-1,k) ) ) 
+          diag%dsy2p(m) = diag%dsy2p(m) + &
+               .5*SX*SZ*( real(Hx(i,j,k)) * real( Ez(i,j+1,k) + Ez(i,j,k) ) - real(Hz(i,j,k)) * real( Ex(i,j+1,k) + Ex(i,j,k) ) )
        end if
 
-       if ( .not. diag%mask(i,j-1,k) ) then 
-          diag%dsy1m(m) = diag%dsy1m(m) - 1./SY * real(Ez(i,j,k)) * real(Hx(i,j-1,k))
-          diag%dsy2m(m) = diag%dsy2m(m) - 1./SY * real(Hx(i,j,k)) * real(Ez(i,j,k))
-          diag%dsy3m(m) = diag%dsy3m(m) + 1./SY * real(Ex(i,j,k)) * real(Hz(i,j-1,k))
-          diag%dsy4m(m) = diag%dsy4m(m) + 1./SY * real(Hz(i,j,k)) * real(Ex(i,j,k))
+      if ( .not. diag%mask(i,j-1,k) ) then 
+          diag%dsy1m(m) = diag%dsy1m(m) - &
+               .5*SX*SZ*( real(Ez(i,j,k)) * real( Hx(i,j,k) + Hx(i,j-1,k) ) - real(Ex(i,j,k)) * real( Hz(i,j,k) + Hz(i,j-1,k) ) ) 
+          diag%dsy2m(m) = diag%dsy2m(m) - &
+               .5*SX*SZ*( real(Hx(i,j,k)) * real( Ez(i,j+1,k) + Ez(i,j,k) ) - real(Hz(i,j,k)) * real( Ex(i,j+1,k) + Ex(i,j,k) ) )
        end if
 
 })
 
 M4_IFELSE_3D({
 
+       diag%dsz1(m) = diag%dsz1(m) + &
+            SX*SY*( real(Ex(i,j,k)) * real( Hy(i,j,k) - Hy(i,j,k-1) ) - real(Ey(i,j,k)) * real( Hx(i,j,k) - Hx(i,j,k-1) ) )
+       diag%dsz2(m) = diag%dsz2(m) + &
+            SX*SY*( real(Hy(i,j,k)) * real( Ex(i,j,k+1) - Ex(i,j,k) ) - real(Hx(i,j,k)) * real( Ey(i,j,k+1) - Ey(i,j,k) ) )
+
        if ( .not. diag%mask(i,j,k+1) ) then 
-          diag%dsz1p(m) = diag%dsz1p(m) + 1./SZ * real(Ex(i,j,k)) * real(Hy(i,j,k))
-          diag%dsz2p(m) = diag%dsz2p(m) + 1./SZ * real(Hy(i,j,k)) * real(Ex(i,j,k+1))
-          diag%dsz3p(m) = diag%dsz3p(m) - 1./SZ * real(Ey(i,j,k)) * real(Hx(i,j,k))
-          diag%dsz4p(m) = diag%dsz4p(m) - 1./SZ * real(Hx(i,j,k)) * real(Ey(i,j,k+1))
+          diag%dsz1p(m) = diag%dsz1p(m) + &
+            .5*SX*SY*( real(Ex(i,j,k)) * real( Hy(i,j,k) + Hy(i,j,k-1) ) - real(Ey(i,j,k)) * real( Hx(i,j,k) + Hx(i,j,k-1) ) )
+          diag%dsz2p(m) = diag%dsz2p(m) + &
+            .5*SX*SY*( real(Hy(i,j,k)) * real( Ex(i,j,k+1) + Ex(i,j,k) ) - real(Hx(i,j,k)) * real( Ey(i,j,k+1) + Ey(i,j,k) ) )
        end if
 
-       if ( .not. diag%mask(i,j,k-1) ) then 
-          diag%dsz1m(m) = diag%dsz1m(m) - 1./SZ * real(Ex(i,j,k)) * real(Hy(i,j,k-1))
-          diag%dsz2m(m) = diag%dsz2m(m) - 1./SZ * real(Hy(i,j,k)) * real(Ex(i,j,k))
-          diag%dsz3m(m) = diag%dsz3m(m) + 1./SZ * real(Ey(i,j,k)) * real(Hx(i,j,k-1))
-          diag%dsz4m(m) = diag%dsz4m(m) + 1./SZ * real(Hx(i,j,k)) * real(Ey(i,j,k))
+       if ( .not. diag%mask(i,j,k+1) ) then 
+          diag%dsz1m(m) = diag%dsz1m(m) - &
+            .5*SX*SY*( real(Ex(i,j,k)) * real( Hy(i,j,k) + Hy(i,j,k-1) ) - real(Ey(i,j,k)) * real( Hx(i,j,k) + Hx(i,j,k-1) ) )
+          diag%dsz2m(m) = diag%dsz2m(m) - &
+            .5*SX*SY*( real(Hy(i,j,k)) * real( Ex(i,j,k+1) + Ex(i,j,k) ) - real(Hx(i,j,k)) * real( Ey(i,j,k+1) + Ey(i,j,k) ) )
        end if
+          
+
 })
-
       
        })
 
        ! material sources
 
-       diag%skh(m) = SumKHMat(diag%mask,ncyc)
        diag%sje(m) = SumJEMat(diag%mask,ncyc)
+       diag%skh(m) = SumKHMat(diag%mask,ncyc)
        
        ! ---------------------------------------------------
        
@@ -398,39 +419,43 @@ M4_IFELSE_3D({
 
        diag%dudt = .5/DT * ( diag%en(m) - diag%en(moo) )
 
-       diag%dsxp = .5 * ( diag%dsx1p(m) + diag%dsx1p(mo) + diag%dsx3p(m) + diag%dsx3p(mo) + &
-            diag%dsx2p(mo) + diag%dsx2p(moo) +  diag%dsx4p(mo) + diag%dsx4p(moo) )
-       diag%dsxm = .5 * ( diag%dsx1m(m) + diag%dsx1m(mo) + diag%dsx3m(m) + diag%dsx3m(mo) + &
-            diag%dsx2m(mo) + diag%dsx2m(moo) +  diag%dsx4m(mo) + diag%dsx4m(moo) )
-       diag%dsyp = .5 * ( diag%dsy1p(m) + diag%dsy1p(mo) + diag%dsy3p(m) + diag%dsy3p(mo) + &
-            diag%dsy2p(mo) + diag%dsy2p(moo) +  diag%dsy4p(mo) + diag%dsy4p(moo) )
-       diag%dsym = .5 * ( diag%dsy1m(m) + diag%dsy1m(mo) + diag%dsy3m(m) + diag%dsy3m(mo) + &
-            diag%dsy2m(mo) + diag%dsy2m(moo) +  diag%dsy4m(mo) + diag%dsy4m(moo) )
-       diag%dszp = .5 * ( diag%dsz1p(m) + diag%dsz1p(mo) + diag%dsz3p(m) + diag%dsz3p(mo) + &
-            diag%dsz2p(mo) + diag%dsz2p(moo) +  diag%dsz4p(mo) + diag%dsz4p(moo) )
-       diag%dszm = .5 * ( diag%dsz1m(m) + diag%dsz1m(mo) + diag%dsz3m(m) + diag%dsz3m(mo) + &
-            diag%dsz2m(mo) + diag%dsz2m(moo) +  diag%dsz4m(mo) + diag%dsz4m(moo) )
+       diag%dsx = .5 * ( diag%dsx1(m) + diag%dsx1(mo) + diag%dsx2(mo) + diag%dsx2(moo) )
+       diag%dsy = .5 * ( diag%dsy1(m) + diag%dsy1(mo) + diag%dsy2(mo) + diag%dsy2(moo) )
+       diag%dsz = .5 * ( diag%dsz1(m) + diag%dsz1(mo) + diag%dsz2(mo) + diag%dsz2(moo) )
+
+       diag%dsxp = .5 * ( diag%dsx1p(m) + diag%dsx1p(mo) + diag%dsx2p(mo) + diag%dsx2p(moo)  ) 
+       diag%dsxm = .5 * ( diag%dsx1m(m) + diag%dsx1m(mo) + diag%dsx2m(mo) + diag%dsx2m(moo)  ) 
+
+       diag%dsyp = .5 * ( diag%dsy1p(m) + diag%dsy1p(mo) + diag%dsy2p(mo) + diag%dsy2p(moo)  ) 
+       diag%dsym = .5 * ( diag%dsy1m(m) + diag%dsy1m(mo) + diag%dsy2m(mo) + diag%dsy2m(moo)  ) 
+
+       diag%dszp = .5 * ( diag%dsz1p(m) + diag%dsz1p(mo) + diag%dsz2p(mo) + diag%dsz2p(moo)  ) 
+       diag%dszm = .5 * ( diag%dsz1m(m) + diag%dsz1m(mo) + diag%dsz2m(mo) + diag%dsz2m(moo)  ) 
 
        diag%je = 0.5 * ( diag%sje(m) + diag%sje(mo) )
        diag%kh = 0.5 * ( diag%skh(mo) + diag%skh(moo) )
 
-       diag%ds   = diag%dsxp + diag%dsxm + diag%dsyp + diag%dsym + diag%dszp + diag%dszm
+       diag%ds   = diag%dsx + diag%dsy + diag%dsz 
+       diag%ds2 = diag%dsxp + diag%dsxm + diag%dsyp + diag%dsym + diag%dszp + diag%dszm
        diag%res = diag%dudt + diag%ds + diag%je + diag%kh
        
        diag%sumdudt = diag%sumdudt + DT * diag%dudt
        diag%sumje = diag%sumje + DT * diag%je
        diag%sumkh = diag%sumkh + DT * diag%kh
+       diag%sumds = diag%sumds + diag%ds
+       diag%sumds = diag%sumds2 + diag%ds2
        diag%sumdsxp = diag%sumdsxp +  DT * diag%dsxp
        diag%sumdsxm = diag%sumdsxm +  DT * diag%dsxm
        diag%sumdsyp = diag%sumdsyp +  DT * diag%dsyp
        diag%sumdsym = diag%sumdsym +  DT * diag%dsym
        diag%sumdszp = diag%sumdszp +  DT * diag%dszp
        diag%sumdszm = diag%sumdszm +  DT * diag%dszm
-       diag%sumds   = diag%sumdsxp + diag%sumdsxm + diag%sumdsyp + diag%sumdsym + diag%sumdszp + diag%sumdszm
+       
        diag%sumres = diag%sumdudt + diag%sumds + diag%sumje + diag%sumkh
 
-!       write(6,*) diag%dudt, diag%divs, diag%jekh, diag%res
-!       write(6,*) diag%sumdudt, diag%sumdivs, diag%sumjekh, diag%sumres
+       write(6,*) diag%dsx, diag%dsxm, diag%dsxp
+       write(6,*) diag%dsy, diag%dsym, diag%dsyp
+       write(6,*) diag%dsz, diag%dszm, diag%dszp
 
 
        ! ---------------------------------------------------

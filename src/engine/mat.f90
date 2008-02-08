@@ -131,7 +131,7 @@ contains
 
   real(kind=8 ) function SumKHMat(mask,ncyc)
     
-    logical, dimension(IBEG:IEND,JBEG:JEND,KBEG:KEND) :: mask
+    logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
     integer :: ncyc
     real(kind=8) :: sum
 
