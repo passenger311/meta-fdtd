@@ -335,16 +335,45 @@ T		! time (T) or wavelength (F) parameters for gaussian
 0 1000 1   ! time window
 (REG
   (BOX
-	60 91 1 9 91 1 9 91 1
+	90 100 1 9 91 1 9 91 1
   )BOX
 )REG
 (OUT
-  GPL F test_ebal
-  D N
+  GPL F test_ebal1
+  DS N
   0 1000 1
 )OUT	
 )DIAGEBAL
  
+    
+(DIAGEBAL
+0 1000 1   ! time window
+(REG
+  (BOX
+	60 100 1 9 91 1 9 91 1
+  )BOX
+)REG
+(OUT
+  GPL F test_ebal2
+  DS N
+  0 1000 1
+)OUT	
+)DIAGEBAL
+ 
+
+(DIAGEBAL
+0 1000 1   ! time window
+(REG
+  (BOX
+	60 89 1 9 91 1 9 91 1
+  )BOX
+)REG
+(OUT
+  GPL F test_ebal3
+  DS N
+  0 1000 1
+)OUT	
+)DIAGEBAL
 
 
 

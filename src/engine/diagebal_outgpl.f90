@@ -70,10 +70,14 @@ contains
     M4_WRITE_DBG({"write data ",TRIM(out%filename), " ",TRIM(out%fn)})
 
     select case (out%fn)
-    case('D') ! differential
-       call WriteValues(out, .false.)
-    case('I') ! time integrated
-       call WriteValues(out,.true.)
+    case('En') ! differential
+       call WriteValues(out, 1 )
+    case('EnI') ! time integrated
+       call WriteValues(out, 2 )
+    case('DS') ! differential
+       call WriteValues(out, 3 )
+    case('DSI') ! time integrated
+       call WriteValues(out, 4 )
     case default
        write(out%funit,*) "OUTPUT FUNCTION NOT IMPLEMENTED" 
     end select
@@ -82,10 +86,10 @@ contains
 
     ! **************************************************************** !
 
-    subroutine WriteValues(out, sum)
+    subroutine WriteValues(out, mode)
 
       type (T_OUT) :: out
-      logical :: sum
+      integer :: mode
       type (T_DIAGEBAL) :: diag
 
       diag = diagebalobj(out%objidx)
@@ -93,15 +97,18 @@ contains
       M4_WRITE_DBG({"WriteValues!"})
       M4_IFELSE_DBG({call EchoRegObj(regobj(out%regidx))})
 
-      if ( sum ) then
 
-         write(out%funit,"(5E15.6E3)") diag%sumdudt, diag%sumds, diag%sumje, diag%sumkh, diag%sumres
-         
-      else
+      select case ( mode ) 
 
+      case ( 1 )
          write(out%funit,"(5E15.6E3)") diag%dudt, diag%ds, diag%je, diag%kh, diag%res
-
-      end if
+      case ( 2 )
+         write(out%funit,"(5E15.6E3)") diag%sumdudt, diag%sumds, diag%sumje, diag%sumkh, diag%sumres
+      case ( 3 ) 
+         write(out%funit,"(4E15.6E3)") diag%ds, diag%dsx, diag%dsy, diag%dsz
+      case ( 4 ) 
+         write(out%funit,"(4E15.6E3)") diag%sumds, diag%sumdsx, diag%sumdsy, diag%sumdsz
+      end select
 
     end subroutine WriteValues
 
