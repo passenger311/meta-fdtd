@@ -163,7 +163,7 @@ T		! time (T) or wavelength (F) parameters for gaussian
 700             ! half width in timedomain (dn) or wavelength dom (dlambda)
 (REG
   (VBOX
-     15 15 1 30 70 1 [ 0.0 1.0 -1.0 0.0 ]
+     15 15 1 30 70 1 [ 0.0 1.0 -1. 0.0 ]
   )VBOX
 )REG
 )MATTFSF
@@ -174,7 +174,7 @@ T		! time (T) or wavelength (F) parameters for gaussian
 ! (MATLHM-): left-handed materials pole equation 
 ! -----------------------------------------------------------------------
     
-(!MATLHM
+(MATLHM
 56.57    	    	! lambdapl: plasma freq wavelength [dx]
 0.0 		    	! gammapl: damping constant [1/dt] 
 1		    	! order: 1 (=J) or 2 (=P)
@@ -217,7 +217,7 @@ T		! time (T) or wavelength (F) parameters for gaussian
 ! (MATDRUDE-): drude materials pole equation 
 ! -----------------------------------------------------------------------
     
-(MATDRUDE
+(!MATDRUDE
 56.57    	    	! lambdapl: plasma freq wavelength [dx]
 0.1 		    	! gammapl: damping constant [1/dt] 
 1		    	! order: 1 (=J) or 2 (=P)
