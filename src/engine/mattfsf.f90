@@ -110,17 +110,20 @@ contains
 
     ! check whether region is a face
     reg = regobj(mat%regidx)
-    
-    if ( .not. reg%isbox ) then
-       M4_FATAL_ERROR("MATTFSF OBJECT MUST BE DEFINED OVER A BOX!")
-       mat%face = -1
+
+    mat%face = -1
+
+    if ( reg%isbox ) then
        if ( reg%is .eq. reg%ie ) mat%face = 1 
        M4_IFELSE_1D({},{if ( reg%js .eq. reg%je ) mat%face = 2})  
        M4_IFELSE_3D({if ( reg%ks .eq. reg%ke ) mat%face = 3})
-       if ( mat%face .eq. -1 ) then
+       if ( mat%face .le. 0 ) then
           M4_FATAL_ERROR("MATTFSF REGION MUST DEFINE A VALID INTERFACE!")
        endif
+    else
+       M4_FATAL_ERROR("MATTFSF OBJECT MUST BE DEFINED OVER A BOX!")
     end if
+
     
     ! allocate and fill incident wave components
     
@@ -216,10 +219,10 @@ contains
          if ( mat%face .eq. 1 ) then
             
             M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-            
+
             Ey(i,j,k) = Ey(i,j,k) + mat%Finc(i,j,k,4) * DT/SX * epsinvy(i,j,k) * wavefct
             Ez(i,j,k) = Ez(i,j,k) + mat%Finc(i,j,k,3) * DT/SX * epsinvz(i,j,k) * wavefct
-            
+           
             })
             
          end if
@@ -283,7 +286,6 @@ contains
        end if
        
        wavefct = es * sin(mat%omega0*ncyc0) * DT
-       
        
        ! i=const face: Finc(1) => Ey, Finc(2) => Ez 
        if ( mat%face .eq. 1 ) then

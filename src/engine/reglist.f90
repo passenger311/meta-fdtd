@@ -802,7 +802,7 @@ contains
     logical :: isunit
     real(kind=8), pointer, dimension(:,:) :: newval
     
-    if ( reg%numval .eq. 0 ) return
+    if ( reg%numval .eq. 0 .and. reg%numnodes .eq. 0 ) return
 
     allocate(reg%valptr(1:reg%numnodes), stat = err)
     M4_ALLOC_ERROR(err,{"CompressValRegObj"})
@@ -834,7 +834,7 @@ contains
     do p = 1, reg%numnodes
        newval(:,reg%valptr(p)) = reg%val(:,p)
     end do
-    
+
     ! free old value field
     deallocate(reg%val)
 
