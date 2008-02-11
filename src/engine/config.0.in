@@ -331,7 +331,23 @@ T		! time (T) or wavelength (F) parameters for gaussian
 ! (DIAGEBAL-): energy balance diagnostics 
 ! -----------------------------------------------------------------------
     
+
 (DIAGEBAL
+0 1000 1   ! time window
+(REG
+  (BOX
+	60 90 1 9 91 1 9 91 1
+  )BOX
+)REG
+(OUT
+  GPL F test_ebal1
+  EnI N
+  0 1000 1
+)OUT	
+)DIAGEBAL
+ 
+
+(!DIAGEBAL
 0 1000 1   ! time window
 (REG
   (BOX
@@ -346,7 +362,7 @@ T		! time (T) or wavelength (F) parameters for gaussian
 )DIAGEBAL
  
     
-(DIAGEBAL
+(!DIAGEBAL
 0 1000 1   ! time window
 (REG
   (BOX
@@ -361,7 +377,7 @@ T		! time (T) or wavelength (F) parameters for gaussian
 )DIAGEBAL
  
 
-(DIAGEBAL
+(!DIAGEBAL
 0 1000 1   ! time window
 (REG
   (BOX

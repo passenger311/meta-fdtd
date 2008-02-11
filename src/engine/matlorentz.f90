@@ -238,9 +238,11 @@ contains
 
        if ( mask(i,j,k) ) then
 
-          sum = sum + w(1) * real(Ex(i,j,k)) * real( mat%Px(p,m) - mat%Px(p,n) ) / DT + &
-               w(2) * real(Ey(i,j,k)) * real( mat%Py(p,m) - mat%Py(p,n) ) / DT + &
-               w(3) * real(Ez(i,j,k)) * real( mat%Pz(p,m) - mat%Pz(p,n) ) / DT
+          sum = sum + ( &
+               M4_VOLEX(i,j,k) * w(1) * real(Ex(i,j,k)) * real( mat%Px(p,m) - mat%Px(p,n) ) / DT + &
+               M4_VOLEY(i,j,k) * w(2) * real(Ey(i,j,k)) * real( mat%Py(p,m) - mat%Py(p,n) ) / DT + &
+               M4_VOLEZ(i,j,k) * w(3) * real(Ez(i,j,k)) * real( mat%Pz(p,m) - mat%Pz(p,n) ) / DT &
+               )
 
        endif
 

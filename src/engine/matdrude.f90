@@ -295,19 +295,22 @@ contains
 
        if ( mask(i,j,k) ) then
 
+
           if ( mat%order .eq. 1 ) then ! 1. order equation
 
-             sum = sum + &
-                  w(1) * real(Ex(i,j,k)) * real(mat%Jx(p,1)) + &
-                  w(2) * real(Ey(i,j,k)) * real(mat%Jy(p,1)) + &
-                  w(3) * real(Ez(i,j,k)) * real(mat%Jz(p,1))
+             sum = sum + ( &
+                  M4_VOLEX(i,j,k) * w(1) * real(Ex(i,j,k)) * real(mat%Jx(p,1)) + &
+                  M4_VOLEY(i,j,k) * w(2) * real(Ey(i,j,k)) * real(mat%Jy(p,1)) + &
+                  M4_VOLEZ(i,j,k) * w(3) * real(Ez(i,j,k)) * real(mat%Jz(p,1)) &
+                  )
              
           else
 
-             sum = sum + &
-                  w(1) * real(Ex(i,j,k)) * real( mat%Jx(p,m) - mat%Jx(p,n) ) / DT + &
-                  w(2) * real(Ey(i,j,k)) * real( mat%Jy(p,m) - mat%Jy(p,n) ) / DT + &
-                  w(3) * real(Ez(i,j,k)) * real( mat%Jz(p,m) - mat%Jz(p,n) ) / DT
+             sum = sum + M4_VOL(i,j,k) * ( &
+                  M4_VOLEX(i,j,k) * w(1) * real(Ex(i,j,k)) * real( mat%Jx(p,m) - mat%Jx(p,n) ) / DT + &
+                  M4_VOLEY(i,j,k) * w(2) * real(Ey(i,j,k)) * real( mat%Jy(p,m) - mat%Jy(p,n) ) / DT + &
+                  M4_VOLEZ(i,j,k) * w(3) * real(Ez(i,j,k)) * real( mat%Jz(p,m) - mat%Jz(p,n) ) / DT &
+                  )
 
           end if
 
