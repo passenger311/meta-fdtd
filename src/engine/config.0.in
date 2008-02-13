@@ -37,8 +37,8 @@
   1             	! partitions
   2000          	! ncyc
   0.576             	! dt
-  0 199	      		! i range
-  0 99       		! j range
+  -40 239		! i range
+  10 189      		! j range
 )GRID
 
 
@@ -58,7 +58,7 @@
     0 2000 200
     (REG
       (BOX
-	 0 199 1 0 99 1 
+	 0 199 1 0 199 1 
       )BOX
     )REG
   )OUT	
@@ -69,7 +69,7 @@
     0 2000 200
     (REG
       (BOX
-	 0 199 1 0 99 1
+	 0 199 1 0 199 1
       )BOX
     )REG
   )OUT	
@@ -80,7 +80,7 @@
     0 2000 200
     (REG
       (BOX
-	 0 199 1 0 99 1
+	 0 199 1 0 199 1
       )BOX
     )REG
   )OUT	
@@ -91,7 +91,7 @@
     0 2000 200
     (REG
       (BOX
-	 0 199 1 0 99 1
+	 0 199 1 0 199 1
       )BOX
     )REG
   )OUT
@@ -104,22 +104,26 @@
 ! -----------------------------------------------------------------------
 ! (BOUND-): this is a mandatory section which specifies the boundary 
 ! condition type for each face of the grid domain.
-! 0 -> PEC
-! 1 -> PML
-! 2 -> SBC
-! 3 -> PBC
+! -1 -> MPI BOUNDARY
+! 0  -> PEC
+! 1  -> PML
+! 2  -> SBC
+! 3  -> PBC
 ! The (PML-) section which specifies pml parameters is optional. If not
 ! given default parameters are used.
 ! -----------------------------------------------------------------------
 
 (BOUND
- 1 1 1 1   		! boundary conditions
- (!PML	
- 8               	! pml cells
- 3.2             	! pot parameter
- 1.94444444444444       ! sigma parameter
- 1.1             	! kappa parameter
- )PML	
+ 1 1 3 3   		! configure boundary conditions
+(!PML	
+8               	! pml cells
+3.2             	! pot parameter
+1.94444444444444        ! sigma parameter
+1.1             	! kappa parameter
+)PML	
+(MPIBC
+0 0 0 0			! send/receive target/source partitions
+)MPIBC
 )BOUND
 
 ! -----------------------------------------------------------------------
@@ -132,38 +136,37 @@
 
 
 ! -----------------------------------------------------------------------
-! (MATSOURCE-): hard electromagnetic field source. 
+! (MATSOURCE-): hard electromagnetic field source. [3]
 ! -----------------------------------------------------------------------
 
     
-(!MATSOURCE
-80.0     	! vacuum wavelength in units of [dx]
-0 1000 		! time offset till attack and cw duration (sustain)
+(MATSOURCE
+30.0     	! vacuum wavelength in units of [dx]
+0 800 		! time offset till attack and cw duration (sustain)
 T		! time (T) or wavelength (F) parameters for gaussian
-1000		! peak of gaussian (n0) or fraction of peak (a0)
-1000            ! half width in timedomain (dn) or wavelength dom (dlambda)
-0.0 0.0 1.0 	! vector components of source
+1200		! peak of gaussian (n0) or fraction of peak (a0)
+700             ! half width in timedomain (dn) or wavelength dom (dlambda)
 (REG
-  (POINT
-     38 50
-  )POINT
+  (VPOINT
+     14 100 [ 0.0 1.0 0.0 ]
+  )VPOINT
 )REG
 )MATSOURCE
 
 ! -----------------------------------------------------------------------
-! (MATTFSF-): tfsf electromagnetic field source. 
+! (MATTFSF-): tfsf electromagnetic field source. [4]
 ! -----------------------------------------------------------------------
 
     
-(MATTFSF
-80.0     	! vacuum wavelength in units of [dx]
+(!MATTFSF
+30.0     	! vacuum wavelength in units of [dx]
 0 800 		! time offset till attack and cw duration (sustain)
 T		! time (T) or wavelength (F) parameters for gaussian
 1200		! peak of gaussian (n0) or fraction of peak (a0)
 700             ! half width in timedomain (dn) or wavelength dom (dlambda)
 (REG
   (VBOX
-     15 15 1 30 70 1 [ 0.0 1.0 -1. 0.0 ]
+     14 14 1 99 101 1 [ 1.0 0.0 0.0 1.0 ]
   )VBOX
 )REG
 )MATTFSF
@@ -175,36 +178,36 @@ T		! time (T) or wavelength (F) parameters for gaussian
 ! -----------------------------------------------------------------------
     
 (MATLHM
-56.57    	    	! lambdapl: plasma freq wavelength [dx]
-0.0 		    	! gammapl: damping constant [1/dt] 
+21.2132034356	    	! lambdapl: plasma freq wavelength [dx]
+0. 	 	    	! gammapl: damping constant [1/dt] 
 1		    	! order: 1 (=J) or 2 (=P)
 (REG
   (VBOX
-	44 116 1 10 90 1 [ 1. 1. 1. 1. 1. 1. ]
+	44 81 1 9 190 1 [ 1. 1. 1. 1. 1. 1. ]
   )VBOX
   (VBOX
-	44 44 1 10 90 1 [ 1. .5 .5 .5 1. 1. ] 
+	44 44 1 9 190 1 [ 1. .5 .5 .5 1. 1. ] 
   )VBOX
   (VBOX
-	116 116 1 10 90 1 [ 0. .5 .5 .5 0. 0. ]
+	81 81 1 9 190 1 [ 0. .5 .5 .5 0. 0. ]
   )VBOX
   (VBOX
-	44 116 1 10 10 1 [ .5 1. .5 1. .5 1. ] 
+	44 81 1 9 9 1 [ .5 1. .5 1. .5 1. ] 
   )VBOX
   (VBOX
-	44 116 1 90 90 1 [ .5 0. .5 0. .5 0. ]
+	44 81 1 190 190 1 [ .5 0. .5 0. .5 0. ]
   )VBOX
   (VBOX
-	44 44 1 10 10 1 [ .5 .5 .25 .5 .5 1. ] 
+	44 44 1 9 9 1 [ .5 .5 .25 .5 .5 1. ] 
   )VBOX
   (VBOX
-	44 44 1 90 90 1 [ .5 0. .25 0. .5 0. ] 
+	44 44 1 190 190 1 [ .5 0. .25 0. .5 0. ] 
   )VBOX
   (VBOX
-	116 116 1 10 10 1 [ 0. .5 .25 .5 0. 0. ] 
+	81 81 1 9 9 1 [ 0. .5 .25 .5 0. 0. ] 
   )VBOX
   (VBOX
-	116 116 1 90 90 1 [ 0. 0. .25 0. 0. 0. ]
+	81 81 1 190 190 1 [ 0. 0. .25 0. 0. 0. ]
   )VBOX
 
 
@@ -223,31 +226,31 @@ T		! time (T) or wavelength (F) parameters for gaussian
 1		    	! order: 1 (=J) or 2 (=P)
 (REG
   (VBOX
-	44 116 1 10 90 1 [ 1. 1. 1. ]
+	44 81 1 9 190 1 [ 1. 1. 1. ]
   )VBOX
   (VBOX
-	44 44 1 10 90 1 [ 1. .5 .5  ] 
+	44 44 1 9 190 1 [ 1. .5 .5  ] 
   )VBOX
   (VBOX
-	116 116 1 10 90 1 [ 0. .5 .5  ]
+	81 81 1 9 190 1 [ 0. .5 .5  ]
   )VBOX
   (VBOX
-	44 116 1 10 10 1 [ .5 1. .5  ] 
+	44 81 1 9 9 1 [ .5 1. .5  ] 
   )VBOX
   (VBOX
-	44 116 1 90 90 1 [ .5 0. .5  ]
+	44 81 1 190 190 1 [ .5 0. .5  ]
   )VBOX
   (VBOX
-	44 44 1 10 10 1 [ .5 .5 .25  ] 
+	44 44 1 9 9 1 [ .5 .5 .25  ] 
   )VBOX
   (VBOX
-	44 44 1 90 90 1 [ .5 0. .25  ] 
+	44 44 1 190 190 1 [ .5 0. .25  ] 
   )VBOX
   (VBOX
-	116 116 1 10 10 1 [ 0. .5 .25  ] 
+	81 81 1 9 9 1 [ 0. .5 .25  ] 
   )VBOX
   (VBOX
-	116 116 1 90 90 1 [ 0. 0. .25  ]
+	81 81 1 190 190 1 [ 0. 0. .25  ]
   )VBOX
 
 
@@ -264,7 +267,7 @@ T		! time (T) or wavelength (F) parameters for gaussian
 0 2000 1   ! time window
 (REG
   (BOX
-	42 118 1 10 90 1
+	42 81 1 9 190 1
   )BOX
 )REG
 (OUT

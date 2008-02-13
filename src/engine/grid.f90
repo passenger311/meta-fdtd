@@ -153,7 +153,7 @@ contains
 
     IBIG=IBEG
     IEIG=IEND
-    JBIG=IBEG
+    JBIG=JBEG
     JEIG=JEND
     KBIG=KBEG
     KEIG=KEND

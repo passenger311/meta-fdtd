@@ -138,22 +138,22 @@ contains
     })
 
     ! center frequency
-    mat%omega0 = 2. * PI * 1. / ( mat%lambda0 * DT )
+    mat%omega0 = 2. * PI  / mat%lambda0
 
     if ( mat%tmode ) then
        ! time mode: n0, dn given
        mat%n1 =  mat%n0 + mat%dn    
-       mat%gamma = sqrt( log(2.) ) / mat%dn    
+       mat%gamma = 1./DT * sqrt( log(2.) ) / mat%dn   
        mat%domega = log(2.) * mat%gamma
        mat%omega1 = mat%omega0 - mat%domega
-       mat%a0 = exp(- mat%gamma**2 * ( mat%n0 )**2 )
+       mat%a0 = exp(- mat%gamma**2 * ( mat%n0*DT )**2 )
     else
        ! wavelength mode: a0, dlambda given
-       mat%omega1 = 2. * PI * 1. / ( ( mat%lambda0 + mat%dlambda ) * DT )
+       mat%omega1 = 2. * PI / ( mat%lambda0 + mat%dlambda  )
        mat%domega = mat%omega0 - mat%omega1
        mat%gamma =  mat%domega / log(2.)
-       mat%dn = sqrt( log(2.) )/mat%gamma    
-       mat%n0 =  sqrt ( - log(mat%a0) / mat%gamma**2 )
+       mat%dn = sqrt( log(2.) )/ ( mat%gamma * DT )    
+       mat%n0 = 1./DT *  sqrt ( - log(mat%a0) / mat%gamma**2 )
        mat%n1 =  mat%n0 + mat%dn
     end if
       
@@ -206,14 +206,14 @@ contains
          es = 1.0
          ! attack phase
          if ( ncyc0 .le. mat%n0 ) then
-            es =  exp ( - mat%gamma**2 * ( ncyc0 - mat%n0 )**2 )
+            es =  exp ( - mat%gamma**2 * ( ( ncyc0 - mat%n0 ) * DT )**2 )
          end if
          ! decay phase
          if ( ncyc0 .ge. mat%n0 + mat%ncw ) then         	
-            es =  exp ( - mat%gamma**2 * ( ncyc0 - mat%n0 - mat%ncw )**2 )
+            es =  exp ( - mat%gamma**2 * ( ( ncyc0 - mat%n0 - mat%ncw ) * DT )**2 )
          end if
          
-         wavefct = es * sin(mat%omega0*ncyc0) * DT
+         wavefct = es * sin(mat%omega0*ncyc0*DT) 
 
          ! i=const face: Finc(3) => Hy, Finc(4) => Hz 
          if ( mat%face .eq. 1 ) then
@@ -278,14 +278,14 @@ contains
        es = 1.0
        ! attack phase
        if ( ncyc0 .le. mat%n0 ) then
-          es =  exp ( - mat%gamma**2 * ( ncyc0 - mat%n0 )**2 )
+          es =  exp ( - mat%gamma**2 * ( ( ncyc0 - mat%n0 ) * DT )**2 )
        end if
        ! decay phase
        if ( ncyc0 .ge. mat%n0 + mat%ncw ) then         	
-          es =  exp ( - mat%gamma**2 * ( ncyc0 - mat%n0 - mat%ncw )**2 )
+          es =  exp ( - mat%gamma**2 * ( ( ncyc0 - mat%n0 - mat%ncw ) * DT )**2 )
        end if
        
-       wavefct = es * sin(mat%omega0*ncyc0) * DT
+       wavefct = es * sin(mat%omega0*ncyc0*DT)
        
        ! i=const face: Finc(1) => Ey, Finc(2) => Ez 
        if ( mat%face .eq. 1 ) then

@@ -53,7 +53,7 @@ module matsource
      real(kind=8) :: n0            ! time offset of peak [dt]
 
      real(kind=8) :: noffs,ncw     ! offset in time domain and duration of cw [dt]    
-     real(kind=8) :: vec(3)        ! J vector
+!     real(kind=8) :: vec(3)        ! J vector
 
      real(kind=8) :: n1,nend       ! some values used internally ...
      real(kind=8) :: gamma
@@ -73,7 +73,7 @@ contains
    
     M4_WRITE_DBG(". enter ReadMatSourceObj")
 
-    M4_MODREAD_EXPR({MATSOURCE}, funit,mat,reg, 1, out,{ 
+    M4_MODREAD_EXPR({MATSOURCE}, funit,mat,reg, 3, out,{ 
 
     ! read parameters here, as defined in mat data structure
 
@@ -81,13 +81,13 @@ contains
     read(funit,*) mat%noffs, mat%ncw ! time offset and cw activity [dt]
     read(funit,*) mat%tmode          ! time mode? (or wavelength mode)
     if ( mat%tmode ) then
-    	read(funit,*) mat%n0      ! peak of gaussian in time domain [dt]
-    	read(funit,*) mat%dn      ! half width of gaussian in time domain [dt]
-	else	
-    	read(funit,*) mat%a0        ! gaussian start value as fraction of peak
-    	read(funit,*) mat%dlambda   ! half width of vac.wave in units of [dx]
-	end if
-    read(funit,*) mat%vec(1),mat%vec(2), mat%vec(3) ! vector components
+       read(funit,*) mat%n0      ! peak of gaussian in time domain [dt]
+       read(funit,*) mat%dn      ! half width of gaussian in time domain [dt]
+    else	
+       read(funit,*) mat%a0        ! gaussian start value as fraction of peak
+       read(funit,*) mat%dlambda   ! half width of vac.wave in units of [dx]
+    end if
+    ! read(funit,*) mat%vec(1),mat%vec(2), mat%vec(3) ! vector components
    
     ! read regions and output structures
 
@@ -106,22 +106,22 @@ contains
     M4_MODLOOP_EXPR({MATSOURCE},mat,{
     
     ! center frequency
-    mat%omega0 = 2. * PI * 1. / ( mat%lambda0 * DT )
+    mat%omega0 = 2. * PI / mat%lambda0
 
     if ( mat%tmode ) then
 	    ! time mode: n0, dn given
         mat%n1 =  mat%n0 + mat%dn    
-        mat%gamma = sqrt( log(2.) ) / mat%dn    
+        mat%gamma = sqrt( log(2.) ) / ( mat%dn * DT )   
         mat%domega = log(2.) * mat%gamma
-		mat%omega1 = mat%omega0 - mat%domega
-		mat%a0 = exp(- mat%gamma**2 * ( mat%n0 )**2 )
+        mat%omega1 = mat%omega0 - mat%domega
+        mat%a0 = exp(- mat%gamma**2 * ( mat%n0 * DT )**2 )
     else
         ! wavelength mode: a0, dlambda given
-        mat%omega1 = 2. * PI * 1. / ( ( mat%lambda0 + mat%dlambda ) * DT )
-		mat%domega = mat%omega0 - mat%omega1
+        mat%omega1 = 2. * PI / ( mat%lambda0 + mat%dlambda )
+        mat%domega = mat%omega0 - mat%omega1
         mat%gamma =  mat%domega / log(2.)
-        mat%dn = sqrt( log(2.) )/mat%gamma    
-        mat%n0 =  sqrt ( - log(mat%a0) / mat%gamma**2 )
+        mat%dn =  1./DT * sqrt( log(2.) )/mat%gamma    
+        mat%n0 =  1./DT * sqrt ( - log(mat%a0) / mat%gamma**2 )
         mat%n1 =  mat%n0 + mat%dn
       end if
       
@@ -158,7 +158,7 @@ contains
     integer :: ncyc
     
     M4_MODLOOP_DECL({MATSOURCE},mat)
-    M4_REGLOOP_DECL(reg,p,i,j,k,w(1))
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
     real(kind=8) :: ncyc0, nend0, es, wavefct
 
     M4_MODLOOP_EXPR({MATSOURCE},mat,{
@@ -173,21 +173,21 @@ contains
          es = 1.0
          ! attack phase
          if ( ncyc0 .le. mat%n0 ) then
-            es =  exp ( - mat%gamma**2 * ( ncyc0 - mat%n0 )**2 )
+            es =  exp ( - mat%gamma**2 * ( ( ncyc0 - mat%n0 ) * DT )**2 )
 		 end if
          ! decay phase
          if ( ncyc0 .ge. mat%n0 + mat%ncw ) then         	
-            es =  exp ( - mat%gamma**2 * ( ncyc0 - mat%n0 - mat%ncw )**2 )
-		 end if
+            es =  exp ( - mat%gamma**2 * ( ( ncyc0 - mat%n0 - mat%ncw ) * DT )**2 )
+         end if
 		 
-		 wavefct = es * sin(mat%omega0*ncyc0) * DT
+         wavefct = es * sin(mat%omega0*ncyc0*DT)
          
          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
          M4_WRITE_DBG({"source @ ",i,j,k})
-           Ex(i,j,k) = Ex(i,j,k) + w(1) * epsinvx(i,j,k) * mat%vec(1) * wavefct
-           Ey(i,j,k) = Ey(i,j,k) + w(1) * epsinvy(i,j,k) * mat%vec(2) * wavefct
-           Ez(i,j,k) = Ez(i,j,k) + w(1) * epsinvz(i,j,k) * mat%vec(3) * wavefct
+           Ex(i,j,k) = Ex(i,j,k) + DT * w(1) * epsinvx(i,j,k) * wavefct
+           Ey(i,j,k) = Ey(i,j,k) + DT * w(2) * epsinvy(i,j,k) * wavefct
+           Ez(i,j,k) = Ez(i,j,k) + DT * w(3) * epsinvz(i,j,k) * wavefct
          })
 
        end if      
@@ -235,6 +235,7 @@ contains
 
     type(T_MATSOURCE) :: mat
  
+    
     M4_WRITE_INFO({"#",TRIM(i2str(mat%idx)),&
     	" ON=",TRIM(i2str(int(mat%noffs))),&
     	" ATT/DEC=",TRIM(i2str(int(mat%n0))),&
@@ -254,7 +255,7 @@ contains
     M4_WRITE_INFO({"lambda = ",mat%lambda0   })
     M4_WRITE_INFO({"tmode  = ",mat%tmode   })
     M4_WRITE_INFO({"noffs/ncw  = ",mat%noffs,mat%ncw   })
-    M4_WRITE_INFO({"vec(3) = ", mat%vec(1),mat%vec(2), mat%vec(3)})
+!    M4_WRITE_INFO({"vec(3) = ", mat%vec(1),mat%vec(2), mat%vec(3)})
     M4_WRITE_INFO({"n0 = ",mat%n0 })
     M4_WRITE_INFO({"dn = ",mat%dn })
     M4_WRITE_INFO({"dlambda0 = ",mat%dlambda })

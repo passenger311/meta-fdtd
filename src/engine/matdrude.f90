@@ -106,7 +106,7 @@ contains
     
        ! initialize mat object here
 
-       mat%omegapl = 2. * PI * 1. / ( mat%lambdapl * DT )
+       mat%omegapl = 2. * PI / mat%lambdapl
 !       mat%gammapl = 2. / ( mat%abslenpl * DT )
 
        reg = regobj(mat%regidx)
@@ -189,8 +189,8 @@ contains
 
     else ! 2. order equation
 
-       n = mod(ncyc-1,2) + 1
-       m = mod(ncyc,2) + 1
+       n = mod(ncyc-1+2,2) + 1
+       m = mod(ncyc+2,2) + 1
 
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
@@ -243,8 +243,8 @@ contains
 
     else ! 2. order equation
 
-       n = mod(ncyc-1,2) + 1
-       m = mod(ncyc,2) + 1
+       n = mod(ncyc-1+2,2) + 1
+       m = mod(ncyc+2,2) + 1
 
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
        

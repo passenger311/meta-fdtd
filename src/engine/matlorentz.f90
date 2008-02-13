@@ -98,7 +98,7 @@ contains
     
        ! initialize mat object here
 
-       mat%omegal = 2. * PI * 1. / ( mat%lambdal * DT )
+       mat%omegal = 2. * PI / mat%lambdal
 !       mat%gammal = 2. / ( mat%abslenl * DT )
 
        reg = regobj(mat%regidx)
@@ -151,8 +151,8 @@ contains
 
       M4_MODOBJ_GETREG(mat,reg)
 
-      n = mod(ncyc-1,2) + 1
-      m = mod(ncyc,2) + 1
+      n = mod(ncyc-1+2,2) + 1
+      m = mod(ncyc+2,2) + 1
     
       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
@@ -189,8 +189,8 @@ contains
 
     M4_MODOBJ_GETREG(mat,reg)
 
-       n = mod(ncyc-1,2) + 1
-       m = mod(ncyc,2) + 1
+       n = mod(ncyc-1+2,2) + 1
+       m = mod(ncyc+2,2) + 1
 
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
        
@@ -227,8 +227,8 @@ contains
 
     M4_MODOBJ_GETREG(mat,reg)
 
-       n = mod(ncyc-1,2) + 1
-       m = mod(ncyc,2) + 1
+       n = mod(ncyc-1+2,2) + 1
+       m = mod(ncyc+2,2) + 1
 
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
        

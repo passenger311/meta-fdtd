@@ -143,8 +143,8 @@ contains
 
       M4_MODOBJ_GETREG(mat,reg)
 
-      m = mod(ncyc,2) + 1
-      n = mod(ncyc-1,2) + 1
+      m = mod(ncyc+2,2) + 1
+      n = mod(ncyc-1+2,2) + 1
 
       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
@@ -177,8 +177,8 @@ contains
 
     M4_MODOBJ_GETREG(mat,reg)
 
-    m = mod(ncyc,2) + 1
-    n = mod(ncyc-1,2) + 1
+    m = mod(ncyc+2,2) + 1
+    n = mod(ncyc-1+2,2) + 1
 
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
        
@@ -220,8 +220,8 @@ contains
 
     M4_MODOBJ_GETREG(mat,reg)
 
-       n = mod(ncyc-1,2) + 1
-       m = mod(ncyc,2) + 1
+       n = mod(ncyc-1+2,2) + 1
+       m = mod(ncyc+2,2) + 1
 
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
        

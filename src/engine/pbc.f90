@@ -125,31 +125,33 @@ contains
     if ( i .gt. 2 .and. M4_IS1D ) return
     if ( i .gt. 4 .and. M4_IS2D ) return
 
-    if ( numproc .gt. 1 .and. i .eq. M4_SDIM*2-1 .or. i .eq. M4_SDIM*2 ) then
+!    if ( numproc .gt. 1 .and. i .eq. M4_SDIM*2-1 .or. i .eq. M4_SDIM*2 ) then
 
        ! border is about to be exchanged by mpicomms and then calculated by StepHBoundPbc
-       return
+!       return
 
-    endif
+!    endif
+
+! TODO: MPI stuff interferes!
 
     select case ( i )
     case ( 1 ) 
-       Ez(M4_COORD(IMIN,JBEG:JEND,KBEG:KEND))= phasex1 * Ez(M4_COORD(IEND,JBEG:JEND,KBEG:KEND))
-       Ey(M4_COORD(IMIN,JBEG:JEND,KBEG:KEND))= phasex1 * Ey(M4_COORD(IEND,JBEG:JEND,KBEG:KEND))
+!       Ez(M4_COORD(IMIN,JBEG:JEND,KBEG:KEND))= phasex1 * Ez(M4_COORD(IEND,JBEG:JEND,KBEG:KEND))
+!       Ey(M4_COORD(IMIN,JBEG:JEND,KBEG:KEND))= phasex1 * Ey(M4_COORD(IEND,JBEG:JEND,KBEG:KEND))
     case ( 2 ) 
        Ez(M4_COORD(IMAX,JBEG:JEND,KBEG:KEND))= phasex2 * Ez(M4_COORD(IBEG,JBEG:JEND,KBEG:KEND))
        Ey(M4_COORD(IMAX,JBEG:JEND,KBEG:KEND))= phasex2 * Ey(M4_COORD(IBEG,JBEG:JEND,KBEG:KEND))
     case ( 3 ) 
-       Ez(M4_COORD(IBEG:IEND,JMIN,KBEG:KEND))= phasey1 * Ez(M4_COORD(IBEG:IEND,JEND,KBEG:KEND))
-       Ex(M4_COORD(IBEG:IEND,JMIN,KBEG:KEND))= phasey1 * Ex(M4_COORD(IBEG:IEND,JEND,KBEG:KEND))
+!       Ez(M4_COORD(IBEG:IEND,JMIN,KBEG:KEND))= phasey1 * Ez(M4_COORD(IBEG:IEND,JEND,KBEG:KEND))
+!       Ex(M4_COORD(IBEG:IEND,JMIN,KBEG:KEND))= phasey1 * Ex(M4_COORD(IBEG:IEND,JEND,KBEG:KEND))
     case ( 4 )
        Ez(M4_COORD(IBEG:IEND,JMAX,KBEG:KEND))= phasey2 * Ez(M4_COORD(IBEG:IEND,JBEG,KBEG:KEND))
        Ex(M4_COORD(IBEG:IEND,JMAX,KBEG:KEND))= phasey2 * Ex(M4_COORD(IBEG:IEND,JBEG,KBEG:KEND))
     case ( 5 ) 
-       Ez(M4_COORD(IBEG:IEND,JBEG:JEND,KMIN))= phasez1 * Ez(M4_COORD(IBEG:IEND,JBEG:JEND,KEND))
-       Ex(M4_COORD(IBEG:IEND,JBEG:JEND,KMIN))= phasez1 * Ex(M4_COORD(IBEG:IEND,JBEG:JEND,KEND))
+!       Ey(M4_COORD(IBEG:IEND,JBEG:JEND,KMIN))= phasez1 * Ey(M4_COORD(IBEG:IEND,JBEG:JEND,KEND))
+!       Ex(M4_COORD(IBEG:IEND,JBEG:JEND,KMIN))= phasez1 * Ex(M4_COORD(IBEG:IEND,JBEG:JEND,KEND))
     case ( 6 ) 
-       Ez(M4_COORD(IBEG:IEND,JBEG:JEND,KMAX))= phasez2 * Ez(M4_COORD(IBEG:IEND,JBEG:JEND,KBEG))
+       Ey(M4_COORD(IBEG:IEND,JBEG:JEND,KMAX))= phasez2 * Ey(M4_COORD(IBEG:IEND,JBEG:JEND,KBEG))
        Ex(M4_COORD(IBEG:IEND,JBEG:JEND,KMAX))= phasez2 * Ex(M4_COORD(IBEG:IEND,JBEG:JEND,KBEG))
     end select
 
@@ -164,32 +166,34 @@ contains
     if ( i .gt. 2 .and. M4_IS1D ) return
     if ( i .gt. 4 .and. M4_IS2D ) return
 
-    if ( numproc .gt. 1 .and. i .eq. M4_SDIM*2-1 .or. i .eq. M4_SDIM*2 ) then
+!    if ( numproc .gt. 1 .and. i .eq. M4_SDIM*2-1 .or. i .eq. M4_SDIM*2 ) then
 
        ! border has been exchanged by mpicomms, now phase multiply
 
+! TODO: MPI stuff interferes!
+
        select case ( i )
        case ( 1 ) 
-          Ez(M4_COORD(IMIN,JBEG:JEND,KBEG:KEND))= phasex1 * Ez(M4_COORD(IMIN,JBEG:JEND,KBEG:KEND))
-          Ey(M4_COORD(IMIN,JBEG:JEND,KBEG:KEND))= phasex1 * Ey(M4_COORD(IMIN,JBEG:JEND,KBEG:KEND))
+          Hz(M4_COORD(IMIN,JBEG:JEND,KBEG:KEND))= phasex1 * Hz(M4_COORD(IEND,JBEG:JEND,KBEG:KEND))
+          Hy(M4_COORD(IMIN,JBEG:JEND,KBEG:KEND))= phasex1 * Hy(M4_COORD(IEND,JBEG:JEND,KBEG:KEND))
        case ( 2 ) 
-          Ez(M4_COORD(IMAX,JBEG:JEND,KBEG:KEND))= phasex2 * Ez(M4_COORD(IMAX,JBEG:JEND,KBEG:KEND))
-          Ey(M4_COORD(IMAX,JBEG:JEND,KBEG:KEND))= phasex2 * Ey(M4_COORD(IMAX,JBEG:JEND,KBEG:KEND))
+!          Hz(M4_COORD(IMAX,JBEG:JEND,KBEG:KEND))= phasex2 * Hz(M4_COORD(IMAX,JBEG:JEND,KBEG:KEND))
+!          Hy(M4_COORD(IMAX,JBEG:JEND,KBEG:KEND))= phasex2 * Hy(M4_COORD(IMAX,JBEG:JEND,KBEG:KEND))
        case ( 3 ) 
-          Ez(M4_COORD(IBEG:IEND,JMIN,KBEG:KEND))= phasey1 * Ez(M4_COORD(IBEG:IEND,JMIN,KBEG:KEND))
-          Ex(M4_COORD(IBEG:IEND,JMIN,KBEG:KEND))= phasey1 * Ex(M4_COORD(IBEG:IEND,JMIN,KBEG:KEND))
+          Hz(M4_COORD(IBEG:IEND,JMIN,KBEG:KEND))= phasey1 * Hz(M4_COORD(IBEG:IEND,JEND,KBEG:KEND))
+          Hx(M4_COORD(IBEG:IEND,JMIN,KBEG:KEND))= phasey1 * Hx(M4_COORD(IBEG:IEND,JEND,KBEG:KEND))
        case ( 4 )
-          Ez(M4_COORD(IBEG:IEND,JMAX,KBEG:KEND))= phasey2 * Ez(M4_COORD(IBEG:IEND,JMAX,KBEG:KEND))
-          Ex(M4_COORD(IBEG:IEND,JMAX,KBEG:KEND))= phasey2 * Ex(M4_COORD(IBEG:IEND,JMAX,KBEG:KEND))
+!          Hz(M4_COORD(IBEG:IEND,JMAX,KBEG:KEND))= phasey2 * Hz(M4_COORD(IBEG:IEND,JMAX,KBEG:KEND))
+!          Hx(M4_COORD(IBEG:IEND,JMAX,KBEG:KEND))= phasey2 * Hx(M4_COORD(IBEG:IEND,JMAX,KBEG:KEND))
        case ( 5 ) 
-          Ez(M4_COORD(IBEG:IEND,JBEG:JEND,KMIN))= phasez1 * Ez(M4_COORD(IBEG:IEND,JBEG:JEND,KMIN))
-          Ex(M4_COORD(IBEG:IEND,JBEG:JEND,KMIN))= phasez1 * Ex(M4_COORD(IBEG:IEND,JBEG:JEND,KMIN))
+          Hy(M4_COORD(IBEG:IEND,JBEG:JEND,KMIN))= phasez1 * Hy(M4_COORD(IBEG:IEND,JBEG:JEND,KEND))
+          Hx(M4_COORD(IBEG:IEND,JBEG:JEND,KMIN))= phasez1 * Hx(M4_COORD(IBEG:IEND,JBEG:JEND,KEND))
        case ( 6 ) 
-          Ez(M4_COORD(IBEG:IEND,JBEG:JEND,KMAX))= phasez2 * Ez(M4_COORD(IBEG:IEND,JBEG:JEND,KMAX))
-          Ex(M4_COORD(IBEG:IEND,JBEG:JEND,KMAX))= phasez2 * Ex(M4_COORD(IBEG:IEND,JBEG:JEND,KMAX))
+!          Hy(M4_COORD(IBEG:IEND,JBEG:JEND,KMAX))= phasez2 * Hy(M4_COORD(IBEG:IEND,JBEG:JEND,KMAX))
+!          Hx(M4_COORD(IBEG:IEND,JBEG:JEND,KMAX))= phasez2 * Hx(M4_COORD(IBEG:IEND,JBEG:JEND,KMAX))
        end select
 
-    endif
+!    endif
 
   end subroutine StepHBoundPbc
   

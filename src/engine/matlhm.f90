@@ -108,7 +108,7 @@ contains
     
        ! initialize mat object here
 
-       mat%omegapl = 2. * PI * 1. / ( mat%lambdapl * DT )
+       mat%omegapl = 2. * PI / mat%lambdapl
 !       mat%gammapl = 2. / ( mat%abslenpl * DT )
 
        reg = regobj(mat%regidx)
