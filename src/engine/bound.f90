@@ -85,13 +85,12 @@ contains
        case( "(PML" )
           M4_WRITE_DBG({"got token ",TRIM(string),"-> invoking ReadConfigPml"})
           call ReadConfigPml(UNITTMP,string) 
-   
-        case( "(PBC" )
+!       case( "(MPIBC" )
+!          M4_WRITE_DBG({"got token ",TRIM(string),"-> invoking ReadConfigMpibc"})
+!          call ReadConfigMpibc(UNITTMP,string) 
+       case( "(PBC" )
           M4_WRITE_DBG({"got token ",TRIM(string),"-> invoking ReadConfigPbc"})
           call ReadConfigPbc(UNITTMP,string) 
-       
-          ! add optional configs for other boundaries here
-
        case default	
           if ( string(1:2) .eq. "(!" ) then
              skiptill = cat2(")",string(3:))
@@ -104,6 +103,7 @@ contains
           end if
           exit
        end select
+
     enddo
     
     modconfigured = .true.

@@ -35,6 +35,7 @@ endif
 BOBJ=\
 constant.o\
 strings.o\
+parse.o\
 utils.o\
 mpiworld.o\
 reglist.o\

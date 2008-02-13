@@ -121,7 +121,7 @@
 1.94444444444444        ! sigma parameter
 1.1             	! kappa parameter
 )PML	
-(MPIBC
+(!MPIBC
 0 0 0 0			! send/receive target/source partitions
 )MPIBC
 )BOUND

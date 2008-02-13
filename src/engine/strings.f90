@@ -52,7 +52,6 @@ contains
 
 
 !
-!
 ! ---- split string <str> to <elem> substrings
 !
 
