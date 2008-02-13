@@ -52,9 +52,9 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine ReadConfigBound(funit,string)
+  subroutine ReadConfigBound(funit,lcount,string)
 
-    integer :: funit
+    integer :: funit, lcount
     character(len=*) :: string
     character(len=STRLNG) :: skiptill, line
       

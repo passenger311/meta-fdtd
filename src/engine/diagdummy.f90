@@ -39,9 +39,9 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine ReadDiagDummyObj(funit)
+  subroutine ReadDiagDummyObj(funit,lcount)
 
-    M4_MODREAD_DECL({DIAGDUMMY}, funit,diag,reg,out)
+    M4_MODREAD_DECL({DIAGDUMMY}, funit,lcount,diag,reg,out)
 
     M4_WRITE_DBG(". enter ReadMatDummyObj")
     

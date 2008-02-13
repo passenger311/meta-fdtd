@@ -67,14 +67,14 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine ReadMatTfsfObj(funit)
+  subroutine ReadMatTfsfObj(funit,lcount)
 
 
-    M4_MODREAD_DECL({MATTFSF}, funit,mat,reg,out)
+    M4_MODREAD_DECL({MATTFSF}, funit,lcount,mat,reg,out)
    
     M4_WRITE_DBG(". enter ReadMatTfsfObj")
 
-    M4_MODREAD_EXPR({MATTFSF}, funit,mat,reg, 4, out,{ 
+    M4_MODREAD_EXPR({MATTFSF}, funit,lcount,mat,reg, 4, out,{ 
 
     ! read parameters here, as defined in mat data structure
 

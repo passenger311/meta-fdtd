@@ -92,9 +92,9 @@ contains
 
 !----------------------------------------------------------------------
 
- subroutine ReadConfigFdtd(funit,string)
+ subroutine ReadConfigFdtd(funit,lcount,string)
 
-   integer :: funit
+   integer :: funit, lcount
    character(len=*) :: string 
    character(len=STRLNG) :: line, skiptill
    type (T_OUT) :: out

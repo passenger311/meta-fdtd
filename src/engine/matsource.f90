@@ -66,14 +66,14 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine ReadMatSourceObj(funit)
+  subroutine ReadMatSourceObj(funit,lcount)
 
 
-    M4_MODREAD_DECL({MATSOURCE}, funit,mat,reg,out)
+    M4_MODREAD_DECL({MATSOURCE}, funit,lcount,mat,reg,out)
    
     M4_WRITE_DBG(". enter ReadMatSourceObj")
 
-    M4_MODREAD_EXPR({MATSOURCE}, funit,mat,reg, 3, out,{ 
+    M4_MODREAD_EXPR({MATSOURCE}, funit,lcount,mat,reg, 3, out,{ 
 
     ! read parameters here, as defined in mat data structure
 

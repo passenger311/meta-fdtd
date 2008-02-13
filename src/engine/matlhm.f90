@@ -75,13 +75,13 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine ReadMatLhmObj(funit)
+  subroutine ReadMatLhmObj(funit,lcount)
 
-    M4_MODREAD_DECL({MATLHM}, funit,mat,reg,out)
+    M4_MODREAD_DECL({MATLHM},funit,lcount,mat,reg,out)
 
     M4_WRITE_DBG(". enter ReadMatLhmObj")
     
-    M4_MODREAD_EXPR({MATLHM},funit,mat,reg,6,out,{ 
+    M4_MODREAD_EXPR({MATLHM},funit,lcount,mat,reg,6,out,{ 
 
     ! read mat parameters here, as defined in mat data structure
     read(funit,*) mat%lambdapl

@@ -49,15 +49,15 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine ReadConfigDiag(funit,string)
+  subroutine ReadConfigDiag(funit,lcount,string)
 
-    integer :: funit
+    integer :: funit,lcount
     character(len=*) :: string
 
     select case ( string )
        
        M4_FOREACH_DIAG2({case ("(},{")
-       call Read},{Obj(funit)
+       call Read},{Obj(funit,lcount)
        })
        
     case default

@@ -63,13 +63,13 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine ReadDiagEBalObj(funit)
+  subroutine ReadDiagEBalObj(funit,lcount)
 
-    M4_MODREAD_DECL({DIAGEBAL}, funit,diag,reg,out)
+    M4_MODREAD_DECL({DIAGEBAL}, funit,lcount,diag,reg,out)
 
     M4_WRITE_DBG(". enter ReadMatEBalObj")
     
-    M4_MODREAD_EXPR({DIAGEBAL}, funit,diag,reg,0,out, {
+    M4_MODREAD_EXPR({DIAGEBAL}, funit,lcount,diag,reg,0,out, {
 
     ! read diag parameters here, as defined in diag data structure
     read(funit,*) diag%ns, diag%ne, diag%dn

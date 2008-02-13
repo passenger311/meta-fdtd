@@ -62,13 +62,13 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine ReadMatDebyeObj(funit)
+  subroutine ReadMatDebyeObj(funit,lcount)
 
-    M4_MODREAD_DECL({MATDEBYE}, funit,mat,reg,out)
+    M4_MODREAD_DECL({MATDEBYE}, funit,lcount,mat,reg,out)
 
     M4_WRITE_DBG(". enter ReadMatDebyeObj")
     
-    M4_MODREAD_EXPR({MATDEBYE},funit,mat,reg,3,out,{ 
+    M4_MODREAD_EXPR({MATDEBYE},funit,lcount,mat,reg,3,out,{ 
 
     ! read mat parameters here, as defined in mat data structure
     read(funit,*) mat%taud

@@ -63,9 +63,9 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine ReadConfigGrid(funit,string,sdim)
+  subroutine ReadConfigGrid(funit,lcount,string,sdim)
 
-    integer :: funit
+    integer :: funit, lcount
     character(len=*) :: string
     integer :: sdim
     

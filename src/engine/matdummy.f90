@@ -45,13 +45,13 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine ReadMatDummyObj(funit)
+  subroutine ReadMatDummyObj(funit,lcount)
 
-    M4_MODREAD_DECL({MATDUMMY}, funit,mat,reg,out)
+    M4_MODREAD_DECL({MATDUMMY}, funit,lcount,mat,reg,out)
 
     M4_WRITE_DBG(". enter ReadMatDummyObj")
     
-    M4_MODREAD_EXPR({MATDUMMY},funit,mat,reg,0,out,{ 
+    M4_MODREAD_EXPR({MATDUMMY},funit,lcount,mat,reg,0,out,{ 
 
     ! read mat parameters here, as defined in mat data structure
     read(funit,*) mat%something

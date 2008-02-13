@@ -69,10 +69,10 @@ define({M4_MODOBJ_GETREG},{
 
 
 define({M4_MODREAD_DECL},{
-    integer:: $2 ! funit	
-    type(T_$1) :: $3 
-    type(T_REG) :: $4 ! reg
-    type(T_OUT) :: $5 ! out
+    integer:: $2,$3 ! funit, lcount	
+    type(T_$1) :: $4 
+    type(T_REG) :: $5 ! reg
+    type(T_OUT) :: $6 ! out
     character(len=STRLNG) :: m4_string, m4_linestr, m4_skiptill
 
 })
@@ -82,18 +82,18 @@ define({M4_MODREAD_DECL},{
 define({M4_MODREAD_EXPR},{
 
  num$1obj = num$1obj + 1
- $3 = $1obj(num$1obj)
- $3%idx = num$1obj	
+ $4 = $1obj(num$1obj)
+ $4%idx = num$1obj	
 
- $7
+ $8
 
 ! read regobj information
 
     read($2,*) m4_string
     if ( m4_string .eq. "(REG" ) then
        M4_WRITE_DBG({"got token (REG -> ReadRegObj"})
-       call ReadRegObj($4, fdtdreg, $2, $5)
-       $3%regidx = reg%idx
+       call ReadRegObj($5, fdtdreg, $2, $6)
+       $4%regidx = reg%idx
     else
        M4_FATAL_ERROR({"NO REGION DEFINED: Read$1Obj"})
     end if
@@ -114,9 +114,9 @@ define({M4_MODREAD_EXPR},{
       select case (m4_string)
       case("(OUT") 
 	M4_WRITE_DBG({"got token (OUT -> ReadOutObj"})
-       call ReadOutObj($6, $4, modname, $2)
-       outobj($6%idx)%objidx = num$1obj
-       $3%regidx = $4%idx
+       call ReadOutObj($7, $5, modname, $2)
+       outobj($7%idx)%objidx = num$1obj
+       $4%regidx = $5%idx
       case default	
 	if ( m4_string(1:2) .eq. "(!" ) then
            m4_skiptill = cat2(")",m4_string(3:))
@@ -134,5 +134,5 @@ define({M4_MODREAD_EXPR},{
 
 
 ! write back
-    $1obj(num$1obj) = $3		
+    $1obj(num$1obj) = $4		
 })

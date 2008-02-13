@@ -14,6 +14,7 @@
 module config
 
   use strings
+  use parse
   use constant
   use reglist
 
@@ -48,10 +49,12 @@ contains
   subroutine ReadConfig(dim)
       
       integer :: dim
-      character(len=STRLNG) :: file, string, line, skiptill
+      character(len=STRLNG) :: file
+      character(len=LINELNG) :: string, line, skiptill
       logical :: gotgrid = .false.
       logical :: gotfdtd = .false.
-      integer :: ios
+      logical :: skip, err, eof
+      integer :: ios, lcount = 1
       
       M4_WRITE_DBG({". enter ReadConfig"})
 
@@ -62,61 +65,57 @@ contains
       open(UNITTMP,FILE=file,STATUS="old", IOSTAT=ios)
       M4_OPEN_ERROR(ios,file)
 
-      skiptill = ""
+      skip = .false.
+      err = .false.
+      lcount = 1
+
       do
-         read(UNITTMP,*, IOSTAT=ios) line
-         string = TRIM(ADJUSTL(line))
 
-         if(ios .ne. 0) exit
+         call readline(UNITTMP,line,lcount,eof,skip,skiptill)
+         if ( .not. skip ) then
 
-         if ( skiptill .ne. "" ) then 
-            M4_WRITE_DBG({"skipping line ",TRIM(string)})
-            if ( string .eq. skiptill ) skiptill = ""  
-            cycle              
-         endif
-         M4_WRITE_DBG({"got token ",TRIM(string)})
+            call getstring(line,string,err)
+
+            M4_PARSE_ERROR(err,lcount,line)
+
+            M4_WRITE_DBG({"got token ",TRIM(string)})
  
-         select case ( string )
+            select case ( string )
             
-         case( "(GRID" )
-            M4_WRITE_INFO({"-> ReadConfigGrid"})
-            call ReadConfigGrid(UNITTMP,string,dim)
-            gotgrid = .true.
-         case( "(FDTD" )
-			M4_WRITE_INFO({"-> ReadConfigFdtd"})
-            call ReadConfigFdtd(UNITTMP,string)
-            gotfdtd = .true.
-         case( "(BOUND" )
-			M4_WRITE_INFO({"-> ReadConfigBound"})
-            call ReadConfigBound(UNITTMP,string)    
-         case("")
-         case default
+            case( "(GRID" )
+               M4_WRITE_INFO({"-> ReadConfigGrid"})
+               call ReadConfigGrid(UNITTMP,lcount,string,dim)
+               gotgrid = .true.
+            case( "(FDTD" )
+               M4_WRITE_INFO({"-> ReadConfigFdtd"})
+               call ReadConfigFdtd(UNITTMP,lcount,string)
+               gotfdtd = .true.
+            case( "(BOUND" )
+               M4_WRITE_INFO({"-> ReadConfigBound"})
+               call ReadConfigBound(UNITTMP,lcount,string)    
+            case default
+               if ( string(1:4) .eq. "(MAT" ) then
+                  M4_WRITE_INFO({"-> ReadConfigMat: ",TRIM(string(5:))})
+                  call ReadConfigMat(UNITTMP,lcount,string)
+                  cycle
+               endif
+               
+               if ( string(1:5) .eq. "(DIAG" ) then
+                  M4_WRITE_INFO({"-> ReadConfigDiag: ",TRIM(string(6:))})
+                  call ReadConfigDiag(UNITTMP,lcount,string)
+                  cycle
+               endif
+               
+               M4_SYNTAX_ERROR(err,lcount,line)
 
-            if ( string(1:2) .eq. "(!" ) then
-               skiptill = cat2(")",string(3:))
-               M4_WRITE_DBG({"-> skiptill = ", TRIM(skiptill)})  
-               cycle
-            end if
+            end select
+        
+         end if
+        
+         if ( eof ) exit
 
-            if ( string(1:4) .eq. "(MAT" ) then
-               M4_WRITE_INFO({"-> ReadConfigMat: ",TRIM(string(5:))})
-               call ReadConfigMat(UNITTMP,string)
-               cycle
-            endif
-            
-            if ( string(1:5) .eq. "(DIAG" ) then
-               M4_WRITE_INFO({"-> ReadConfigDiag: ",TRIM(string(6:))})
-               call ReadConfigDiag(UNITTMP,string)
-               cycle
-            endif
+      end do
 
-            if ( string(1:1) .ne. "!" ) then
-               M4_FATAL_ERROR({"BAD TOKEN ", TRIM(string)})
-            endif
-
-         end select
-         
-      enddo
       close(UNITTMP)
 
       if ( .not. gotgrid ) then

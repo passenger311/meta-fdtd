@@ -4,6 +4,16 @@ define({M4_WRITE_WARN}, {write(STDOUT,*) "!WRN (",TRIM(modname),") ", $1 })
 define({M4_FATAL_ERROR}, {write(STDERR,*) "!ERR (",TRIM(modname),") ", $1
 stop
 })
+define({M4_SYNTAX_ERROR},{
+if ( $1 ) then
+M4_FATAL_ERROR({"SYNTAX ERROR @ LINE: ",$2})
+endif
+})
+define({M4_PARSE_ERROR},{
+if ( $1 ) then
+M4_FATAL_ERROR({"PARSE ERROR @ LINE: ",$2})
+endif
+})
 define({M4_ALLOC_ERROR}, {if ( $1 .ne. 0 ) then
 M4_FATAL_ERROR({"OUT OF MEMORY ",$2})
 endif

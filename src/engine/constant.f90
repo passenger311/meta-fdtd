@@ -27,6 +27,7 @@ module constant
   integer, parameter :: UNITTMP=10                 ! file unit number
   real(8), parameter :: PI=3.14159265358979323846  ! PI
   integer, parameter :: STRLNG=80                  ! max. string length
+  integer, parameter :: LINELNG=160
   integer, parameter :: STDERR=0                   ! 6 for sr8000k, otherwise 0
   integer, parameter :: STDOUT=6                   ! 
 

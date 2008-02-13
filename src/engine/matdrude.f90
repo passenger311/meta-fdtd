@@ -73,13 +73,13 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine ReadMatDrudeObj(funit)
+  subroutine ReadMatDrudeObj(funit,lcount)
 
-    M4_MODREAD_DECL({MATDRUDE}, funit,mat,reg,out)
+    M4_MODREAD_DECL({MATDRUDE}, funit,lcount,mat,reg,out)
 
     M4_WRITE_DBG(". enter ReadMatDrudeObj")
     
-    M4_MODREAD_EXPR({MATDRUDE},funit,mat,reg,3,out,{ 
+    M4_MODREAD_EXPR({MATDRUDE},funit,lcount,mat,reg,3,out,{ 
 
     ! read mat parameters here, as defined in mat data structure
     read(funit,*) mat%lambdapl

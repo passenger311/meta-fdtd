@@ -14,6 +14,7 @@
 
 module parse
  
+  use constant
   use strings
 
   implicit none
@@ -24,16 +25,15 @@ contains
 
 ! ---------------------------------------------------------------------
 
-
-  subroutine readline(unit, rline, lcount, eof, skip, skiptill)
+  subroutine readline(unit, line, lcount, eof, skip, skiptill)
     
     integer :: unit, lcount
     logical :: skip, eof
-    character(len=255) :: rline, skiptill
+    character(len=*) :: line, skiptill
+    character(len=LINELNG) :: rline
 
     integer :: ios, i
     logical :: wipe
-    character(len=255) :: line
 
     line = ""
 
@@ -56,18 +56,18 @@ contains
        skiptill = cat2(")",rline(3:))
        skip = .true.
     end if
-    
+  
     if ( skip ) then 
        if ( rline .eq. skiptill ) skiptill = ""  
     else
        ! cut comment
        wipe = .false.
-       do i = 1, len(rline)
+       do i = 1, LINELNG
           if ( wipe ) then
-             rline(i:i) = ' ' 
+             line(i:i) = ' ' 
           else
-             if ( rline(i:i) .eq. '!' ) then 
-                rline(i:i) = ' ' 
+             if ( line(i:i) .eq. '!' ) then 
+                line(i:i) = ' ' 
                 wipe = .true.
              end if
           endif
@@ -75,11 +75,10 @@ contains
 
     endif
 
-    if ( .not. skip .and. rline .eq. "" ) then
+    if ( .not. skip .and. line .eq. "" ) then
        skip = .true.
        skiptill = ""
     end if
-
 
   end subroutine readline
 
@@ -100,7 +99,7 @@ contains
 
    if ( err ) return
 
-   do i = 1, len(line)
+   do i = 1, LINELNG
 
       if ( line(i:i) .ne. ' ' .and. s .eq. -1 ) s = i      
       if ( line(i:i) .eq. ' ' .and. s .ne. -1 ) then 
@@ -137,7 +136,7 @@ contains
 
    if ( err ) return
 
-   do i = 1, len(line)
+   do i = 1, LINELNG
 
       if ( line(i:i) .ne. ' ' .and. s .eq. -1 ) s = i      
       if ( line(i:i) .eq. ' ' .and. s .ne. -1 ) then 
@@ -174,7 +173,7 @@ contains
 
    if ( err ) return
 
-   do i = 1, len(line)
+   do i = 1, LINELNG
 
       if ( line(i:i) .ne. ' ' .and. s .eq. -1 ) s = i      
       if ( line(i:i) .eq. ' ' .and. s .ne. -1 ) then 
@@ -212,7 +211,7 @@ contains
    if ( err ) return
  
 
-   do i = 1, len(line)
+   do i = 1, LINELNG
 
       if ( line(i:i) .ne. ' ' .and. s .eq. -1 ) s = i      
       if ( line(i:i) .eq. ' ' .and. s .ne. -1 ) then 
@@ -249,7 +248,7 @@ contains
 
    if ( err ) return
 
-   do i = 1, len(line)
+   do i = 1, LINELNG
 
       if ( line(i:i) .ne. ' ' .and. s .eq. -1 ) s = i      
       if ( line(i:i) .eq. ' ' .and. s .ne. -1 ) then 
@@ -285,7 +284,7 @@ contains
 
    if ( err ) return
 
-   do i = 1, len(line)
+   do i = 1, LINELNG
       
       if ( line(i:i) .ne. ' ' .and. s .eq. -1 ) s = i      
       if ( line(i:i) .eq. ' ' .and. s .ne. -1 ) then 
@@ -325,7 +324,7 @@ contains
 
    if ( err ) return
 
-   do i = 1, len(line)
+   do i = 1, LINELNG
 
       if ( line(i:i) .eq. delim ) then 
          line(i:i) = " "
@@ -372,7 +371,7 @@ contains
 
    if ( err ) return
 
-   do i = 1, len(line)
+   do i = 1, LINELNG
       
       if ( line(i:i) .ne. ' ' .and. s .eq. -1 ) s = i      
       if ( line(i:i) .eq. ' ' .and. s .ne. -1 ) then 
@@ -410,7 +409,7 @@ contains
 
    if ( err ) return
 
-   do i = 1, len(line)
+   do i = 1, LINELNG
 
       if ( line(i:i) .ne. ' ' .and. s .eq. -1 ) s = i      
       if ( line(i:i) .eq. ' ' .and. s .ne. -1 ) then 

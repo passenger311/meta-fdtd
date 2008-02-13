@@ -65,13 +65,13 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine ReadMatLorentzObj(funit)
+  subroutine ReadMatLorentzObj(funit,lcount)
 
-    M4_MODREAD_DECL({MATLORENTZ}, funit,mat,reg,out)
+    M4_MODREAD_DECL({MATLORENTZ}, funit,lcount,mat,reg,out)
 
     M4_WRITE_DBG(". enter ReadMatLorentzObj")
     
-    M4_MODREAD_EXPR({MATLORENTZ},funit,mat,reg,3,out,{ 
+    M4_MODREAD_EXPR({MATLORENTZ},funit,lcount,mat,reg,3,out,{ 
 
     ! read mat parameters here, as defined in mat data structure
     read(funit,*) mat%lambdal
