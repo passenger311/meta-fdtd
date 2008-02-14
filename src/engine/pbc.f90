@@ -57,32 +57,35 @@ contains
 
 !----------------------------------------------------------------------
 
+ subroutine ReadConfigPbc(funit,lcount,string)
 
-  subroutine ReadConfigPbc(funit,string)
-
-    integer :: funit
+    integer :: funit, lcount
     character(len=*) :: string
-      
-    integer :: ios, i
+
+    character(len=LINELNG) :: line
 
     M4_WRITE_DBG({". enter ReadConfigPbc"})
 
-    M4_WRITE_DBG({"received token: ", TRIM(string)})
     if ( string .ne. "(PBC" ) then
        M4_FATAL_ERROR({"BAD SECTION IDENTIFIER: ReadConfigPbc"})
     endif
 
-    ! read phase factor
 
-    if ( string(1:1) .ne. ")" ) then
-       M4_FATAL_ERROR({"BAD SECTION TERMINATOR: ReadConfigPbc"})
-    endif
+    ! TODO: configure phase factors for PBCs here.
+
+    ! call readint(funit, lcount, PMLMAX)
+    ! M4_WRITE_DBG({"read PMLMAX: ", PMLMAX})
+
+
+    ! TODO: add some checks on numerical values
 
     modconfigured = .true.
 
     M4_WRITE_DBG({". exit ReadConfigPbc"})
 
   end subroutine ReadConfigPbc
+
+
 
 !----------------------------------------------------------------------
 

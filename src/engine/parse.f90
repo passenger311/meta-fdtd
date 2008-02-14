@@ -20,71 +20,82 @@ module parse
   implicit none
   save
 
+  character(len=20), private, parameter :: modname = 'PARSE'
+
+
 contains
 
 
 ! ---------------------------------------------------------------------
 
-  subroutine readline(unit, line, lcount, eof, skip, skiptill)
+  subroutine readline(unit, lcount, eof, line)
     
     integer :: unit, lcount
-    logical :: skip, eof
-    character(len=*) :: line, skiptill
-    character(len=LINELNG) :: rline
+    logical :: eof
+    character(len=*) :: line
 
+    character(len=LINELNG) :: rline, skiptill = ""
     integer :: ios, i
-    logical :: wipe
+    logical :: wipe, skip = .false.
 
-    line = ""
+    do
 
-    if ( skiptill .eq. "" ) then
-       skip = .false.
-    end if
+       line = ""
 
-    read(unit,"(A255)",iostat=ios) line
+       read(unit,"(A159)",iostat=ios) line
+       
+       if ( ios .ne. 0 ) then
+          eof = .true.
+          exit
+       else
+          eof = .false. 
+          lcount = lcount + 1
+       end if
+       
+       rline = ltrim(ADJUSTL(line))
 
-    if ( ios .ne. 0 ) then
-       eof = .true.
-    else
-       eof = .false. 
-       lcount = lcount + 1
-    end if
+       if ( line(1:1) .eq. "!" ) cycle
 
-    rline =  TRIM(ADJUSTL(line))
+       if ( rline(1:2) .eq. "(!" ) then
+          skiptill = cat2(")",rline(3:))
+          skip = .true.
+          cycle
+       end if
+       
+       if ( skip ) then 
+          if ( rline .eq. skiptill ) then 
+             skiptill = ""  
+             skip = .false.
+          end if
+          cycle
+       else
+          ! cut comment
+          wipe = .false.
+          do i = 1, LINELNG
+             if ( wipe ) then
+                rline(i:i) = ' ' 
+             else
+                if ( rline(i:i) .eq. '!' ) then 
+                   rline(i:i) = ' ' 
+                   wipe = .true.
+                end if
+             endif
+          end do
+          
+       endif
+       
+       if ( .not. skip .and. rline .eq. "" ) cycle
 
-    if ( rline(1:2) .eq. "(!" ) then
-       skiptill = cat2(")",rline(3:))
-       skip = .true.
-    end if
-  
-    if ( skip ) then 
-       if ( rline .eq. skiptill ) skiptill = ""  
-    else
-       ! cut comment
-       wipe = .false.
-       do i = 1, LINELNG
-          if ( wipe ) then
-             line(i:i) = ' ' 
-          else
-             if ( line(i:i) .eq. '!' ) then 
-                line(i:i) = ' ' 
-                wipe = .true.
-             end if
-          endif
-       end do
+       exit
 
-    endif
+    end do
 
-    if ( .not. skip .and. line .eq. "" ) then
-       skip = .true.
-       skiptill = ""
-    end if
+    line = rline
 
   end subroutine readline
 
 
 ! ---------------------------------------------------------------------
-
 
  subroutine getlogical(line,val, err)
 
@@ -342,6 +353,7 @@ contains
          read( line(s:e),*, iostat=ios ) val(c)
          if ( ios .ne. 0 ) then 
             err =.true.
+            return
          else
             line(s:e) = "" ! wipe
             s = -1
@@ -350,9 +362,56 @@ contains
       end if
    end do
    
-   err = .true. 
-
  end subroutine getintvec
+
+! ---------------------------------------------------------------------
+
+ subroutine getfloatvec(line, val, num, delim, err)
+
+   character(len=*) :: line
+   integer :: num
+   real(kind=8) :: val(num)
+   character :: delim
+   logical :: err
+   integer :: i ,s, e, c, ios
+   
+   val = 0
+
+   s = -1
+   e = -1
+   c = 0
+
+   if ( err ) return
+
+   do i = 1, LINELNG
+
+      if ( line(i:i) .eq. delim ) then 
+         line(i:i) = " "
+         return
+      end if
+      
+      if ( line(i:i) .ne. ' ' .and. s .eq. -1 ) s = i      
+      if ( line(i:i) .eq. ' ' .and. s .ne. -1 ) then 
+         e = i-1
+         c = c + 1
+         if ( c .gt. num ) then
+            err = .true. 
+            return
+         end if
+         read( line(s:e),*, iostat=ios ) val(c)
+         if ( ios .ne. 0 ) then 
+            err =.true.
+            return
+         else
+            line(s:e) = "" ! wipe
+            s = -1
+            e = -1
+         end if
+      end if
+   end do
+   
+ end subroutine getfloatvec
+
 
 ! ---------------------------------------------------------------------
 
@@ -395,12 +454,12 @@ contains
 
 ! ---------------------------------------------------------------------
 
- subroutine expectstring(line, str, err)
+ subroutine gettoken(line, token, err)
 
-  character(len=*) :: line
-  logical :: err
-  character(len=*) :: str
-  character(len=80) :: val
+   character(len=*) :: token
+   logical :: err
+   character(len=*) :: line
+   character(len=80) :: val
  
    integer :: i ,s, e, ios
 
@@ -415,7 +474,7 @@ contains
       if ( line(i:i) .eq. ' ' .and. s .ne. -1 ) then 
          e = i-1
          read( line(s:e),*, iostat=ios ) val
-         if ( ios .ne. 0 .or. val .ne. str ) then 
+         if ( ios .ne. 0 .or. val .ne. token ) then 
             err =.true.
          else
             line(s:e) = "" ! wipe
@@ -427,12 +486,155 @@ contains
    val = ""
    err = .true. 
 
- end subroutine expectstring
+ end subroutine gettoken
+
+! ---------------------------------------------------------------------
+
+  subroutine readtoken(unit, lcount, token)
+    
+    integer :: unit, lcount
+    character(len=*) :: token
+    logical :: err = .false.
+
+    character(len=LINELNG) :: line
+    logical :: eof
+
+    call readline(unit, lcount, eof, line)
+    if ( eof ) err = .true.
+    call gettoken(line, token, err)
+    if ( line .ne. "" ) err = .true.
+    M4_SYNTAX_ERROR(err,lcount,token)
+
+  end subroutine readtoken
+
+! ---------------------------------------------------------------------
+
+  subroutine readint(unit, lcount, val)
+    
+    integer :: unit, lcount
+    integer :: val
+    logical :: err = .false.
+
+    character(len=LINELNG) :: line
+    logical :: eof
+
+    call readline(unit, lcount, eof, line)
+    if ( eof ) err = .true.
+    call getint(line, val, err)
+    if ( line .ne. "" ) err = .true.
+    M4_SYNTAX_ERROR(err,lcount,{"1 INTEGER"})
+
+  end subroutine readint
+
+! ---------------------------------------------------------------------
+
+  subroutine readfloat(unit, lcount, val)
+    
+    integer :: unit, lcount
+    real(kind=8) :: val
+    logical :: err = .false.
+
+    character(len=LINELNG) :: line
+    logical :: eof
+
+    call readline(unit, lcount, eof, line)
+    if ( eof ) err = .true.
+    call getfloat(line, val, err)
+    if ( line .ne. "" ) err = .true.
+    M4_SYNTAX_ERROR(err,lcount,{"1 FLOAT"})
+
+  end subroutine readfloat
+
+! ---------------------------------------------------------------------
+
+  subroutine readints(unit, lcount, val, num)
+    
+    integer :: unit, lcount
+    integer :: num
+    integer :: val(num)
+    logical :: err = .false.
+
+    character(len=LINELNG) :: line
+    logical :: eof
+
+    call readline(unit, lcount, eof, line)
+    if ( eof ) err = .true.
+    call getints(line, val, num, err)
+    if ( line .ne. "" ) err = .true.
+    M4_SYNTAX_ERROR(err,lcount,{TRIM(i2str(num)), " INTEGERS"})
+
+  end subroutine readints
 
 
 ! ---------------------------------------------------------------------
 
+  subroutine readintvec(unit, lcount, val, num)
+    
+    integer :: unit, lcount
+    integer :: num
+    integer :: val(num)
+    logical :: err = .false.
 
+    character(len=LINELNG) :: line
+    logical :: eof
+
+    call readline(unit, lcount, eof, line)
+    if ( eof ) err = .true.
+    call getintvec(line, val, num, ":", err)
+    if ( line .ne. "" ) err = .true.
+    M4_SYNTAX_ERROR(err,lcount,{TRIM(i2str(num)), " INTEGERS"})
+
+  end subroutine readintvec
+
+
+! ---------------------------------------------------------------------
+
+  subroutine readfloats(unit, lcount, val, num)
+    
+    integer :: unit, lcount
+    integer :: num
+    real(kind=8) :: val(num)
+    logical :: err = .false.
+
+    character(len=LINELNG) :: line
+    logical :: eof
+
+    call readline(unit, lcount, eof, line)
+    if ( eof ) err = .true.
+    call getfloats(line, val, num, err)
+    if ( line .ne. "" ) err = .true.
+    M4_SYNTAX_ERROR(err,lcount,{TRIM(i2str(num)), " FLOATS"})
+
+  end subroutine readfloats
+
+
+! ---------------------------------------------------------------------
+
+  
+  character(len=LINELNG) function ltrim(str) 
+
+    character(len=*) :: str
+
+    character :: c 
+    integer :: i, n 
+    logical :: copy = .false.
+    
+    ltrim = ""
+
+    n = 1
+    do i = 1, LINELNG
+       c = str(i:i)
+       if ( iachar(c) .eq. 9 ) c = ' '
+       if ( c .ne. ' ' .or. copy ) then 
+          ltrim(n:n) = c  
+          n = n + 1
+          copy = .true.
+       end if
+    end do
+
+  end function ltrim
+
+! ---------------------------------------------------------------------
 
 
 end module parse

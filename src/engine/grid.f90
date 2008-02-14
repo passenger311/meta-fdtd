@@ -18,6 +18,7 @@ module grid
 
   use constant
   use strings
+  use parse
   use mpiworld
   use reglist
 
@@ -69,7 +70,8 @@ contains
     character(len=*) :: string
     integer :: sdim
     
-    integer :: ios
+    character(len=LINELNG) :: line
+    integer :: v(2)
 
     M4_WRITE_DBG({". enter ReadConfigGrid"})
 
@@ -78,39 +80,38 @@ contains
        M4_FATAL_ERROR({"BAD SECTION IDENTIFIER: ReadConfigGrid"})
     endif
 
-    DIM = sdim
-
     JBEG = 0
     JEND = 0
     KBEG = 0
     KEND = 0
     
-    read(funit,*) PARTITIONS
-    M4_WRITE_DBG({"read PARTITIONS: ", PARTITIONS})
-    read(funit,*) NCYCMAX
-    M4_WRITE_DBG({"read NCYCMAX: ", NCYCMAX})
-    read(funit,*) DT
-    M4_WRITE_DBG({"read DT: ", DT})
-    read(funit,*) IBEG, IEND    ! from ... to ranges
-    M4_WRITE_DBG({"read IBEG/IEND: ", IBEG, IEND})
-    if ( DIM .ge. 2 ) then
-       read(funit,*) JBEG, JEND
-       M4_WRITE_DBG({"read JBEG/JEND: ", JBEG, JEND})
-    endif
-    if ( DIM .ge. 3 ) then
-       read(funit,*) KBEG, KEND
-       M4_WRITE_DBG({"read KBEG/KEND: ", KBEG, KEND})
+    call readint(funit, lcount, DIM)
+    M4_WRITE_DBG({"read DIM: ", DIM})
+    if ( DIM .ne. sdim ) then
+       M4_FATAL_ERROR({"ENGINE HAS NOT BEEN COMPILED FOR DIM = ",TRIM(i2str(DIM))})
     end if
-
-
-    read(funit,*,iostat=ios) string
-    M4_WRITE_DBG({"read terminator: ", TRIM(string)})
-
-    ! TODO: add some checks on numerical values
-
-    if ( string(1:1) .ne. ")" ) then
-       M4_FATAL_ERROR({"BAD SECTION TERMINATOR: ReadConfigGrid"})
-    endif
+    call readint(funit, lcount, PARTITIONS)
+    M4_WRITE_DBG({"read PARTITIONS: ", PARTITIONS})
+    call readint(funit, lcount, NCYCMAX)
+    M4_WRITE_DBG({"read NCYCMAX: ", NCYCMAX})
+    call readfloat(funit, lcount, DT)
+    M4_WRITE_DBG({"read DT: ", DT})
+    call readints(funit, lcount, v ,2)
+    IBEG=v(1)
+    IEND=v(2)
+    M4_WRITE_DBG({"read IBEG/IEND: ", IBEG, IEND})
+    call readints(funit, lcount, v ,2)
+    JBEG=v(1)
+    JEND=v(2)
+    if ( DIM .lt. 2 ) JEND = JBEG
+    M4_WRITE_DBG({"read JBEG/JEND: ", JBEG, JEND})
+    call readints(funit, lcount, v ,2)
+    KBEG=v(1)
+    KEND=v(2)
+    if ( DIM .lt. 3 ) KEND = KBEG
+    M4_WRITE_DBG({"read KBEG/KEND: ", KBEG, KEND})
+    
+    call readtoken(funit, lcount, ")GRID")
 
     modconfigured = .true.
 

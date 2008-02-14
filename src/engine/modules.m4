@@ -92,7 +92,7 @@ define({M4_MODREAD_EXPR},{
     read($2,*) m4_string
     if ( m4_string .eq. "(REG" ) then
        M4_WRITE_DBG({"got token (REG -> ReadRegObj"})
-       call ReadRegObj($5, fdtdreg, $2, $6)
+       call ReadRegObj($5, fdtdreg, $2, $3, $6)
        $4%regidx = reg%idx
     else
        M4_FATAL_ERROR({"NO REGION DEFINED: Read$1Obj"})
@@ -114,7 +114,7 @@ define({M4_MODREAD_EXPR},{
       select case (m4_string)
       case("(OUT") 
 	M4_WRITE_DBG({"got token (OUT -> ReadOutObj"})
-       call ReadOutObj($7, $5, modname, $2)
+       call ReadOutObj($7, $5, $2, $3, modname)
        outobj($7%idx)%objidx = num$1obj
        $4%regidx = $5%idx
       case default	

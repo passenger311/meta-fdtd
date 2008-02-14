@@ -96,10 +96,10 @@ contains
 
    integer :: funit, lcount
    character(len=*) :: string 
-   character(len=STRLNG) :: line, skiptill
+   character(len=LINELNG) :: line
    type (T_OUT) :: out
    type (T_REG) :: reg
-   real(kind=8) :: val = 1.0
+   logical :: err, eof
 
    M4_WRITE_DBG({". enter ReadConfigFdtd"})
       
@@ -107,44 +107,36 @@ contains
       M4_FATAL_ERROR({"BAD SECTION IDENTIFIER: ReadConfigFdtd"})
    endif
    
-   skiptill = ""
-   do	
-      read(funit,*) line
-      string = TRIM(ADJUSTL(line))
+   err = .false.
+   
+   do
 
-      if ( skiptill .ne. "" ) then 
-         M4_WRITE_DBG({"skipping line ",TRIM(string)})
-         if ( string .eq. skiptill ) skiptill = ""  
-         cycle              
-      end if
+      call readline(funit,lcount,eof,line)
+      call getstring(line,string,err)
+
+      M4_PARSE_ERROR(err,lcount)
       M4_WRITE_DBG({"got token ",TRIM(string)})
  
       select case (string)
       case("(EHFIELDS") 
-         call ReadRegObj(reg, fdtdreg, funit, 6)
-		 reginitidx = reg%idx
+         call ReadRegObj(reg, fdtdreg, funit, lcount, 6)
+         reginitidx = reg%idx
       case("(EPSILON") 
-         call ReadRegObj(reg, fdtdreg, funit, 3)
-		 regepsidx = reg%idx
+         call ReadRegObj(reg, fdtdreg, funit, lcount, 3)
+         regepsidx = reg%idx
       M4_IFELSE_WMU({           
       case("(MU") 
-         call ReadRegObj(reg, fdtdreg, funit, 3)
-		 regmuidx = reg%idx
+         call ReadRegObj(reg, fdtdreg, funit, lcount, 3)
+         regmuidx = reg%idx
       })
       case("(OUT") 
-         call ReadOutObj(out, fdtdreg, modname, funit)
-      case default	
-         if ( string(1:2) .eq. "(!" ) then
-            skiptill = cat2(")",string(3:))
-            M4_WRITE_DBG({"skiptill = ", TRIM(skiptill)})  
-            cycle
-         end if
-         M4_WRITE_DBG({"read terminator: ", TRIM(string)})
-         if ( string(1:1) .ne. ")" ) then
-            M4_FATAL_ERROR({"BAD TERMINATOR: ",TRIM(string)," in ReadConfigFdtd"})
-         end if
+         call ReadOutObj(out, fdtdreg, funit, lcount, modname)
+      case(")FDTD")
          exit
+      case default	
+         M4_PARSE_ERROR(err,lcount)
       end select
+
    enddo
 
    modconfigured = .true.

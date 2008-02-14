@@ -316,16 +316,16 @@ contains
 
   ! ---- ltrim, removes leading spaces
 
-  character(len=255) function ltrim(str)
+!  character(len=255) function ltrim(str)
 
-    implicit none
+!    implicit none
 
-    character(len=*) :: str
+!    character(len=*) :: str
 
-    ltrim = TRIM(ADJUSTL(str))
+!    ltrim = TRIM(ADJUSTL(str))
 
-    return
-  end function ltrim
+!    return
+!  end function ltrim
 
 
 ! ---- effective string length

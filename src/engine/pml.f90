@@ -65,36 +65,34 @@ contains
 !----------------------------------------------------------------------
 
 
-  subroutine ReadConfigPml(funit,string)
+  subroutine ReadConfigPml(funit,lcount,string)
 
-    integer :: funit
+    integer :: funit, lcount
     character(len=*) :: string
-      
-    integer :: ios, i
+
+    character(len=LINELNG) :: line
 
     M4_WRITE_DBG({". enter ReadConfigPml"})
 
-    M4_WRITE_DBG({"received token: ", TRIM(string)})
     if ( string .ne. "(PML" ) then
        M4_FATAL_ERROR({"BAD SECTION IDENTIFIER: ReadConfigPml"})
     endif
 
-    read(UNITTMP,*) PMLMAX
-    M4_WRITE_DBG({"read PMLMAX: ",  PMLMAX})
-    read(UNITTMP,*) potpml
-    M4_WRITE_DBG({"read potpml: ",  potpml})
-    read(UNITTMP,*) sigmamax
-    M4_WRITE_DBG({"read sigmamax: ",  sigmamax})
-    read(UNITTMP,*) kappamax 
-    M4_WRITE_DBG({"read kappamax: ",  kappamax})
-    read(UNITTMP,*,iostat=ios) string 
-    M4_WRITE_DBG({"read terminator: ", TRIM(string)})
+    call readint(funit, lcount, PMLMAX)
+    M4_WRITE_DBG({"read PMLMAX: ", PMLMAX})
+
+    call readfloat(funit, lcount, potpml)
+    M4_WRITE_DBG({"read potpml: ", potpml})
+
+    call readfloat(funit, lcount, sigmamax)
+    M4_WRITE_DBG({"read sigmamax: ", sigmamax})
+
+    call readfloat(funit, lcount, kappamax)
+    M4_WRITE_DBG({"read kappamax: ", kappamax})
+
+    call readtoken(funit, lcount, ")PML")
 
     ! TODO: add some checks on numerical values
-
-    if ( string(1:1) .ne. ")" ) then
-       M4_FATAL_ERROR({"BAD SECTION TERMINATOR: ReadConfigPml"})
-    endif
 
     modconfigured = .true.
 
@@ -425,7 +423,7 @@ M4_IFELSE_1D({},{
       dty = DT/SY
       dtz = DT/SZ   
 
-      M4_WRITE_DBG({"STEP PML H: ", is, ie, js, je, ks, ke})
+!      M4_WRITE_DBG({"STEP PML H: ", is, ie, js, je, ks, ke})
         
 M4_IFELSE_3D({!$OMP PARALLEL DO PRIVATE(Exh,Eyh,Ezh,Bxo,Byo,Bzo)})
       do k=ks, ke     
@@ -520,7 +518,7 @@ M4_IFELSE_3D({!$OMP END PARALLEL DO})
       dty = DT/SY
       dtz = DT/SZ
 
-      M4_WRITE_DBG({"STEP PML E: ", is, ie, js, je, ks, ke})
+!      M4_WRITE_DBG({"STEP PML E: ", is, ie, js, je, ks, ke})
   
 M4_IFELSE_3D({!$OMP PARALLEL DO PRIVATE(Hxh,Hyh,Hzh,Dxo,Dyo,Dzo,epsinvx,epsinvy,epsinvz)}) 
       do k=ks, ke

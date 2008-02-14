@@ -15,6 +15,7 @@ module outlist
 
   use constant
   use strings
+  use parse
   use reglist
 
   implicit none
@@ -92,46 +93,57 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine ReadOutObj(out, regdef, modl, funit)
+  subroutine ReadOutObj(out, regdef, funit, lcount, modl)
 
-    integer :: funit
+    integer :: funit, lcount
     type(T_REG) :: regdef ! default region
     type(T_OUT) :: out
     character(len=*) :: modl
+    logical :: err, eof
+    character(len=LINELNG) :: line
 
     character (len=STRLNG) :: fmt, fn, mode, filename, string
     logical :: snap
-    integer :: ns, ne, dn
+    integer :: ns, ne, dn, val(3)
     type(T_REG) :: reg
     
     out = CreateOutObj()
     
     M4_WRITE_DBG({". enter ReadOutObj num = ",out%idx})
 
-    ! read output information
-    read(funit,*) fmt, snap, filename    ! format and filename
-    M4_WRITE_DBG({"fmt snap filename: ",TRIM(fmt)," ",snap," ", TRIM(filename)})
-    read(funit,*) fn, mode   ! function and mode
-    M4_WRITE_DBG({"fn mode: ", TRIM(fn)," ",TRIM(mode) })
-    read(funit,*) ns, ne, dn       ! time frame
-    M4_WRITE_DBG({"ns ne dn: ",ns, ne, dn })
-    read(funit,*) string
-    M4_WRITE_DBG({"got token ",TRIM(string)})
+    err = .false.
 
-    ! consume regobj start string
+    call readline(funit,lcount,eof,line)
+    call getstring(line,fmt,err)
+    call getlogical(line,snap,err)
+    call getstring(line,filename,err)
+    M4_PARSE_ERROR({eof .or. err .or. line .ne. ""},lcount)
+    M4_WRITE_DBG({"fmt snap filename: ",TRIM(fmt)," ",snap," ", TRIM(filename)})
+
+    call readline(funit,lcount,eof,line)
+    call getstring(line,fn,err)
+    call getstring(line,mode,err)
+    M4_PARSE_ERROR({eof .or. err .or. line .ne. ""},lcount)
+    M4_WRITE_DBG({"fn mode: ", TRIM(fn)," ",TRIM(mode) })
+    
+    call readints(funit, lcount, val, 3)
+    ns = val(1)
+    ne = val(2)
+    dn = val(3)
+    M4_WRITE_DBG({"ns ne dn: ",ns, ne, dn })
+
+    call readline(funit,lcount,eof,line)
+    call getstring(line,string,err)
+
     if ( string .eq. "(REG" ) then
-       M4_WRITE_DBG({"-> ReadRegObj"})
-       call ReadRegObj(reg, regdef, funit, 0) ! spatial regobj
-       read(funit,*) string
-       M4_WRITE_DBG({"got token ",TRIM(string)})
+       M4_WRITE_DBG({"r-> ReadRegObj"})
+       call ReadRegObj(reg, regdef, funit, lcount, 0) ! spatial regobj
+       call readtoken(funit, lcount, ")OUT")
        call SetOutObj(out, fmt, snap, modl, filename, fn, mode, ns, ne, dn, reg)
     else
+       M4_PARSE_ERROR({line .ne. ")OUT"},lcount)
        M4_WRITE_DBG({"using default region!"})
        call SetOutObj(out, fmt, snap, modl, filename, fn, mode, ns, ne, dn, regdef)  
-    end if
-
-    if ( string(1:1) .ne. ")" ) then
-       M4_FATAL_ERROR({"BAD TERMINATOR: ReadOutObj"})
     end if
 
     outobj(numoutobj) = out

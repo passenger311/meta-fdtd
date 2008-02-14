@@ -92,6 +92,7 @@ module reglist
 
   use constant
   use strings
+  use parse
 
   implicit none
   private
@@ -183,114 +184,100 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine ReadRegObj(reg, dom, funit, numval)
+  subroutine ReadRegObj(reg, dom, funit, lcount, numval)
 
-    integer :: funit, numval
+    integer :: funit, lcount, numval
     type(T_REG) :: reg, dom
 
-    integer :: ios,err, unit 
-    integer :: v, i,j,k, i0, i1, di, j0, j1, dj, k0, k1, dk
-    real(kind=8),dimension(:),allocatable :: val,dval
-    character(len=STRLNG) :: string, line, loadfn, skiptill
+    logical :: eof, err 
+    integer :: ios, unit
+
+    integer :: pvec(3), bvec(9), defpvec(3), defbvec(9)
+    real(kind=8) :: fvec(6)
+    character(len=LINELNG) :: string, line, loadfn
     character :: bc, ec
     logical :: auto
 
     M4_WRITE_DBG(". enter ReadRegObj")
 
+    ! set default point and box coordinates
+
+    defpvec(1) = dom%is
+    defpvec(2) = dom%js
+    defpvec(3) = dom%ks
+
+    defbvec(1) = dom%is
+    defbvec(2) = dom%ie
+    defbvec(3) = 1
+
+    defbvec(4) = dom%js
+    defbvec(5) = dom%je
+    defbvec(6) = 1
+
+    defbvec(7) = dom%ks
+    defbvec(8) = dom%ke
+    defbvec(9) = 1
+
     unit = funit
     reg = CreateRegObjStart(dom,numval)
    
-    allocate(val(1:numval),dval(1:numval), stat=err)
-    M4_ALLOC_ERROR(err,{"ReadRegObj"})
-    
- !  ! the default weight value is (1.,0.,0.,0. ...)
- !  dval = 0.0
- !  if ( numval .ne. 0 ) dval(1) = 1.0
- !  default weight value = (1,1,1, ..)
-    if ( numval .ne. 0 ) dval = 1.0
-    
-  
     auto = .false.
     reg%islist = .false.
 
-    ! read until an unexpected line is encountered, eg ")"
-    skiptill = ""
     do
-       ! defaults for 1D or 2D
-       k0 = 0
-       k1 = 0
-       k =  0
-       dk = 1
-       j0 = 0
-       j1 = 0
-       j  = 0
-       dj = 1
-       read(unit,*,iostat=ios) line
-       if ( ios .ne. 0 ) then
+
+       err = .false.
+       call readline(unit,lcount,eof,line)
+       call getstring(line,string,err)
+       M4_WRITE_DBG({"got token ",TRIM(string)})
+       M4_PARSE_ERROR({err},lcount)
+
+       if ( eof ) then
           if ( unit .gt. UNITTMP ) then
              M4_WRITE_DBG({"end of file, close unit = ",TRIM(i2str(unit))})
              close(unit)
              unit = unit - 1 ! return from nested load   
              M4_WRITE_DBG({"back to unit = ",TRIM(i2str(unit))})
-             read(unit,*) line ! consume )LOAD
-             M4_WRITE_DBG({"consumed ",TRIM(string)}) 
+             call gettoken(line,")LOAD",err)
+             M4_SYNTAX_ERROR({err},lcount,{")LOAD"})
+             M4_WRITE_DBG({"consumed )LOAD"})          
              cycle
           else
-             M4_FATAL_ERROR("END OF FILE IN SECTION!")		 
+             M4_PARSE_ERROR({err},lcount,{UNEXPECTED EOF})
           end if
        end if
-       string = TRIM(ADJUSTL(line))
-       M4_WRITE_DBG({"got token ", TRIM(string)})
            
-       if ( skiptill .ne. "" ) then 
-         M4_WRITE_DBG({"skipping line ",TRIM(string)})
-         if ( string .eq. skiptill ) skiptill = ""  
-         cycle              
-       end if
-      
        select case ( string ) 
        case( "(POINT" ) 
           do 
-             read(unit,*,iostat = ios) M4_READCOORD(i,j,k)
-             if ( ios .ne. 0 ) then
+             pvec = defpvec
+             fvec = 1.0
+             call readline(unit,lcount,eof,line)
+             M4_PARSE_ERROR({eof},lcount,{UNEXPECTED EOF})
+             call getintvec(line, pvec, 3, ":", err)   ! read up to 3 ints till the : 
+             call getfloatvec(line, fvec, 6, ":", err) ! then read up to 6 floats
+             if ( err ) then
                 M4_WRITE_DBG({"end of point list"})
+                write(6,*) line
+                M4_SYNTAX_ERROR({line .ne. ")POINT"},lcount,{")POINT"})
                 exit
              end if
-             call SetPointRegObj(reg, i,j,k, dval)
-          end do
-       case( "(VPOINT" ) 
-          do 
-             read(unit,*,iostat = ios)  M4_READCOORD(i,j,k), bc, (val(v),v=1,numval), ec
-             if ( ios .ne. 0 ) then
-                M4_WRITE_DBG({"end of point list"})
-                exit
-             end if
-             if ( bc .ne. '[' .or. ec .ne. ']' ) then
-                M4_FATAL_ERROR("VALUE LIST MUST BE EMBEDDED IN [ ]")
-             endif
-             call SetPointRegObj(reg, i,j,k, val)
+             call SetPointRegObj(reg, pvec, fvec)
           end do
        case( "(BOX" ) 
           do 
-             read(unit,*,iostat = ios) M4_READCOORD({i0, i1, di},{j0, j1, dj},{k0, k1, dk})
-             if ( ios .ne. 0 ) then
+             bvec = defbvec
+             fvec = 1.0
+             call readline(unit,lcount,eof,line)
+             M4_PARSE_ERROR({eof},lcount,{UNEXPECTED EOF})
+             call getintvec(line, bvec, 6, ":", err)   ! read up to 9 ints till the : 
+             call getfloatvec(line, fvec, 6, ":", err) ! then read up to 6 floats
+             if ( err ) then
                 M4_WRITE_DBG({"end of box list"})
+                M4_SYNTAX_ERROR({line .ne. ")BOX" },lcount,{")BOX"})
                 exit
              end if
-             call SetBoxRegObj(reg, i0, i1, di, j0, j1, dj, k0, k1, dk, dval)
-          end do
-       case( "(VBOX" ) 
-          do 
-             read(unit,*,iostat = ios) M4_READCOORD({i0, i1, di},{j0, j1, dj},{k0, k1, dk}), &
-             		bc, (val(v),v=1,numval), ec
-             if ( ios .ne. 0 ) then
-                M4_WRITE_DBG({"end of box list"})
-                exit
-             end if
-             if ( bc .ne. '[' .or. ec .ne. ']' ) then
-                M4_FATAL_ERROR("VALUE LIST MUST BE EMBEDDED IN [ ]")
-             endif
-             call SetBoxRegObj(reg, i0, i1, di, j0, j1, dj, k0, k1, dk, val)
+             call SetBoxRegObj(reg, bvec, fvec)
           end do
        case("(LOAD")    
           read(unit,*,iostat = ios) loadfn
@@ -302,39 +289,41 @@ contains
           end if
           M4_WRITE_DBG({"trying to open ",TRIM(loadfn)})
           open(unit+1,FILE=loadfn,STATUS="old", IOSTAT=ios)
-		  if ( ios .eq. 0 ) then
-		 	unit = unit + 1
-            M4_WRITE_DBG({"success, unit = ",TRIM(i2str(unit))})
-		  else
-          	 M4_WRITE_WARN({"COULD NOT OPEN ",TRIM(loadfn)})
-			read(unit,*,iostat = ios) string
-          	 M4_WRITE_DBG({"consumed ",TRIM(string)}) ! consume )LOAD
+          if ( ios .eq. 0 ) then
+             unit = unit + 1
+             M4_WRITE_DBG({"success, unit = ",TRIM(i2str(unit))})
+          else
+             M4_WRITE_WARN({"COULD NOT OPEN ",TRIM(loadfn)})
+             read(unit,*,iostat = ios) string
+             M4_WRITE_DBG({"consumed ",TRIM(string)}) ! consume )LOAD
           end if
        case("INIT")    
-		  numvalues = numnodes + 1 	
+          numvalues = numnodes + 1 	
        case("(FILL") ! a list of values
           do 
-             read(unit,*,iostat = ios) bc, (val(v),v=1,numval), ec
-             if ( ios .ne. 0 ) then
-                M4_WRITE_DBG({"end of value list"})
+             fvec = 1.0
+             call readline(unit,lcount,eof,line)
+             M4_PARSE_ERROR({eof},lcount,{UNEXPECTED EOF})
+             call getfloatvec(line, fvec, 6, ":", err) ! then read up to 6 floats
+             if ( err ) then
+                M4_WRITE_DBG({"end of fill list"})
+                M4_SYNTAX_ERROR({line .ne. ")FILL"},lcount,{")FILL"})
                 exit
              end if
-             if ( bc .ne. '[' .or. ec .ne. ']' ) then
-                M4_FATAL_ERROR("VALUE LIST MUST BE EMBEDDED IN [ ]")
-             endif
-             call FillValueRegObj(reg, val)
-          end do       
+             call FillValueRegObj(reg, fvec)
+          end do
        case("(SET") ! a list of values
           do 
-             read(unit,*,iostat = ios) bc, (val(v),v=1,numval), ec
-             if ( ios .ne. 0 ) then
-                M4_WRITE_DBG({"end of value list"})
+             fvec = 1.0
+             call readline(unit,lcount,eof,line)
+             M4_PARSE_ERROR({eof},lcount,{UNEXPECTED EOF})
+             call getfloatvec(line, fvec, 6, ":", err) ! then read up to 6 floats
+             if ( err ) then
+                M4_WRITE_DBG({"end of set list"})
+                M4_SYNTAX_ERROR({line .ne. ")SET"},lcount,{")SET"})
                 exit
              end if
-             if ( bc .ne. '[' .or. ec .ne. ']' ) then
-                M4_FATAL_ERROR("VALUE LIST MUST BE EMBEDDED IN [ ]")
-             endif
-             call SetValueRegObj(reg, val)
+             call SetValueRegObj(reg, fvec)
           end do
        case ("LIST")
           auto = .false.
@@ -344,26 +333,15 @@ contains
           reg%islist = .false.
        case ("AUTO")
           auto = .true.
-       case default
-          if ( string(1:2) .eq. "(!" ) then
-            skiptill = cat2(")",string(3:))
-            M4_WRITE_DBG({"got token (! -> skiptill = ", TRIM(skiptill)})  
-            cycle
-          end if
-          if ( string(1:1) .ne. ")" ) then
-             M4_FATAL_ERROR({"BAD TERMINATOR: ", TRIM(string), " in ReadRegObj"})
-          end if
-          if ( unit .ne. UNITTMP ) then
-             M4_FATAL_ERROR({"TERMINATED IN FILE INCLUDED WITH LOAD!"})
-          end if
+       case(")REG")
           exit
+       case default
+          M4_PARSE_ERROR(.true.,lcount,{UNKNOWN TOKEN})
        end select
 
     end do
 
     call CreateRegObjEnd(reg,auto)
-
-    deallocate(val,dval)
     
     M4_WRITE_DBG(". exit ReadRegObj")
 
@@ -585,27 +563,27 @@ contains
 !----------------------------------------------------------------------
 
 
-  subroutine SetBoxRegObj(reg, i0,i1,di, j0,j1,dj, k0,k1,dk, val)
+  subroutine SetBoxRegObj(reg, bvec, fvec)
 
     type(T_REG) :: reg
-    integer :: i0, i1, di, j0, j1, dj, k0, k1, dk
-    real(kind=8) :: val(:)
-    integer :: i,j,k,p
+    integer :: bvec(9)
+    real(kind=8) :: fvec(6)
+    integer :: i,j,k,p,v
 
     if ( reg%idx .eq. -1 ) return
 
-    if ( di .eq. 0 .or. dj .eq. 0 .or. dk .eq. 0 ) then 
+    if ( bvec(3) .eq. 0 .or. bvec(6) .eq. 0 .or. bvec(9) .eq. 0 ) then 
        M4_WRITE_DBG({"box has zero stride -> return"})
        return
     end if
     
-    M4_WRITE_DBG({"set box: ",i0, i1, di, j0, j1, dj, k0, k1, dk})
+    M4_WRITE_DBG({"set box: ",bvec(1),bvec(2),bvec(3),bvec(4),bvec(5),bvec(6),bvec(7),bvec(8),bvec(9)})
 
     reg%isbox = numnodes .eq. 0
     
     ! check whether box is inside grid
-    if ( i1 .lt. domreg%is .or. j1 .lt. domreg%js .or. k1 .lt. domreg%ks .or. &
-         i0 .gt. domreg%ie .or. j0 .gt. domreg%je .or. k0 .gt. domreg%ke ) then
+    if ( bvec(2) .lt. domreg%is .or. bvec(5) .lt. domreg%js .or. bvec(8) .lt. domreg%ks .or. &
+         bvec(1) .gt. domreg%ie .or. bvec(4) .gt. domreg%je .or. bvec(7) .gt. domreg%ke ) then
        M4_WRITE_DBG({"box not in given domain --->"})
        M4_IFELSE_DBG({call EchoRegObj(reg)})
        M4_WRITE_DBG({"return!"})
@@ -613,44 +591,48 @@ contains
     end if
 
     ! clip box to domain
-    i0 = Max(i0,domreg%is)
-    i1 = Min(i1,domreg%ie)
-    j0 = Max(j0,domreg%js)
-    j1 = Min(j1,domreg%je)
-    k0 = Max(k0,domreg%ks)
-    k1 = Min(k1,domreg%ke)
+    bvec(1) = Max(bvec(1),domreg%is)
+    bvec(2) = Min(bvec(2),domreg%ie)
+    bvec(4) = Max(bvec(4),domreg%js)
+    bvec(5) = Min(bvec(5),domreg%je)
+    bvec(7) = Max(bvec(7),domreg%ks)
+    bvec(8) = Min(bvec(8),domreg%ke)
     
     ! resize bounding box
-    reg%is = Min(i0,reg%is)
-    reg%ie = Max(i1,reg%ie)
-    reg%js = Min(j0,reg%js)
-    reg%je = Max(j1,reg%je)
-    reg%ks = Min(k0,reg%ks)
-    reg%ke = Max(k1,reg%ke)
+    reg%is = Min(bvec(1),reg%is)
+    reg%ie = Max(bvec(2),reg%ie)
+    reg%js = Min(bvec(4),reg%js)
+    reg%je = Max(bvec(5),reg%je)
+    reg%ks = Min(bvec(7),reg%ks)
+    reg%ke = Max(bvec(8),reg%ke)
 
     if ( reg%isbox ) then ! the first box has a stride
-       reg%di = di
-       reg%dj = dj
-       reg%dk = dk
+       reg%di = bvec(3)
+       reg%dj = bvec(6)
+       reg%dk = bvec(9)
     else ! reset stride to 1,1,1 if multiple boxes etc
        reg%di = 1
        reg%dj = 1
        reg%dk = 1
     end if
 
-    M4_WRITE_DBG({"box now: ",i0, i1, di, j0, j1, dj, k0, k1, dk})
+    M4_WRITE_DBG({"box now: ",bvec(1),bvec(2),bvec(3),bvec(4),bvec(5),bvec(6),bvec(7),bvec(8),bvec(9)})
 
     ! set points
-    do k = k0, k1, dk
-       do j = j0, j1, dj
-          do i = i0, i1, di
+    do k = bvec(7), bvec(8), bvec(9)
+       do j = bvec(4), bvec(5), bvec(6)
+          do i = bvec(1), bvec(2), bvec(3)
              p = tmpmask(i,j,k)
              if ( p .eq. 0 ) then
                 numnodes = numnodes + 1
                 tmpmask(i,j,k) = numnodes 
-                tmpval(:,numnodes) = val(:)
+                do v = 1, reg%numval
+                   tmpval(v,numnodes) = fvec(v)
+                end do
              else
-             	tmpval(:,p) = val(:)
+                do v = 1, reg%numval
+                   tmpval(v,p) = fvec(v)
+                end do
              end if
           end do
        end do
@@ -662,21 +644,21 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine SetPointRegObj(reg, i,j,k, val)
+  subroutine SetPointRegObj(reg, pvec, fvec)
 
     type(T_REG) :: reg
-    integer :: i,j,k,p
-    real(kind=8) :: val(:)
+    integer :: pvec(3),p, v
+    real(kind=8) :: fvec(6)
 
     if ( reg%idx .eq. -1 ) return
 
-    M4_WRITE_DBG({"set point: ",i,j,k})
+    M4_WRITE_DBG({"set point: ",pvec(1),pvec(2),pvec(3)})
 
     reg%isbox = numnodes .eq. 0
 
     ! check whether point is inside grid
-    if ( i .lt. domreg%is .or. j .lt. domreg%js .or. k .lt. domreg%ks .or. &
-         i .gt. domreg%ie .or. j .gt. domreg%je .or. k .gt. domreg%ke ) then
+    if ( pvec(1) .lt. domreg%is .or. pvec(2) .lt. domreg%js .or. pvec(3) .lt. domreg%ks .or. &
+         pvec(1) .gt. domreg%ie .or. pvec(2) .gt. domreg%je .or. pvec(3) .gt. domreg%ke ) then
        M4_WRITE_DBG({"point not in given domain ==>"})
        M4_IFELSE_DBG({call EchoRegObj(domreg)})
        M4_WRITE_DBG({"return!"})
@@ -684,26 +666,30 @@ contains
     end if
 
     ! resize bounding box
-    reg%is = Min(reg%is, i)
-    reg%ie = Max(reg%ie, i)
-    reg%js = Min(reg%js, j)
-    reg%je = Max(reg%je, j)
-    reg%ks = Min(reg%ks, k)
-    reg%ke = Max(reg%ke, k)
+    reg%is = Min(reg%is, pvec(1))
+    reg%ie = Max(reg%ie, pvec(1))
+    reg%js = Min(reg%js, pvec(2))
+    reg%je = Max(reg%je, pvec(2))
+    reg%ks = Min(reg%ks, pvec(3))
+    reg%ke = Max(reg%ke, pvec(3))
     reg%di = 1
     reg%dj = 1
     reg%dk = 1
 
-    M4_WRITE_DBG({"point now: ",i,j,k})
+    M4_WRITE_DBG({"point now: ",pvec(1),pvec(2),pvec(3)})
  
     ! set point
-    p = tmpmask(i,j,k)
+    p = tmpmask(pvec(1),pvec(2),pvec(3))
     if ( p .eq. 0 ) then
        numnodes = numnodes + 1
-       tmpmask(i,j,k) = numnodes
-       tmpval(:,numnodes) = val(:)
-    else
-       tmpval(:,p) = val(:)
+       tmpmask(pvec(1),pvec(2),pvec(3)) = numnodes
+       do v = 1, reg%numval
+          tmpval(v,numnodes) = fvec(v)
+       end do
+    else ! override weights
+       do v = 1, reg%numval
+          tmpval(v,numnodes) = fvec(v)
+       end do
     end if
     M4_WRITE_DBG({"point set!"})
 
@@ -711,10 +697,10 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine SetValueRegObj(reg, val)
+  subroutine SetValueRegObj(reg, fvec)
   
     type(T_REG) :: reg
-    real(kind=8) :: val(:)
+    real(kind=8) :: fvec(6)
     integer :: v
     
     if ( reg%idx .eq. -1 ) return
@@ -724,7 +710,7 @@ contains
     if ( numvalues .gt. numnodes ) return
     
     do v = 1, reg%numval
-       tmpval(:,numvalues) = val(:)
+       tmpval(v,numvalues) = fvec(v)
     end do
 
     numvalues = numvalues + 1
@@ -734,17 +720,17 @@ contains
 
 !----------------------------------------------------------------------
   
-  subroutine FillValueRegObj(reg, val)
+  subroutine FillValueRegObj(reg, fvec)
   
     type(T_REG) :: reg
-    real(kind=8) :: val(:)
+    real(kind=8) :: fvec(6)
     integer :: v,p
     
     M4_WRITE_DBG({"fill values from ",numvalues," to ",numnodes," nodes"})
     
     do p = numvalues, numnodes	
        do v = 1, reg%numval
-          tmpval(v,p) = val(v)
+          tmpval(v,p) = fvec(v)
        end do
     end do
    

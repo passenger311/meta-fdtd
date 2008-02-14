@@ -56,53 +56,45 @@ contains
 
     integer :: funit, lcount
     character(len=*) :: string
-    character(len=STRLNG) :: skiptill, line
+    character(len=LINELNG) :: line
       
+    logical :: err, eof
     integer :: ios, i
 
     M4_WRITE_DBG({". enter ReadConfigBound"})
 
-    M4_WRITE_DBG({"received token: ", TRIM(string)})
     if ( string .ne. "(BOUND" ) then
        M4_FATAL_ERROR({"BAD SECTION IDENTIFIER: ReadConfigBound"})
     endif
 
-    read(UNITTMP,*) (planebound(i),i=1, M4_SDIM*2)
+    call readintvec(funit, lcount, planebound, 6)
     M4_WRITE_DBG({"read planebound(i): ",  (planebound(i),i=1, M4_SDIM*2)})
 
-    skiptill = ""
-    do	
-       read(funit,*) line
-       string = TRIM(ADJUSTL(line))
-       
-       if ( skiptill .ne. "" ) then 
-          M4_WRITE_DBG({"skipping line ",TRIM(string)})
-          if ( string .eq. skiptill ) skiptill = ""  
-          cycle              
-       endif
-       
-       select case (string)
-       case( "(PML" )
-          M4_WRITE_DBG({"got token ",TRIM(string),"-> invoking ReadConfigPml"})
-          call ReadConfigPml(UNITTMP,string) 
+    err = .false.
+
+    do
+
+      call readline(funit,lcount,eof,line)
+      call getstring(line,string,err)
+      
+      M4_PARSE_ERROR(err,lcount)
+      M4_WRITE_DBG({"got token ",TRIM(string)})
+ 
+      select case (string)
+      case( "(PML" )
+         M4_WRITE_INFO({"--> ReadConfigPml"})
+         call ReadConfigPml(funit,lcount,string) 
 !       case( "(MPIBC" )
-!          M4_WRITE_DBG({"got token ",TRIM(string),"-> invoking ReadConfigMpibc"})
-!          call ReadConfigMpibc(UNITTMP,string) 
-       case( "(PBC" )
-          M4_WRITE_DBG({"got token ",TRIM(string),"-> invoking ReadConfigPbc"})
-          call ReadConfigPbc(UNITTMP,string) 
-       case default	
-          if ( string(1:2) .eq. "(!" ) then
-             skiptill = cat2(")",string(3:))
-             M4_WRITE_DBG({"got token (! -> skiptill = ", TRIM(skiptill)})  
-             cycle
-          end if
-          M4_WRITE_DBG({"read terminator: ", TRIM(string)})
-          if ( string(1:1) .ne. ")" ) then
-             M4_FATAL_ERROR({"BAD TERMINATOR: ReadConfigBound"})
-          end if
-          exit
-       end select
+!          M4_WRITE_DBG({"-> invoking ReadConfigMpibc"})
+!          call ReadConfigMpibc(UNITTMP,lcount,string) 
+      case( "(PBC" )
+         M4_WRITE_INFO({"--> ReadConfigPbc"})
+         call ReadConfigPbc(funit,lcount,string) 
+      case( ")BOUND" )
+         exit
+      case default	
+         M4_PARSE_ERROR(.true.,lcount,{UNKNOWN TOKEN})
+      end select
 
     enddo
     

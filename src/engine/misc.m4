@@ -6,12 +6,12 @@ stop
 })
 define({M4_SYNTAX_ERROR},{
 if ( $1 ) then
-M4_FATAL_ERROR({"SYNTAX ERROR @ LINE: ",$2})
+M4_FATAL_ERROR({"INPUT ERROR (@",TRIM(i2str($2-1)),") EXPECTED ",$3})
 endif
 })
 define({M4_PARSE_ERROR},{
 if ( $1 ) then
-M4_FATAL_ERROR({"PARSE ERROR @ LINE: ",$2})
+M4_FATAL_ERROR({"INPUT ERROR (@",TRIM(i2str($2-1)),") $3"})
 endif
 })
 define({M4_ALLOC_ERROR}, {if ( $1 .ne. 0 ) then

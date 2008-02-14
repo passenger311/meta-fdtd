@@ -89,25 +89,14 @@ contains
     M4_WRITE_DBG({". enter ReadConfigMpibc"})
 
     M4_WRITE_DBG({"received token: ", TRIM(string)})
-    if ( string .ne. "(PML" ) then
-       M4_FATAL_ERROR({"BAD SECTION IDENTIFIER: ReadConfigPml"})
+    if ( string .ne. "(MPIBC" ) then
+       M4_FATAL_ERROR({"BAD SECTION IDENTIFIER: ReadConfigMpibc"})
     endif
 
-    read(UNITTMP,*) PMLMAX
-    M4_WRITE_DBG({"read PMLMAX: ",  PMLMAX})
-    read(UNITTMP,*) potpml
-    M4_WRITE_DBG({"read potpml: ",  potpml})
-    read(UNITTMP,*) sigmamax
-    M4_WRITE_DBG({"read sigmamax: ",  sigmamax})
-    read(UNITTMP,*) kappamax 
-    M4_WRITE_DBG({"read kappamax: ",  kappamax})
-    read(UNITTMP,*,iostat=ios) string 
-    M4_WRITE_DBG({"read terminator: ", TRIM(string)})
-
-    ! TODO: add some checks on numerical values
+    read(UNITTMP,*) (mpibound(i),i=1, M4_SDIM*2)
 
     if ( string(1:1) .ne. ")" ) then
-       M4_FATAL_ERROR({"BAD SECTION TERMINATOR: ReadConfigPml"})
+       M4_FATAL_ERROR({"BAD SECTION TERMINATOR: ReadConfigMpibc"})
     endif
 
     modconfigured = .true.

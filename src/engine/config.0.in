@@ -27,20 +27,19 @@
 
 ! -----------------------------------------------------------------------
 ! (GRID-): this is a mandatory section. All grid parameters must be
-! given in order and are mandatory. Note, that the lower index range 
-! must be 0 if an PML is implemented on that interface. <parititions> is
-! overwritten to 1 if not compiled with mpi.
+! given in order and are mandatory. 
 ! -----------------------------------------------------------------------
 
 
 (GRID
-  1             	! partitions
-  2000          	! ncyc
+  2                     ! dimension (1,2 or 3)	
+  1                     ! partitions
+  2000         		! ncyc
   0.576             	! dt
-  -40 239		! i range
-  10 189      		! j range
+  -30 229		! i range
+  20 179      		! j range
+  0 0			! k range
 )GRID
-
 
 
 ! -----------------------------------------------------------------------
@@ -65,7 +64,7 @@
 
   (OUT
     VTK T test1_xy_e
-    E N
+    E N 
     0 2000 200
     (REG
       (BOX
@@ -114,7 +113,7 @@
 ! -----------------------------------------------------------------------
 
 (BOUND
- 1 1 3 3   		! configure boundary conditions
+ 1 1 3 3 0 0   		! configure boundary conditions
 (!PML	
 8               	! pml cells
 3.2             	! pot parameter
@@ -122,7 +121,7 @@
 1.1             	! kappa parameter
 )PML	
 (!MPIBC
-0 0 0 0			! send/receive target/source partitions
+0 0 0 0	0 0 		! send/receive target/source partitions
 )MPIBC
 )BOUND
 
@@ -147,9 +146,9 @@ T		! time (T) or wavelength (F) parameters for gaussian
 1200		! peak of gaussian (n0) or fraction of peak (a0)
 700             ! half width in timedomain (dn) or wavelength dom (dlambda)
 (REG
-  (VPOINT
-     14 100 [ 0.0 1.0 0.0 ]
-  )VPOINT
+  (POINT
+     14 100 : 0.0 1.0 0.0
+  )POINT
 )REG
 )MATSOURCE
 
@@ -165,9 +164,9 @@ T		! time (T) or wavelength (F) parameters for gaussian
 1200		! peak of gaussian (n0) or fraction of peak (a0)
 700             ! half width in timedomain (dn) or wavelength dom (dlambda)
 (REG
-  (VBOX
-     14 14 1 99 101 1 [ 1.0 0.0 0.0 1.0 ]
-  )VBOX
+  (BOX
+     14 14 1 99 101 1 : 1.0 0.0 0.0 1.0
+  )BOX
 )REG
 )MATTFSF
 
@@ -182,35 +181,17 @@ T		! time (T) or wavelength (F) parameters for gaussian
 0. 	 	    	! gammapl: damping constant [1/dt] 
 1		    	! order: 1 (=J) or 2 (=P)
 (REG
-  (VBOX
-	44 81 1 9 190 1 [ 1. 1. 1. 1. 1. 1. ]
-  )VBOX
-  (VBOX
-	44 44 1 9 190 1 [ 1. .5 .5 .5 1. 1. ] 
-  )VBOX
-  (VBOX
-	81 81 1 9 190 1 [ 0. .5 .5 .5 0. 0. ]
-  )VBOX
-  (VBOX
-	44 81 1 9 9 1 [ .5 1. .5 1. .5 1. ] 
-  )VBOX
-  (VBOX
-	44 81 1 190 190 1 [ .5 0. .5 0. .5 0. ]
-  )VBOX
-  (VBOX
-	44 44 1 9 9 1 [ .5 .5 .25 .5 .5 1. ] 
-  )VBOX
-  (VBOX
-	44 44 1 190 190 1 [ .5 0. .25 0. .5 0. ] 
-  )VBOX
-  (VBOX
-	81 81 1 9 9 1 [ 0. .5 .25 .5 0. 0. ] 
-  )VBOX
-  (VBOX
-	81 81 1 190 190 1 [ 0. 0. .25 0. 0. 0. ]
-  )VBOX
-
-
+  (BOX
+	44 81 1 9 190 1 : 1. 1. 1. 1. 1. 1. 
+	44 44 1 9 190 1 : 1. .5 .5 .5 1. 1.  
+	81 81 1 9 190 1 : 0. .5 .5 .5 0. 0. 
+	44 81 1 9 9 1 	: .5 1. .5 1. .5 1.  
+	44 81 1 190 190 1 : .5 0. .5 0. .5 0. 
+	44 44 1 9 9 1 : .5 .5 .25 .5 .5 1.  
+	44 44 1 190 190 1 : .5 0. .25 0. .5 0.  
+	81 81 1 9 9 1 : 0. .5 .25 .5 0. 0.  
+	81 81 1 190 190 1 : 0. 0. .25 0. 0. 0. 
+  )BOX
 )REG
 )MATLHM
 
@@ -225,33 +206,33 @@ T		! time (T) or wavelength (F) parameters for gaussian
 0.1 		    	! gammapl: damping constant [1/dt] 
 1		    	! order: 1 (=J) or 2 (=P)
 (REG
-  (VBOX
-	44 81 1 9 190 1 [ 1. 1. 1. ]
-  )VBOX
-  (VBOX
-	44 44 1 9 190 1 [ 1. .5 .5  ] 
-  )VBOX
-  (VBOX
-	81 81 1 9 190 1 [ 0. .5 .5  ]
-  )VBOX
-  (VBOX
-	44 81 1 9 9 1 [ .5 1. .5  ] 
-  )VBOX
-  (VBOX
-	44 81 1 190 190 1 [ .5 0. .5  ]
-  )VBOX
-  (VBOX
-	44 44 1 9 9 1 [ .5 .5 .25  ] 
-  )VBOX
-  (VBOX
-	44 44 1 190 190 1 [ .5 0. .25  ] 
-  )VBOX
-  (VBOX
-	81 81 1 9 9 1 [ 0. .5 .25  ] 
-  )VBOX
-  (VBOX
-	81 81 1 190 190 1 [ 0. 0. .25  ]
-  )VBOX
+  (BOX
+	44 81 1 9 190 1 : 1. 1. 1.
+  )BOX
+  (BOX
+	44 44 1 9 190 1 : 1. .5 .5 
+  )BOX
+  (BOX
+	81 81 1 9 190 1 : 0. .5 .5 
+  )BOX
+  (BOX
+	44 81 1 9 9 1 : .5 1. .5
+  )BOX
+  (BOX
+	44 81 1 190 190 1 : .5 0. .5
+  )BOX
+  (BOX
+	44 44 1 9 9 1 : .5 .5 .25
+  )BOX
+  (BOX
+	44 44 1 190 190 1 : .5 0. .25
+  )BOX
+  (BOX
+	81 81 1 9 9 1 : 0. .5 .25
+  )BOX
+  (BOX
+	81 81 1 190 190 1 : 0. 0. .25
+  )BOX
 
 
 )REG
@@ -263,7 +244,7 @@ T		! time (T) or wavelength (F) parameters for gaussian
 ! -----------------------------------------------------------------------
     
 
-(DIAGEBAL
+(!DIAGEBAL
 0 2000 1   ! time window
 (REG
   (BOX

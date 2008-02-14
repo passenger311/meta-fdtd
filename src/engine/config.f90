@@ -53,67 +53,64 @@ contains
       character(len=LINELNG) :: string, line, skiptill
       logical :: gotgrid = .false.
       logical :: gotfdtd = .false.
-      logical :: skip, err, eof
+      logical :: err, eof
       integer :: ios, lcount = 1
       
       M4_WRITE_DBG({". enter ReadConfig"})
 
       file=cat2(pfxconfig,mpi_sfxin)
       
-      M4_WRITE_DBG({"trying to open ", TRIM(file)})
+
+      M4_WRITE_INFO({"reading configuration data: ", TRIM(file)})
 
       open(UNITTMP,FILE=file,STATUS="old", IOSTAT=ios)
       M4_OPEN_ERROR(ios,file)
 
-      skip = .false.
       err = .false.
       lcount = 1
 
       do
 
-         call readline(UNITTMP,line,lcount,eof,skip,skiptill)
-         if ( .not. skip ) then
+         call readline(UNITTMP,lcount,eof,line)
 
-            call getstring(line,string,err)
+         call getstring(line,string,err)
 
-            M4_PARSE_ERROR(err,lcount,line)
+         M4_PARSE_ERROR(err,lcount)
 
-            M4_WRITE_DBG({"got token ",TRIM(string)})
+         M4_WRITE_DBG({"got token ",TRIM(string)})
  
-            select case ( string )
+         select case ( string )
             
-            case( "(GRID" )
-               M4_WRITE_INFO({"-> ReadConfigGrid"})
-               call ReadConfigGrid(UNITTMP,lcount,string,dim)
-               gotgrid = .true.
-            case( "(FDTD" )
-               M4_WRITE_INFO({"-> ReadConfigFdtd"})
-               call ReadConfigFdtd(UNITTMP,lcount,string)
-               gotfdtd = .true.
-            case( "(BOUND" )
-               M4_WRITE_INFO({"-> ReadConfigBound"})
-               call ReadConfigBound(UNITTMP,lcount,string)    
-            case default
-               if ( string(1:4) .eq. "(MAT" ) then
-                  M4_WRITE_INFO({"-> ReadConfigMat: ",TRIM(string(5:))})
-                  call ReadConfigMat(UNITTMP,lcount,string)
-                  cycle
-               endif
+         case( "(GRID" )
+            M4_WRITE_INFO({"-> ReadConfigGrid"})
+            call ReadConfigGrid(UNITTMP,lcount,string,dim)
+            gotgrid = .true.
+         case( "(FDTD" )
+            M4_WRITE_INFO({"-> ReadConfigFdtd"})
+            call ReadConfigFdtd(UNITTMP,lcount,string)
+            gotfdtd = .true.
+         case( "(BOUND" )
+            M4_WRITE_INFO({"-> ReadConfigBound"})
+            call ReadConfigBound(UNITTMP,lcount,string)    
+         case default
+            if ( string(1:4) .eq. "(MAT" ) then
+               M4_WRITE_INFO({"-> ReadConfigMat: ",TRIM(string(5:))})
+               call ReadConfigMat(UNITTMP,lcount,string)
+               cycle
+            endif
                
-               if ( string(1:5) .eq. "(DIAG" ) then
-                  M4_WRITE_INFO({"-> ReadConfigDiag: ",TRIM(string(6:))})
-                  call ReadConfigDiag(UNITTMP,lcount,string)
-                  cycle
-               endif
-               
-               M4_SYNTAX_ERROR(err,lcount,line)
+            if ( string(1:5) .eq. "(DIAG" ) then
+               M4_WRITE_INFO({"-> ReadConfigDiag: ",TRIM(string(6:))})
+               call ReadConfigDiag(UNITTMP,lcount,string)
+               cycle
+            endif
+            
+            M4_PARSE_ERROR(err,lcount)
 
-            end select
-        
-         end if
-        
+         end select
+
          if ( eof ) exit
-
+        
       end do
 
       close(UNITTMP)
