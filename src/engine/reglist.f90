@@ -258,7 +258,6 @@ contains
              call getfloatvec(line, fvec, 6, ":", err) ! then read up to 6 floats
              if ( err ) then
                 M4_WRITE_DBG({"end of point list"})
-                write(6,*) line
                 M4_SYNTAX_ERROR({line .ne. ")POINT"},lcount,{")POINT"})
                 exit
              end if
@@ -469,9 +468,13 @@ contains
     ! then the list of points needs to be filtered!
 
     if ( .not. domreg%isbox ) then
-       M4_REGLOOP_EXPR(domreg,p,i,j,k,w,{
-         tmpmask(i,j,k) = - tmpmask(i,j,k) ! flip sign to mark
-       })
+
+       do p  = 1, domreg%pe
+          i = domreg%i(p)
+          j = domreg%j(p)
+          k = domreg%k(p)
+          tmpmask(i,j,k) = - tmpmask(i,j,k) ! flip sign to mark
+       end do
 
        ! erase all other points and count again
        num = 0

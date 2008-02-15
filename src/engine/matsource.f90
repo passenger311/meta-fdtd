@@ -29,7 +29,7 @@
 module matsource
 
   use constant
-  use mpiworld
+  use parse
   use reglist
   use outlist
   use grid
@@ -42,18 +42,17 @@ module matsource
 
   M4_MATHEAD_DECL({MATSOURCE},100,{
 
-     real(kind=8) :: lambda0       ! vacuum wavelength in units of [dx]
+     real(kind=8) :: lambdainv0    ! inverse vacuum wavelength in units of [2 pi c]
 
      logical      :: tmode         ! time or wavelength mode
 ! read these is frequency mode     
-     real(kind=8) :: dlambda       ! spectral width of vac.wave in units of [dx]
+     real(kind=8) :: dlambdainv    ! spectral width of vac.wave in units of [2 pi c]
      real(kind=8) :: a0            ! gaussian start value as fraction of peak [dt]
 ! read these is time mode     
      real(kind=8) :: dn            ! time width of gaussian [dt]
      real(kind=8) :: n0            ! time offset of peak [dt]
 
      real(kind=8) :: noffs,ncw     ! offset in time domain and duration of cw [dt]    
-!     real(kind=8) :: vec(3)        ! J vector
 
      real(kind=8) :: n1,nend       ! some values used internally ...
      real(kind=8) :: gamma
@@ -70,26 +69,29 @@ contains
 
 
     M4_MODREAD_DECL({MATSOURCE}, funit,lcount,mat,reg,out)
-   
+    integer :: v(2)
+
     M4_WRITE_DBG(". enter ReadMatSourceObj")
 
     M4_MODREAD_EXPR({MATSOURCE}, funit,lcount,mat,reg, 3, out,{ 
 
     ! read parameters here, as defined in mat data structure
 
-    read(funit,*) mat%lambda0        ! vacuum wavelength in units of [dx]
-    read(funit,*) mat%noffs, mat%ncw ! time offset and cw activity [dt]
-    read(funit,*) mat%tmode          ! time mode? (or wavelength mode)
+
+    call readfloat(funit, lcount, mat%lambdainv0)  ! inv. vacuum wavelength in units of [2 pi c]
+    call readints(funit,lcount,v,2)                ! time offset and cw activity [dt] 
+    mat%noffs = v(1)
+    mat%ncw = v(2)   
+    call readlogical(funit,lcount,mat%tmode)       ! time mode? (or wavelength mode)
     if ( mat%tmode ) then
-       read(funit,*) mat%n0      ! peak of gaussian in time domain [dt]
-       read(funit,*) mat%dn      ! half width of gaussian in time domain [dt]
+       
+       call readfloat(funit,lcount,mat%n0)           ! peak of gaussian in time domain [dt]
+       call readfloat(funit,lcount,mat%dn)           ! half width of gaussian in time domain [dt]
     else	
-       read(funit,*) mat%a0        ! gaussian start value as fraction of peak
-       read(funit,*) mat%dlambda   ! half width of vac.wave in units of [dx]
+       call readfloat(funit,lcount,mat%a0)         ! gaussian start value as fraction of peak
+       call readfloat(funit,lcount,mat%dlambdainv) ! half width of vac.wave in units of [2 pi c]
     end if
-    ! read(funit,*) mat%vec(1),mat%vec(2), mat%vec(3) ! vector components
-   
-    ! read regions and output structures
+    
 
     })
 
@@ -106,7 +108,7 @@ contains
     M4_MODLOOP_EXPR({MATSOURCE},mat,{
     
     ! center frequency
-    mat%omega0 = 2. * PI / mat%lambda0
+    mat%omega0 = 2. * PI * mat%lambdainv0
 
     if ( mat%tmode ) then
 	    ! time mode: n0, dn given
@@ -117,7 +119,7 @@ contains
         mat%a0 = exp(- mat%gamma**2 * ( mat%n0 * DT )**2 )
     else
         ! wavelength mode: a0, dlambda given
-        mat%omega1 = 2. * PI / ( mat%lambda0 + mat%dlambda )
+        mat%omega1 = 2. * PI * ( mat%lambdainv0 + mat%dlambdainv )
         mat%domega = mat%omega0 - mat%omega1
         mat%gamma =  mat%domega / log(2.)
         mat%dn =  1./DT * sqrt( log(2.) )/mat%gamma    
@@ -252,13 +254,13 @@ contains
     type(T_MATSOURCE) :: mat
 
     M4_WRITE_INFO({"--- mat # ",TRIM(i2str(mat%idx))})
-    M4_WRITE_INFO({"lambda = ",mat%lambda0   })
+    M4_WRITE_INFO({"lambdainv0 = ",mat%lambdainv0   })
     M4_WRITE_INFO({"tmode  = ",mat%tmode   })
     M4_WRITE_INFO({"noffs/ncw  = ",mat%noffs,mat%ncw   })
 !    M4_WRITE_INFO({"vec(3) = ", mat%vec(1),mat%vec(2), mat%vec(3)})
     M4_WRITE_INFO({"n0 = ",mat%n0 })
     M4_WRITE_INFO({"dn = ",mat%dn })
-    M4_WRITE_INFO({"dlambda0 = ",mat%dlambda })
+    M4_WRITE_INFO({"dlambdainv = ",mat%dlambdainv })
     M4_WRITE_INFO({"gamma = ",mat%gamma})
     M4_WRITE_INFO({"a0 = ",mat%a0})
     

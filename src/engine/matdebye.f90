@@ -32,7 +32,7 @@
 module matdebye
 
   use constant
-  use mpiworld
+  use parse
   use reglist
   use outlist
   use grid
@@ -71,8 +71,8 @@ contains
     M4_MODREAD_EXPR({MATDEBYE},funit,lcount,mat,reg,3,out,{ 
 
     ! read mat parameters here, as defined in mat data structure
-    read(funit,*) mat%taud
-    read(funit,*) mat%deltaepsd
+    call readfloat(funit,lcount, mat%taud)
+    call readfloat(funit,lcount, mat%deltaepsd)
 
     })
 

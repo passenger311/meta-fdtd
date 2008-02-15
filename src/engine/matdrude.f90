@@ -41,7 +41,7 @@
 module matdrude
 
   use constant
-  use mpiworld
+  use parse
   use reglist
   use outlist
   use grid
@@ -54,9 +54,9 @@ module matdrude
   M4_MATHEAD_DECL({MATDRUDE},100,{
 
   ! input parameters
-  real(kind=8) :: lambdapl ! vac. plasma wavelength [dx]
-  real(kind=8) :: gammapl  ! current damping [1/dt]
-  integer :: order         ! use 1. or 2. order solver?
+  real(kind=8) :: lambdaplinv ! inv. vac. plasma wavelength [2 pi c]
+  real(kind=8) :: gammapl     ! current damping [1/dt]
+  integer :: order            ! use 1. or 2. order solver?
 
   real(kind=8) :: omegapl
 
@@ -82,9 +82,10 @@ contains
     M4_MODREAD_EXPR({MATDRUDE},funit,lcount,mat,reg,3,out,{ 
 
     ! read mat parameters here, as defined in mat data structure
-    read(funit,*) mat%lambdapl
-    read(funit,*) mat%gammapl
-    read(funit,*) mat%order
+
+    call readfloat(funit,lcount,mat%lambdaplinv)
+    call readfloat(funit,lcount,mat%gammapl)
+    call readint(funit,lcount,mat%order)
 
     })
 
@@ -106,7 +107,7 @@ contains
     
        ! initialize mat object here
 
-       mat%omegapl = 2. * PI / mat%lambdapl
+       mat%omegapl = 2. * PI * mat%lambdaplinv
 !       mat%gammapl = 2. / ( mat%abslenpl * DT )
 
        reg = regobj(mat%regidx)
@@ -342,7 +343,7 @@ contains
     type(T_MATDRUDE) :: mat
  
     M4_WRITE_INFO({"#",TRIM(i2str(mat%idx)),&
-    	" lambdapl=",TRIM(f2str((mat%lambdapl))),&
+    	" lambdapl=",TRIM(f2str((mat%lambdaplinv))),&
     	" omegapl=",TRIM(f2str((mat%omegapl))),&
     	" gammapl=",TRIM(f2str((mat%gammapl)))
     })
@@ -360,7 +361,7 @@ contains
          TRIM(i2str(mat%idx))," ", TRIM(mat%type)})
 
     ! -- write parameters to console 
-    M4_WRITE_INFO({"lambdapl = ",mat%lambdapl })
+    M4_WRITE_INFO({"lambdapl = ",mat%lambdaplinv })
     M4_WRITE_INFO({"omegapl = ",mat%omegapl })
     M4_WRITE_INFO({"gammapl = ",mat%gammapl })
     M4_WRITE_INFO({"c1 = ",mat%c1 })

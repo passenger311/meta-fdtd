@@ -34,7 +34,7 @@
 module matlorentz
 
   use constant
-  use mpiworld
+  use parse
   use reglist
   use outlist
   use grid
@@ -47,9 +47,9 @@ module matlorentz
   M4_MATHEAD_DECL({MATLORENTZ},100,{
 
   ! input parameters
-  real(kind=8) :: lambdal    ! vac. plasma wavelength and abs. length
-  real(kind=8) :: gammal     ! resonance width
-  real(kind=8) :: deltaepsl  ! delta epsilon
+  real(kind=8) :: lambdalinv    ! inv. vac. plasma wavelength and abs. length
+  real(kind=8) :: gammal        ! resonance width
+  real(kind=8) :: deltaepsl     ! delta epsilon
 
   real(kind=8) :: omegal
 
@@ -74,9 +74,9 @@ contains
     M4_MODREAD_EXPR({MATLORENTZ},funit,lcount,mat,reg,3,out,{ 
 
     ! read mat parameters here, as defined in mat data structure
-    read(funit,*) mat%lambdal
-    read(funit,*) mat%gammal
-    read(funit,*) mat%deltaepsl
+    call readfloat(funit,lcount, mat%lambdalinv)
+    call readfloat(funit,lcount, mat%gammal)
+    call readfloat(funit,lcount, mat%deltaepsl)
 
     })
 
@@ -98,7 +98,7 @@ contains
     
        ! initialize mat object here
 
-       mat%omegal = 2. * PI / mat%lambdal
+       mat%omegal = 2. * PI * mat%lambdalinv
 !       mat%gammal = 2. / ( mat%abslenl * DT )
 
        reg = regobj(mat%regidx)
@@ -272,7 +272,6 @@ contains
     type(T_MATLORENTZ) :: mat
  
     M4_WRITE_INFO({"#",TRIM(i2str(mat%idx)),&
-    	" lambdal=",TRIM(f2str((mat%lambdal))),&
     	" omegal=",TRIM(f2str((mat%omegal))),&
     	" gammal=",TRIM(f2str((mat%gammal))),&
     	" deltaepsl=",TRIM(f2str((mat%deltaepsl)))
@@ -291,7 +290,7 @@ contains
          TRIM(i2str(mat%idx))," ", TRIM(mat%type)})
 
     ! -- write parameters to console 
-    M4_WRITE_INFO({"lambdal = ",mat%lambdal })
+    M4_WRITE_INFO({"lambdalinv = ",mat%lambdalinv })
     M4_WRITE_INFO({"omegal = ",mat%omegal })
     M4_WRITE_INFO({"deltaepsl = ",mat%deltaepsl })
     M4_WRITE_INFO({"gammal = ",mat%gammal })

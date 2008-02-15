@@ -80,7 +80,7 @@ contains
          real(Hy(M4_COORD(i,j,k-1)))**2+real(Hy(M4_COORD(i-1,j,k-1)))**2)
     EHz = 0.25/M4_MUINVZ(i,j,k) * (real(Hz(M4_COORD(i,j,k)))**2+real(Hz(M4_COORD(i-1,j,k)))**2 + &
          real(Hz(M4_COORD(i,j-1,k)))**2+real(Hz(M4_COORD(i-1,j-1,k)))**2)
-    buf%data(p,slot) = (EEx+EEy+EEz+EHx+EHy+EHz)/(4.0*PI)
+    buf%data(p,slot) = (EEx+EEy+EEz+EHx+EHy+EHz)
     
     } )
   
@@ -118,7 +118,7 @@ contains
          - real(Ez(M4_COORD(i,j,k))+Ez(M4_COORD(i+1,j,k)))*real(Hy(M4_COORD(i,j,k))) &
          - real(Ez(M4_COORD(i,j,k-1))+Ez(M4_COORD(i+1,j,k-1)))* real(Hy(M4_COORD(i,j,k-1))) &
          ) 
-    buf%data(p,slot) = buf%data(p,slot) + val/(4.0*PI)
+    buf%data(p,slot) = buf%data(p,slot) + val
     
     } )
   

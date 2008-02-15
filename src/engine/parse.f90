@@ -528,6 +528,25 @@ contains
 
 ! ---------------------------------------------------------------------
 
+  subroutine readlogical(unit, lcount, val)
+    
+    integer :: unit, lcount
+    logical :: val
+    logical :: err = .false.
+
+    character(len=LINELNG) :: line
+    logical :: eof
+
+    call readline(unit, lcount, eof, line)
+    if ( eof ) err = .true.
+    call getlogical(line, val, err)
+    if ( line .ne. "" ) err = .true.
+    M4_SYNTAX_ERROR(err,lcount,{"1 INTEGER"})
+
+  end subroutine readlogical
+
+! ---------------------------------------------------------------------
+
   subroutine readfloat(unit, lcount, val)
     
     integer :: unit, lcount

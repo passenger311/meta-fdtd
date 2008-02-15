@@ -12,6 +12,9 @@
 module manifest
 
   use constant
+  use mat
+  use diag
+  use out
   implicit none
   public
   save 
