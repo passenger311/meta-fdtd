@@ -33,6 +33,7 @@ OUTHD5= outhd5.o
 FDTD_OUTHD5= fdtd_outhd5.o
 endif
 
+# basic objects
 BOBJ=\
 constant.o\
 strings.o\
@@ -46,6 +47,7 @@ outlist.o\
 list.o\
 grid.o
 
+# core objects
 FOBJ=\
 fdtd.o\
 fdtd_calc.o\
@@ -69,6 +71,7 @@ outvtk.o\
 $(OUTHD5)\
 mpicomms.o
 
+# top objects
 TOBJ=\
 out.o\
 bound.o\
@@ -94,8 +97,11 @@ info:
 	@echo ". BUILD ENGINE [$(BUILDDIR)/$(ENGINE)]"
 
 check:
-	@if [ "`cat BUILD 2>/dev/null`" != "$(BUILDDIR)/$(ENGINE)" ]; then \
-	echo "$(BUILDDIR)/$(ENGINE)" >BUILD; \
+	@if [ "`cat BUILD 2>/dev/null`" != "$(BUILDDIR)" ]; then \
+	echo "$(BUILDDIR)" >BUILD; \
+	fi
+	@if [ "`cat FLAVOUR 2>/dev/null`" != "$(ENGINE)" ]; then \
+	echo "$(ENGINE)" >FLAVOUR; \
 	fi
 
 install: MANIFEST build-dir
@@ -115,7 +121,7 @@ $(BOBJ): %.o : %.f90 BUILD
 	fi
 	@$(strip $(F90) $(F90FLAGS) -c $*_m4.f90 -o $@)
 
-$(FOBJ) : %.o : %.f90 $(BOBJ) BUILD
+$(FOBJ) : %.o : %.f90 $(BOBJ) BUILD FLAVOUR
 	@echo [F90] $@
 	@if [ -f $*.m4 ]; then \
 	$(M4) $*.m4 $< >$*_m4.f90; \
@@ -124,7 +130,7 @@ $(FOBJ) : %.o : %.f90 $(BOBJ) BUILD
 	fi
 	@$(strip $(F90) $(F90FLAGS_OPT) -c $*_m4.f90 -o $@)
 
-$(TOBJ): %.o : %.f90 $(BOBJ) $(FOBJ) BUILD
+$(TOBJ): %.o : %.f90 $(BOBJ) $(FOBJ) BUILD FLAVOUR
 	@echo [F90] $@
 	@if [ -f $*.m4 ]; then \
 	$(M4) $*.m4 $< >$*_m4.f90; \
