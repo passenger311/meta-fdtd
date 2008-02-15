@@ -61,8 +61,7 @@ contains
       file=cat2(pfxconfig,mpi_sfxin)
       
 
-      M4_WRITE_INFO({"reading configuration data: ", TRIM(file)})
-
+      M4_WRITE_INFO({"opening config (0): ", TRIM(file)})
       open(UNITTMP,FILE=file,STATUS="old", IOSTAT=ios)
       M4_OPEN_ERROR(ios,file)
 

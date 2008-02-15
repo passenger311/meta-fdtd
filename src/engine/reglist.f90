@@ -196,6 +196,7 @@ contains
     real(kind=8) :: fvec(6)
     character(len=LINELNG) :: string, line, loadfn
     character :: bc, ec
+    integer :: lcstack(0:10), ldepth = 0
     logical :: auto
 
     M4_WRITE_DBG(". enter ReadRegObj")
@@ -228,16 +229,16 @@ contains
 
        err = .false.
        call readline(unit,lcount,eof,line)
-       call getstring(line,string,err)
-       M4_WRITE_DBG({"got token ",TRIM(string)})
-       M4_PARSE_ERROR({err},lcount)
 
        if ( eof ) then
           if ( unit .gt. UNITTMP ) then
              M4_WRITE_DBG({"end of file, close unit = ",TRIM(i2str(unit))})
              close(unit)
-             unit = unit - 1 ! return from nested load   
-             M4_WRITE_DBG({"back to unit = ",TRIM(i2str(unit))})
+             unit = unit - 1 ! return from nested load
+             lcount = lcstack(unit-UNITTMP)+1 ! restore line count
+             M4_WRITE_INFO({"return to config (",TRIM(i2str(unit-UNITTMP)),")"})
+             call readline(unit,lcount,eof,line)
+             M4_PARSE_ERROR({err},lcount,{UNEXPECTED EOF})
              call gettoken(line,")LOAD",err)
              M4_SYNTAX_ERROR({err},lcount,{")LOAD"})
              M4_WRITE_DBG({"consumed )LOAD"})          
@@ -246,6 +247,10 @@ contains
              M4_PARSE_ERROR({err},lcount,{UNEXPECTED EOF})
           end if
        end if
+
+       call getstring(line,string,err)
+       M4_WRITE_DBG({"got token ",TRIM(string)})
+       M4_PARSE_ERROR({err},lcount)
            
        select case ( string ) 
        case( "(POINT" ) 
@@ -257,8 +262,8 @@ contains
              call getintvec(line, pvec, 3, ":", err)   ! read up to 3 ints till the : 
              call getfloatvec(line, fvec, 6, ":", err) ! then read up to 6 floats
              if ( err ) then
-                M4_WRITE_DBG({"end of point list"})
                 M4_SYNTAX_ERROR({line .ne. ")POINT"},lcount,{")POINT"})
+                M4_WRITE_DBG({"end of point list"})
                 exit
              end if
              call SetPointRegObj(reg, pvec, fvec)
@@ -289,28 +294,28 @@ contains
           M4_WRITE_DBG({"trying to open ",TRIM(loadfn)})
           open(unit+1,FILE=loadfn,STATUS="old", IOSTAT=ios)
           if ( ios .eq. 0 ) then
+             lcstack(unit-UNITTMP) = lcount
              unit = unit + 1
-             M4_WRITE_DBG({"success, unit = ",TRIM(i2str(unit))})
+             lcount = 1
+             M4_WRITE_INFO({"opening config (",TRIM(i2str(unit-10)),"): ", TRIM(loadfn)})
+             M4_WRITE_DBG({"file unit = ",TRIM(i2str(unit))})
           else
              M4_WRITE_WARN({"COULD NOT OPEN ",TRIM(loadfn)})
              read(unit,*,iostat = ios) string
              M4_WRITE_DBG({"consumed ",TRIM(string)}) ! consume )LOAD
           end if
-       case("INIT")    
+       case("CLEAR")    
+          numvalues = 1 	
+       case("SAVE")    
           numvalues = numnodes + 1 	
        case("(FILL") ! a list of values
-          do 
-             fvec = 1.0
-             call readline(unit,lcount,eof,line)
-             M4_PARSE_ERROR({eof},lcount,{UNEXPECTED EOF})
-             call getfloatvec(line, fvec, 6, ":", err) ! then read up to 6 floats
-             if ( err ) then
-                M4_WRITE_DBG({"end of fill list"})
-                M4_SYNTAX_ERROR({line .ne. ")FILL"},lcount,{")FILL"})
-                exit
-             end if
-             call FillValueRegObj(reg, fvec)
-          end do
+          fvec = 1.0
+          call readline(unit,lcount,eof,line)
+          M4_PARSE_ERROR({eof},lcount,{UNEXPECTED EOF})
+          call getfloatvec(line, fvec, 6, ":", err) ! then read up to 6 floats
+          M4_SYNTAX_ERROR({err},lcount,{"FLOAT VECTOR"})
+          call FillValueRegObj(reg, fvec)
+          call readtoken(unit,lcount,")FILL")
        case("(SET") ! a list of values
           do 
              fvec = 1.0
@@ -704,12 +709,15 @@ contains
   
     type(T_REG) :: reg
     real(kind=8) :: fvec(6)
-    integer :: v
+    integer :: v,i
     
     if ( reg%idx .eq. -1 ) return
 
     M4_WRITE_DBG({"set value at ",numvalues," of ",numnodes," nodes"})
 	
+    write(6,*) "set value at ",numvalues," of ",numnodes," nodes"
+    write(6,*)( fvec(i),i=1,reg%numval)
+
     if ( numvalues .gt. numnodes ) return
     
     do v = 1, reg%numval

@@ -73,7 +73,8 @@ define({M4_MODREAD_DECL},{
     type(T_$1) :: $4 
     type(T_REG) :: $5 ! reg
     type(T_OUT) :: $6 ! out
-    character(len=STRLNG) :: m4_string, m4_linestr, m4_skiptill
+    character(len=STRLNG) :: m4_string
+    logical :: m4_eof
 
 })
 
@@ -89,7 +90,8 @@ define({M4_MODREAD_EXPR},{
 
 ! read regobj information
 
-    read($2,*) m4_string
+    call readline($2,$3, m4_eof, m4_string)
+    M4_PARSE_ERROR({m4_eof},$3,{UNEXPECTED EOF})
     if ( m4_string .eq. "(REG" ) then
        M4_WRITE_DBG({"got token (REG -> ReadRegObj"})
        call ReadRegObj($5, fdtdreg, $2, $3, $6)
@@ -100,35 +102,19 @@ define({M4_MODREAD_EXPR},{
 
 ! get terminator
 
-    m4_skiptill = ""
     do	
-      read($2,*) m4_linestr
-      m4_string = TRIM(ADJUSTL(m4_linestr))
-
-      if ( m4_skiptill .ne. "" ) then 
-         M4_WRITE_DBG({"skipping line ",TRIM(m4_string)})
-         if ( m4_string .eq. m4_skiptill ) m4_skiptill = ""  
-         cycle              
-      endif
-
+      call readline($2,$3, m4_eof, m4_string)
+      M4_PARSE_ERROR({m4_eof},$3,{UNEXPECTED EOF})
       select case (m4_string)
       case("(OUT") 
 	M4_WRITE_DBG({"got token (OUT -> ReadOutObj"})
        call ReadOutObj($7, $5, $2, $3, modname)
        outobj($7%idx)%objidx = num$1obj
        $4%regidx = $5%idx
-      case default	
-	if ( m4_string(1:2) .eq. "(!" ) then
-           m4_skiptill = cat2(")",m4_string(3:))
-           M4_WRITE_DBG({"got token (! -> skiptill = ", TRIM(m4_skiptill)})  
-           cycle
-        end if
-
-        M4_WRITE_DBG({"read terminator: ", TRIM(m4_string)})
-        if ( m4_string(1:1) .ne. ")" ) then
-          M4_FATAL_ERROR({"BAD TERMINATOR: Read$1Obj/$1"})
-        end if
-        exit
+      case(")$1")
+	exit
+      case default
+	M4_SYNTAX_ERROR(.true.,lcount,{")$1"})
       end select
     enddo
 

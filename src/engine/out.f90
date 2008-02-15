@@ -24,6 +24,7 @@ module out
 
 ! ** add output modules
 ! 1.
+  use outset
   use outgpl
   use outvtk
 M4_IFELSE_HD5({
@@ -72,6 +73,8 @@ contains
        select case ( outobj(n)%fmt ) 
 ! ** call output buffer preparation
 ! 1.
+       case ( "SET" ) 
+          call InitializeOutsetObj(outobj(n))
        case ( "GPL" ) 
           call InitializeOutgplObj(outobj(n))
        case ( "VTK" ) 
@@ -106,6 +109,8 @@ M4_IFELSE_HD5({
        select case ( outobj(n)%fmt ) 
 ! ** call output buffer preparation
 ! 1.
+       case ( "SET" ) 
+          call FinalizeOutsetObj(outobj(n))
        case ( "GPL" ) 
           call FinalizeOutgplObj(outobj(n))
        case ( "VTK" ) 
@@ -147,6 +152,8 @@ M4_IFELSE_HD5({
        select case ( outobj(n)%fmt ) 
 ! ** call output write data methods
 ! 1.
+       case ( "SET" ) 
+          call WriteDataOutsetObj(outobj(n), ncyc, mode)
        case ( "GPL" ) 
           call WriteDataOutgplObj(outobj(n), ncyc, mode)
        case ( "VTK" ) 

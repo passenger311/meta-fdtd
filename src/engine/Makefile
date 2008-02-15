@@ -56,6 +56,7 @@ sbc.o\
 pbc.o\
 pml.o\
 out_calc.o\
+fdtd_outset.o\
 fdtd_outgpl.o\
 fdtd_outvtk.o\
 $(FDTD_OUTHD5)\
@@ -66,6 +67,7 @@ diag.o\
 $(OUTGPLOBJ)\
 $(OUTVTKOBJ)\
 $(OUTHD5OBJ)\
+outset.o\
 outgpl.o\
 outvtk.o\
 $(OUTHD5)\

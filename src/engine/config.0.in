@@ -31,7 +31,7 @@
   2000         		! ncyc
   0.576             	! dt
   -30 229		! i range
-  20 179      		! j range
+  0 199      		! j range
   20 20			! k range
 )GRID
 
@@ -129,7 +129,7 @@
 
 
 ! -----------------------------------------------------------------------
-! (MATSOURCE-): hard electromagnetic field source. [3]
+! (MATSOURCE-): hard electromagnetic field source. [Ex,Ey,Ez]
 ! -----------------------------------------------------------------------
 
     
@@ -140,18 +140,27 @@ T		! time (T) or wavelength (F) parameters for gaussian
 1200		! peak of gaussian (n0) or fraction of peak (a0)
 700             ! half width in timedomain (dn) or wavelength dom (dlambda)
 (REG
-  (POINT
-     14 100 : 0.0 1.0 0.0
+ (POINT
+     11  97 : 0.0 0.0 0.0
+     12  98 : 0.0 0.0 0.0
+     13  99 : 0.0 0.0 0.0
+     14 100 : 0.0 0.0 0.0
+     15 101 : 0.0 0.0 0.0
+     16 102 : 0.0 0.0 0.0
+     17 103 : 0.0 0.0 0.0
   )POINT
+  (LOAD 
+	source.in
+  )LOAD	
 )REG
 )MATSOURCE
 
 ! -----------------------------------------------------------------------
-! (MATTFSF-): tfsf electromagnetic field source. [4]
+! (MATTFSF-): tfsf electromagnetic field source. [Ep1,Ep2,Hp1,Hp2]
 ! -----------------------------------------------------------------------
 
     
-(MATTFSF
+(!MATTFSF
 0.0333333333	! inv vacuum wavelength in units of [2 pi c]
 0 800 		! time offset till attack and cw duration (sustain)
 T		! time (T) or wavelength (F) parameters for gaussian
@@ -165,70 +174,66 @@ T		! time (T) or wavelength (F) parameters for gaussian
 )MATTFSF
 
  
+! -----------------------------------------------------------------------
+! (MATPEC-): perfect electrical conductor [Ex,Ey,Ez]
+! -----------------------------------------------------------------------
+    
+(!MATPEC
+(REG
+  (BOX
+     12 12 1 80 121 1
+  )BOX
+)REG
+)MATPEC
 
 ! -----------------------------------------------------------------------
-! (MATLHM-): left-handed materials pole equation 
+! (MATLHM-): left-handed materials pole equation [Ex,Ey,Ez,Hx,Hy,Hz]
 ! -----------------------------------------------------------------------
     
 (MATLHM
-0.0471404520791	    	! lambdaplinv : inv plasma freq wavelength [2 pi c]
-0. 	 	    	! gammapl: damping constant [1/dt] 
+0.0471404520791	   	! lambdaplinv : inv plasma freq wavelength [2 pi c]
+0. 	 	    	! gammapl: damping constant [1/dt]
 1		    	! order: 1 (=J) or 2 (=P)
 (REG
   (BOX
-	44 81 1 9 190 1 : 1. 1. 1. 1. 1. 1. 
-	44 44 1 9 190 1 : 1. .5 .5 .5 1. 1.  
-	81 81 1 9 190 1 : 0. .5 .5 .5 0. 0. 
-	44 81 1 9 9 1 	: .5 1. .5 1. .5 1.  
-	44 81 1 190 190 1 : .5 0. .5 0. .5 0. 
-	44 44 1 9 9 1 : .5 .5 .25 .5 .5 1.  
-	44 44 1 190 190 1 : .5 0. .25 0. .5 0.  
-	81 81 1 9 9 1 : 0. .5 .25 .5 0. 0.  
-	81 81 1 190 190 1 : 0. 0. .25 0. 0. 0. 
+	61 101 1 9 190 1 : 1. 1. 1. 1. 1. 1. 
+	61 61 1 9 190 1 : 1. .5 .5 .5 1. 1.  
+	101 101 1 9 190 1 : 0. .5 .5 .5 0. 0. 
+	61 101 1 9 9 1 	: .5 1. .5 1. .5 1.  
+	61 101 1 190 190 1 : .5 0. .5 0. .5 0. 
+	61 61 1 9 9 1 : .5 .5 .25 .5 .5 1.  
+	61 61 1 190 190 1 : .5 0. .25 0. .5 0.  
+	101 101 1 9 9 1 : 0. .5 .25 .5 0. 0.  
+	101 101 1 190 190 1 : 0. 0. .25 0. 0. 0. 
   )BOX
+  (LOAD
+     matlhm.in
+  )LOAD
 )REG
 )MATLHM
 
 
 
 ! -----------------------------------------------------------------------
-! (MATDRUDE-): drude materials pole equation 
+! (MATDRUDE-): drude materials pole equation [Ex,Ey,Ez]
 ! -----------------------------------------------------------------------
     
-(!MATDRUDE
-0.0471404520791	    	! lambdaplinv: inv plasma freq wavelength [2 pi c]
+(MATDRUDE
+0.045		    	! lambdaplinv: inv plasma freq wavelength [2 pi c]
 0.1 		    	! gammapl: damping constant [1/dt] 
 1		    	! order: 1 (=J) or 2 (=P)
 (REG
   (BOX
-	44 81 1 9 190 1 : 1. 1. 1.
+	61 101 1 9 190 1 : 1. 1. 1. 1. 1. 1. 
+	61 61 1 9 190 1 : 1. .5 .5 .5 1. 1.  
+	101 101 1 9 190 1 : 0. .5 .5 .5 0. 0. 
+	61 101 1 9 9 1 	: .5 1. .5 1. .5 1.  
+	61 101 1 190 190 1 : .5 0. .5 0. .5 0. 
+	61 61 1 9 9 1 : .5 .5 .25 .5 .5 1.  
+	61 61 1 190 190 1 : .5 0. .25 0. .5 0.  
+	101 101 1 9 9 1 : 0. .5 .25 .5 0. 0.  
+	101 101 1 190 190 1 : 0. 0. .25 0. 0. 0. 
   )BOX
-  (BOX
-	44 44 1 9 190 1 : 1. .5 .5 
-  )BOX
-  (BOX
-	81 81 1 9 190 1 : 0. .5 .5 
-  )BOX
-  (BOX
-	44 81 1 9 9 1 : .5 1. .5
-  )BOX
-  (BOX
-	44 81 1 190 190 1 : .5 0. .5
-  )BOX
-  (BOX
-	44 44 1 9 9 1 : .5 .5 .25
-  )BOX
-  (BOX
-	44 44 1 190 190 1 : .5 0. .25
-  )BOX
-  (BOX
-	81 81 1 9 9 1 : 0. .5 .25
-  )BOX
-  (BOX
-	81 81 1 190 190 1 : 0. 0. .25
-  )BOX
-
-
 )REG
 )MATDRUDE
 
@@ -242,7 +247,7 @@ T		! time (T) or wavelength (F) parameters for gaussian
 0 2000 1   ! time window
 (REG
   (BOX
-	42 81 1 9 190 1
+	42 101 1 9 190 1
   )BOX
 )REG
 (OUT
