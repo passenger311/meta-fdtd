@@ -151,7 +151,7 @@ clean:
 	@rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod *_m4.f90 *_m4.F90 *_m4.tmp
 
 proper: clean
-	@rm -f $(EXE) $(PREEXE) *.o *~ *.gpl *.vtk BUILD
+	@rm -f $(EXE) $(PREEXE) *.o *~ *.gpl *.vtk BUILD FLAVOUR
 
 
 # ---------------------------------------------------------------------

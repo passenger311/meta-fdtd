@@ -325,10 +325,8 @@ contains
    integer :: num, val(num)
    character :: delim
    logical :: err
-   integer :: i ,s, e, c, ios
+   integer :: l,i ,s, e, c, ios
    
-   val = 0
-
    s = -1
    e = -1
    c = 0
@@ -375,8 +373,6 @@ contains
    logical :: err
    integer :: i ,s, e, c, ios
    
-   val = 0
-
    s = -1
    e = -1
    c = 0

@@ -269,7 +269,7 @@ contains
              fvec = 1.0
              call readline(unit,lcount,eof,line)
              M4_PARSE_ERROR({eof},lcount,{UNEXPECTED EOF})
-             call getintvec(line, bvec, 6, ":", err)   ! read up to 9 ints till the : 
+             call getintvec(line, bvec, 9, ":", err)   ! read up to 9 ints till the : 
              call getfloatvec(line, fvec, 6, ":", err) ! then read up to 6 floats
              if ( err ) then
                 M4_WRITE_DBG({"end of box list"})

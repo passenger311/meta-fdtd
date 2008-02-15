@@ -2,25 +2,19 @@
 !
 ! Meta-Engine Configuration File
 !
-! 2D REAL
-!
 ! =======================================================================
 
 ! -----------------------------------------------------------------------
-! This is a sample configuration file, that illustrates how the various
-! sections are setup. Regions can be commented out using (!IDENTIFIER
-! ... )IDENTIFIER. Do not use comment lines (starting with !) inside a
-! section. The OUT and REG blocks are reoccuring in the various sections.
 !
-! * REG: marks a continuous and discontinuous region of space. Format is
+! (REG-)REG: marks a continuous and discontinuous region of space. 
 !
 ! (REG
 !    <list of objects>
 !    <region-format>
 ! )REG
 !
-! <list of objects>: any number of POINT, VPOINT, BOX or VBOX objects
-! <region-format>: optional. AUTO (default),MASK or LIST mode.
+! <list of objects>: any number of POINT or BOX objects
+! <region-loop>: optional. MASK or LIST mode.
 !
 ! -----------------------------------------------------------------------
 
@@ -38,7 +32,7 @@
   0.576             	! dt
   -30 229		! i range
   20 179      		! j range
-  0 0			! k range
+  20 20			! k range
 )GRID
 
 
@@ -90,7 +84,7 @@
     0 2000 200
     (REG
       (BOX
-	 0 199 1 0 199 1
+	 0 199 1 0 199 1 0 20 1
       )BOX
     )REG
   )OUT
@@ -157,7 +151,7 @@ T		! time (T) or wavelength (F) parameters for gaussian
 ! -----------------------------------------------------------------------
 
     
-(!MATTFSF
+(MATTFSF
 0.0333333333	! inv vacuum wavelength in units of [2 pi c]
 0 800 		! time offset till attack and cw duration (sustain)
 T		! time (T) or wavelength (F) parameters for gaussian
