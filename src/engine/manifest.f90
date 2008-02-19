@@ -39,11 +39,11 @@ contains
     write(6,*) "*   %VERSION : ",TRIM(VERSION_NUMBER), " (", TRIM(VERSION_DATE),")"
     write(6,*) "*   %BUILD   : ",TRIM(BUILD) 
     write(6,*) "*   %FLAVOUR : ",TRIM(FLAVOUR) 
-    write(6,*) "* MODULE INFO"
-    write(6,*) "*   %MAT     : M4_MATLIST"
-    write(6,*) "*   %DIAG    : M4_DIAGLIST"
-    write(6,*) "*   %OUTGPL  : M4_OUTGPLLIST"
-    write(6,*) "*   %OUTVTK  : M4_OUTVTKLIST"
+!    write(6,*) "* MODULE INFO"
+!    write(6,*) "*   %MAT     : M4_MATLIST"
+!    write(6,*) "*   %DIAG    : M4_DIAGLIST"
+!    write(6,*) "*   %OUTGPL  : M4_OUTGPLLIST"
+!    write(6,*) "*   %OUTVTK  : M4_OUTVTKLIST"
 
   end subroutine DisplayManifest
 

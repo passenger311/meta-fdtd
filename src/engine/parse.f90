@@ -284,9 +284,12 @@ contains
  subroutine getints(line, val, num, err)
 
    character(len=*) :: line
-   integer :: num, val(num)
+   integer :: num
+   integer :: val(num)
    logical :: err
 
+
+   character(len=LINELNG) :: line2
    integer :: i ,s, e, c, ios
 
    s = -1
@@ -294,6 +297,8 @@ contains
    c = 0
 
    if ( err ) return
+
+   line2 = line
 
    do i = 1, LINELNG
       
@@ -304,6 +309,8 @@ contains
          read( line(s:e),*, iostat=ios ) val(c)
          if ( ios .ne. 0 ) then 
             err =.true.
+            line = line2
+            return
          else
             line(s:e) = "" ! wipe
             s = -1
@@ -312,8 +319,9 @@ contains
          if ( c .eq. num ) return
       end if
    end do
-   
-   err = .true. 
+
+   line = line2
+   err = .true.
 
  end subroutine getints
 
@@ -418,6 +426,8 @@ contains
    real(kind=8) :: val(num)
    logical :: err
 
+   character(len=LINELNG) :: line2
+
    integer :: i ,s, e, c, ios
 
    s = -1
@@ -425,6 +435,8 @@ contains
    c = 0
 
    if ( err ) return
+
+   line2 = line
 
    do i = 1, LINELNG
       
@@ -435,6 +447,8 @@ contains
          read( line(s:e),*, iostat=ios ) val(c)
          if ( ios .ne. 0 ) then 
             err =.true.
+            line = line2
+            return
          else
             line(s:e) = "" ! wipe
             s = -1
@@ -444,7 +458,8 @@ contains
       end if
    end do
    
-   err = .true. 
+   line = line2
+   err = .true.
 
  end subroutine getfloats
 

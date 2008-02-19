@@ -715,9 +715,6 @@ contains
 
     M4_WRITE_DBG({"set value at ",numvalues," of ",numnodes," nodes"})
 	
-    write(6,*) "set value at ",numvalues," of ",numnodes," nodes"
-    write(6,*)( fvec(i),i=1,reg%numval)
-
     if ( numvalues .gt. numnodes ) return
     
     do v = 1, reg%numval

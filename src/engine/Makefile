@@ -150,10 +150,10 @@ $(EXE) : $(TOBJ) $(FOBJ) $(BOBJ) second_wall.o
 	@$(strip @$(CC) $(CCFLAGS) -c $<)
 
 clean:
-	@rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod *_m4.f90 *_m4.F90 *_m4.tmp
+	@rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod *_m4.f90 *_m4.F90 *_m4.tmp BUILD FLAVOUR
 
 proper: clean
-	@rm -f $(EXE) $(PREEXE) *.o *~ *.gpl *.vtk BUILD FLAVOUR
+	@rm -f $(EXE) $(PREEXE) *.o *~ *.gpl *.vtk *.set
 
 
 # ---------------------------------------------------------------------

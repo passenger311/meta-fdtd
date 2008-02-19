@@ -102,7 +102,7 @@ contains
     logical :: err, eof
     character(len=LINELNG) :: line
 
-    character (len=STRLNG) :: fmt, fn, mode, filename, string
+    character (len=STRLNG) :: fmt, fn, mode, filename, string, line2
     logical :: snap
     integer :: ns, ne, dn, val(3)
     type(T_REG) :: reg
@@ -115,22 +115,50 @@ contains
 
     call readline(funit,lcount,eof,line)
     call getstring(line,fmt,err)
-    call getlogical(line,snap,err)
     call getstring(line,filename,err)
-    M4_PARSE_ERROR({eof .or. err .or. line .ne. ""},lcount)
-    M4_WRITE_DBG({"fmt snap filename: ",TRIM(fmt)," ",snap," ", TRIM(filename)})
+    M4_SYNTAX_ERROR({eof .or. err .or. line .ne. ""},lcount,"FMT FILENAME")
+    M4_WRITE_DBG({"fmt filename: ",TRIM(fmt)," ", TRIM(filename)})
 
     call readline(funit,lcount,eof,line)
-    call getstring(line,fn,err)
-    call getstring(line,mode,err)
-    M4_PARSE_ERROR({eof .or. err .or. line .ne. ""},lcount)
-    M4_WRITE_DBG({"fn mode: ", TRIM(fn)," ",TRIM(mode) })
-    
-    call readints(funit, lcount, val, 3)
+    M4_PARSE_ERROR(eof,lcount,{UNEXPECTED EOF})
+    ! first try to read timestep information
+    call getints(line, val, 3, err)
     ns = val(1)
     ne = val(2)
     dn = val(3)
-    M4_WRITE_DBG({"ns ne dn: ",ns, ne, dn })
+    ! if this failed then get fn/mode info
+    if ( err .or. line .ne. "" ) then
+       err = .false.
+       call getstring(line,fn,err)
+       M4_SYNTAX_ERROR({err},lcount,"FN [MODE [SNAP]]")
+       if ( line .eq. "" ) then
+          mode = "N"
+       else
+          call getstring(line,mode,err)
+       end if
+       M4_SYNTAX_ERROR({err},lcount,"FN [MODE [SNAP]]")
+       if ( line .eq. "" ) then
+          snap = .false.
+       else
+          call getlogical(line,snap,err)
+       end if
+       M4_SYNTAX_ERROR({err .or. line .ne. ""},lcount,"FN [MODE [SNAP]]")
+       call readline(funit,lcount,eof,line)
+       M4_PARSE_ERROR(eof,lcount,{UNEXPECTED EOF})
+       call getints(line, val, 3, err)
+       ns = val(1)
+       ne = val(2)
+       dn = val(3)
+       M4_SYNTAX_ERROR({err .or. line .ne. ""},lcount,"3 INTEGERS")
+       M4_WRITE_DBG({"ns ne dn: ",ns, ne, dn })
+    else
+       M4_WRITE_DBG({"ns ne dn: ",ns, ne, dn })
+       fn = "UNKNOWN"
+       mode = "X"
+       snap = .true.
+    end if
+
+    M4_WRITE_DBG({"fn mode snap: ", TRIM(fn)," ",TRIM(mode), snap })
 
     call readline(funit,lcount,eof,line)
     call getstring(line,string,err)

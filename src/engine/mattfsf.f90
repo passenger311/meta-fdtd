@@ -4,26 +4,18 @@
 !
 !  total-field-scattered-field source module. 
 !
-!  CF,1D,2D,3D
-!
 !----------------------------------------------------------------------
 
 
 ! =====================================================================
 !
 ! The mattfsf module is similar to to the matsource module but feeds
-! an incident EH field instead of a driving current.
+! an incident EH field instead of a driving current. 
 !
-! A mattfsf must be defined over a box region with zero volume (the 
-! plane of incidence). The incident field is fed in accoding to 
-! [Tavlov p 207]. This means 4 field components must be passed in
-! (two E and two H). Depending on the face type, the components that 
-! must be given are:
+! Each Yee cell is considered a TFSF source of its own. The incident
+! field componenents decide over the angle into which the plane wave
+! is directed [see tavlov p 212 for calculation].
 !
-! box is a k=k_0 face: Ex, Ey, Hx, Hy
-! box is a j=j_0 face: Ex, Ez, Hx, Hz
-! box is a i=i_0 face: Ey, Ez, Hy, Hz
-
 
 module mattfsf
 
@@ -57,7 +49,6 @@ module mattfsf
      real(kind=8) :: gamma
      real(kind=8) :: omega0, omega1, domega 
      real(kind=8) :: es
-     integer :: face               ! 1 -> i=const, 2 => j=const, 3 => z=const
 
      real(kind=8), pointer, dimension(:,:,:,:) :: Finc
 
@@ -75,7 +66,7 @@ contains
 
     M4_WRITE_DBG(". enter ReadMatTfsfObj")
 
-    M4_MODREAD_EXPR({MATTFSF}, funit,lcount,mat,reg, 4, out,{ 
+    M4_MODREAD_EXPR({MATTFSF}, funit,lcount,mat,reg, 6, out,{ 
 
     ! read parameters here, as defined in mat data structure
 
@@ -107,7 +98,7 @@ contains
   subroutine InitializeMatTfsf
 
     M4_MODLOOP_DECL({MATTFSF},mat)
-    M4_REGLOOP_DECL(reg,p,i,j,k,w(4))
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(6))
     integer :: err
 
     M4_WRITE_DBG(". enter InitializeMatTfsf")
@@ -116,23 +107,10 @@ contains
     ! check whether region is a face
     reg = regobj(mat%regidx)
 
-    mat%face = -1
-
-    if ( reg%isbox ) then
-       if ( reg%is .eq. reg%ie ) mat%face = 1 
-       M4_IFELSE_1D({},{if ( reg%js .eq. reg%je ) mat%face = 2})  
-       M4_IFELSE_3D({if ( reg%ks .eq. reg%ke ) mat%face = 3})
-       if ( mat%face .le. 0 ) then
-          M4_FATAL_ERROR("MATTFSF REGION MUST DEFINE A VALID INTERFACE!")
-       endif
-    else
-       M4_FATAL_ERROR("MATTFSF OBJECT MUST BE DEFINED OVER A BOX!")
-    end if
-
-    
+  
     ! allocate and fill incident wave components
     
-    allocate(mat%Finc(reg%is-1:reg%ie+1,reg%js-1:reg%je+1,reg%ks-1:reg%ke+1, 1:4), stat = err)
+    allocate(mat%Finc(reg%is-1:reg%ie+1,reg%js-1:reg%je+1,reg%ks-1:reg%ke+1, 1:6), stat = err)
     mat%Finc = 0.0
     M4_ALLOC_ERROR(err,{"InitializeMatTfsf"})
     M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
@@ -140,6 +118,8 @@ contains
     mat%Finc(i,j,k,2) = w(2)
     mat%Finc(i,j,k,3) = w(3)
     mat%Finc(i,j,k,4) = w(4)
+    mat%Finc(i,j,k,5) = w(5)
+    mat%Finc(i,j,k,6) = w(6)
     })
 
     ! center frequency
@@ -196,7 +176,7 @@ contains
     integer :: ncyc
     
     M4_MODLOOP_DECL({MATTFSF},mat)
-    M4_REGLOOP_DECL(reg,p,i,j,k,w(4))
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(6))
     real(kind=8) :: ncyc0, nend0, es, wavefct
 
     M4_MODLOOP_EXPR({MATTFSF},mat,{
@@ -219,43 +199,15 @@ contains
          end if
          
          wavefct = es * sin(mat%omega0*ncyc0*DT) 
-
-         ! i=const face: Finc(3) => Hy, Finc(4) => Hz 
-         if ( mat%face .eq. 1 ) then
             
-            M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+         M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-            Ey(i,j,k) = Ey(i,j,k) + mat%Finc(i,j,k,4) * DT/SX * epsinvy(i,j,k) * wavefct
-            Ez(i,j,k) = Ez(i,j,k) + mat%Finc(i,j,k,3) * DT/SX * epsinvz(i,j,k) * wavefct
-           
-            })
-            
-         end if
+         Ex(i,j,k) = Ex(i,j,k) + DT * ( mat%Finc(i,j,k,5)/SZ - mat%Finc(i,j,k,6)/SY ) * epsinvx(i,j,k) * wavefct
+         Ey(i,j,k) = Ey(i,j,k) + DT * ( mat%Finc(i,j,k,6)/SX - mat%Finc(i,j,k,4)/SZ ) * epsinvy(i,j,k) * wavefct
+         Ez(i,j,k) = Ez(i,j,k) + DT * ( mat%Finc(i,j,k,4)/SY - mat%Finc(i,j,k,5)/SX ) * epsinvz(i,j,k) * wavefct
          
-         ! j=const face: Finc(3) => Hx, Finc(4) => Hz
-         if ( mat%face .eq. 2 ) then
+         })
             
-            M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-            
-            Ex(i,j,k) = Ex(i,j,k) + mat%Finc(i,j,k,4) * DT/SY * epsinvx(i,j,k) * wavefct
-            Ez(i,j,k) = Ez(i,j,k) + mat%Finc(i,j,k,3) * DT/SY * epsinvz(i,j,k) * wavefct
-            
-            })
-
-         end if
-         
-         ! k=const face: Finc(3) => Hx, Finc(4) => Hy       
-         if ( mat%face .eq. 3 ) then
-            
-            M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-            
-            Ex(i,j,k) = Ex(i,j,k) + mat%Finc(i,j,k,4) * DT/SZ * epsinvx(i,j,k) * wavefct
-            Ey(i,j,k) = Ey(i,j,k) + mat%Finc(i,j,k,3) * DT/SZ * epsinvy(i,j,k) * wavefct
-            
-            })
-
-         end if
-
        end if      
     })
 
@@ -268,7 +220,7 @@ contains
     integer :: ncyc
 
     M4_MODLOOP_DECL({MATTFSF},mat)
-    M4_REGLOOP_DECL(reg,p,i,j,k,w(4))
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(6))
     real(kind=8) :: ncyc0, nend0, es, wavefct
 
     M4_MODLOOP_EXPR({MATTFSF},mat,{
@@ -291,43 +243,16 @@ contains
        end if
        
        wavefct = es * sin(mat%omega0*ncyc0*DT)
-       
-       ! i=const face: Finc(1) => Ey, Finc(2) => Ez 
-       if ( mat%face .eq. 1 ) then
+         
+       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
           
-          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+       Hx(i,j,k) = Hx(i,j,k) + DT * ( mat%Finc(i,j,k,3)/SY - mat%Finc(i,j,k,2)/SZ ) * M4_MUINVX(i,j,k) * wavefct
+       Hy(i,j,k) = Hy(i,j,k) + DT * ( mat%Finc(i,j,k,1)/SZ - mat%Finc(i,j,k,3)/SX ) * M4_MUINVY(i,j,k) * wavefct
+       Hz(i,j,k) = Hz(i,j,k) + DT * ( mat%Finc(i,j,k,2)/SX - mat%Finc(i,j,k,1)/SY ) * M4_MUINVZ(i,j,k) * wavefct
+         
+   
+       })
           
-          Hy(i,j,k) = Hy(i,j,k) + mat%Finc(i,j,k,2) * DT/SX * M4_MUINVY(i,j,k) * wavefct
-          Hz(i,j,k) = Hz(i,j,k) + mat%Finc(i,j,k,1) * DT/SX * M4_MUINVZ(i,j,k) * wavefct
-          
-          })
-          
-       end if
-       
-       ! j=const face: Finc(3) => Hx, Finc(4) => Hz
-       if ( mat%face .eq. 2 ) then
-          
-          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-          
-          Hx(i,j,k) = Hx(i,j,k) + mat%Finc(i,j,k,2) * DT/SY * M4_MUINVX(i,j,k) * wavefct
-          Hz(i,j,k) = Hz(i,j,k) + mat%Finc(i,j,k,1) * DT/SY * M4_MUINVZ(i,j,k) * wavefct
-          
-          })
-          
-       end if
-       
-       ! k=const face: Finc(3) => Hx, Finc(4) => Hy       
-       if ( mat%face .eq. 3 ) then
-          
-          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{  
-          
-          Hx(i,j,k) = Hx(i,j,k) + mat%Finc(i,j,k,2) * DT/SZ * M4_MUINVX(i,j,k) * wavefct
-          Hy(i,j,k) = Hy(i,j,k) + mat%Finc(i,j,k,1) * DT/SZ * M4_MUINVY(i,j,k) * wavefct
-          
-          })
-          
-       end if
-       
     end if
     })
     
@@ -403,7 +328,7 @@ end module mattfsf
 
 !
 ! Authors:  J.Hamm
-! Modified: 25/12/2007
+! Modified: 19/02/2007
 !
 !======================================================================
 
