@@ -156,7 +156,7 @@ contains
          - real(Ex(M4_COORD(i,j,k))+Ex(M4_COORD(i,j+1,k)))*real(Hz(M4_COORD(i,j,k))) &
          - real(Ex(M4_COORD(i-1,j,k))+Ex(M4_COORD(i-1,j+1,k)))*real(Hz(M4_COORD(i-1,j,k))) &
          )
-    buf%data(p,slot) = buf%data(p,slot) + val/(4.0*PI)
+    buf%data(p,slot) = buf%data(p,slot) + val
     
     } )
   
@@ -195,7 +195,7 @@ contains
          - real(Ey(M4_COORD(i,j-1,k))+Ey(M4_COORD(i,j-1,k+1)))*real(Hx(M4_COORD(i,j-1,k))) &
          )
 
-    buf%data(p,slot) = buf%data(p,slot) + val/(4.0*PI)
+    buf%data(p,slot) = buf%data(p,slot) + val
     
     } )
   

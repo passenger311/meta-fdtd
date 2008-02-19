@@ -48,9 +48,7 @@ module mattfsf
      real(kind=8) :: n1,nend       ! some values used internally ...
      real(kind=8) :: gamma
      real(kind=8) :: omega0, omega1, domega 
-     real(kind=8) :: es
-
-     real(kind=8), pointer, dimension(:,:,:,:) :: Finc
+     real(kind=8) :: amp, wavefct
 
   })
 
@@ -110,18 +108,8 @@ contains
   
     ! allocate and fill incident wave components
     
-    allocate(mat%Finc(reg%is-1:reg%ie+1,reg%js-1:reg%je+1,reg%ks-1:reg%ke+1, 1:6), stat = err)
-    mat%Finc = 0.0
     M4_ALLOC_ERROR(err,{"InitializeMatTfsf"})
-    M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-    mat%Finc(i,j,k,1) = w(1)
-    mat%Finc(i,j,k,2) = w(2)
-    mat%Finc(i,j,k,3) = w(3)
-    mat%Finc(i,j,k,4) = w(4)
-    mat%Finc(i,j,k,5) = w(5)
-    mat%Finc(i,j,k,6) = w(6)
-    })
-
+   
     ! center frequency
     mat%omega0 = 2. * PI * mat%lambdainv0
 
@@ -156,15 +144,8 @@ contains
 
   subroutine FinalizeMatTfsf
 
-    M4_MODLOOP_DECL({MATTFSF},mat)
     M4_WRITE_DBG(". enter FinalizeMatTfsf")
-    M4_MODLOOP_EXPR({mattfsf},mat,{
-
-    ! finalize mat object here
-    deallocate(mat%Finc)
-
-    })
-
+    
     M4_WRITE_DBG(". exit FinalizeMatTfsf")
 
   end subroutine FinalizeMatTfsf
@@ -188,23 +169,23 @@ contains
        if ( ncyc0 .ge. 0. .and. ncyc0 .le. mat%nend ) then 
 
          ! in between attack and decay there is a period of length ncw with cw operation. 
-         es = 1.0
+         mat%amp = 1.0
          ! attack phase
          if ( ncyc0 .le. mat%n0 ) then
-            es =  exp ( - mat%gamma**2 * ( ( ncyc0 - mat%n0 ) * DT )**2 )
+            mat%amp =  exp ( - mat%gamma**2 * ( ( ncyc0 - mat%n0 ) * DT )**2 )
          end if
          ! decay phase
          if ( ncyc0 .ge. mat%n0 + mat%ncw ) then         	
-            es =  exp ( - mat%gamma**2 * ( ( ncyc0 - mat%n0 - mat%ncw ) * DT )**2 )
+            mat%amp =  exp ( - mat%gamma**2 * ( ( ncyc0 - mat%n0 - mat%ncw ) * DT )**2 )
          end if
          
-         wavefct = es * sin(mat%omega0*ncyc0*DT) 
+         mat%wavefct = mat%amp * sin(mat%omega0*ncyc0*DT) 
             
          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-         Ex(i,j,k) = Ex(i,j,k) + DT * ( mat%Finc(i,j,k,5)/SZ - mat%Finc(i,j,k,6)/SY ) * epsinvx(i,j,k) * wavefct
-         Ey(i,j,k) = Ey(i,j,k) + DT * ( mat%Finc(i,j,k,6)/SX - mat%Finc(i,j,k,4)/SZ ) * epsinvy(i,j,k) * wavefct
-         Ez(i,j,k) = Ez(i,j,k) + DT * ( mat%Finc(i,j,k,4)/SY - mat%Finc(i,j,k,5)/SX ) * epsinvz(i,j,k) * wavefct
+         Ex(i,j,k) = Ex(i,j,k) + DT * ( w(5)/M4_SZ(i,j,k) - w(6)/M4_SY(i,j,k) ) * epsinvx(i,j,k) * mat%wavefct
+         Ey(i,j,k) = Ey(i,j,k) + DT * ( w(6)/M4_SX(i,j,k) - w(4)/M4_SZ(i,j,k) ) * epsinvy(i,j,k) * mat%wavefct
+         Ez(i,j,k) = Ez(i,j,k) + DT * ( w(4)/M4_SY(i,j,k) - w(5)/M4_SX(i,j,k) ) * epsinvz(i,j,k) * mat%wavefct
          
          })
             
@@ -221,7 +202,7 @@ contains
 
     M4_MODLOOP_DECL({MATTFSF},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(6))
-    real(kind=8) :: ncyc0, nend0, es, wavefct
+    real(kind=8) :: ncyc0, nend0
 
     M4_MODLOOP_EXPR({MATTFSF},mat,{
 
@@ -232,23 +213,23 @@ contains
     if ( ncyc0 .ge. 0. .and. ncyc0 .le. mat%nend ) then 
 
        ! in between attack and decay there is a period of length ncw with cw operation. 
-       es = 1.0
+       mat%amp = 1.0
        ! attack phase
        if ( ncyc0 .le. mat%n0 ) then
-          es =  exp ( - mat%gamma**2 * ( ( ncyc0 - mat%n0 ) * DT )**2 )
+          mat%amp =  exp ( - mat%gamma**2 * ( ( ncyc0 - mat%n0 ) * DT )**2 )
        end if
        ! decay phase
        if ( ncyc0 .ge. mat%n0 + mat%ncw ) then         	
-          es =  exp ( - mat%gamma**2 * ( ( ncyc0 - mat%n0 - mat%ncw ) * DT )**2 )
+          mat%amp =  exp ( - mat%gamma**2 * ( ( ncyc0 - mat%n0 - mat%ncw ) * DT )**2 )
        end if
        
-       wavefct = es * sin(mat%omega0*ncyc0*DT)
+       mat%wavefct = mat%amp * sin(mat%omega0*ncyc0*DT)
          
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
           
-       Hx(i,j,k) = Hx(i,j,k) + DT * ( mat%Finc(i,j,k,3)/SY - mat%Finc(i,j,k,2)/SZ ) * M4_MUINVX(i,j,k) * wavefct
-       Hy(i,j,k) = Hy(i,j,k) + DT * ( mat%Finc(i,j,k,1)/SZ - mat%Finc(i,j,k,3)/SX ) * M4_MUINVY(i,j,k) * wavefct
-       Hz(i,j,k) = Hz(i,j,k) + DT * ( mat%Finc(i,j,k,2)/SX - mat%Finc(i,j,k,1)/SY ) * M4_MUINVZ(i,j,k) * wavefct
+       Hx(i,j,k) = Hx(i,j,k) + DT * ( w(3)/M4_SY(i,j,k) - w(2)/M4_SZ(i,j,k) ) * M4_MUINVX(i,j,k) * mat%wavefct
+       Hy(i,j,k) = Hy(i,j,k) + DT * ( w(1)/M4_SZ(i,j,k) - w(3)/M4_SX(i,j,k) ) * M4_MUINVY(i,j,k) * mat%wavefct
+       Hz(i,j,k) = Hz(i,j,k) + DT * ( w(2)/M4_SX(i,j,k) - w(1)/M4_SY(i,j,k) ) * M4_MUINVZ(i,j,k) * mat%wavefct
          
    
        })
@@ -266,9 +247,49 @@ contains
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
     real(kind=8) :: sum
     integer :: ncyc, m, n
+    real(kind=8) :: Jx, Jy, Jz
    
-    SumJEMatTfsf = 0.
+    M4_MODLOOP_DECL({MATTFSF},mat)
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(6))
 
+    sum = 0
+
+    M4_MODLOOP_EXPR({MATTFSF},mat,{
+
+    ! this loops over all mat structures, setting mat
+
+    M4_MODOBJ_GETREG(mat,reg)
+
+       n = mod(ncyc-1+2,2) + 1
+       m = mod(ncyc+2,2) + 1
+
+       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+       
+       ! correct E(n+1) using E(n+1)_fdtd and P(n+1),P(n)
+
+       ! J(*,m) is P(n+1) and J(*,n) is P(n)      
+
+       if ( mask(i,j,k) ) then
+
+
+          Jx = - ( w(5)/M4_SZ(i,j,k) - w(6)/M4_SY(i,j,k) ) * mat%wavefct
+          Jy = - ( w(6)/M4_SX(i,j,k) - w(4)/M4_SZ(i,j,k) ) * mat%wavefct
+          Jz = - ( w(4)/M4_SY(i,j,k) - w(5)/M4_SX(i,j,k) ) * mat%wavefct
+          
+          sum = sum + ( &
+               M4_VOLEX(i,j,k) * real(Ex(i,j,k)) * Jx + &
+               M4_VOLEY(i,j,k) * real(Ey(i,j,k)) * Jy + &
+               M4_VOLEZ(i,j,k) * real(Ez(i,j,k)) * Jz &
+               )
+             
+       endif
+
+       })      
+
+    })
+    
+    SumJEMatTfsf = sum
+    
   end function SumJEMatTfsf
 
 !----------------------------------------------------------------------
@@ -278,8 +299,47 @@ contains
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
     real(kind=8) :: sum
     integer :: ncyc, m, n
+    real(kind=8) :: Kx, Ky, Kz
    
-    SumKHMatTfsf = 0.
+    M4_MODLOOP_DECL({MATTFSF},mat)
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(6))
+
+    sum = 0
+
+    M4_MODLOOP_EXPR({MATTFSF},mat,{
+
+    ! this loops over all mat structures, setting mat
+
+    M4_MODOBJ_GETREG(mat,reg)
+
+       n = mod(ncyc-1+2,2) + 1
+       m = mod(ncyc+2,2) + 1
+
+       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+       
+       ! correct E(n+1) using E(n+1)_fdtd and P(n+1),P(n)
+
+       ! J(*,m) is P(n+1) and J(*,n) is P(n)      
+
+       if ( mask(i,j,k) ) then
+
+          Kx = - ( w(3)/M4_SY(i,j,k) - w(2)/M4_SZ(i,j,k) ) * mat%wavefct
+          Ky = - ( w(1)/M4_SZ(i,j,k) - w(3)/M4_SX(i,j,k) ) * mat%wavefct
+          Kz = - ( w(2)/M4_SX(i,j,k) - w(1)/M4_SY(i,j,k) ) * mat%wavefct
+         
+          sum = sum + ( &
+               M4_VOLEX(i,j,k) * real(Hx(i,j,k)) * Kx + &
+               M4_VOLEY(i,j,k) * real(Hy(i,j,k)) * Ky + &
+               M4_VOLEZ(i,j,k) * real(Hz(i,j,k)) * Kz &
+               )
+             
+       endif
+
+       })      
+
+    })
+    
+    SumKHMatTfsf = sum
 
   end function SumKHMatTfsf
 

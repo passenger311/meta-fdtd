@@ -57,7 +57,7 @@ module matsource
      real(kind=8) :: n1,nend       ! some values used internally ...
      real(kind=8) :: gamma
      real(kind=8) :: omega0, omega1, domega 
-     real(kind=8) :: es
+     real(kind=8) :: amp, wavefct
 
   })
 
@@ -161,7 +161,7 @@ contains
     
     M4_MODLOOP_DECL({MATSOURCE},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
-    real(kind=8) :: ncyc0, nend0, es, wavefct
+    real(kind=8) :: ncyc0, nend0
 
     M4_MODLOOP_EXPR({MATSOURCE},mat,{
 
@@ -172,24 +172,24 @@ contains
        if ( ncyc0 .ge. 0. .and. ncyc0 .le. mat%nend ) then 
 
          ! in between attack and decay there is a period of length ncw with cw operation. 
-         es = 1.0
+         mat%amp = 1.0
          ! attack phase
          if ( ncyc0 .le. mat%n0 ) then
-            es =  exp ( - mat%gamma**2 * ( ( ncyc0 - mat%n0 ) * DT )**2 )
+            mat%amp =  exp ( - mat%gamma**2 * ( ( ncyc0 - mat%n0 ) * DT )**2 )
 		 end if
          ! decay phase
          if ( ncyc0 .ge. mat%n0 + mat%ncw ) then         	
-            es =  exp ( - mat%gamma**2 * ( ( ncyc0 - mat%n0 - mat%ncw ) * DT )**2 )
+            mat%amp =  exp ( - mat%gamma**2 * ( ( ncyc0 - mat%n0 - mat%ncw ) * DT )**2 )
          end if
 		 
-         wavefct = es * sin(mat%omega0*ncyc0*DT)
+         mat%wavefct = mat%amp * sin(mat%omega0*ncyc0*DT)
          
          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
          M4_WRITE_DBG({"source @ ",i,j,k})
-           Ex(i,j,k) = Ex(i,j,k) + DT * w(1) * epsinvx(i,j,k) * wavefct
-           Ey(i,j,k) = Ey(i,j,k) + DT * w(2) * epsinvy(i,j,k) * wavefct
-           Ez(i,j,k) = Ez(i,j,k) + DT * w(3) * epsinvz(i,j,k) * wavefct
+           Ex(i,j,k) = Ex(i,j,k) + DT * w(1) * epsinvx(i,j,k) * mat%wavefct
+           Ey(i,j,k) = Ey(i,j,k) + DT * w(2) * epsinvy(i,j,k) * mat%wavefct
+           Ez(i,j,k) = Ez(i,j,k) + DT * w(3) * epsinvz(i,j,k) * mat%wavefct
          })
 
        end if      
@@ -213,8 +213,47 @@ contains
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
     real(kind=8) :: sum
     integer :: ncyc, m, n
+    real(kind=8) :: Jx, Jy, Jz
    
-    SumJEMatSource = 0.
+    M4_MODLOOP_DECL({MATSOURCE},mat)
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(6))
+
+    sum = 0
+
+    M4_MODLOOP_EXPR({MATSOURCE},mat,{
+
+    ! this loops over all mat structures, setting mat
+
+    M4_MODOBJ_GETREG(mat,reg)
+
+       n = mod(ncyc-1+2,2) + 1
+       m = mod(ncyc+2,2) + 1
+
+       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+       
+       ! correct E(n+1) using E(n+1)_fdtd and P(n+1),P(n)
+
+       ! J(*,m) is P(n+1) and J(*,n) is P(n)      
+
+       if ( mask(i,j,k) ) then
+
+          Jx = - w(1) * mat%wavefct
+          Jy = - w(2) * mat%wavefct
+          Jz = - w(3) * mat%wavefct
+          
+          sum = sum + ( &
+               M4_VOLEX(i,j,k) * real(Ex(i,j,k)) * Jx + &
+               M4_VOLEY(i,j,k) * real(Ey(i,j,k)) * Jy + &
+               M4_VOLEZ(i,j,k) * real(Ez(i,j,k)) * Jz &
+               )
+             
+       endif
+
+       })      
+
+    })
+    
+    SumJEMatSource = sum    
 
   end function SumJEMatSource
 
