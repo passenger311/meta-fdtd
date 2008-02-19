@@ -97,19 +97,13 @@ contains
 
     M4_MODLOOP_DECL({MATTFSF},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(6))
-    integer :: err
 
     M4_WRITE_DBG(". enter InitializeMatTfsf")
     M4_MODLOOP_EXPR({MATTFSF},mat,{
 
     ! check whether region is a face
     reg = regobj(mat%regidx)
-
-  
-    ! allocate and fill incident wave components
     
-    M4_ALLOC_ERROR(err,{"InitializeMatTfsf"})
-   
     ! center frequency
     mat%omega0 = 2. * PI * mat%lambdainv0
 

@@ -407,10 +407,15 @@ M4_IFELSE_2D({!$OMP PARALLEL DO PRIVATE(Exh,Eyh,Ezh)})
 M4_IFELSE_1D({!$OMP PARALLEL DO PRIVATE(Exh,Eyh,Ezh)})
           do i=IBIG, IEIG
 
+M4_IFELSE_TM({
              Exh=Ex(i,j,k)
              Eyh=Ey(i,j,k)
+})
+M4_IFELSE_TE({
              Ezh=Ez(i,j,k)
+})
 
+M4_IFELSE_TE({
              Hx(i,j,k) =  Hx(i,j,k) + M4_MUINVX(i,j,k) * ( &
 M4_IFELSE_3D({       + dtz*( Ey(i,j,k+1) - Eyh ) &   },{})
 M4_IFELSE_1D({0.&},{ - dty*( Ez(i,j+1,k) - Ezh ) &      })
@@ -419,10 +424,15 @@ M4_IFELSE_1D({0.&},{ - dty*( Ez(i,j+1,k) - Ezh ) &      })
                     + dtx*( Ez(i+1,j,k) - Ezh ) &
 M4_IFELSE_3D({      - dtz*( Ex(i,j,k+1) - Exh ) &      })
                   )
+})
+
+M4_IFELSE_TM({
              Hz(i,j,k) = Hz(i,j,k) +  M4_MUINVZ(i,j,k) * ( &
                     - dtx*( Ey(i+1,j,k) - Eyh ) &
 M4_IFELSE_1D({},{   + dty*( Ex(i,j+1,k) - Exh ) &      })
 				    )
+})
+
 
           enddo
 M4_IFELSE_1D({ !$OMP END PARALLEL DO })     
@@ -460,9 +470,15 @@ M4_IFELSE_2D({!$OMP PARALLEL DO PRIVATE(Hxh,Hyh,Hzh)})
 M4_IFELSE_1D({!$OMP PARALLEL DO PRIVATE(Hxh,Hyh,Hzh)})
           do i=IBIG, IEIG
 
+M4_IFELSE_TE({
              Hxh=Hx(i,j,k)
              Hyh=Hy(i,j,k)
+})
+M4_IFELSE_TM({
              Hzh=Hz(i,j,k) 
+})
+
+M4_IFELSE_TM({
 
              Ex(i,j,k) =  Ex(i,j,k) + epsinvx(i,j,k) *( &
 M4_IFELSE_1D({0.&},{ + dty*( Hzh - Hz(i,j-1,k) ) &             })
@@ -472,10 +488,15 @@ M4_IFELSE_3D({       - dtz*( Hyh - Hy(i,j,k-1) ) &          },{})
                      - dtx*( Hzh - Hz(i-1,j,k) ) &
 M4_IFELSE_3D({       + dtz*( Hxh - Hx(i,j,k-1) ) &             })
                     )
+})
+
+M4_IFELSE_TE({
+
              Ez(i,j,k) =  Ez(i,j,k) + epsinvz(i,j,k) * ( &
                      + dtx*( Hyh - Hy(i-1,j,k) )  &
 M4_IFELSE_1D({},{    - dty*( Hxh - Hx(i,j-1,k) )  &            })
                      )
+})
 
           enddo
 M4_IFELSE_1D({!$OMP END PARALLEL DO })     

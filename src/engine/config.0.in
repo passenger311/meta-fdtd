@@ -58,7 +58,7 @@
   (OUT
     VTK test_xy_en
     En N
-    0 2000 200
+    0 2000 1000
     (REG
       (BOX
 	 0 199 1 0 199 1 
@@ -69,7 +69,7 @@
   (OUT
     VTK test1_xy_e
     E N 
-    0 2000 200
+    0 2000 1000
     (REG
       (BOX
 	 0 199 1 0 199 1
@@ -80,7 +80,7 @@
   (OUT
     VTK test1_xy_p
     P N
-    0 2000 200
+    0 2000 1000
     (REG
       (BOX
 	 0 199 1 0 199 1
@@ -91,7 +91,7 @@
   (OUT
     VTK test1_xy_ez
     Ez N
-    0 2000 200
+    0 2000 1000
     (REG
       (BOX
 	 0 199 1 0 199 1 0 20 1
@@ -144,7 +144,7 @@
 ! -----------------------------------------------------------------------
 
     
-(!MATSOURCE
+(MATSOURCE
 0.03333333333 	! inv vacuum wavelength in units of [2 pi c]
 0 800 		! time offset till attack and cw duration (sustain)
 T		! time (T) or wavelength (F) parameters for gaussian
@@ -152,17 +152,14 @@ T		! time (T) or wavelength (F) parameters for gaussian
 700             ! half width in timedomain (dn) or wavelength dom (dlambda)
 (REG
  (POINT
-     11  97 : 0.0 0.0 0.0
-     12  98 : 0.0 0.0 0.0
-     13  99 : 0.0 0.0 0.0
-     14 100 : 0.0 0.0 0.0
-     15 101 : 0.0 0.0 0.0
-     16 102 : 0.0 0.0 0.0
-     17 103 : 0.0 0.0 0.0
+     11  97 : 1.0 1.0 0.0
+     12  98 : 1.0 1.0 0.0
+     13  99 : 1.0 1.0 0.0
+     14 100 : 1.0 1.0 0.0
+     15 101 : 1.0 1.0 0.0
+     16 102 : 1.0 1.0 0.0
+     17 103 : 1.0 1.0 0.0
   )POINT
-  (LOAD 
-	source.in
-  )LOAD	
 )REG
 )MATSOURCE
 
@@ -171,14 +168,14 @@ T		! time (T) or wavelength (F) parameters for gaussian
 ! -----------------------------------------------------------------------
 
     
-(MATTFSF
+(!MATTFSF
 0.0333333333	! inv vacuum wavelength in units of [2 pi c]
 0 800 		! time offset till attack and cw duration (sustain)
 T		! time (T) or wavelength (F) parameters for gaussian
 1200		! peak of gaussian (n0) or fraction of peak (a0)
 700             ! half width in timedomain (dn) or wavelength dom (dlambda)
 (REG
-  (!POINT
+  (POINT
       17  97  :   0.707107 -0.707107 0.0 0.707107 0.707107 0.0
       16  98  :   0.707107 -0.707107 0.0 0.707107 0.707107 0.0
       15  99  :   0.707107 -0.707107 0.0 0.707107 0.707107 0.0
@@ -187,10 +184,10 @@ T		! time (T) or wavelength (F) parameters for gaussian
       12  102  :  0.707107 -0.707107 0.0 0.707107 0.707107 0.0
       11  103  :  0.707107 -0.707107 0.0 0.707107 0.707107 0.0
   )POINT
-  (BOX
+  (!BOX
       10 10 1 0 199 1
   )BOX	
-  (LOAD
+  (!LOAD
        tfsf_bs_2000.0.set
   )LOAD
 )REG
