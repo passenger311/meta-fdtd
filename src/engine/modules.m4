@@ -73,7 +73,7 @@ define({M4_MODREAD_DECL},{
     type(T_$1) :: $4 
     type(T_REG) :: $5 ! reg
     type(T_OUT) :: $6 ! out
-    character(len=STRLNG) :: m4_string
+    character(len=LINELNG) :: m4_string
     logical :: m4_eof
 
 })
@@ -92,6 +92,7 @@ define({M4_MODREAD_EXPR},{
 
     call readline($2,$3, m4_eof, m4_string)
     M4_PARSE_ERROR({m4_eof},$3,{UNEXPECTED EOF})
+    M4_WRITE_DBG({"got token: ",TRIM(m4_string)})
     if ( m4_string .eq. "(REG" ) then
        M4_WRITE_DBG({"got token (REG -> ReadRegObj"})
        call ReadRegObj($5, fdtdreg, $2, $3, $6)
