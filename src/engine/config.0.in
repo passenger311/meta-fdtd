@@ -100,6 +100,17 @@
   )OUT
 
 
+  (OUT
+    VTK test1_xy_hz
+    Hz N
+    0 2000 1000
+    (REG
+      (BOX
+	 0 199 1 0 199 1 0 20 1
+      )BOX
+    )REG
+  )OUT
+
 )FDTD
 
 

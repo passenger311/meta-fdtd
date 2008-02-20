@@ -51,7 +51,7 @@ module matdrude
   private
   save
 
-  M4_MATHEAD_DECL({MATDRUDE},100,{
+  M4_MATHEAD_DECL({MATDRUDE},MAXMATOBJ,{
 
   ! input parameters
   real(kind=8) :: lambdaplinv ! inv. vac. plasma wavelength [2 pi c]
@@ -182,10 +182,14 @@ contains
 
        ! calculate J(n+1/2) from J(n-1/2) and E(n)
 
+M4_IFELSE_TM({
        mat%Jx(p,1) = mat%c1 * mat%Jx(p,1) + mat%c2 * Ex(i,j,k)
        mat%Jy(p,1) = mat%c1 * mat%Jy(p,1) + mat%c2 * Ey(i,j,k)
+})
+M4_IFELSE_TE({
        mat%Jz(p,1) = mat%c1 * mat%Jz(p,1) + mat%c2 * Ez(i,j,k)
-       
+})
+
        })      
 
     else ! 2. order equation
@@ -199,9 +203,13 @@ contains
 
        ! before: J(*,m) is P(n-1), J(*,n) is P(n)
 
+M4_IFELSE_TM({
        mat%Jx(p,m) = mat%c1 * mat%Jx(p,n) + mat%c2 * mat%Jx(p,m) + mat%c3 * Ex(i,j,k)
        mat%Jy(p,m) = mat%c1 * mat%Jy(p,n) + mat%c2 * mat%Jy(p,m) + mat%c3 * Ey(i,j,k)
+})
+M4_IFELSE_TE({
        mat%Jz(p,m) = mat%c1 * mat%Jz(p,n) + mat%c2 * mat%Jz(p,m) + mat%c3 * Ez(i,j,k)
+})
 
        ! after: J(*,m) is now P(n+1)
        
@@ -236,9 +244,13 @@ contains
        
        ! correct E(n+1) using E(n+1)_fdtd and J(n+1/2)
 
+M4_IFELSE_TM({
        Ex(i,j,k) = Ex(i,j,k) -  w(1) * epsinvx(i,j,k) * DT * mat%Jx(p,1)
        Ey(i,j,k) = Ey(i,j,k) -  w(2) * epsinvy(i,j,k) * DT * mat%Jy(p,1)
+})
+M4_IFELSE_TE({
        Ez(i,j,k) = Ez(i,j,k) -  w(3) * epsinvz(i,j,k) * DT * mat%Jz(p,1)
+})
 
        })      
 
@@ -253,9 +265,13 @@ contains
 
        ! J(*,m) is P(n+1) and J(*,n) is P(n)      
 
+M4_IFELSE_TM({
        Ex(i,j,k) = Ex(i,j,k) - w(1) * epsinvx(i,j,k) * ( mat%Jx(p,m) - mat%Jx(p,n) )
        Ey(i,j,k) = Ey(i,j,k) - w(2) * epsinvy(i,j,k) * ( mat%Jy(p,m) - mat%Jy(p,n) )
+})
+M4_IFELSE_TE({
        Ez(i,j,k) = Ez(i,j,k) - w(3) * epsinvz(i,j,k) * ( mat%Jz(p,m) - mat%Jz(p,n) )
+})
 
        })      
 
@@ -300,17 +316,17 @@ contains
           if ( mat%order .eq. 1 ) then ! 1. order equation
 
              sum = sum + ( &
-                  M4_VOLEX(i,j,k) * w(1) * real(Ex(i,j,k)) * real(mat%Jx(p,1)) + &
-                  M4_VOLEY(i,j,k) * w(2) * real(Ey(i,j,k)) * real(mat%Jy(p,1)) + &
-                  M4_VOLEZ(i,j,k) * w(3) * real(Ez(i,j,k)) * real(mat%Jz(p,1)) &
+M4_IFELSE_TM({    M4_VOLEX(i,j,k) * w(1) * real(Ex(i,j,k)) * real(mat%Jx(p,1)) + },{0. +}) &
+M4_IFELSE_TM({    M4_VOLEY(i,j,k) * w(2) * real(Ey(i,j,k)) * real(mat%Jy(p,1)) + },{0. +}) &
+M4_IFELSE_TE({    M4_VOLEZ(i,j,k) * w(3) * real(Ez(i,j,k)) * real(mat%Jz(p,1))   },{0.  }) &
                   )
              
           else
 
              sum = sum + M4_VOL(i,j,k) * ( &
-                  M4_VOLEX(i,j,k) * w(1) * real(Ex(i,j,k)) * real( mat%Jx(p,m) - mat%Jx(p,n) ) / DT + &
-                  M4_VOLEY(i,j,k) * w(2) * real(Ey(i,j,k)) * real( mat%Jy(p,m) - mat%Jy(p,n) ) / DT + &
-                  M4_VOLEZ(i,j,k) * w(3) * real(Ez(i,j,k)) * real( mat%Jz(p,m) - mat%Jz(p,n) ) / DT &
+M4_IFELSE_TM({    M4_VOLEX(i,j,k) * w(1) * real(Ex(i,j,k)) * real( mat%Jx(p,m) - mat%Jx(p,n) ) / DT + },{0. + }) &
+M4_IFELSE_TM({    M4_VOLEY(i,j,k) * w(2) * real(Ey(i,j,k)) * real( mat%Jy(p,m) - mat%Jy(p,n) ) / DT + },{0. + }) &
+M4_IFELSE_TE({    M4_VOLEZ(i,j,k) * w(3) * real(Ez(i,j,k)) * real( mat%Jz(p,m) - mat%Jz(p,n) ) / DT   },{0.   }) &
                   )
 
           end if

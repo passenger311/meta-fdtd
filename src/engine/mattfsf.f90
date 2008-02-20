@@ -31,7 +31,7 @@ module mattfsf
   save
 
 
-  M4_MATHEAD_DECL({MATTFSF},100,{
+  M4_MATHEAD_DECL({MATTFSF},MAXMATOBJ,{
 
      real(kind=8) :: lambdainv0    ! inv vacuum wavelength in units of [dx]
 
@@ -177,10 +177,13 @@ contains
             
          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
+M4_IFELSE_TM({
          Ex(i,j,k) = Ex(i,j,k) + DT * ( w(5)/M4_SZ(i,j,k) - w(6)/M4_SY(i,j,k) ) * epsinvx(i,j,k) * mat%wavefct
          Ey(i,j,k) = Ey(i,j,k) + DT * ( w(6)/M4_SX(i,j,k) - w(4)/M4_SZ(i,j,k) ) * epsinvy(i,j,k) * mat%wavefct
+})
+M4_IFELSE_TE({
          Ez(i,j,k) = Ez(i,j,k) + DT * ( w(4)/M4_SY(i,j,k) - w(5)/M4_SX(i,j,k) ) * epsinvz(i,j,k) * mat%wavefct
-         
+})
          })
             
        end if      
@@ -221,10 +224,13 @@ contains
          
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
           
+M4_IFELSE_TE({
        Hx(i,j,k) = Hx(i,j,k) + DT * ( w(3)/M4_SY(i,j,k) - w(2)/M4_SZ(i,j,k) ) * M4_MUINVX(i,j,k) * mat%wavefct
        Hy(i,j,k) = Hy(i,j,k) + DT * ( w(1)/M4_SZ(i,j,k) - w(3)/M4_SX(i,j,k) ) * M4_MUINVY(i,j,k) * mat%wavefct
+})
+M4_IFELSE_TM({
        Hz(i,j,k) = Hz(i,j,k) + DT * ( w(2)/M4_SX(i,j,k) - w(1)/M4_SY(i,j,k) ) * M4_MUINVZ(i,j,k) * mat%wavefct
-         
+})
    
        })
           
@@ -265,15 +271,18 @@ contains
 
        if ( mask(i,j,k) ) then
 
-
+M4_IFELSE_TM({
           Jx = - ( w(5)/M4_SZ(i,j,k) - w(6)/M4_SY(i,j,k) ) * mat%wavefct
           Jy = - ( w(6)/M4_SX(i,j,k) - w(4)/M4_SZ(i,j,k) ) * mat%wavefct
+})
+M4_IFELSE_TE({
           Jz = - ( w(4)/M4_SY(i,j,k) - w(5)/M4_SX(i,j,k) ) * mat%wavefct
-          
+})
+
           sum = sum + ( &
-               M4_VOLEX(i,j,k) * real(Ex(i,j,k)) * Jx + &
-               M4_VOLEY(i,j,k) * real(Ey(i,j,k)) * Jy + &
-               M4_VOLEZ(i,j,k) * real(Ez(i,j,k)) * Jz &
+M4_IFELSE_TM({ M4_VOLEX(i,j,k) * real(Ex(i,j,k)) * Jx + },{0. +}) &
+M4_IFELSE_TM({ M4_VOLEY(i,j,k) * real(Ey(i,j,k)) * Jy + },{0. +}) &
+M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * real(Ez(i,j,k)) * Jz   },{0.  }) &
                )
              
        endif
@@ -317,14 +326,17 @@ contains
 
        if ( mask(i,j,k) ) then
 
+M4_IFELSE_TE({
           Kx = - ( w(3)/M4_SY(i,j,k) - w(2)/M4_SZ(i,j,k) ) * mat%wavefct
           Ky = - ( w(1)/M4_SZ(i,j,k) - w(3)/M4_SX(i,j,k) ) * mat%wavefct
+})
+M4_IFELSE_TM({
           Kz = - ( w(2)/M4_SX(i,j,k) - w(1)/M4_SY(i,j,k) ) * mat%wavefct
-         
+})
           sum = sum + ( &
-               M4_VOLEX(i,j,k) * real(Hx(i,j,k)) * Kx + &
-               M4_VOLEY(i,j,k) * real(Hy(i,j,k)) * Ky + &
-               M4_VOLEZ(i,j,k) * real(Hz(i,j,k)) * Kz &
+M4_IFELSE_TM({ M4_VOLEX(i,j,k) * real(Hx(i,j,k)) * Kx +},{0. +}) &
+M4_IFELSE_TM({ M4_VOLEY(i,j,k) * real(Hy(i,j,k)) * Ky +},{0. +}) &
+M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * real(Hz(i,j,k)) * Kz  },{0.  }) &
                )
              
        endif

@@ -40,7 +40,7 @@ module matsource
   save
 
 
-  M4_MATHEAD_DECL({MATSOURCE},100,{
+  M4_MATHEAD_DECL({MATSOURCE},MAXMATOBJ,{
 
      real(kind=8) :: lambdainv0    ! inverse vacuum wavelength in units of [2 pi c]
 
@@ -186,10 +186,15 @@ contains
          
          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-         M4_WRITE_DBG({"source @ ",i,j,k})
+           M4_WRITE_DBG({"source @ ",i,j,k})
+
+M4_IFELSE_TM({
            Ex(i,j,k) = Ex(i,j,k) + DT * w(1) * epsinvx(i,j,k) * mat%wavefct
            Ey(i,j,k) = Ey(i,j,k) + DT * w(2) * epsinvy(i,j,k) * mat%wavefct
+})
+M4_IFELSE_TE({
            Ez(i,j,k) = Ez(i,j,k) + DT * w(3) * epsinvz(i,j,k) * mat%wavefct
+})
          })
 
        end if      
@@ -242,9 +247,9 @@ contains
           Jz = - w(3) * mat%wavefct
           
           sum = sum + ( &
-               M4_VOLEX(i,j,k) * real(Ex(i,j,k)) * Jx + &
-               M4_VOLEY(i,j,k) * real(Ey(i,j,k)) * Jy + &
-               M4_VOLEZ(i,j,k) * real(Ez(i,j,k)) * Jz &
+M4_IFELSE_TM({ M4_VOLEX(i,j,k) * real(Ex(i,j,k)) * Jx + },{0. +}) &
+M4_IFELSE_TM({ M4_VOLEY(i,j,k) * real(Ey(i,j,k)) * Jy + },{0. +}) &
+M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * real(Ez(i,j,k)) * Jz   },{0.  }) &
                )
              
        endif
