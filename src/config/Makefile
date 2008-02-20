@@ -26,7 +26,7 @@ default: all
 all: info install  
 
 info: 
-	@echo ". CREATE CONFIG PREPROCESSOR"
+	@echo ". CONFIG PREPROCESSOR"
 
 install: build-dir
 	@echo [INSTALL] $(BUILDFILES)

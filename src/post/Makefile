@@ -16,14 +16,17 @@ include ../define.mk
 
 # ---------------------------------------------------------------------
 
-.PHONY: clean proper default install all
+.PHONY: clean proper default install all info
 
 BUILDFILES=\
 stitch-outgpl
 
 default: all
 
-all: install
+info:
+	@echo ". POST SCRIPTS"
+
+all: info install
  
 install: build-dir
 	@echo [INSTALL] $(BUILDFILES)

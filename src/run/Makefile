@@ -16,7 +16,7 @@ include ../define.mk
 
 # ---------------------------------------------------------------------
 
-.PHONY: clean proper default install
+.PHONY: clean proper default install info
 
 BUILDFILES=\
 qscript.mpi\
@@ -27,7 +27,10 @@ mpiwrap.sh
 
 default: all
 
-all: install
+info: 
+	@echo ". RUN SCRIPTS"
+
+all: info install
 
 install: build-dir
 	@echo [INSTALL] $(BUILDFILES)

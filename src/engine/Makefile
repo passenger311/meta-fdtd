@@ -96,7 +96,7 @@ default: all
 all: info check $(EXE)
 
 info:
-	@echo ". BUILD ENGINE [$(BUILDDIR)/$(ENGINE)]"
+	@echo ". ENGINE [$(BUILDDIR)/$(ENGINE)]"
 
 check:
 	@if [ "`cat BUILD 2>/dev/null`" != "$(BUILDDIR)" ]; then \

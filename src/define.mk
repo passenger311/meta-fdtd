@@ -64,12 +64,34 @@ ENG_WMU=-wmu
 M4DEFINE+=-DM4_WMU=1
 endif
 
+ifneq ($(TM),)
+ifeq ($(DIM),2)
+ENG_TE=-tm
+M4DEFINE+=-DM4_TM=1
+endif
+endif
+
 ifneq ($(TE),)
+ifeq  ($(DIM),2)
+ifeq ($(TM),)
 ENG_TE=-te
 M4DEFINE+=-DM4_TE=1
 endif
+endif
+endif
 
-ENGINE=meta$(ENG_DIM)$(ENG_CF)$(ENG_WMU)$(ENG_TE)$(ENG_NG)
+ifeq ($(TE)$(TM),)
+M4DEFINE+=-DM4_TE=1
+M4DEFINE+=-DM4_TM=1
+endif
+
+ifneq ($(TEPS),)
+ENG_TE=-teps
+M4DEFINE+=-DM4_TEPS=1
+endif
+
+
+ENGINE=meta$(ENG_DIM)$(ENG_CF)$(ENG_TM)$(ENG_TE)$(ENG_WMU)$(ENG_TEPS)$(ENG_NG)
 BUILDDIR=build-$(ARCH)$(ENG_MPI)$(ENG_MPELOG)$(ENG_OMP)$(ENG_DBG)
 ENGINEDIR=$(BUILDDIR)/$(ENGINE)
 
