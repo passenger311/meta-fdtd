@@ -6,9 +6,9 @@
 
 # ---------------------------------------------------------------------
 
-M4_ARCH=SX6
+M4_ARCH=SX
 
-include ../Make.sx6
+include ../Make.sx
 
 # --- compiler set
 

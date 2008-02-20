@@ -6,7 +6,7 @@
 
 # ---------------------------------------------------------------------
 
-M4_ARCH=SX6
+M4_ARCH=SX
 
 # --- compiler set
 
@@ -52,7 +52,7 @@ endif
 
 # --- flags
 
-RELFLAGS= -Wf,'-Nesc'
+RELFLAGS=
 FLAGS=$(DBGFLAGS) $(RELFLAGS) $(OMPFLAGS)
 
 F90FLAGS+=$(NOOPTFLAGS) $(FLAGS) $(F90DBGFLAGS)

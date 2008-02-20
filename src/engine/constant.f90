@@ -36,10 +36,6 @@ module constant
   character(len=20), parameter :: sfxin = ".in"
   character(len=20), parameter :: sfxout = ".out"
 
-contains
-
-
-
 end module constant
 
 !

@@ -20,8 +20,6 @@ struct timezone { int	tz_minuteswest;
 
 	struct timeval tp;
 	struct timezone tzp;
-	int i;
-
-	i = gettimeofday(&tp,&tzp);
+	(void)gettimeofday(&tp,&tzp);
 	return ( (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6 );
 }
