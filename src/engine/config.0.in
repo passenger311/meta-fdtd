@@ -31,7 +31,7 @@
   2000         		! ncyc
   0.576             	! dt
   -30 229		! i range
-  0 199      		! j range
+  10 189      		! j range
   20 20			! k range
 )GRID
 
@@ -155,7 +155,7 @@
 ! -----------------------------------------------------------------------
 
     
-(MATSOURCE
+(!MATSOURCE
 0.03333333333 		! inv vacuum wavelength in units of [2 pi c]
 0 800 			! time offset till attack and cw duration (sustain)
 1200			! peak of gaussian (n0)
@@ -163,7 +163,7 @@
 .T. 225. 90.0 0.0	! phi, theta, psi for planewave input [optional]
 (REG
  (BOX
-     11 11 1 20 180 1 :  1.0 1.0 1.0
+     11 11 1 0 200 1 :  1.0 1.0 1.0
  )BOX	
 	
 
@@ -184,14 +184,17 @@
 ! -----------------------------------------------------------------------
 
     
-(!MATTFSF
+(MATTFSF
 0.0333333333		! inv vacuum wavelength in units of [2 pi c]
 0 800 			! time offset till attack and cw duration (sustain)
 1200			! peak of gaussian (n0)
 700             	! half width in timedomain (dn)
-.F. 0.0 0.0 0.0 	! phi, theta, psi for planewave input [optional]
+.T. .0 90.0 0.0 	! phi, theta, psi for planewave input [optional]
 (REG
-  (POINT
+  (BOX
+     11 11 1 0 200 1 :  1.0 1.0 1.0 1.0 1.0 1.0
+  )BOX		
+  (!POINT
       17  97  :   0.707107 -0.707107 0.0 0.707107 0.707107 0.0
       16  98  :   0.707107 -0.707107 0.0 0.707107 0.707107 0.0
       15  99  :   0.707107 -0.707107 0.0 0.707107 0.707107 0.0
@@ -226,7 +229,7 @@
 ! (MATLHM-): left-handed materials pole equation FF[Ex,Ey,Ez,Hx,Hy,Hz]
 ! -----------------------------------------------------------------------
     
-(MATLHM
+(!MATLHM
 0.0471404520791	   	! lambdaplinv : inv plasma freq wavelength [2 pi c]
 0. 	 	    	! gammapl: damping constant [1/dt]
 1		    	! order: 1 (=J) or 2 (=P)
