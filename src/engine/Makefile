@@ -121,7 +121,7 @@ $(BOBJ): %.o : %.f90 BUILD
 	else \
 	cp $*.f90 $*_m4.f90; \
 	fi
-	@$(strip $(F90) $(F90FLAGS) -c $*_m4.f90 -o $@)
+	@$(strip $(F90) $(F90FLAGS_NOOPT) -c $*_m4.f90 -o $@)
 
 $(FOBJ) : %.o : %.f90 $(BOBJ) BUILD FLAVOUR
 	@echo [F90] $@
@@ -139,7 +139,7 @@ $(TOBJ): %.o : %.f90 $(BOBJ) $(FOBJ) BUILD FLAVOUR
 	else \
 	cp $*.f90 $*_m4.f90; \
 	fi
-	@$(strip $(F90) $(F90FLAGS) -c $*_m4.f90 -o $@)
+	@$(strip $(F90) $(F90FLAGS_NOOPT) -c $*_m4.f90 -o $@)
 
 $(EXE) : $(TOBJ) $(FOBJ) $(BOBJ) second_wall.o
 	@echo [LD] $@
