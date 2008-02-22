@@ -15,3 +15,7 @@ define({M4_VOLHX},{M4_IFELSE_NG({.25*SX($1,$2,$3)*(SY($1,$2,$3)+SY($1+1,$2,$3))*
 define({M4_VOLHY},{M4_IFELSE_NG({.25*SY($1,$2,$3)*(SX($1,$2,$3)+SX($1+1,$2,$3))*(SZ($1,$2,$3)+SZ($1+1,$2,$3))},{SX*SY*SZ})})
 define({M4_VOLHZ},{M4_IFELSE_NG({.25*SZ($1,$2,$3)*(SX($1,$2,$3)+SX($1+1,$2,$3))*(SY($1,$2,$3)+SY($1+1,$2,$3))},{SX*SY*SZ})})
 
+define({M4_DISTX},{M4_IFELSE_NG({LENX($2)-LENX($1)},{($2-$1)*SX})})
+define({M4_DISTY},{M4_IFELSE_NG({LENY($2)-LENY($1)},{($2-$1)*SY})})
+define({M4_DISTZ},{M4_IFELSE_NG({LENZ($2)-LENZ($1)},{($2-$1)*SZ})})
+
