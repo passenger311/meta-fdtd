@@ -280,38 +280,108 @@ contains
 
   ! ---- i2str, convert integer to str
 
-  character(len=255) function i2str(i)
+  character(len=255) function i2str(f)
 
     implicit none
 
-    integer :: i
+    integer :: f
 
-    character(len=1024) :: str
+    real(kind=8) :: div
+    integer :: expn, digit, j,i, sign
+    
+    i2str = ""
 
-    write(str,*) i
-!    i2str = wipe(str)
-    i2str = TRIM(ADJUSTL(str))
-    return
+    if ( f .eq. 0 ) then
+       i2str(1:1) = '0'
+       return
+    end if
+
+    if ( f .ge. 0 ) then
+       j = 1
+    else
+       i2str(1:1) = '-'
+       f = -f 
+       j = 2
+    end if
+
+    expn = int(log10(real(f)))
+
+    div = 10**expn
+
+
+    do i = 0, expn
+
+       digit = int(f/div)
+
+       i2str(j:j) = char(48+digit)
+       j = j + 1
+
+       f = f - digit*div
+       div = div/10
+    end do
 
   end function i2str
 
+
   ! ---- f2str, convert float to str
 
-  character(len=255) function f2str(f)
+  character(len=255) function f2str(f,prec)
 
     implicit none
 
     real(kind=8) :: f
+    integer :: prec
 
-    character(len=1024) :: str
+    real(kind=8) :: div
+    integer :: expn, digit, fi, j,i, neg
 
-    write(str,"(E8.3E2)") f
-!    i2str = wipe(str)
-    f2str = TRIM(ADJUSTL(str))
+    character(len=255) :: mstr, estr
+
+    f2str = ""
+
+    if ( f .eq. 0 ) then
+       f2str = "0."
+       return
+    end if
+
+    if ( f .ge. 0 ) then
+       neg = 0
+    else
+       neg = 1
+    end if
+
+    expn = int(log10(abs(f)))  
+    
+    fi = 10.**(-expn+prec) * f 
+
+    write(6,*) "dbg: ", expn, fi
+
+    mstr = i2str(fi)   ! mantisse string
+    estr = i2str(expn) ! exponent string 
+
+    write(6,*) "dbg: ", TRIM(mstr),"/", TRIM(estr)
+
+    ! construct output string from digits, sign and exponent
+
+    j = 1
+    do i = 1, prec+neg 
+
+       f2str(j:j) = mstr(i:i)
+       j = j + 1
+       if ( i .eq. neg+1 ) then
+          f2str(j:j) = '.'
+          j = j+1
+       end if
+
+    end do
+
+    f2str(j:j) = 'e' 
+    j = j + 1
+    f2str(j:) = estr(1:)
+
     return
 
   end function f2str
-
 
 
   ! ---- ltrim, removes leading spaces

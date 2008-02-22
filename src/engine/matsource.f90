@@ -283,10 +283,10 @@ M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * real(Ez(i,j,k)) * Jz   },{0.  }) &
  
     
     M4_WRITE_INFO({"#",TRIM(i2str(mat%idx)),&
-    	" ON=",TRIM(i2str(int(mat%noffs))),&
-    	" ATT/DEC=",TRIM(i2str(int(mat%n0))),&
-    	" SUS=",TRIM(i2str(int(mat%ncw))),&
-    	" OFF=",TRIM(i2str(int(mat%nend))) })
+    	" ON=",TRIM(f2str(mat%noffs,5)),&
+    	" ATT/DEC=",TRIM(f2str(mat%n0,5)),&
+    	" SUS=",TRIM(f2str(mat%ncw,5)),&
+    	" OFF=",TRIM(f2str(mat%nend,5)) })
     call DisplayRegObj(regobj(mat%regidx))
     	
   end subroutine DisplayMatSourceObj
