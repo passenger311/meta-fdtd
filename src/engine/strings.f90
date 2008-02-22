@@ -287,7 +287,7 @@ contains
     integer :: l, f
 
     real(kind=8) :: div
-    integer :: expn, digit, j, i, sign
+    integer :: expn, j, i
     
     f = l
 
@@ -306,7 +306,7 @@ contains
        j = 2
     end if
 
-    expn = int(log10(real(f)))
+    expn = int(log10(real(f))+0.001)
 
     div = 10**expn
 
@@ -334,8 +334,7 @@ contains
     real(kind=8) :: f
     integer :: prec
 
-    real(kind=8) :: div
-    integer :: expn, digit, fi, j,i, neg
+    integer :: expn, fi, j,i, neg
 
     character(len=255) :: mstr, estr
 
@@ -381,19 +380,6 @@ contains
 
   end function f2str
 
-
-  ! ---- ltrim, removes leading spaces
-
-!  character(len=255) function ltrim(str)
-
-!    implicit none
-
-!    character(len=*) :: str
-
-!    ltrim = TRIM(ADJUSTL(str))
-
-!    return
-!  end function ltrim
 
 
 ! ---- effective string length
