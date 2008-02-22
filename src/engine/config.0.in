@@ -156,10 +156,10 @@
 
     
 (MATSOURCE
-0.03333333333 	! inv vacuum wavelength in units of [2 pi c]
-0 800 		! time offset till attack and cw duration (sustain)
-1200		! peak of gaussian (n0)
-700             ! half width in timedomain (dn)
+0.03333333333 		! inv vacuum wavelength in units of [2 pi c]
+0 800 			! time offset till attack and cw duration (sustain)
+1200			! peak of gaussian (n0)
+700             	! half width in timedomain (dn)
 .T. 225. 90.0 0.0	! phi, theta, psi for planewave input [optional]
 (REG
  (BOX
@@ -185,11 +185,11 @@
 
     
 (!MATTFSF
-0.0333333333	! inv vacuum wavelength in units of [2 pi c]
-0 800 		! time offset till attack and cw duration (sustain)
-1200		! peak of gaussian (n0)
-700             ! half width in timedomain (dn)
-!0.0 0.0 0.0 	! phi, theta, psi for planewave input [optional]
+0.0333333333		! inv vacuum wavelength in units of [2 pi c]
+0 800 			! time offset till attack and cw duration (sustain)
+1200			! peak of gaussian (n0)
+700             	! half width in timedomain (dn)
+.F. 0.0 0.0 0.0 	! phi, theta, psi for planewave input [optional]
 (REG
   (POINT
       17  97  :   0.707107 -0.707107 0.0 0.707107 0.707107 0.0

@@ -233,7 +233,7 @@ contains
     M4_MODLOOP_DECL({MATSOURCE},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
     real(kind=8) :: ncyc0, nend0
-    complex(kind=8) :: phasefac
+    real(kind=8) :: phasefac
 
     M4_MODLOOP_EXPR({MATSOURCE},mat,{
 
@@ -261,12 +261,12 @@ contains
            M4_WRITE_DBG({"source @ ",i,j,k})
 
            if ( mat%planewave ) then
-              phasefac = cmplx( cos(mat%phasefield(p)),sin(mat%phasefield(p)) ) * mat%wavefct
+              phasefac = real(cmplx( cos(mat%phasefield(p)),sin(mat%phasefield(p)) ) * mat%wavefct)
               w(1) = w(1) * mat%finc(1)
               w(2) = w(2) * mat%finc(2)
               w(3) = w(3) * mat%finc(3)
            else
-              phasefac = mat%wavefct
+              phasefac = real(mat%wavefct)
            end if
 
 M4_IFELSE_TM({
