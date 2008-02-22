@@ -280,16 +280,16 @@ contains
 
   ! ---- i2str, convert integer to str
 
-  character(len=255) function i2str(i)
+  character(len=255) function i2str(l)
 
     implicit none
 
-    integer :: i, f
+    integer :: l, f
 
     real(kind=8) :: div
-    integer :: expn, digit, j,i, sign
+    integer :: expn, digit, j, i, sign
     
-    f = i
+    f = l
 
     i2str = ""
 
