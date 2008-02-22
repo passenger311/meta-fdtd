@@ -280,15 +280,17 @@ contains
 
   ! ---- i2str, convert integer to str
 
-  character(len=255) function i2str(f)
+  character(len=255) function i2str(i)
 
     implicit none
 
-    integer :: f
+    integer :: i, f
 
     real(kind=8) :: div
     integer :: expn, digit, j,i, sign
     
+    f = i
+
     i2str = ""
 
     if ( f .eq. 0 ) then
@@ -354,12 +356,8 @@ contains
     
     fi = 10.**(-expn+prec) * f 
 
-    write(6,*) "dbg: ", expn, fi
-
     mstr = i2str(fi)   ! mantisse string
     estr = i2str(expn) ! exponent string 
-
-    write(6,*) "dbg: ", TRIM(mstr),"/", TRIM(estr)
 
     ! construct output string from digits, sign and exponent
 
