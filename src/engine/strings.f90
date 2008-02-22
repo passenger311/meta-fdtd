@@ -287,7 +287,7 @@ contains
     integer :: l, f
 
     real(kind=8) :: div
-    integer :: expn, j, i
+    integer :: expn, digit, j, i
     
     f = l
 
