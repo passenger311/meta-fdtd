@@ -156,9 +156,9 @@ contains
     if ( mat%planewave ) then
 
        ! k vector
-       mat%kinc(1) = sin(DEG*mat%theta)*cos(DEG*mat%phi)
-       mat%kinc(2) = sin(DEG*mat%theta)*sin(DEG*mat%phi)
-       mat%kinc(3) = cos(DEG*mat%theta)
+       mat%kinc(1) = sin(DEG*mat%theta)*cos(DEG*mat%phi) * mat%omega0
+       mat%kinc(2) = sin(DEG*mat%theta)*sin(DEG*mat%phi) * mat%omega0
+       mat%kinc(3) = cos(DEG*mat%theta)                  * mat%omega0
 
        ! incident field/current amplitudes
        mat%finc(1) = cos(DEG*mat%psi)*sin(DEG*mat%phi) - sin(DEG*mat%psi)*cos(DEG*mat%theta)*cos(DEG*mat%phi)
@@ -179,9 +179,9 @@ contains
        in(1) = sqrt( epsinvx(i,j,k) * M4_MUINVX(i,j,k) )
        in(2) = sqrt( epsinvy(i,j,k) * M4_MUINVY(i,j,k) )
        in(3) = sqrt( epsinvz(i,j,k) * M4_MUINVZ(i,j,k) )
-       r = in(1)*M4_DISTX(0,i)*mat%kinc(1) + in(2)*M4_DISTY(0,j)*mat%kinc(2) +  in(3)*M4_DISTZ(0,j)*mat%kinc(3)
+       r = in(1)*M4_DISTX(0,i)*mat%kinc(1) + in(2)*M4_DISTY(0,j)*mat%kinc(2) +  in(3)*M4_DISTZ(0,k)*mat%kinc(3)
        
-       mat%phasefield(p) = r * mat%omega0
+       mat%phasefield(p) = r
        
        })
 
@@ -215,7 +215,7 @@ contains
     M4_MODLOOP_DECL({MATTFSF},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(6))
     real(kind=8) :: ncyc0, nend0, es, wavefct
-    real(kind=8) :: phasefac
+    real(kind=8) :: phasefac(3), pf, sf(3)
 
     M4_MODLOOP_EXPR({MATTFSF},mat,{
 
@@ -241,20 +241,28 @@ contains
          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
          if ( mat%planewave ) then
-            phasefac = real(cmplx( cos(mat%phasefield(p)),sin(mat%phasefield(p)) ) * mat%wavefct)
+            pf = mat%phasefield(p)
+            sf(1) = .5*M4_SX(i)*mat%kinc(1)
+            sf(2) = .5*M4_SY(j)*mat%kinc(2)
+            sf(3) = .5*M4_SZ(k)*mat%kinc(3)
+            phasefac(1) = real( cmplx(cos(pf+sf(1)),-sin(pf+sf(1))) * mat%wavefct )
+            phasefac(2) = real( cmplx(cos(pf+sf(2)),-sin(pf+sf(2))) * mat%wavefct )
+            phasefac(3) = real( cmplx(cos(pf+sf(3)),-sin(pf+sf(3))) * mat%wavefct )
             w(4) = w(4) * mat%finc(4)
             w(5) = w(5) * mat%finc(5)
             w(6) = w(6) * mat%finc(6)
          else
-            phasefac = real(mat%wavefct)
+            phasefac(1) = real(mat%wavefct)
+            phasefac(2) = real(mat%wavefct)
+            phasefac(3) = real(mat%wavefct)
          end if
 
 M4_IFELSE_TM({
-         Ex(i,j,k) = Ex(i,j,k) + DT * ( w(5)/M4_SZ(i,j,k) - w(6)/M4_SY(i,j,k) ) * epsinvx(i,j,k) * phasefac
-         Ey(i,j,k) = Ey(i,j,k) + DT * ( w(6)/M4_SX(i,j,k) - w(4)/M4_SZ(i,j,k) ) * epsinvy(i,j,k) * phasefac
+         Ex(i,j,k) = Ex(i,j,k) + DT * ( w(5)/M4_SZ(i,j,k) - w(6)/M4_SY(i,j,k) ) * epsinvx(i,j,k) * phasefac(1)
+         Ey(i,j,k) = Ey(i,j,k) + DT * ( w(6)/M4_SX(i,j,k) - w(4)/M4_SZ(i,j,k) ) * epsinvy(i,j,k) * phasefac(2)
 })
 M4_IFELSE_TE({
-         Ez(i,j,k) = Ez(i,j,k) + DT * ( w(4)/M4_SY(i,j,k) - w(5)/M4_SX(i,j,k) ) * epsinvz(i,j,k) * phasefac
+         Ez(i,j,k) = Ez(i,j,k) + DT * ( w(4)/M4_SY(i,j,k) - w(5)/M4_SX(i,j,k) ) * epsinvz(i,j,k) * phasefac(3)
 })
          })
             
@@ -272,7 +280,7 @@ M4_IFELSE_TE({
     M4_MODLOOP_DECL({MATTFSF},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(6))
     real(kind=8) :: ncyc0, nend0
-    real(kind=8) :: phasefac
+    real(kind=8) :: phasefac(3), pf, sf(3)
 
     M4_MODLOOP_EXPR({MATTFSF},mat,{
 
@@ -298,20 +306,28 @@ M4_IFELSE_TE({
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
        if ( mat%planewave ) then
-          phasefac = real(cmplx( cos(mat%phasefield(p)),sin(mat%phasefield(p)) ) * mat%wavefct)
+          pf = mat%phasefield(p)
+          sf(1) = .5*M4_SY(j)*mat%kinc(2) + .5*M4_SZ(k)*mat%kinc(3)
+          sf(2) = .5*M4_SX(i)*mat%kinc(1) + .5*M4_SZ(k)*mat%kinc(3)
+          sf(3) = .5*M4_SX(i)*mat%kinc(1) + .5*M4_SY(j)*mat%kinc(2)
+          phasefac(1) = real( cmplx(cos(pf+sf(1)),-sin(pf+sf(1))) * mat%wavefct )
+          phasefac(2) = real( cmplx(cos(pf+sf(2)),-sin(pf+sf(2))) * mat%wavefct )
+          phasefac(3) = real( cmplx(cos(pf+sf(3)),-sin(pf+sf(3))) * mat%wavefct )
           w(1) = w(1) * mat%finc(1)
           w(2) = w(2) * mat%finc(2)
           w(3) = w(3) * mat%finc(3)
        else
-          phasefac = real(mat%wavefct)
+          phasefac(1) = real(mat%wavefct)
+          phasefac(2) = real(mat%wavefct)
+          phasefac(3) = real(mat%wavefct)
        end if
        
 M4_IFELSE_TE({
-       Hx(i,j,k) = Hx(i,j,k) + DT * ( w(3)/M4_SY(i,j,k) - w(2)/M4_SZ(i,j,k) ) * M4_MUINVX(i,j,k) * phasefac
-       Hy(i,j,k) = Hy(i,j,k) + DT * ( w(1)/M4_SZ(i,j,k) - w(3)/M4_SX(i,j,k) ) * M4_MUINVY(i,j,k) * phasefac
+       Hx(i,j,k) = Hx(i,j,k) + DT * ( w(3)/M4_SY(i,j,k) - w(2)/M4_SZ(i,j,k) ) * M4_MUINVX(i,j,k) * phasefac(1)
+       Hy(i,j,k) = Hy(i,j,k) + DT * ( w(1)/M4_SZ(i,j,k) - w(3)/M4_SX(i,j,k) ) * M4_MUINVY(i,j,k) * phasefac(2)
 })
 M4_IFELSE_TM({
-       Hz(i,j,k) = Hz(i,j,k) + DT * ( w(2)/M4_SX(i,j,k) - w(1)/M4_SY(i,j,k) ) * M4_MUINVZ(i,j,k) * phasefac
+       Hz(i,j,k) = Hz(i,j,k) + DT * ( w(2)/M4_SX(i,j,k) - w(1)/M4_SY(i,j,k) ) * M4_MUINVZ(i,j,k) * phasefac(3)
 })
    
        })
