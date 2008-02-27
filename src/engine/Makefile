@@ -50,6 +50,7 @@ grid.o
 # core objects
 FOBJ=\
 numerics.o\
+signal.o\
 fdtd.o\
 fdtd_calc.o\
 pec.o\
