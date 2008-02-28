@@ -131,7 +131,7 @@ contains
 
    M4_MODLOOP_DECL({MATTFSF},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(6))
-    real(kind=8) :: norm, r, rmax, in(3), mdelay
+    real(kind=8) :: r, in(3), mdelay
     integer :: err
 
     M4_WRITE_DBG(". enter InitializeMatTfsf")
@@ -202,9 +202,9 @@ contains
 
        ! optical delay of point-to-origin field
 
-       i = reg%is
-       j = reg%js
-       k = reg%ks
+       i = mat%orig(1)
+       j = mat%orig(2) 
+       k = mat%orig(3)  
 
        in(1) = sqrt( epsinvx(i,j,k) * M4_MUINVX(i,j,k) )  ! assumed to be homogeneous over source loc.
        in(2) = sqrt( epsinvy(i,j,k) * M4_MUINVY(i,j,k) )
@@ -342,7 +342,7 @@ M4_IFELSE_TE({
 })
         })
 
-      else ! planwave!
+      else ! plane wave!
 
          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
@@ -369,9 +369,7 @@ M4_IFELSE_TE({
 })
          })
 
-      endif
-
-           
+      endif        
 
     })
 
@@ -391,18 +389,16 @@ M4_IFELSE_TE({
 
     M4_MODLOOP_EXPR({MATTFSF},mat,{
 
-    if ( ncyc - mat%noffs .gt. mat%nend + mat%maxdelay ) cycle 
+      if ( ncyc - mat%noffs .gt. mat%nend + mat%maxdelay ) cycle 
 
-       M4_MODOBJ_GETREG(mat,reg)
+      M4_MODOBJ_GETREG(mat,reg)
 
-       ! pre-calculate time signal for e-field modulation
+      ! pre-calculate time signal for e-field modulation
 
-       ! pre-calculate time signal for h-field modulation
-
-       ncyc1 = 1.0*ncyc
+      ncyc1 = 1.0*ncyc
        
-       mat%wavefcte = GaussianWave(ncyc1, mat%noffs, mat%natt, mat%nsus, mat%ndcy, &
-            mat%gamma, mat%omega0)
+      mat%wavefcte = GaussianWave(ncyc1, mat%noffs, mat%natt, mat%nsus, mat%ndcy, &
+           mat%gamma, mat%omega0)
 
       ! store time signal for delayed h-field modulation
 

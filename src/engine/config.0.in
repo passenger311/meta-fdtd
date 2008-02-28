@@ -1,3 +1,4 @@
+
 ! =======================================================================
 !
 ! Meta-Engine Configuration File
@@ -155,27 +156,33 @@
 ! -----------------------------------------------------------------------
 
     
-(!MATSOURCE
-0.03333333333 		! inv vacuum wavelength in units of [2 pi c]
-0 800 			! time offset till attack and cw duration (sustain)
-1200			! peak of gaussian (n0)
+(MATSOURCE
+0.0333333333		! inv vacuum wavelength in units of [2 pi c]
 700             	! half width in timedomain (dn)
-.T. 0. 90.0 0.0	! phi, theta, psi for planewave input [optional]
+0 1200 800 1200         ! offset, attack, sustain, decay periods [dt]
+.F. 45.0 90.0 0.0 	! phi, theta, psi for planewave input [optional]
 (REG
- (BOX
-     11 11 1 0 200 1 :  1.0 1.0 1.0
+ (!BOX
+     11 11 1 0 200 1 :  0.0 0.0 1.0
  )BOX	
-	
-
- (!POINT
-     11  97 : 1.0 1.0 1.0
-     12  98 : 1.0 1.0 1.0
-     13  99 : 1.0 1.0 1.0
-     14 100 : 1.0 1.0 1.0
-     15 101 : 1.0 1.0 1.0
-     16 102 : 1.0 1.0 1.0
-     17 103 : 1.0 1.0 1.0
+ (POINT
+      8  94
+      9  95
+     10  96
+     11  97
+     12  98
+     13  99
+     14 100
+     15 101
+     16 102
+     17 103
+     18 104
+     19 105
+     19 106
   )POINT
+  (FILL
+     1.0 1.0 0.0
+  )FILL
 )REG
 )MATSOURCE
 
@@ -184,7 +191,7 @@
 ! -----------------------------------------------------------------------
 
     
-(MATTFSF
+(!MATTFSF
 0.0333333333		! inv vacuum wavelength in units of [2 pi c]
 700             	! half width in timedomain (dn)
 0 1200 800 1200         ! offset, attack, sustain, decay periods [dt]
@@ -269,16 +276,16 @@
 ! (MATDRUDE-): drude materials pole equation FF[Ex,Ey,Ez]
 ! -----------------------------------------------------------------------
     
-(!MATDRUDE
+(MATDRUDE
 0.045		    	! lambdaplinv: inv plasma freq wavelength [2 pi c]
-0.1 		    	! gammapl: damping constant [1/dt] 
+1000.  	    		! gammapl: damping constant [1/dt] 
 1		    	! order: 1 (=J) or 2 (=P)
 (REG
   (BOX
 	61 101 1 29 170 1 : 1. 1. 1. 1. 1. 1. 
 	61 61 1 29 170 1 : 1. .5 .5 .5 1. 1.  
 	101 101 1 29 170 1 : 0. .5 .5 .5 0. 0. 
-	61 101 1 29 29 1 	: .5 1. .5 1. .5 1.  
+	61 101 1 29 29 1 : .5 1. .5 1. .5 1.  
 	61 101 1 170 170 1 : .5 0. .5 0. .5 0. 
 	61 61 1 29 29 1 : .5 .5 .25 .5 .5 1.  
 	61 61 1 170 170 1 : .5 0. .25 0. .5 0.  
