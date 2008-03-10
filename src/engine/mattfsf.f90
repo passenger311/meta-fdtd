@@ -88,7 +88,7 @@ contains
 
     M4_WRITE_DBG(". enter ReadMatTfsfObj")
 
-    M4_MODREAD_EXPR({MATTFSF}, funit,lcount,mat,reg, 3, out,{ 
+    M4_MODREAD_EXPR({MATTFSF}, funit,lcount,mat,reg, 6, out,{ 
 
     ! read parameters here, as defined in mat data structure
 
@@ -418,11 +418,11 @@ M4_IFELSE_TE({
          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
 M4_IFELSE_TE({
-         Hx(i+o(1),j,k) = Hx(i+o(1),j,k) + DT * ( w(3)/M4_SY(i,j,k) - w(2)/M4_SZ(i,j,k) ) * M4_MUINVX(i+o(1),j,k) * mat%wavefcth
-         Hy(i,j+o(2),k) = Hy(i,j+o(2),k) + DT * ( w(1)/M4_SZ(i,j,k) - w(3)/M4_SX(i,j,k) ) * M4_MUINVY(i,j+o(2),k) * mat%wavefcth
+         Hx(i,j,k) = Hx(i,j,k) + DT * ( w(3)/M4_SY(i,j,k) - w(2)/M4_SZ(i,j,k) ) * M4_MUINVX(i,j,k) * mat%wavefcth
+         Hy(i,j,k) = Hy(i,j,k) + DT * ( w(1)/M4_SZ(i,j,k) - w(3)/M4_SX(i,j,k) ) * M4_MUINVY(i,j,k) * mat%wavefcth
 })
 M4_IFELSE_TM({
-         Hz(i,j,k+o(3)) = Hz(i,j,k+o(3)) + DT * ( w(2)/M4_SX(i,j,k) - w(1)/M4_SY(i,j,k) ) * M4_MUINVZ(i,j,k+o(3)) * mat%wavefcth
+         Hz(i,j,k) = Hz(i,j,k) + DT * ( w(2)/M4_SX(i,j,k) - w(1)/M4_SY(i,j,k) ) * M4_MUINVZ(i,j,k) * mat%wavefcth
 })
    
          })
