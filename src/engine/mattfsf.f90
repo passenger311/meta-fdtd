@@ -443,9 +443,6 @@ M4_IFELSE_TM({
             w(l) = w(l) * mat%finc(l)
             o(l) = mat%orient(p,l)
             w(3+l) = abs(w(3+l))
-
-            if ( p .gt. reg%numnodes ) write(6,*) p
-            if ( w(l) .gt. 1. .or. w(l) .lt. -1 ) write(6,*) p, w(l)
             
          end do
 
