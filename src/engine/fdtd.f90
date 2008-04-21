@@ -208,8 +208,8 @@ M4_IFELSE_WMU({ call InitializeMu })
       M4_REGLOOP_EXPR(reg,p,i,j,k,v, {
 
          epsinvx(i,j,k) = 1./v(1)
-         epsinvx(i,j,k) = 1./v(2)
-         epsinvx(i,j,k) = 1./v(3)
+         epsinvy(i,j,k) = 1./v(2)
+         epsinvz(i,j,k) = 1./v(3)
          
       } )
 
