@@ -119,13 +119,22 @@ contains
  
       select case (string)
       case("(EHFIELDS") 
+         call readline(funit,lcount,eof,line)
+         call getstring(line,string,err)
+         M4_PARSE_ERROR({string .ne. "(REG"},lcount)
          call ReadRegObj(reg, fdtdreg, funit, lcount, 6)
          reginitidx = reg%idx
-      case("(EPSILON") 
+      case("(EPSILON")
+         call readline(funit,lcount,eof,line)
+         call getstring(line,string,err)
+         M4_PARSE_ERROR({string .ne. "(REG"},lcount)
          call ReadRegObj(reg, fdtdreg, funit, lcount, 3)
          regepsidx = reg%idx
       M4_IFELSE_WMU({           
       case("(MU") 
+         call readline(funit,lcount,eof,line)
+         call getstring(line,string,err)
+         M4_PARSE_ERROR({string .ne. "(REG"},lcount)
          call ReadRegObj(reg, fdtdreg, funit, lcount, 3)
          regmuidx = reg%idx
       })
