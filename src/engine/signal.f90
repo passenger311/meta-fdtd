@@ -61,25 +61,26 @@ contains
 
 
     ncyc0 = ncyc - noffs
-    nend = noffs + natt + nsus + ndcy
+    nend = natt + nsus + ndcy
     
     GaussianWave = 0.
+
 
     if ( ncyc0 .ge. 0. .and. ncyc0 .le. nend ) then 
 
        amp = 1.0
-       
+
        ! attack phase
        if ( ncyc0 .le. natt ) then
           amp =  exp ( - gamma**2 * ( ( ncyc0 - natt ) * DT )**2 )
        end if
        
        ! decay phase
-       if ( ncyc0 .ge. natt + nsus ) then         	
+       if ( ncyc0 .gt. natt + nsus ) then         	
           amp =  exp ( - gamma**2 * ( ( ncyc0 - natt - nsus ) * DT )**2 )
        end if
        
-       GaussianWave = amp * cos(omega*ncyc0*DT)
+       GaussianWave = amp * sin(omega*ncyc0*DT)
 
     end if
 
