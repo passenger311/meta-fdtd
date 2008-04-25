@@ -2,9 +2,7 @@
 !
 !  module: matsource / meta
 !
-!  feed electromagnetic field with source 
-!
-!  CF,1D,2D,3D
+!  feed electromagnetic field with hard dipole current source 
 !
 !----------------------------------------------------------------------
 

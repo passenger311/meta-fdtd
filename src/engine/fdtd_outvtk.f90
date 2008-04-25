@@ -183,7 +183,7 @@ contains
 
       if ( out%mode .ne. 'S' ) then
  
-         write(out%funit,"(E15.6E3)") val
+         write(out%funit,"(E14.6E2)") real(val,4)
          
       else
          sum = sum + val
@@ -194,7 +194,7 @@ contains
 
       if ( out%mode .eq. 'S' ) then
          write(out%funit,"(A)") "FIELD FieldSum 1"
-         write(out%funit,"(E15.6E3)") sum
+         write(out%funit,"(E14.6E2)") real(sum,4)
       endif
 
     end subroutine WriteScalar
@@ -230,7 +230,7 @@ contains
       call PaVector(pa,fx(i,j,k),fy(i,j,k),fz(i,j,k),vx,vy,vz)
 
       if ( out%mode .ne. 'S' ) then
-         write(out%funit,"(3E15.6E3)") vx,vy,vz
+         write(out%funit,"(3E14.6E2)") real(vx,4),real(vy,4),real(vz,4)
       else
          sx = sx + vx
          sy = sy + vy
@@ -241,7 +241,7 @@ contains
 
       if ( out%mode .eq. 'S' ) then
          write(out%funit,*) "FIELD FieldSum 3"
-         write(out%funit,"(3E15.6E3)") sx, sy, sz
+         write(out%funit,"(3E14.6E2)") real(sx,4), real(sy,4), real(sz,4)
       endif
    
     end subroutine WriteVector
@@ -284,7 +284,7 @@ contains
       call PaBuffer(pa, buf, p, val)
 
       if ( out%mode .ne. 'S' ) then
-         write(out%funit,*) (val(l), l=1, buf%numslot,1)
+         write(out%funit,*) (real(val(l),4), l=1, buf%numslot,1)
       else
          sum = sum + val
       endif
@@ -294,7 +294,7 @@ contains
 
       if ( out%mode .eq. 'S' ) then
          write(out%funit,*) "FIELD FieldSum ", buf%numslot
-         write(out%funit,*) (sum(l), l=1, buf%numslot,1)
+         write(out%funit,*) (real(sum(l),4), l=1, buf%numslot,1)
       endif
 
       deallocate(val,sum)
@@ -322,8 +322,8 @@ contains
       
       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-      write(out%funit,"(E15.6E3)") &
-           1./epsinvx(i,j,k),1./epsinvy(i,j,k),1./epsinvz(i,j,k)
+      write(out%funit,"(E14.6E2)") &
+           real(1./epsinvx(i,j,k),4),real(1./epsinvy(i,j,k),4),real(1./epsinvz(i,j,k),4)
       
       },{}, {} )
 
@@ -348,8 +348,8 @@ contains
       
       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-      write(out%funit,"(3E15.6E3)") &
-           1./M4_MUINVX(i,j,k),1./M4_MUINVY(i,j,k),1./M4_MUINVZ(i,j,k)
+      write(out%funit,"(3E14.6E2)") &
+           real(1./M4_MUINVX(i,j,k),4),real(1./M4_MUINVY(i,j,k),4),real(1./M4_MUINVZ(i,j,k),4)
 
       },{}, {} )
 

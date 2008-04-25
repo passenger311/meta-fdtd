@@ -123,6 +123,7 @@ contains
 !       y1 = val - val_func(x1)
 !       dy = (y2 - y1)/(x2 - x1)
 
+
        if ( yr .lt. 0 ) then
           
           x1 = xr
@@ -134,7 +135,7 @@ contains
        end if
 
     end do
-
+    
     iter = -1
     M4_WRITE_WARN({"root_find: maximum iterations exceeded!"})
     return

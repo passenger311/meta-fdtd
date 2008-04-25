@@ -49,7 +49,6 @@ module mattfsf
 
      integer, dimension(6) :: planeactive      ! active box planes
 
-     real(kind=8) :: wavefcte, wavefcth        ! wave functions
      real(kind=8) :: finc(6)                   ! field components of incident field 
 
      real(kind=8) :: kinc(3)                   ! normed k vector of plane wave
@@ -61,9 +60,11 @@ module mattfsf
      ! component delay correction and inverse material constant (epsinv, muinv)
      real(kind=8) :: cdelay(6), invmc(6)
 
+     real(kind=8) :: wavefct                   ! wave functions
+
      ! time signal lookup table
-     real(kind=8), pointer, dimension(:) :: signale, signalh 
-     integer :: signalep, signalhp
+     real(kind=8), pointer, dimension(:) :: signal 
+     integer :: signalp
 
      ! maximum delay: origin to point furthest away
      integer :: maxdelay
@@ -171,8 +172,9 @@ contains
     mat%kinc(2) = sin(DEG*mat%theta)*sin(DEG*mat%phi)
     mat%kinc(3) = cos(DEG*mat%theta)
 
-    !call NumericalPhaseVelocity(mat%kinc, mat%omega0, SX, SY, SZ, pvel)
-    pvel = 1.
+    call NumericalPhaseVelocity(mat%kinc, mat%omega0, SX, SY, SZ, pvel)
+    write(6,*) "XXXXX ", pvel
+    !pvel = 1.
 
     ! incident field/current amplitudes
     mat%finc(1) = cos(DEG*mat%psi)*sin(DEG*mat%phi) - sin(DEG*mat%psi)*cos(DEG*mat%theta)*cos(DEG*mat%phi)
@@ -192,11 +194,17 @@ contains
     mat%phi = mod(mat%phi+360., 360.)
     mat%psi = mod(mat%psi+360., 360.)
 
-    if ( mat%theta .ge. 0. .and. mat%theta .lt. 90. ) then
-       mat%orig(3) = reg%ks-1
+
+    if ( DIM .eq. 3 ) then
+       if ( mat%theta .ge. 0. .and. mat%theta .lt. 90. ) then
+          mat%orig(3) = reg%ks-1
+       else
+          mat%orig(3) = reg%ke+1
+       endif
     else
-       mat%orig(3) = reg%ke
-    endif
+        mat%orig(3) = reg%ks
+    end if
+
 
     if ( mat%phi .ge. 0. .and. mat%phi .lt. 90. ) then
        mat%orig(1) = reg%is-1
@@ -204,18 +212,18 @@ contains
     end if
 
     if ( mat%phi .ge. 90. .and. mat%phi .lt. 180 ) then
-       mat%orig(1) = reg%ie
+       mat%orig(1) = reg%ie+1
        mat%orig(2) = reg%js-1
     end if
 
     if ( mat%phi .ge. 180. .and. mat%phi .lt. 270. ) then
-       mat%orig(1) = reg%ie
-       mat%orig(2) = reg%je
+       mat%orig(1) = reg%ie+1
+       mat%orig(2) = reg%je+1
     end if
     
     if ( mat%phi .ge. 270. .and. mat%phi .lt. 360. ) then
        mat%orig(1) = reg%is-1
-       mat%orig(2) = reg%je
+       mat%orig(2) = reg%je+1
     end if
     
     ! optical delay of point-to-origin field
@@ -236,14 +244,16 @@ contains
     mat%invmc(5) = M4_MUINVY(i,j,k)
     mat%invmc(6) = M4_MUINVZ(i,j,k)
     
-    allocate(mat%delay(reg%is-1:reg%ie,reg%js-1:reg%je,reg%ks-1:reg%ke), stat = err )
+    ! be lazy and wasteful and do the whole box rather than just the border ...
+
+    allocate(mat%delay(reg%is-1:reg%ie+1,reg%js-1:reg%je+1,reg%ks-1:reg%ke+1), stat = err )
     M4_ALLOC_ERROR(err,{"InitializeMatTfsf"})
 
     mdelay = 0
 
-    do k = reg%ks-1, reg%ke, reg%dk
-       do j = reg%js-1, reg%je, reg%dj
-          do i = reg%is-1, reg%ie, reg%di
+    do k = reg%ks-1, reg%ke+1, reg%dk
+       do j = reg%js-1, reg%je+1, reg%dj
+          do i = reg%is-1, reg%ie+1, reg%di
 
              ! project (i,j,k) location vector on kinc to create a distance field
 
@@ -252,6 +262,7 @@ contains
              rk(3) = M4_DISTZ(mat%orig(3),k)
        
              r = in(1)*rk(1)*mat%kinc(1) + in(2)*rk(2)*mat%kinc(2) +  in(3)*rk(3)*mat%kinc(3)
+
 
              mat%delay(i,j,k) = r / ( pvel * DT )
 
@@ -273,18 +284,16 @@ contains
 
     ! mdelay =  mdelay  + mat%cdelay(1) +  mat%cdelay(2) + mat%cdelay(3)
 
-    mat%maxdelay = int(mdelay + 0.5) + 1
+    mat%maxdelay = int(mdelay + 1) + 1
 
-    mat%tres = 10. ! increased time resolution of delay buffer by this factor 
+    mat%tres = 100. ! increased time resolution of delay buffer by this factor 
 
-    allocate(mat%signale(0:mat%maxdelay * mat%tres -1),mat%signalh(0:mat%maxdelay * mat%tres -1) , stat = err )
+    allocate(mat%signal(0:mat%maxdelay * mat%tres -1) , stat = err )
     M4_ALLOC_ERROR(err,{"InitializeMatTfsf"})
 
-    mat%signale = 0.
-    mat%signalh = 0.
+    mat%signal = 0.
 
-    mat%signalep = 0 ! initialise signal index pointers
-    mat%signalhp = 0
+    mat%signalp = 0 ! initialise signal index pointers
 
     mat%nend = mat%noffs + mat%natt + mat%nsus + mat%ndcy + mat%maxdelay
 
@@ -308,7 +317,7 @@ contains
     
     M4_MODLOOP_EXPR({MATTFSF},mat,{
 
-       deallocate(mat%signale, mat%signalh, mat%delay)
+       deallocate(mat%signal, mat%delay)
 
     })
 
@@ -337,72 +346,72 @@ contains
 
        ! pre-calculate time signal for h-field modulation
 
-       ddt = 1.0/real(mat%tres)
+!       ddt = 1.0/real(mat%tres)
 
-       do l = 1, mat%tres
+!       do l = 1, mat%tres
 
-          ncyc1 = 1.0*ncyc - 0.5 + l*ddt
+!          ncyc1 = 1.0*ncyc - 0.5 + l*ddt
           
-          mat%wavefcth = GaussianWave(ncyc1, mat%noffs, mat%natt, mat%nsus, mat%ndcy, & 
-               mat%gamma, mat%omega0)
+!          mat%wavefcth = GaussianWave(ncyc1, mat%noffs, mat%natt, mat%nsus, mat%ndcy, & 
+!               mat%gamma, mat%omega0)
 
           ! store time signal for delayed h-field modulation
 
-          sp = mod(mat%signalhp+l ,mat%maxdelay * mat%tres)
-          mat%signalh(sp) = mat%wavefcth                ! store signal function
+!          sp = mod(mat%signalhp+l ,mat%maxdelay * mat%tres)
+!          mat%signalh(sp) = mat%wavefcth                ! store signal function
 
-       end do
+!       end do
 
-       mat%signalhp = sp
+!       mat%signalhp = sp
 
        ! enter e-field modulation loop
 
        if ( mat%planeactive(1) .ne. 0 ) then 
           ! i = is
           val = + mat%finc(6) ! + Hz_inc
-          call CalcEComp(mat, reg%is, reg%is, reg%js, reg%je-1, reg%ks, reg%ke, Ey, 2, zero, zero, val) 
+          call CalcEComp(mat, reg%is, reg%is, reg%js, reg%je-1, reg%ks, reg%ke, Ey, 2, -1,0,0, 6, zero, zero, val) 
           val = - mat%finc(5) ! - Hy_inc
-          call CalcEComp(mat, reg%is, reg%is, reg%js, reg%je, reg%ks, reg%ke-1, Ez, 3, zero, val, zero) 
+          call CalcEComp(mat, reg%is, reg%is, reg%js, reg%je, reg%ks, reg%ke-1, Ez, 3, -1,0,0, 5, zero, val, zero) 
        endif
 
        if ( mat%planeactive(2) .ne. 0 ) then 
           ! i = ie 
           val = - mat%finc(6) ! - Hz_inc
-          call CalcEComp(mat, reg%ie, reg%ie, reg%js, reg%je-1, reg%ks, reg%ke, Ey, 2, zero, zero, val) 
+          call CalcEComp(mat, reg%ie, reg%ie, reg%js, reg%je-1, reg%ks, reg%ke, Ey, 2, 0,0,0, 6, zero, zero, val) 
           val = + mat%finc(5) ! + Hy_inc
-          call CalcEComp(mat, reg%ie, reg%ie, reg%js, reg%je, reg%ks, reg%ke-1, Ez, 3, zero, val, zero) 
+          call CalcEComp(mat, reg%ie, reg%ie, reg%js, reg%je, reg%ks, reg%ke-1, Ez, 3, 0,0,0, 5, zero, val, zero) 
        end if
 
        if ( mat%planeactive(3) .ne. 0 ) then 
           ! j = js
           val = - mat%finc(6) ! - Hz_inc
-          call CalcEComp(mat, reg%is, reg%ie-1, reg%js, reg%js, reg%ks, reg%ke, Ex, 1, zero, zero, val)
+          call CalcEComp(mat, reg%is, reg%ie-1, reg%js, reg%js, reg%ks, reg%ke, Ex, 1, 0,-1,0, 6, zero, zero, val)
           val = + mat%finc(4) ! + Hx_inc
-          call CalcEComp(mat, reg%is, reg%ie, reg%js, reg%js, reg%ks, reg%ke-1, Ez, 3, val, zero, zero)
+          call CalcEComp(mat, reg%is, reg%ie, reg%js, reg%js, reg%ks, reg%ke-1, Ez, 3, 0,-1,0, 4, val, zero, zero)
        end if
 
        if ( mat%planeactive(4) .ne. 0 ) then 
           ! j = je
           val = + mat%finc(6) ! + Hz_inc
-          call CalcEComp(mat, reg%is, reg%ie-1, reg%je, reg%je ,reg%ks, reg%ke, Ex, 1, zero, zero, val)
+          call CalcEComp(mat, reg%is, reg%ie-1, reg%je, reg%je ,reg%ks, reg%ke, Ex, 1, 0,0,0, 6, zero, zero, val)
           val = - mat%finc(4) ! - Hx_inc
-          call CalcEComp(mat, reg%is, reg%ie, reg%je, reg%je ,reg%ks, reg%ke-1, Ez, 3, val, zero, zero)
+          call CalcEComp(mat, reg%is, reg%ie, reg%je, reg%je ,reg%ks, reg%ke-1, Ez, 3, 0,0,0, 4, val, zero, zero)
        end if
        
        if ( mat%planeactive(5) .ne. 0 ) then 
           ! k = ks
           val = + mat%finc(5) ! + Hy_inc
-          call CalcEComp(mat, reg%is, reg%ie-1, reg%js, reg%je, reg%ks, reg%ks, Ex, 1, zero, val, zero) 
+          call CalcEComp(mat, reg%is, reg%ie-1, reg%js, reg%je, reg%ks, reg%ks, Ex, 1, 0,0,-1, 5, zero, val, zero) 
           val = - mat%finc(4) ! - Hx_inc
-          call CalcEComp(mat, reg%is, reg%ie, reg%js, reg%je-1, reg%ks, reg%ks, Ey, 2, val, zero, zero) 
+          call CalcEComp(mat, reg%is, reg%ie, reg%js, reg%je-1, reg%ks, reg%ks, Ey, 2, 0,0,-1, 4, val, zero, zero) 
        end if
 
        if ( mat%planeactive(6) .ne. 0 ) then 
           ! k = ke
           val = - mat%finc(5) ! - Hy_inc
-          call CalcEComp(mat, reg%is, reg%ie-1, reg%js, reg%je, reg%ke, reg%ke, Ex, 1, zero, val, zero) 
+          call CalcEComp(mat, reg%is, reg%ie-1, reg%js, reg%je, reg%ke, reg%ke, Ex, 1, 0,0,0, 5, zero, val, zero) 
           val = - mat%finc(4) ! - Hx_inc
-          call CalcEComp(mat, reg%is, reg%ie, reg%js, reg%je-1, reg%ke, reg%ke, Ey, 2, val, zero, zero) 
+          call CalcEComp(mat, reg%is, reg%ie, reg%js, reg%je-1, reg%ke, reg%ke, Ey, 2, 0,0,0, 4, val, zero, zero) 
        end if
 
     })
@@ -410,27 +419,27 @@ contains
 
     contains
 
-      subroutine CalcEComp(mat, is,ie,js,je,ks,ke, F, c, fx, fy, fz)
+      subroutine CalcEComp(mat, is,ie,js,je,ks,ke, F, c, o1,o2,o3, l, fx, fy, fz)
 
         type(T_MATTFSF) :: mat
         integer :: is,ie,js,je,ks,ke
         M4_FTYPE, dimension(M4_RANGE(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX)) :: F
-        integer :: c
+        integer :: c, l, o1,o2,o3
         real(kind=8) :: fx, fy, fz
         
         real(kind=8) :: wavefct, d, dd
         integer :: n, di
         integer :: i,j,k
 
-        n = mat%signalep + mat%maxdelay * mat%tres 
+        n = mat%signalp +  mat%maxdelay * mat%tres 
 
         do k = ks, ke
            do j = js, je
               do i = is, ie
 
-                 d = mat%delay(i,j,k) + mat%cdelay(c) ! time delay from origin
+                 d = mat%delay(i+o1,j+o2,k+o3) + mat%cdelay(l) ! time delay from origin
                  di = int(d * real(mat%tres) + 0.5)
-                 wavefct = mat%signale(mod(n-di, mat%maxdelay*mat%tres ))
+                 wavefct = mat%signal(mod(n-di, mat%maxdelay*mat%tres ))
 !                 dd = d - di
                  ! use linear interpolation to read time signal
                  !wavefct = (1. - dd) * mat%signale(mod(n-di,mat%maxdelay)) + &
@@ -471,68 +480,69 @@ contains
 
        do l = 1, mat%tres
 
-          ncyc1 = 1.0*ncyc  - 1.0 + l * ddt
+!          ncyc1 = 1.0*ncyc  - 1.0 + l * ddt
+          ncyc1 = 1.0*ncyc  - 0.5 + l * ddt  ! signal: n-1/2 -> n+1/2
           
-          mat%wavefcte = GaussianWave(ncyc1, mat%noffs, mat%natt, mat%nsus, mat%ndcy, & 
+          mat%wavefct = GaussianWave(ncyc1, mat%noffs, mat%natt, mat%nsus, mat%ndcy, & 
                mat%gamma, mat%omega0)
 
           ! store time signal for delayed e-field modulation
 
-          sp = mod(mat%signalep+l ,mat%maxdelay * mat%tres)
-          mat%signale(sp) = mat%wavefcte                ! store signal function
+          sp = mod(mat%signalp+l ,mat%maxdelay * mat%tres)
+          mat%signal(sp) = mat%wavefct                ! store signal function
 
        end do
 
-       mat%signalep = sp
+       mat%signalp = sp
 
        ! enter e-field modulation loop
 
        if ( mat%planeactive(1) .ne. 0 ) then 
           ! i = is
           val = + mat%finc(2) ! + Ey_inc
-          call CalcHComp(mat, reg%is-1, reg%is-1, reg%js, reg%je-1, reg%ks, reg%ke, Hz, 6, zero, val, zero) 
+          call CalcHComp(mat, reg%is-1, reg%is-1, reg%js, reg%je-1, reg%ks, reg%ke, Hz, 6, 1,0,0, 2, zero, val, zero) 
           val = - mat%finc(3) ! - Ez_inc
-          call CalcHComp(mat, reg%is-1, reg%is-1, reg%js, reg%je, reg%ks, reg%ke-1, Hy, 5, zero, zero, val) 
+          call CalcHComp(mat, reg%is-1, reg%is-1, reg%js, reg%je, reg%ks, reg%ke-1, Hy, 5, 1,0,0, 3, zero, zero, val) 
        end if
 
        if ( mat%planeactive(2) .ne. 0 ) then 
           ! i = ie
           val = - mat%finc(2) ! - Ey_inc
-          call CalcHComp(mat, reg%ie, reg%ie, reg%js, reg%je-1, reg%ks, reg%ke, Hz, 6, zero, val, zero) 
+          call CalcHComp(mat, reg%ie, reg%ie, reg%js, reg%je-1, reg%ks, reg%ke, Hz, 6, 0,0,0, 2, zero, val, zero) 
           val = + mat%finc(3) ! + Ez_inc
-          call CalcHComp(mat, reg%ie, reg%ie, reg%js, reg%je, reg%ks, reg%ke-1, Hy, 5, zero, zero, val) 
+          call CalcHComp(mat, reg%ie, reg%ie, reg%js, reg%je, reg%ks, reg%ke-1, Hy, 5, 0,0,0, 3, zero, zero, val) 
        end if
 
        if ( mat%planeactive(3) .ne. 0 ) then 
           ! j = js
           val = - mat%finc(1) ! - Ex_inc
-          call CalcHComp(mat, reg%is, reg%ie-1, reg%js-1, reg%js-1, reg%ks, reg%ke, Hz, 6, val, zero, zero)
+          call CalcHComp(mat, reg%is, reg%ie-1, reg%js-1, reg%js-1, reg%ks, reg%ke, Hz, 6, 0,1,0, 1, val, zero, zero)
           val = + mat%finc(3) ! + Ez_inc
-          call CalcHComp(mat, reg%is, reg%ie, reg%js-1, reg%js-1, reg%ks, reg%ke-1, Hx, 4, zero, zero, val)
+          call CalcHComp(mat, reg%is, reg%ie, reg%js-1, reg%js-1, reg%ks, reg%ke-1, Hx, 4, 0,1,0, 3, zero, zero, val)
        end if
 
        if ( mat%planeactive(4) .ne. 0 ) then 
           ! j = je
           val = + mat%finc(1) ! + Ex_inc
-          call CalcHComp(mat, reg%is, reg%ie-1, reg%je, reg%je, reg%ks, reg%ke, Hz, 6, val, zero, zero)
+          call CalcHComp(mat, reg%is, reg%ie-1, reg%je, reg%je, reg%ks, reg%ke, Hz, 6, 0,0,0, 1, val, zero, zero)
           val = - mat%finc(3) ! - Ez_inc
-          call CalcHComp(mat, reg%is, reg%ie, reg%je, reg%je, reg%ks, reg%ke-1, Hx, 4, zero, zero, val)
+          call CalcHComp(mat, reg%is, reg%ie, reg%je, reg%je, reg%ks, reg%ke-1, Hx, 4, 0,0,0, 3, zero, zero, val)
        end if
 
        if ( mat%planeactive(5) .ne. 0 ) then 
           ! k = ks
           val = + mat%finc(1) ! + Ex_inc
-          call CalcHComp(mat, reg%is, reg%ie-1, reg%js, reg%je, reg%ks-1, reg%ks-1, Hx, 4, val, zero, zero) 
+          call CalcHComp(mat, reg%is, reg%ie-1, reg%js, reg%je, reg%ks-1, reg%ks-1, Hx, 4, 0,0,1, 1, val, zero, zero) 
           val = - mat%finc(2) ! - Ey_inc
-          call CalcHComp(mat, reg%is, reg%ie, reg%js, reg%je-1, reg%ks-1, reg%ks-1, Hy, 5, zero, val, zero) 
+          call CalcHComp(mat, reg%is, reg%ie, reg%js, reg%je-1, reg%ks-1, reg%ks-1, Hy, 5, 0,0,1, 2, zero, val, zero) 
        end if
        
        if ( mat%planeactive(6) .ne. 0 ) then 
           ! k = ke
           val = - mat%finc(1) ! + Ex_inc
-          call CalcHComp(mat, reg%is, reg%ie-1, reg%js, reg%je, reg%ke, reg%ke, Hx, 4, val, zero, zero) 
+          call CalcHComp(mat, reg%is, reg%ie-1, reg%js, reg%je, reg%ke, reg%ke, Hx, 4, 0,0,0, 1, val, zero, zero) 
           val = + mat%finc(2) ! - Ey_inc
-          call CalcHComp(mat, reg%is, reg%ie, reg%js, reg%je-1, reg%ke, reg%ke, Hy, 5, zero, val, zero) 
+          call CalcHComp(mat, reg%is, reg%ie, reg%js, reg%je-1, reg%ke, reg%ke, Hy, 5, 0,0,0, 2, zero, val, zero) 
        end if
 
     })
@@ -540,34 +550,27 @@ contains
 
     contains
 
-      subroutine CalcHComp(mat, is,ie,js,je,ks,ke, F, c, fx, fy, fz)
+      subroutine CalcHComp(mat, is,ie,js,je,ks,ke, F, c, o1,o2,o3, l, fx, fy, fz)
 
         type(T_MATTFSF) :: mat
         integer :: is,ie,js,je,ks,ke
         M4_FTYPE, dimension(M4_RANGE(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX)) :: F
-        integer :: c
+        integer :: c, l, o1,o2,o3
         real(kind=8) :: fx, fy, fz
         
         real(kind=8) :: wavefct, d, dd
         integer :: n, di
         integer :: i,j,k
 
-        n = mat%signalhp + mat%maxdelay * mat%tres
+        n = mat%signalp + mat%maxdelay * mat%tres - 0.5 * mat%tres
          
         do k = ks, ke
            do j = js, je
               do i = is, ie
 
-                 d = mat%delay(i,j,k) + mat%cdelay(c) ! time delay from origin
+                 d = mat%delay(i+o1,j+o2,k+o3) + mat%cdelay(l) ! time delay from origin, -0.5 for time shift
                  di = int(d * real(mat%tres) + 0.5)
-                 wavefct = mat%signalh(mod(n-di , mat%maxdelay * mat%tres ))
-
-!                 d = mat%delay(i,j,k) + mat%cdelay(c) ! time delay from origin
-!                 di = int(d)
-!                 dd = d - di
-                 ! use linear interpolation to read time signal
-!                 wavefct = (1. - dd) * mat%signalh(mod(n-di,mat%maxdelay)) + &
-!                      dd * mat%signalh(mod(n-di-1,mat%maxdelay))
+                 wavefct = mat%signal(mod(n-di , mat%maxdelay * mat%tres ))
 
                  F(i,j,k) = F(i,j,k) +  DT * ( fx/M4_SX(i,j,k) + fy/M4_SY(i,j,k) +  fz/M4_SZ(i,j,k) ) * mat%invmc(c) * wavefct
 

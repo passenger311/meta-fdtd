@@ -179,9 +179,9 @@ contains
       if ( out%mode .ne. 'S' ) then
  
          if ( reg%isbox ) then
-            write(out%funit,"(E15.6E3)") val
+            write(out%funit,"(E15.6E3)") real(val,8)
          else
-            write(out%funit,"(M4_SDIM({I5}),(E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}),val
+            write(out%funit,"(M4_SDIM({I5}),(E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}),real(val,8)
          endif
          
       else
@@ -192,7 +192,7 @@ contains
    
 
       if ( out%mode .eq. 'S' ) then
-         write(out%funit,"(E15.6E3)") sum
+         write(out%funit,"(E15.6E3)") real(sum,8)
       endif
 
     end subroutine WriteScalar
@@ -225,9 +225,9 @@ contains
 
       if ( out%mode .ne. 'S' ) then
          if ( reg%isbox ) then
-            write(out%funit,"(E15.6E3)") vx, vy, vz
+            write(out%funit,"(E15.6E3)") real(vx,8), real(vy,8), real(vz,8)
          else
-            write(out%funit,"(M4_SDIM({I5}),(E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}),vx,vy,vz
+            write(out%funit,"(M4_SDIM({I5}),(E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}),real(vx,8),real(vy,8),real(vz,8)
          endif
       else
          sx = sx + vx
@@ -238,7 +238,7 @@ contains
       },{if ( reg%is .ne. reg%ie ) write(out%funit,*)}, {if ( reg%js .ne. reg%je ) write(out%funit,*)} )
 
       if ( out%mode .eq. 'S' ) then
-          write(out%funit,"(E15.6E3)") sx, sy, sz
+          write(out%funit,"(E15.6E3)") real(sx,8), real(sy,8), real(sz,8)
       endif
    
     end subroutine WriteVector
@@ -251,7 +251,7 @@ contains
       type (T_OUT) :: out
       type (T_BUF) :: buf
       logical :: mode
-      integer :: pa ! 0 : real part, 1: amplitude, 2: phase
+      integer :: l, pa ! 0 : real part, 1: amplitude, 2: phase
 
       M4_REGLOOP_DECL(reg,p,i,j,k,w(0))  
       real(kind=8), allocatable :: val(:), sum(:)
@@ -260,7 +260,7 @@ contains
 
       allocate(val(buf%numslot),sum(buf%numslot))
 
-      M4_WRITE_DBG({"WriteScalar!"})
+      M4_WRITE_DBG({"WriteBuffer!"})
       M4_IFELSE_DBG({call EchoRegObj(regobj(out%regidx))})
 
       sum = 0.0
@@ -272,23 +272,25 @@ contains
       call PaBuffer(pa, buf, p, val)
 
       if ( out%mode .ne. 'S' ) then
- 
+
          if ( reg%isbox ) then
-            write(out%funit,"(E15.6E3)") val
+           write(out%funit,*) (real(val(l),8), l=1, buf%numslot,1)
          else
-            write(out%funit,"(M4_SDIM({I5}),(E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}),val
-         endif
-         
+           write(out%funit,*) M4_DIM123({i},{i,j},{i,j,k}),(real(val(l),8), l=1, buf%numslot,1)
+        endif
+
       else
          sum = sum + val
       endif
 
-      },{if ( reg%is .ne. reg%ie ) write(out%funit,*)}, {if ( reg%js .ne. reg%je ) write(out%funit,*)} )
+      },{}, {} )
    
 
       if ( out%mode .eq. 'S' ) then
-         write(out%funit,"(E15.6E3)") sum
+         write(out%funit,*) "FIELD FieldSum ", buf%numslot
+         write(out%funit,*) (real(sum(l),8), l=1, buf%numslot,1)
       endif
+
 
       deallocate(val,sum)
 
@@ -313,11 +315,11 @@ contains
 
       if ( reg%isbox ) then
          write(out%funit,"(E15.6E3)") &
-              1./epsinvx(i,j,k),1./epsinvy(i,j,k),1./epsinvz(i,j,k) 
+              real(1./epsinvx(i,j,k),8),real(1./epsinvy(i,j,k),8),real(1./epsinvz(i,j,k),8) 
       else
          write(out%funit,"(M4_SDIM({I5}),(E15.6E3))") &
               M4_DIM123({i},{i,j},{i,j,k}), &
-              1./epsinvx(i,j,k),1./epsinvy(i,j,k),1./epsinvz(i,j,k) 
+              real(1./epsinvx(i,j,k),8),real(1./epsinvy(i,j,k),8),real(1./epsinvz(i,j,k),8) 
       endif
       
       },{if ( reg%is .ne. reg%ie ) write(out%funit,*)}, {if ( reg%js .ne. reg%je ) write(out%funit,*)} )
@@ -342,11 +344,11 @@ contains
 
       if ( reg%isbox ) then
          write(out%funit,"(E15.6E3)")  &
-              1./M4_MUINVX(i,j,k),1./M4_MUINVY(i,j,k),1./M4_MUINVZ(i,j,k)
+              real(1./M4_MUINVX(i,j,k),8),real(1./M4_MUINVY(i,j,k),8),real(1./M4_MUINVZ(i,j,k),8)
       else
          write(out%funit,"(M4_SDIM({I5}),(E15.6E3))") &
               M4_DIM123({i},{i,j},{i,j,k}), &
-              1./M4_MUINVX(i,j,k),1./M4_MUINVY(i,j,k),1./M4_MUINVZ(i,j,k)
+              real(1./M4_MUINVX(i,j,k),8),real(1./M4_MUINVY(i,j,k),8),real(1./M4_MUINVZ(i,j,k),8)
       endif
       
       },{if ( reg%is .ne. reg%ie ) write(out%funit,*)}, {if ( reg%js .ne. reg%je ) write(out%funit,*)} )

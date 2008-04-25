@@ -62,14 +62,14 @@ contains
 
     real(kind=8) :: kinc(3), omega, sx,sy,sz, pvel
 
-    real(kind=8) :: val, xr = 1.0, xl = 0.5, xh = 1.5, xacc = 0.0001
-    integer :: iter
+    real(kind=8) :: val, xr = 1.5, xl = 0.5, xh = 1.0, xacc = 0.00001
+    integer :: iter = 100
 
 
     ! calculate and return numerical phase velocity <pvel> from <omega>
     ! and <kinc>.
 
-    val = 1./DT * sin( omega * DT / 2. )**2
+    val = 0.
 
     np_omega = omega
     np_kinc = kinc
@@ -88,10 +88,12 @@ contains
       
     real(kind=8) :: vel ! phase velocity
     
-    npfct = 1./np_sx * sin( np_omega * - np_kinc(1) * np_sx / ( 2. * vel ) )**2 &
-         + 1./np_sy * sin( np_omega * np_kinc(2) * np_sy / ( 2. * vel ) )**2    &
-         + 1./np_sz * sin( np_omega * np_kinc(3) * np_sz / ( 2. * vel ) )**2    &
-         - 1./DT * sin( np_omega * DT / 2. )**2
+    ! see [tavlov p110]
+
+    npfct = ( 1./np_sx * sin( np_omega * np_kinc(1) * np_sx / ( 2. * vel ) ))**2 &
+         + ( 1./np_sy * sin( np_omega * np_kinc(2) * np_sy / ( 2. * vel ) ))**2  &
+         + ( 1./np_sz * sin( np_omega * np_kinc(3) * np_sz / ( 2. * vel ) ))**2  &
+         - ( 1./(DT) * sin( np_omega * DT / 2. ))**2
     
   end function npfct
 

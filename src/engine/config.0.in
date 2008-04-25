@@ -31,8 +31,8 @@
   1                     ! partitions
   2000         		! ncyc
   0.576             	! dt
-  -30 229		! i range
-  -60 259      		! j range
+  -200 200		! i range
+  -200 200     		! j range
   20 20			! k range
 )GRID
 
@@ -62,7 +62,7 @@
     0 2000 1000
     (REG
       (BOX
-	 0 199 1 0 199 1 
+	 -200 200 1 -200 200 1 
       )BOX
     )REG
   )OUT	
@@ -70,10 +70,10 @@
   (OUT
     VTK test1_xy_e
     E N 
-    0 2000 1000
+    800 2000 200
     (REG
       (BOX
-	 0 199 1 0 199 1
+	 -200 200 1 -200 200 1
       )BOX
     )REG
   )OUT	
@@ -84,7 +84,7 @@
     0 2000 1000
     (REG
       (BOX
-	 0 199 1 0 199 1
+	 -200 200 1 -200 200 1
       )BOX
     )REG
   )OUT	
@@ -95,7 +95,7 @@
     0 2000 1000
     (REG
       (BOX
-	 0 199 1 0 199 1 0 20 1
+	 -200 200 1 -200 200 1 
       )BOX
     )REG
   )OUT
@@ -104,10 +104,10 @@
   (OUT
     VTK test1_xy_hz
     Hz N
-    0 2000 1000
+    800 2000 200
     (REG
       (BOX
-	 0 199 1 0 199 1 0 20 1
+	 -200 200 1 -200 200 1 
       )BOX
     )REG
   )OUT
@@ -156,8 +156,8 @@
 ! -----------------------------------------------------------------------
 
     
-(MATSOURCE
-0.0333333333		! inv vacuum wavelength = omega [2 pi c]
+(!MATSOURCE
+0.0333333333		! inv vacuum wavelength in units of [2 pi c]
 700             	! half width in timedomain (dn)
 0 1200 800 1200         ! offset, attack, sustain, decay periods [dt]
 .F. 45.0 90.0 0.0 	! phi, theta, psi for planewave input [optional]
@@ -191,43 +191,57 @@
 ! -----------------------------------------------------------------------
 
     
-(!MATTFSF
-0.0333333333		! inv vacuum wavelength = omega [2 pi c]
-700             	! half width in timedomain (dn)
-0 1200 800 1200         ! offset, attack, sustain, decay periods [dt]
-.T. 45.0 90.0 0.0 	! phi, theta, psi for planewave input [optional]
+(MATTFSF
+0.0333333333		! inv vacuum wavelength in units of [2 pi c]
+600           		! half width in timedomain (dn)
+0 1000 1000 0         	! offset, attack, sustain, decay periods [dt]
+65. 90.0 0.0 		! phi, theta, psi for planewave input [optional]
+1 1 1 1 1 1
 (REG
-  (!POINT
-      17  97  
-      16  98 
-      15  99 
-      14  100
-      13  101
-      12  102
-      11  103
-  )POINT
   (BOX
-     ! 11 188 1 11 100 1 : 1. 1. 1. 1. 1. 1.
-      11 11 1 11 187 1 : 0. 1. 1. 0. 1. 1.
-      11 187 1 11 11 1 : 1. 0. 1. 1. 0. 1.
-      188 188 1 11 187 1 : 0. -1. -1. 0. -1. -1. 	
-      11 187 1 188 188 1 : -1. 0. -1. -1. 0. -1. 
+      -150 150 1 -150 150 1 
   )BOX		
-  (!POINT
-      17  97  :   0.707107 -0.707107 0.0 0.707107 0.707107 0.0
-      16  98  :   0.707107 -0.707107 0.0 0.707107 0.707107 0.0
-      15  99  :   0.707107 -0.707107 0.0 0.707107 0.707107 0.0
-      14  100  :  0.707107 -0.707107 0.0 0.707107 0.707107 0.0
-      13  101  :  0.707107 -0.707107 0.0 0.707107 0.707107 0.0
-      12  102  :  0.707107 -0.707107 0.0 0.707107 0.707107 0.0
-      11  103  :  0.707107 -0.707107 0.0 0.707107 0.707107 0.0
-  )POINT
-  (!BOX
-      10 10 1 0 199 1
-  )BOX	
-  (!LOAD
-       tfsf_bs_2000.0.set
-  )LOAD
+)REG
+)MATTFSF
+
+(!MATTFSF
+0.0333333333		! inv vacuum wavelength in units of [2 pi c]
+6             		! half width in timedomain (dn)
+600 14 0 14         	! offset, attack, sustain, decay periods [dt]
+135.0 90.0 0.0 		! phi, theta, psi for planewave input [optional]
+1 1 1 1 0 0
+(REG
+  (BOX
+      -150 150 1 -150 150 1 
+  )BOX		
+)REG
+)MATTFSF
+
+    
+(!MATTFSF
+0.0333333333		! inv vacuum wavelength in units of [2 pi c]
+6             		! half width in timedomain (dn)
+600 14 0 14         	! offset, attack, sustain, decay periods [dt]
+-45.0 90.0 0.0 		! phi, theta, psi for planewave input [optional]
+1 1 1 1 0 0
+(REG
+  (BOX
+      -150 150 1 -150 150 1 
+  )BOX		
+)REG
+)MATTFSF
+
+    
+(!MATTFSF
+0.0333333333		! inv vacuum wavelength in units of [2 pi c]
+6             		! half width in timedomain (dn)
+600 14 0 14         	! offset, attack, sustain, decay periods [dt]
+-135.0 90.0 0.0 		! phi, theta, psi for planewave input [optional]
+1 1 1 1 0 0
+(REG
+  (BOX
+      -150 150 1 -150 150 1 
+  )BOX		
 )REG
 )MATTFSF
 
@@ -239,7 +253,7 @@
 (!MATPEC
 (REG
   (BOX
-     12 12 1 80 121 1
+     -30 30 1 -30 30 1
   )BOX
 )REG
 )MATPEC
@@ -254,17 +268,17 @@
 1		    	! order: 1 (=J) or 2 (=P)
 (REG
   (BOX
-	61 101 1 29 170 1 : 1. 1. 1. 1. 1. 1. 
-	61 61 1 29 170 1 : 1. .5 .5 .5 1. 1.  
-	101 101 1 29 170 1 : 0. .5 .5 .5 0. 0. 
-	61 101 1 29 29 1 	: .5 1. .5 1. .5 1.  
-	61 101 1 170 170 1 : .5 0. .5 0. .5 0. 
-	61 61 1 29 29 1 : .5 .5 .25 .5 .5 1.  
-	61 61 1 170 170 1 : .5 0. .25 0. .5 0.  
-	101 101 1 29 29 1 : 0. .5 .25 .5 0. 0.  
-	101 101 1 170 170 1 : 0. 0. .25 0. 0. 0. 
+	-30 30 1 -30 30 1 : 1. 1. 1. 1. 1. 1. 
+	-30 -30 1 -30 30 1 : 1. .5 .5 .5 1. 1.  
+	30 30 1 -30 30 1 : 0. .5 .5 .5 0. 0. 
+	-30 30 1 -30 -30 1 	: .5 1. .5 1. .5 1.  
+	-30 30 1 30 30 1 : .5 0. .5 0. .5 0. 
+	-30 -30 1 -30 -30 1 : .5 .5 .25 .5 .5 1.  
+	-30 -30 1 30 30 1 : .5 0. .25 0. .5 0.  
+	30 30 1 -30 -30 1 : 0. .5 .25 .5 0. 0.  
+	30 30 1 30 30 1 : 0. 0. .25 0. 0. 0. 
   )BOX
-  (LOAD
+  (!LOAD
      matlhm.in
   )LOAD
 )REG
@@ -276,21 +290,21 @@
 ! (MATDRUDE-): drude materials pole equation FF[Ex,Ey,Ez]
 ! -----------------------------------------------------------------------
     
-(MATDRUDE
-0.045		    	! lambdaplinv: inv plasma freq wavelength [2 pi c]
-1000.  	    		! gammapl: damping constant [1/dt] 
+(!MATDRUDE
+0.0471404520791	   	! lambdaplinv : inv plasma freq wavelength [2 pi c]
+1.e-10 	    		! gammapl: damping constant [1/dt] 
 1		    	! order: 1 (=J) or 2 (=P)
 (REG
   (BOX
-	61 101 1 29 170 1 : 1. 1. 1. 1. 1. 1. 
-	61 61 1 29 170 1 : 1. .5 .5 .5 1. 1.  
-	101 101 1 29 170 1 : 0. .5 .5 .5 0. 0. 
-	61 101 1 29 29 1 : .5 1. .5 1. .5 1.  
-	61 101 1 170 170 1 : .5 0. .5 0. .5 0. 
-	61 61 1 29 29 1 : .5 .5 .25 .5 .5 1.  
-	61 61 1 170 170 1 : .5 0. .25 0. .5 0.  
-	101 101 1 29 29 1 : 0. .5 .25 .5 0. 0.  
-	101 101 1 170 170 1 : 0. 0. .25 0. 0. 0. 
+	-30 30 1 -30 30 1 : 1. 1. 1. 
+	-30 -30 1 -30 30 1 : 1. .5 .5 
+	30 30 1 -30 30 1 : 0. .5 .5 
+	-30 30 1 -30 -30 1 	: .5 1. .5  
+	-30 30 1 30 30 1 : .5 0. .5 0. .5
+	-30 -30 1 -30 -30 1 : .5 .5 .25
+	-30 -30 1 30 30 1 : .5 0. .25
+	30 30 1 -30 -30 1 : 0. .5 .25   
+	30 30 1 30 30 1 : 0. 0. .25 
   )BOX
 )REG
 )MATDRUDE
