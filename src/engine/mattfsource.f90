@@ -1,22 +1,18 @@
 !-*- F90 -*------------------------------------------------------------
 !
-!  module: mattfsf / meta
+!  module: mattfsource / meta
 !
-!  total-field-scattered-field box.
+!  Uses the total-field scattered-field method to create a region that
+!  acts like a transparent source.
 !
 !----------------------------------------------------------------------
 
 
 ! =====================================================================
 !
-! The mattfsf module allows to setup a total-field scattered-field
-! box region where a plane wave is fed in as incident wave. The total
-! field then exists inside the box while the outside of the box 
-! is associated with the scattered field.
-! [see tavlov p 212 for calculation].
-!
+! 
 
-module mattfsf
+module mattfsource
 
   use constant
   use mpiworld
@@ -32,7 +28,7 @@ module mattfsf
   save
 
 
-  M4_MATHEAD_DECL({MATTFSF},MAXMATOBJ,{
+  M4_MATHEAD_DECL({MATTFSOURCE},MAXMATOBJ,{
 
      real(kind=8) :: lambdainv0                ! inverse vacuum wavelength in units of [2 pi c]
      real(kind=8) :: amp                       ! amplitude
@@ -85,17 +81,17 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine ReadMatTfsfObj(funit,lcount)
+  subroutine ReadMatTfSourceObj(funit,lcount)
 
-    M4_MODREAD_DECL({MATTFSF}, funit,lcount,mat,reg,out)
+    M4_MODREAD_DECL({MATTFSOURCE}, funit,lcount,mat,reg,out)
     real(kind=8) :: v(4)
     logical :: eof, err
     real(kind=8) :: angles(3)
     character(len=LINELNG) :: line
 
-    M4_WRITE_DBG(". enter ReadMatTfsfObj")
+    M4_WRITE_DBG(". enter ReadMatTfSourceObj")
 
-    M4_MODREAD_EXPR({MATTFSF}, funit,lcount,mat,reg, 0, out,{ 
+    M4_MODREAD_EXPR({MATTFSOURCE}, funit,lcount,mat,reg, 2, out,{ 
 
     ! read parameters here, as defined in mat data structure
 
@@ -123,48 +119,32 @@ contains
     mat%theta = angles(2)
     mat%psi = angles(3)
 
-    call readintvec(funit, lcount, mat%planeactive, 6)
+    ! call readintvec(funit, lcount, mat%planeactive, 6)
 
     })
 
-    M4_WRITE_DBG(". exit ReadMatTfsfObj")
+    M4_WRITE_DBG(". exit ReadMatTfSourceObj")
 
-  end subroutine ReadMatTfsfObj
+  end subroutine ReadMatTfSourceObj
 
 !----------------------------------------------------------------------
 
-  subroutine InitializeMatTfsf
+  subroutine InitializeMatTfSource
 
-    M4_MODLOOP_DECL({MATTFSF},mat)
+    M4_MODLOOP_DECL({MATTFSOURCE},mat)
     type(T_REG) :: reg
     integer :: i,j,k
     real(kind=8) :: r, rk(3), ksq, mdelay
     integer :: err, l 
 
-    M4_WRITE_DBG(". enter InitializeMatTfsf")
-    M4_MODLOOP_EXPR({MATTFSF},mat,{
+    M4_WRITE_DBG(". enter InitializeMatTfSource")
+    M4_MODLOOP_EXPR({MATTFSOURCE},mat,{
     
     M4_MODOBJ_GETREG(mat,reg)
  
 
     if ( .not. reg%isbox ) then
        M4_FATAL_ERROR("Region must be a single box!")
-    endif
-
-    ! switch off box planes
-
-    if ( DIM .le. 2 ) then
-
-       mat%planeactive(5) = 0
-       mat%planeactive(6) = 0
-
-    endif
-
-    if ( DIM .le. 1 ) then
-
-       mat%planeactive(3) = 0
-       mat%planeactive(4) = 0
-
     endif
 
     ! center frequency
@@ -190,6 +170,10 @@ contains
     mat%finc(6) = -cos(DEG*mat%psi)*sin(DEG*mat%theta)
 
     ! decide on origin according to quadrant into which we emmit
+    ! also decide on which tfsf plane per yee cell to activate. 
+
+    mat%planeactive = 0.
+
     mat%theta = abs(mat%theta)
 
     if ( mat%theta .gt. 180 ) then
@@ -203,8 +187,12 @@ contains
     if ( DIM .eq. 3 ) then
        if ( mat%theta .ge. 0. .and. mat%theta .lt. 90. ) then
           mat%orig(3) = reg%ks-1
+          mat%planeactive(5) = 1
+          mat%planeactive(6) = 0
        else
           mat%orig(3) = reg%ke+1
+          mat%planeactive(5) = 0
+          mat%planeactive(6) = 1
        endif
     else
         mat%orig(3) = reg%ks
@@ -214,23 +202,41 @@ contains
     if ( mat%phi .ge. 0. .and. mat%phi .lt. 90. ) then
        mat%orig(1) = reg%is-1
        mat%orig(2) = reg%js-1
+       mat%planeactive(1) = 1
+       mat%planeactive(2) = 0
+       mat%planeactive(3) = 1
+       mat%planeactive(4) = 0
     end if
 
     if ( mat%phi .ge. 90. .and. mat%phi .lt. 180 ) then
        mat%orig(1) = reg%ie+1
        mat%orig(2) = reg%js-1
+       mat%planeactive(1) = 0
+       mat%planeactive(2) = 1
+       mat%planeactive(3) = 1
+       mat%planeactive(4) = 0
     end if
 
     if ( mat%phi .ge. 180. .and. mat%phi .lt. 270. ) then
        mat%orig(1) = reg%ie+1
        mat%orig(2) = reg%je+1
+       mat%planeactive(1) = 0
+       mat%planeactive(2) = 1
+       mat%planeactive(3) = 0
+       mat%planeactive(4) = 1
     end if
     
     if ( mat%phi .ge. 270. .and. mat%phi .lt. 360. ) then
        mat%orig(1) = reg%is-1
        mat%orig(2) = reg%je+1
+       mat%planeactive(1) = 1
+       mat%planeactive(2) = 0
+       mat%planeactive(3) = 0
+       mat%planeactive(4) = 1
     end if
     
+    ! from here on everythhing is same as in the mattfsf module.
+   
     ! optical delay of point-to-origin field
 
     i = mat%orig(1)
@@ -267,7 +273,7 @@ contains
     ! be lazy and wasteful and do the whole box rather than just the border ...
 
     allocate(mat%delay(reg%is-1:reg%ie+1,reg%js-1:reg%je+1,reg%ks-1:reg%ke+1), stat = err )
-    M4_ALLOC_ERROR(err,{"InitializeMatTfsf"})
+    M4_ALLOC_ERROR(err,{"InitializeMatTfSource"})
 
     mdelay = 0
 
@@ -312,7 +318,7 @@ contains
     mat%tres = 100. ! increased time resolution of delay buffer by this factor 
 
     allocate(mat%signal(0:mat%maxdelay * mat%tres -1) , stat = err )
-    M4_ALLOC_ERROR(err,{"InitializeMatTfsf"})
+    M4_ALLOC_ERROR(err,{"InitializeMatTfSource"})
 
     mat%signal = 0.
 
@@ -321,47 +327,46 @@ contains
     mat%nend = mat%noffs + mat%natt + mat%nsus + mat%ndcy + mat%maxdelay
 
 
-
-    M4_IFELSE_DBG({call EchoMatTfsfObj(mat)},{call DisplayMatTfsfObj(mat)})
+    M4_IFELSE_DBG({call EchoMatTfSourceObj(mat)},{call DisplayMatTfSourceObj(mat)})
       
     })
 
-    M4_WRITE_DBG(". exit InitializeMatTfsf")
+    M4_WRITE_DBG(". exit InitializeMatTfSource")
 
-  end subroutine InitializeMatTfsf
+  end subroutine InitializeMatTfSource
 
 !----------------------------------------------------------------------
 
-  subroutine FinalizeMatTfsf
+  subroutine FinalizeMatTfSource
     
-    M4_MODLOOP_DECL({MATTFSF},mat)
+    M4_MODLOOP_DECL({MATTFSOURCE},mat)
 
-    M4_WRITE_DBG(". enter FinalizeMatTfsf")
+    M4_WRITE_DBG(". enter FinalizeMatTfSource")
     
-    M4_MODLOOP_EXPR({MATTFSF},mat,{
+    M4_MODLOOP_EXPR({MATTFSOURCE},mat,{
 
        deallocate(mat%signal, mat%delay)
 
     })
 
-    M4_WRITE_DBG(". exit FinalizeMatTfsf")
+    M4_WRITE_DBG(". exit FinalizeMatTfSource")
 
-  end subroutine FinalizeMatTfsf
+  end subroutine FinalizeMatTfSource
 
 !----------------------------------------------------------------------
 
-  subroutine StepEMatTfsf(ncyc)
+  subroutine StepEMatTfSource(ncyc)
 
     integer :: ncyc
     
-    M4_MODLOOP_DECL({MATTFSF},mat)
+    M4_MODLOOP_DECL({MATTFSOURCE},mat)
     type (T_REG) :: reg
     real(kind=8) :: ncyc1, ddt
     real(kind=8) :: val, zero = 0.
     integer :: l, sp
 
 
-    M4_MODLOOP_EXPR({MATTFSF},mat,{
+    M4_MODLOOP_EXPR({MATTFSOURCE},mat,{
 
        if ( ncyc .gt. mat%nend ) cycle 
 
@@ -371,49 +376,49 @@ contains
        if ( mat%planeactive(1) .ne. 0 ) then 
           ! i = is
           val = + mat%finc(6) ! + Hz_inc
-          call CalcEComp(mat, reg%is, reg%is, reg%js, reg%je-1, reg%ks, reg%ke, Ey, -1,0,0, 6, zero, zero, val) 
+          call CalcEComp(mat, Ey, -1,0,0, 6, zero, zero, val, 1) 
           val = - mat%finc(5) ! - Hy_inc
-          call CalcEComp(mat, reg%is, reg%is, reg%js, reg%je, reg%ks, reg%ke-1, Ez, -1,0,0, 5, zero, val, zero) 
+          call CalcEComp(mat, Ez, -1,0,0, 5, zero, val, zero, 1) 
        endif
 
        if ( mat%planeactive(2) .ne. 0 ) then 
           ! i = ie 
           val = - mat%finc(6) ! - Hz_inc
-          call CalcEComp(mat, reg%ie, reg%ie, reg%js, reg%je-1, reg%ks, reg%ke, Ey, 0,0,0, 6, zero, zero, val) 
+          call CalcEComp(mat, Ey, 0,0,0, 6, zero, zero, val, 1) 
           val = + mat%finc(5) ! + Hy_inc
-          call CalcEComp(mat, reg%ie, reg%ie, reg%js, reg%je, reg%ks, reg%ke-1, Ez, 0,0,0, 5, zero, val, zero) 
+          call CalcEComp(mat, Ez, 0,0,0, 5, zero, val, zero, 1) 
        end if
 
        if ( mat%planeactive(3) .ne. 0 ) then 
           ! j = js
           val = - mat%finc(6) ! - Hz_inc
-          call CalcEComp(mat, reg%is, reg%ie-1, reg%js, reg%js, reg%ks, reg%ke, Ex, 0,-1,0, 6, zero, zero, val)
+          call CalcEComp(mat, Ex, 0,-1,0, 6, zero, zero, val, 2)
           val = + mat%finc(4) ! + Hx_inc
-          call CalcEComp(mat, reg%is, reg%ie, reg%js, reg%js, reg%ks, reg%ke-1, Ez, 0,-1,0, 4, val, zero, zero)
+          call CalcEComp(mat, Ez, 0,-1,0, 4, val, zero, zero, 2)
        end if
 
        if ( mat%planeactive(4) .ne. 0 ) then 
           ! j = je
           val = + mat%finc(6) ! + Hz_inc
-          call CalcEComp(mat, reg%is, reg%ie-1, reg%je, reg%je ,reg%ks, reg%ke, Ex, 0,0,0, 6, zero, zero, val)
+          call CalcEComp(mat, Ex, 0,0,0, 6, zero, zero, val, 2)
           val = - mat%finc(4) ! - Hx_inc
-          call CalcEComp(mat, reg%is, reg%ie, reg%je, reg%je ,reg%ks, reg%ke-1, Ez, 0,0,0, 4, val, zero, zero)
+          call CalcEComp(mat, Ez, 0,0,0, 4, val, zero, zero, 2)
        end if
        
        if ( mat%planeactive(5) .ne. 0 ) then 
           ! k = ks
           val = + mat%finc(5) ! + Hy_inc
-          call CalcEComp(mat, reg%is, reg%ie-1, reg%js, reg%je, reg%ks, reg%ks, Ex, 0,0,-1, 5, zero, val, zero) 
+          call CalcEComp(mat, Ex, 0,0,-1, 5, zero, val, zero, 3) 
           val = - mat%finc(4) ! - Hx_inc
-          call CalcEComp(mat, reg%is, reg%ie, reg%js, reg%je-1, reg%ks, reg%ks, Ey, 0,0,-1, 4, val, zero, zero) 
+          call CalcEComp(mat, Ey, 0,0,-1, 4, val, zero, zero, 3) 
        end if
 
        if ( mat%planeactive(6) .ne. 0 ) then 
           ! k = ke
           val = - mat%finc(5) ! - Hy_inc
-          call CalcEComp(mat, reg%is, reg%ie-1, reg%js, reg%je, reg%ke, reg%ke, Ex, 0,0,0, 5, zero, val, zero) 
+          call CalcEComp(mat, Ex, 0,0,0, 5, zero, val, zero, 3) 
           val = - mat%finc(4) ! - Hx_inc
-          call CalcEComp(mat, reg%is, reg%ie, reg%js, reg%je-1, reg%ke, reg%ke, Ey, 0,0,0, 4, val, zero, zero) 
+          call CalcEComp(mat, Ey, 0,0,0, 4, val, zero, zero, 3) 
        end if
 
     })
@@ -421,59 +426,58 @@ contains
 
     contains
 
-      subroutine CalcEComp(mat, is,ie,js,je,ks,ke, F, o1,o2,o3, l, fx, fy, fz)
+      subroutine CalcEComp(mat, F, o1,o2,o3, l, fx, fy, fz, c)
 
-        type(T_MATTFSF) :: mat
+        type(T_MATTFSOURCE) :: mat
         integer :: is,ie,js,je,ks,ke
         M4_FTYPE, dimension(M4_RANGE(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX)) :: F
-        integer :: l, o1,o2,o3
+        integer :: l, o1,o2,o3, c
         real(kind=8) :: fx, fy, fz
         
+        M4_REGLOOP_DECL(reg,p,i,j,k,w(2))
         real(kind=8) :: wavefct, d, dd
         integer :: n, di
-        integer :: i,j,k
+
+        M4_MODOBJ_GETREG(mat,reg)
 
         n = mat%signalp +  mat%maxdelay * mat%tres 
 
-        do k = ks, ke
-           do j = js, je
-              do i = is, ie
+        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+        
+          ! time delay of inj field component in (i,j,k) from origin
 
-                 ! time delay of inj field component in (i,j,k) from origin
+          d = mat%delay(i+o1,j+o2,k+o3) + mat%cdelay(l)
+          di = int(d * real(mat%tres) + 0.5)
+          wavefct = mat%signal(mod(n-di, mat%maxdelay*mat%tres ))
+          
+          ! update field component F from either fx or fy or fz
+          
+          F(i,j,k) = F(i,j,k) +  DT * w(2) * mat%kinc(c) * wavefct * mat%epsinv * ( &
+               fx/M4_SX(i,j,k) + &
+               fy/M4_SY(i,j,k) + &
+               fz/M4_SZ(i,j,k)  )
+          
+        })
 
-                 d = mat%delay(i+o1,j+o2,k+o3) + mat%cdelay(l)
-                 di = int(d * real(mat%tres) + 0.5)
-                 wavefct = mat%signal(mod(n-di, mat%maxdelay*mat%tres ))
-                 
-                 ! update field component F from either fx or fy or fz
-                 
-                 F(i,j,k) = F(i,j,k) +  DT  * wavefct * mat%epsinv * ( &
-                      fx/M4_SX(i,j,k) + &
-                      fy/M4_SY(i,j,k) + &
-                      fz/M4_SZ(i,j,k)  )
-
-              end do
-           end do
-        end do
 
       end subroutine CalcEComp
 
-  end subroutine StepEMatTfsf
+  end subroutine StepEMatTfSource
 
 !----------------------------------------------------------------------
 
-  subroutine StepHMatTfsf(ncyc)
+  subroutine StepHMatTfSource(ncyc)
 
 
     integer :: ncyc
     
-    M4_MODLOOP_DECL({MATTFSF},mat)
+    M4_MODLOOP_DECL({MATTFSOURCE},mat)
     type(T_REG) :: reg
     real(kind=8) :: ddt, ncyc1
     real(kind=8) :: val, zero = 0.
     integer :: l, sp
 
-    M4_MODLOOP_EXPR({MATTFSF},mat,{
+    M4_MODLOOP_EXPR({MATTFSOURCE},mat,{
 
        if ( ncyc .gt. mat%nend ) cycle 
 
@@ -505,49 +509,49 @@ contains
        if ( mat%planeactive(1) .ne. 0 ) then 
           ! i = is
           val = + mat%finc(2) ! + Ey_inc
-          call CalcHComp(mat, reg%is-1, reg%is-1, reg%js, reg%je-1, reg%ks, reg%ke, Hz, 1,0,0, 2, zero, val, zero) 
+          call CalcHComp(mat, Hz, -1,0,0, 2, zero, val, zero, 1) 
           val = - mat%finc(3) ! - Ez_inc
-          call CalcHComp(mat, reg%is-1, reg%is-1, reg%js, reg%je, reg%ks, reg%ke-1, Hy, 1,0,0, 3, zero, zero, val) 
+          call CalcHComp(mat, Hy, -1,0,0, 3, zero, zero, val, 1) 
        end if
 
        if ( mat%planeactive(2) .ne. 0 ) then 
           ! i = ie
           val = - mat%finc(2) ! - Ey_inc
-          call CalcHComp(mat, reg%ie, reg%ie, reg%js, reg%je-1, reg%ks, reg%ke, Hz, 0,0,0, 2, zero, val, zero) 
+          call CalcHComp(mat, Hz, 0,0,0, 2, zero, val, zero, 1) 
           val = + mat%finc(3) ! + Ez_inc
-          call CalcHComp(mat, reg%ie, reg%ie, reg%js, reg%je, reg%ks, reg%ke-1, Hy, 0,0,0, 3, zero, zero, val) 
+          call CalcHComp(mat, Hy, 0,0,0, 3, zero, zero, val, 1) 
        end if
 
        if ( mat%planeactive(3) .ne. 0 ) then 
           ! j = js
           val = - mat%finc(1) ! - Ex_inc
-          call CalcHComp(mat, reg%is, reg%ie-1, reg%js-1, reg%js-1, reg%ks, reg%ke, Hz, 0,1,0, 1, val, zero, zero)
+          call CalcHComp(mat, Hz, 0,-1,0, 1, val, zero, zero, 2)
           val = + mat%finc(3) ! + Ez_inc
-          call CalcHComp(mat, reg%is, reg%ie, reg%js-1, reg%js-1, reg%ks, reg%ke-1, Hx, 0,1,0, 3, zero, zero, val)
+          call CalcHComp(mat, Hx, 0,-1,0, 3, zero, zero, val, 2)
        end if
 
        if ( mat%planeactive(4) .ne. 0 ) then 
           ! j = je
           val = + mat%finc(1) ! + Ex_inc
-          call CalcHComp(mat, reg%is, reg%ie-1, reg%je, reg%je, reg%ks, reg%ke, Hz, 0,0,0, 1, val, zero, zero)
+          call CalcHComp(mat, Hz, 0,0,0, 1, val, zero, zero, 2)
           val = - mat%finc(3) ! - Ez_inc
-          call CalcHComp(mat, reg%is, reg%ie, reg%je, reg%je, reg%ks, reg%ke-1, Hx, 0,0,0, 3, zero, zero, val)
+          call CalcHComp(mat, Hx, 0,0,0, 3, zero, zero, val, 2)
        end if
 
        if ( mat%planeactive(5) .ne. 0 ) then 
           ! k = ks
           val = + mat%finc(1) ! + Ex_inc
-          call CalcHComp(mat, reg%is, reg%ie-1, reg%js, reg%je, reg%ks-1, reg%ks-1, Hx, 0,0,1, 1, val, zero, zero) 
+          call CalcHComp(mat, Hx, 0,0,-1, 1, val, zero, zero, 3) 
           val = - mat%finc(2) ! - Ey_inc
-          call CalcHComp(mat, reg%is, reg%ie, reg%js, reg%je-1, reg%ks-1, reg%ks-1, Hy, 0,0,1, 2, zero, val, zero) 
+          call CalcHComp(mat, Hy, 0,0,-1, 2, zero, val, zero, 3) 
        end if
        
        if ( mat%planeactive(6) .ne. 0 ) then 
           ! k = ke
           val = - mat%finc(1) ! + Ex_inc
-          call CalcHComp(mat, reg%is, reg%ie-1, reg%js, reg%je, reg%ke, reg%ke, Hx, 0,0,0, 1, val, zero, zero) 
+          call CalcHComp(mat, Hx, 0,0,0, 1, val, zero, zero, 3) 
           val = + mat%finc(2) ! - Ey_inc
-          call CalcHComp(mat, reg%is, reg%ie, reg%js, reg%je-1, reg%ke, reg%ke, Hy, 0,0,0, 2, zero, val, zero) 
+          call CalcHComp(mat, Hy, 0,0,0, 2, zero, val, zero, 3) 
        end if
 
     })
@@ -555,73 +559,72 @@ contains
 
     contains
 
-      subroutine CalcHComp(mat, is,ie,js,je,ks,ke, F, o1,o2,o3, l, fx, fy, fz)
+      subroutine CalcHComp(mat, F, o1,o2,o3, l, fx, fy, fz, c)
 
-        type(T_MATTFSF) :: mat
+        type(T_MATTFSOURCE) :: mat
         integer :: is,ie,js,je,ks,ke
         M4_FTYPE, dimension(M4_RANGE(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX)) :: F
-        integer :: l, o1,o2,o3
+        integer :: l, o1,o2,o3, c
         real(kind=8) :: fx, fy, fz
         
+        M4_REGLOOP_DECL(reg,p,i,j,k,w(2))
         real(kind=8) :: wavefct, d, dd
         integer :: n, di
-        integer :: i,j,k
+
+        M4_MODOBJ_GETREG(mat,reg)
 
         n = mat%signalp + mat%maxdelay * mat%tres - 0.5 * mat%tres
          
-        do k = ks, ke
-           do j = js, je
-              do i = is, ie
+        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-                 ! time delay of inj field component in (i,j,k) from origin
+          ! time delay of inj field component in (i,j,k) from origin
 
-                 d = mat%delay(i+o1,j+o2,k+o3) + mat%cdelay(l)
-                 di = int(d * real(mat%tres) + 0.5)
-                 wavefct = mat%signal(mod(n-di , mat%maxdelay * mat%tres ))
+          d = mat%delay(i,j,k) + mat%cdelay(l)
+          di = int(d * real(mat%tres) + 0.5)
+          wavefct = mat%signal(mod(n-di , mat%maxdelay * mat%tres ))
 
-                 ! update field component F from either fx or fy or fz
+          ! update field component F from either fx or fy or fz
 
-                 F(i,j,k) = F(i,j,k) +  DT * wavefct * mat%muinv * ( &
-                      fx/M4_SX(i,j,k) + &
-                      fy/M4_SY(i,j,k) + &
-                      fz/M4_SZ(i,j,k)    ) 
+          F(i+o1,j+o2,k+o3) = F(i+o1,j+o2,k+o3) +  DT * w(1) * mat%kinc(c) * wavefct * mat%muinv * ( &
+               fx/M4_SX(i,j,k) + &
+               fy/M4_SY(i,j,k) + &
+               fz/M4_SZ(i,j,k)    ) 
 
-              end do
-           end do
-        end do
+        })
+
 
       end subroutine CalcHComp
 
-  end subroutine StepHMatTfsf
+  end subroutine StepHMatTfSource
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumJEMatTfsf(mask, ncyc)
+  real(kind=8) function SumJEMatTfSource(mask, ncyc)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
     integer :: ncyc
 
-    SumJEMatTfsf = 0.
+    SumJEMatTfSource = 0.
     
-  end function SumJEMatTfsf
+  end function SumJEMatTfSource
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumKHMatTfsf(mask, ncyc)
+  real(kind=8) function SumKHMatTfSource(mask, ncyc)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
     integer :: ncyc
 
-    SumKHMatTfsf = 0.
+    SumKHMatTfSource = 0.
 
-  end function SumKHMatTfsf
+  end function SumKHMatTfSource
 
 
  !----------------------------------------------------------------------
 
-  subroutine DisplayMatTfsfObj(mat)
+  subroutine DisplayMatTfSourceObj(mat)
 
-    type(T_MATTFSF) :: mat
+    type(T_MATTFSOURCE) :: mat
  
     M4_WRITE_INFO({"#",TRIM(i2str(mat%idx)),&
         " OMEGA=",TRIM(f2str(mat%omega0,4)),&
@@ -631,13 +634,13 @@ contains
     	" DCY=",TRIM(i2str(int(mat%ndcy))) })
     call DisplayRegObj(regobj(mat%regidx))
     	
-  end subroutine DisplayMatTfsfObj
+  end subroutine DisplayMatTfSourceObj
   
  !----------------------------------------------------------------------
 
-   subroutine EchoMatTfsfObj(mat)
+   subroutine EchoMatTfSourceObj(mat)
 
-    type(T_MATTFSF) :: mat
+    type(T_MATTFSOURCE) :: mat
 
     M4_WRITE_INFO({"--- mat # ",TRIM(i2str(mat%idx))})
     M4_WRITE_INFO({"lambdainv0 = ",mat%lambdainv0   })
@@ -649,14 +652,14 @@ contains
     M4_WRITE_INFO({"defined over:"})
     call EchoRegObj(regobj(mat%regidx))
     
-  end subroutine EchoMatTfsfObj
+  end subroutine EchoMatTfSourceObj
 
 !----------------------------------------------------------------------
 
-end module mattfsf
+end module mattfsource
 
 !
-! Authors:  J.Hamm, E.Kirby
+! Authors:  J.Hamm
 ! Modified: 26/04/2008
 !
 !======================================================================

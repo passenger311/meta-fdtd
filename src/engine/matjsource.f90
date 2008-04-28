@@ -1,6 +1,6 @@
 !-*- F90 -*------------------------------------------------------------
 !
-!  module: matsource / meta
+!  module: matjsource / meta
 !
 !  feed electromagnetic field with hard dipole current source 
 !
@@ -9,7 +9,7 @@
 
 ! =====================================================================
 !
-! The MatSource module allows to add a hard source current to the 
+! The MatJSource module allows to add a hard source current to the 
 ! electromagnetic field equations. The time dependence of the current 
 ! consists of three phases A,S,D
 !
@@ -24,7 +24,7 @@
 ! After ncyc = noffs+n0+ncw+n0, the source is off.
 !
 
-module matsource
+module matjsource
 
   use constant
   use parse
@@ -40,7 +40,7 @@ module matsource
   save
 
 
-  M4_MATHEAD_DECL({MATSOURCE},MAXMATOBJ,{
+  M4_MATHEAD_DECL({MATJSOURCE},MAXMATOBJ,{
 
      real(kind=8) :: lambdainv0                ! inverse vacuum wavelength in units of [2 pi c]
      real(kind=8) :: dn                        ! time width of gaussian [dt]
@@ -84,18 +84,18 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine ReadMatSourceObj(funit,lcount)
+  subroutine ReadMatJSourceObj(funit,lcount)
 
 
-    M4_MODREAD_DECL({MATSOURCE}, funit,lcount,mat,reg,out)
+    M4_MODREAD_DECL({MATJSOURCE}, funit,lcount,mat,reg,out)
     real(kind=8) :: v(4)
     logical :: eof, err
     real(kind=8) :: angles(3)
     character(len=LINELNG) :: line
 
-    M4_WRITE_DBG(". enter ReadMatSourceObj")
+    M4_WRITE_DBG(". enter ReadMatJSourceObj")
 
-    M4_MODREAD_EXPR({MATSOURCE}, funit,lcount,mat,reg, 3, out,{ 
+    M4_MODREAD_EXPR({MATJSOURCE}, funit,lcount,mat,reg, 3, out,{ 
 
     ! read parameters here, as defined in mat data structure
 
@@ -131,21 +131,21 @@ contains
 
     })
 
-    M4_WRITE_DBG(". exit ReadMatSourceObj")
+    M4_WRITE_DBG(". exit ReadMatJSourceObj")
 
-  end subroutine ReadMatSourceObj
+  end subroutine ReadMatJSourceObj
 
 !----------------------------------------------------------------------
 
-  subroutine InitializeMatSource
+  subroutine InitializeMatJSource
 
-    M4_MODLOOP_DECL({MATSOURCE},mat)
+    M4_MODLOOP_DECL({MATJSOURCE},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
     real(kind=8) :: r, in(3), mdelay
     integer :: err
 
-    M4_WRITE_DBG(". enter InitializeMatSource")
-    M4_MODLOOP_EXPR({MATSOURCE},mat,{
+    M4_WRITE_DBG(". enter InitializeMatJSource")
+    M4_MODLOOP_EXPR({MATJSOURCE},mat,{
     
     M4_MODOBJ_GETREG(mat,reg)
  
@@ -218,7 +218,7 @@ contains
        in(3) = sqrt( epsinvz(i,j,k) * M4_MUINVZ(i,j,k) )
 
        allocate(mat%delay(reg%numnodes), stat = err )
-       M4_ALLOC_ERROR(err,{"InitializeMatSource"})
+       M4_ALLOC_ERROR(err,{"InitializeMatJSource"})
 
        mdelay = 0
        
@@ -254,21 +254,21 @@ contains
 
     mat%nend = mat%natt + mat%nsus + mat%ndcy + mat%maxdelay
 
-    M4_IFELSE_DBG({call EchoMatSourceObj(mat)},{call DisplayMatSourceObj(mat)})
+    M4_IFELSE_DBG({call EchoMatJSourceObj(mat)},{call DisplayMatJSourceObj(mat)})
       
     })
 
-    M4_WRITE_DBG(". exit InitializeMatSource")
+    M4_WRITE_DBG(". exit InitializeMatJSource")
 
-  end subroutine InitializeMatSource
+  end subroutine InitializeMatJSource
 
 !----------------------------------------------------------------------
 
-  subroutine FinalizeMatSource
+  subroutine FinalizeMatJSource
 
-    M4_MODLOOP_DECL({MATSOURCE},mat)
-    M4_WRITE_DBG(". enter FinalizeMatSource")
-    M4_MODLOOP_EXPR({MATSOURCE},mat,{
+    M4_MODLOOP_DECL({MATJSOURCE},mat)
+    M4_WRITE_DBG(". enter FinalizeMatJSource")
+    M4_MODLOOP_EXPR({MATJSOURCE},mat,{
 
       ! finalize mat object here
   
@@ -280,24 +280,24 @@ contains
 
     })
 
-    M4_WRITE_DBG(". exit FinalizeMatSource")
+    M4_WRITE_DBG(". exit FinalizeMatJSource")
 
-  end subroutine FinalizeMatSource
+  end subroutine FinalizeMatJSource
 
 !----------------------------------------------------------------------
 
-  subroutine StepEMatSource(ncyc)
+  subroutine StepEMatJSource(ncyc)
 
     integer :: ncyc
     
-    M4_MODLOOP_DECL({MATSOURCE},mat)
+    M4_MODLOOP_DECL({MATJSOURCE},mat)
 
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
     real(kind=8) :: ncyc1
     real(kind=8) :: wavefct(3), d(3), dd(3)
     integer :: di(3), l, n
 
-    M4_MODLOOP_EXPR({MATSOURCE},mat,{
+    M4_MODLOOP_EXPR({MATJSOURCE},mat,{
 
       if ( ncyc .gt. mat%nend ) cycle 
 
@@ -351,19 +351,19 @@ M4_IFELSE_TE({
       endif
    })
 
-  end subroutine StepEMatSource
+  end subroutine StepEMatJSource
 
 !----------------------------------------------------------------------
 
-  subroutine StepHMatSource(ncyc)
+  subroutine StepHMatJSource(ncyc)
 
     integer :: ncyc
 
-    M4_MODLOOP_DECL({MATSOURCE},mat)
+    M4_MODLOOP_DECL({MATJSOURCE},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
     real(kind=8) :: ncyc1
 
-    M4_MODLOOP_EXPR({MATSOURCE},mat,{
+    M4_MODLOOP_EXPR({MATJSOURCE},mat,{
 
        if ( ncyc - mat%noffs .gt. mat%nend + mat%maxdelay ) cycle 
 
@@ -387,12 +387,12 @@ M4_IFELSE_TE({
 
    })
     
-  end subroutine StepHMatSource
+  end subroutine StepHMatJSource
 
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumJEMatSource(mask, ncyc)
+  real(kind=8) function SumJEMatJSource(mask, ncyc)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
     real(kind=8) :: sum
@@ -401,12 +401,12 @@ M4_IFELSE_TE({
     real(kind=8) :: wavefct(3), d(3), dd(3)
     integer :: di(3), l, n
    
-    M4_MODLOOP_DECL({MATSOURCE},mat)
+    M4_MODLOOP_DECL({MATJSOURCE},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(6))
 
     sum = 0
 
-    M4_MODLOOP_EXPR({MATSOURCE},mat,{
+    M4_MODLOOP_EXPR({MATJSOURCE},mat,{
 
     ! this loops over all mat structures, setting mat
 
@@ -478,28 +478,28 @@ M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * real(Ez(i,j,k)) * Jz   },{0.  }) &
 
     })
     
-    SumJEMatSource = sum    
+    SumJEMatJSource = sum    
 
-  end function SumJEMatSource
+  end function SumJEMatJSource
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumKHMatSource(mask, ncyc)
+  real(kind=8) function SumKHMatJSource(mask, ncyc)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
     real(kind=8) :: sum
     integer :: ncyc, m, n
    
-    SumKHMatSource = 0.
+    SumKHMatJSource = 0.
 
-  end function SumKHMatSource
+  end function SumKHMatJSource
 
 
  !----------------------------------------------------------------------
 
-  subroutine DisplayMatSourceObj(mat)
+  subroutine DisplayMatJSourceObj(mat)
 
-    type(T_MATSOURCE) :: mat
+    type(T_MATJSOURCE) :: mat
     
     M4_WRITE_INFO({"#",TRIM(i2str(mat%idx)),&
         " OMEGA=",TRIM(f2str(mat%omega0,4)),&
@@ -509,13 +509,13 @@ M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * real(Ez(i,j,k)) * Jz   },{0.  }) &
     	" DCY=",TRIM(i2str(int(mat%ndcy))) })
     call DisplayRegObj(regobj(mat%regidx))
     	
-  end subroutine DisplayMatSourceObj
+  end subroutine DisplayMatJSourceObj
   
  !----------------------------------------------------------------------
 
-   subroutine EchoMatSourceObj(mat)
+   subroutine EchoMatJSourceObj(mat)
 
-    type(T_MATSOURCE) :: mat
+    type(T_MATJSOURCE) :: mat
 
     M4_WRITE_INFO({"--- mat # ",TRIM(i2str(mat%idx))})
     M4_WRITE_INFO({"lambdainv0 = ",mat%lambdainv0   })
@@ -527,11 +527,11 @@ M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * real(Ez(i,j,k)) * Jz   },{0.  }) &
     M4_WRITE_INFO({"defined over:"})
     call EchoRegObj(regobj(mat%regidx))
     
-  end subroutine EchoMatSourceObj
+  end subroutine EchoMatJSourceObj
 
 !----------------------------------------------------------------------
 
-end module matsource
+end module matjsource
 
 !
 ! Authors:  J.Hamm
