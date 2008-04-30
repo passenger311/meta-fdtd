@@ -171,7 +171,8 @@
 0.0333333333		! inv vacuum wavelength in units of [2 pi c]
 700             	! half width in timedomain (dn)
 0 1200 800 1200         ! offset, attack, sustain, decay periods [dt]
-.F. 45.0 90.0 0.0 	! phi, theta, psi for planewave input [optional]
+.F. 45.0 90.0 0.0 	! phase locked? -> phi, theta, psi  
+1.0			! phase locked? -> refractive index
 (REG
  (!BOX
      11 11 1 0 200 1 :  0.0 0.0 1.0
