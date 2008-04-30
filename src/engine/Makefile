@@ -15,10 +15,11 @@ include ../define.mk
 
 # ---------------------------------------------------------------------
 
-.PHONY: clean proper default install all info
+.PHONY: clean proper default install all info sign check
 
 M4= m4 $(M4DEFINE)
 M4= m4 $(M4DEFINE)
+
 
 MATLIST=$(shell ./mlist.pl -s mat.def 2>/dev/null)
 DIAGLIST=$(shell ./mlist.pl -s diag.def 2>/dev/null)
@@ -95,28 +96,29 @@ MANIFEST
 
 default: all
 
-all: info check $(EXE)
+all: info check $(EXE) sign
 
 info:
 	@echo ". ENGINE [$(BUILDDIR)/$(ENGINE)]"
 
-check:
+check: 
 	@if [ "`cat BUILD 2>/dev/null`" != "$(BUILDDIR)" ]; then \
 	echo "$(BUILDDIR)" >BUILD; \
 	fi
 	@if [ "`cat FLAVOUR 2>/dev/null`" != "$(ENGINE)" ]; then \
 	echo "$(ENGINE)" >FLAVOUR; \
 	fi
+	@echo "`date +%y%m%d`" >VERSION
 
-install: MANIFEST build-dir
+install: build-dir
 	@echo [INSTALL] $(ENGINEFILES)
 	@cp $(ENGINEFILES) ../$(ENGINEDIR)
 
-MANIFEST: manifest.inf 
-	@echo [SIGN] $@
-	@$(M4) $< | tail -n 4 >$@
+sign:  
+	@echo [SIGN] MANIFEST
+	@$(M4) manifest.m4 manifest.inf >MANIFEST
 
-$(BOBJ): %.o : %.f90 BUILD
+$(BOBJ): %.o : %.f90
 	@echo [F90] $@
 	@if [ -f $*.m4 ]; then \
 	$(M4) $*.m4 $< >$*_m4.f90; \
