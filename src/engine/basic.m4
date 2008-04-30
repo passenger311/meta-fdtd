@@ -41,6 +41,7 @@ call StopMPELog($1)
 
 define({M4_WRITE_DBG}, {M4_IFELSE_DBG({write(6,*) "!DBG (",TRIM(modname),") ", $1})})
 define({M4_WRITE_INFO}, {write(STDOUT,*) "!INF (",TRIM(modname),") ", $1 })
+define({M4_WRITE_FMT_INFO}, {write(STDOUT,'(A,A,A,$1)') "!INF (",TRIM(modname),") ", $2 })
 define({M4_WRITE_WARN}, {write(STDOUT,*) "!WRN (",TRIM(modname),") ", $1 })
 define({M4_FATAL_ERROR}, {write(STDERR,*) "!ERR (",TRIM(modname),") ", $1
 stop

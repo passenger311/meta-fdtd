@@ -82,6 +82,7 @@ out.o\
 bound.o\
 config.o\
 manifest.o\
+timer.o\
 meta.o
 
 
