@@ -2,15 +2,19 @@
 !
 !  module: mattfsource / meta
 !
-!  Uses the total-field scattered-field method to create a region that
-!  acts like a transparent source.
+!  total-field-scattered-field box.
 !
 !----------------------------------------------------------------------
 
 
 ! =====================================================================
 !
-! 
+! The mattfsource module allows to setup a total-field scattered-field
+! box region where a plane wave is fed in as incident wave. The total
+! field then exists inside the box while the outside of the box 
+! is associated with the scattered field.
+! [see tavlov p 212 for calculation].
+!
 
 module mattfsource
 
@@ -44,7 +48,7 @@ module mattfsource
 
      real(kind=8) :: theta, phi, psi           ! angles of incident wavefront
 
-     integer, dimension(6) :: planeactive      ! active box planes
+     integer :: plane                          ! active plane
 
      real(kind=8) :: finc(6)                   ! field components of incident field 
 
@@ -119,7 +123,6 @@ contains
     mat%theta = angles(2)
     mat%psi = angles(3)
 
-    ! call readintvec(funit, lcount, mat%planeactive, 6)
 
     })
 
@@ -147,6 +150,17 @@ contains
        M4_FATAL_ERROR("Region must be a single box!")
     endif
 
+    mat%plane = 0
+
+    if ( reg%is .eq. reg%ie ) mat%plane = 1
+    if ( reg%js .eq. reg%je .and. DIM .ge. 2 ) mat%plane = 3
+    if ( reg%ks .eq. reg%ke .and. DIM .ge. 3 ) mat%plane = 5
+
+
+    if ( mat%plane .eq. 0 ) then
+       M4_FATAL_ERROR("Box region must define a plane!")
+    end if
+
     ! center frequency
     mat%omega0 = 2. * PI * mat%lambdainv0
 
@@ -170,10 +184,6 @@ contains
     mat%finc(6) = -cos(DEG*mat%psi)*sin(DEG*mat%theta)
 
     ! decide on origin according to quadrant into which we emmit
-    ! also decide on which tfsf plane per yee cell to activate. 
-
-    mat%planeactive = 0.
-
     mat%theta = abs(mat%theta)
 
     if ( mat%theta .gt. 180 ) then
@@ -187,12 +197,9 @@ contains
     if ( DIM .eq. 3 ) then
        if ( mat%theta .ge. 0. .and. mat%theta .lt. 90. ) then
           mat%orig(3) = reg%ks-1
-          mat%planeactive(5) = 1
-          mat%planeactive(6) = 0
        else
           mat%orig(3) = reg%ke+1
-          mat%planeactive(5) = 0
-          mat%planeactive(6) = 1
+          if ( mat%plane .eq. 5 ) mat%plane = 6
        endif
     else
         mat%orig(3) = reg%ks
@@ -202,41 +209,27 @@ contains
     if ( mat%phi .ge. 0. .and. mat%phi .lt. 90. ) then
        mat%orig(1) = reg%is-1
        mat%orig(2) = reg%js-1
-       mat%planeactive(1) = 1
-       mat%planeactive(2) = 0
-       mat%planeactive(3) = 1
-       mat%planeactive(4) = 0
     end if
 
     if ( mat%phi .ge. 90. .and. mat%phi .lt. 180 ) then
        mat%orig(1) = reg%ie+1
        mat%orig(2) = reg%js-1
-       mat%planeactive(1) = 0
-       mat%planeactive(2) = 1
-       mat%planeactive(3) = 1
-       mat%planeactive(4) = 0
+       if ( mat%plane .eq. 1 ) mat%plane = 2
     end if
 
     if ( mat%phi .ge. 180. .and. mat%phi .lt. 270. ) then
        mat%orig(1) = reg%ie+1
        mat%orig(2) = reg%je+1
-       mat%planeactive(1) = 0
-       mat%planeactive(2) = 1
-       mat%planeactive(3) = 0
-       mat%planeactive(4) = 1
+       if ( mat%plane .eq. 1 ) mat%plane = 2
+       if ( mat%plane .eq. 3 ) mat%plane = 4
     end if
     
     if ( mat%phi .ge. 270. .and. mat%phi .lt. 360. ) then
        mat%orig(1) = reg%is-1
        mat%orig(2) = reg%je+1
-       mat%planeactive(1) = 1
-       mat%planeactive(2) = 0
-       mat%planeactive(3) = 0
-       mat%planeactive(4) = 1
+       if ( mat%plane .eq. 3 ) mat%plane = 4
     end if
     
-    ! from here on everythhing is same as in the mattfsf module.
-   
     ! optical delay of point-to-origin field
 
     i = mat%orig(1)
@@ -255,14 +248,9 @@ contains
     mat%muinv = M4_MUINVX(i,j,k)
     mat%nrefr = 1./sqrt( mat%epsinv * mat%muinv )
 
-    ! scale planewave components to couple into dielectric material
+    ! plane
 
-    do l = 1,3
-
-       mat%finc(l)   =  mat%amp * mat%finc(l)   * 1./sqrt(mat%muinv)
-       mat%finc(l+3) =  mat%amp * mat%finc(l+3) * 1./sqrt(mat%epsinv)
-
-    end do
+    M4_WRITE_INFO({"plane = ",mat%plane})
 
     ! calculate phase velocity
 
@@ -327,6 +315,7 @@ contains
     mat%nend = mat%noffs + mat%natt + mat%nsus + mat%ndcy + mat%maxdelay
 
 
+
     M4_IFELSE_DBG({call EchoMatTfSourceObj(mat)},{call DisplayMatTfSourceObj(mat)})
       
     })
@@ -372,53 +361,52 @@ contains
 
        M4_MODOBJ_GETREG(mat,reg)
 
-
-       if ( mat%planeactive(1) .ne. 0 ) then 
+       if ( mat%plane .eq. 1 ) then 
           ! i = is
           val = + mat%finc(6) ! + Hz_inc
-          call CalcEComp(mat, Ey, -1,0,0, 6, zero, zero, val, 1) 
+          call CalcEComp(mat, Ey, -1,0,0, 6, zero, zero, val) 
           val = - mat%finc(5) ! - Hy_inc
-          call CalcEComp(mat, Ez, -1,0,0, 5, zero, val, zero, 1) 
+          call CalcEComp(mat, Ez, -1,0,0, 5, zero, val, zero) 
        endif
 
-       if ( mat%planeactive(2) .ne. 0 ) then 
+       if ( mat%plane .eq. 2 ) then 
           ! i = ie 
           val = - mat%finc(6) ! - Hz_inc
-          call CalcEComp(mat, Ey, 0,0,0, 6, zero, zero, val, 1) 
+          call CalcEComp(mat, Ey, 0,0,0, 6, zero, zero, val) 
           val = + mat%finc(5) ! + Hy_inc
-          call CalcEComp(mat, Ez, 0,0,0, 5, zero, val, zero, 1) 
+          call CalcEComp(mat, Ez, 0,0,0, 5, zero, val, zero) 
        end if
 
-       if ( mat%planeactive(3) .ne. 0 ) then 
+       if ( mat%plane .eq. 3 ) then 
           ! j = js
           val = - mat%finc(6) ! - Hz_inc
-          call CalcEComp(mat, Ex, 0,-1,0, 6, zero, zero, val, 2)
+          call CalcEComp(mat, Ex, 0,-1,0, 6, zero, zero, val)
           val = + mat%finc(4) ! + Hx_inc
-          call CalcEComp(mat, Ez, 0,-1,0, 4, val, zero, zero, 2)
+          call CalcEComp(mat, Ez, 0,-1,0, 4, val, zero, zero)
        end if
 
-       if ( mat%planeactive(4) .ne. 0 ) then 
+       if ( mat%plane .eq. 4 ) then 
           ! j = je
           val = + mat%finc(6) ! + Hz_inc
-          call CalcEComp(mat, Ex, 0,0,0, 6, zero, zero, val, 2)
+          call CalcEComp(mat, Ex, 0,0,0, 6, zero, zero, val)
           val = - mat%finc(4) ! - Hx_inc
-          call CalcEComp(mat, Ez, 0,0,0, 4, val, zero, zero, 2)
+          call CalcEComp(mat, Ez, 0,0,0, 4, val, zero, zero)
        end if
        
-       if ( mat%planeactive(5) .ne. 0 ) then 
+       if ( mat%plane .eq. 5 ) then 
           ! k = ks
           val = + mat%finc(5) ! + Hy_inc
-          call CalcEComp(mat, Ex, 0,0,-1, 5, zero, val, zero, 3) 
+          call CalcEComp(mat, Ex, 0,0,-1, 5, zero, val, zero) 
           val = - mat%finc(4) ! - Hx_inc
-          call CalcEComp(mat, Ey, 0,0,-1, 4, val, zero, zero, 3) 
+          call CalcEComp(mat, Ey, 0,0,-1, 4, val, zero, zero) 
        end if
 
-       if ( mat%planeactive(6) .ne. 0 ) then 
+       if ( mat%plane .eq. 6 ) then 
           ! k = ke
           val = - mat%finc(5) ! - Hy_inc
-          call CalcEComp(mat, Ex, 0,0,0, 5, zero, val, zero, 3) 
+          call CalcEComp(mat, Ex, 0,0,0, 5, zero, val, zero) 
           val = - mat%finc(4) ! - Hx_inc
-          call CalcEComp(mat, Ey, 0,0,0, 4, val, zero, zero, 3) 
+          call CalcEComp(mat, Ey, 0,0,0, 4, val, zero, zero) 
        end if
 
     })
@@ -426,38 +414,37 @@ contains
 
     contains
 
-      subroutine CalcEComp(mat, F, o1,o2,o3, l, fx, fy, fz, c)
+      subroutine CalcEComp(mat, E, o1,o2,o3, l, fx, fy, fz)
 
         type(T_MATTFSOURCE) :: mat
-        integer :: is,ie,js,je,ks,ke
-        M4_FTYPE, dimension(M4_RANGE(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX)) :: F
-        integer :: l, o1,o2,o3, c
+        M4_FTYPE, dimension(M4_RANGE(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX)) :: E
+        integer :: l, o1,o2,o3
         real(kind=8) :: fx, fy, fz
         
         M4_REGLOOP_DECL(reg,p,i,j,k,w(2))
         real(kind=8) :: wavefct, d, dd
         integer :: n, di
 
-        M4_MODOBJ_GETREG(mat,reg)
-
         n = mat%signalp +  mat%maxdelay * mat%tres 
 
-        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-        
-          ! time delay of inj field component in (i,j,k) from origin
+        M4_MODOBJ_GETREG(mat,reg)
 
-          d = mat%delay(i+o1,j+o2,k+o3) + mat%cdelay(l)
-          di = int(d * real(mat%tres) + 0.5)
-          wavefct = mat%signal(mod(n-di, mat%maxdelay*mat%tres ))
-          
-          ! update field component F from either fx or fy or fz
-          
-          F(i,j,k) = F(i,j,k) +  DT * w(2) * mat%kinc(c) * wavefct * mat%epsinv * ( &
-               fx/M4_SX(i,j,k) + &
-               fy/M4_SY(i,j,k) + &
-               fz/M4_SZ(i,j,k)  )
-          
-        })
+        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+
+                 ! time delay of inj field component in (i,j,k) from origin
+
+                 d = mat%delay(i+o1,j+o2,k+o3) + mat%cdelay(l)
+                 di = int(d * real(mat%tres) + 0.5)
+                 wavefct = mat%signal(mod(n-di, mat%maxdelay*mat%tres ))
+                 
+                 ! update field component F from either fx or fy or fz
+                 
+                 E(i,j,k) = E(i,j,k) +  DT  * wavefct * w(2) * mat%epsinv * ( &
+                      fx/M4_SX(i,j,k) + &
+                      fy/M4_SY(i,j,k) + &
+                      fz/M4_SZ(i,j,k)  )
+
+         })
 
 
       end subroutine CalcEComp
@@ -506,52 +493,52 @@ contains
 
        ! enter e-field modulation loop
 
-       if ( mat%planeactive(1) .ne. 0 ) then 
+       if ( mat%plane .eq. 1 ) then 
           ! i = is
           val = + mat%finc(2) ! + Ey_inc
-          call CalcHComp(mat, Hz, -1,0,0, 2, zero, val, zero, 1) 
+          call CalcHComp(mat, Hz, 1,0,0, 2, zero, val, zero) 
           val = - mat%finc(3) ! - Ez_inc
-          call CalcHComp(mat, Hy, -1,0,0, 3, zero, zero, val, 1) 
+          call CalcHComp(mat, Hy, 1,0,0, 3, zero, zero, val) 
        end if
 
-       if ( mat%planeactive(2) .ne. 0 ) then 
+       if ( mat%plane .eq. 2 ) then 
           ! i = ie
           val = - mat%finc(2) ! - Ey_inc
-          call CalcHComp(mat, Hz, 0,0,0, 2, zero, val, zero, 1) 
+          call CalcHComp(mat, Hz, 0,0,0, 2, zero, val, zero) 
           val = + mat%finc(3) ! + Ez_inc
-          call CalcHComp(mat, Hy, 0,0,0, 3, zero, zero, val, 1) 
+          call CalcHComp(mat, Hy, 0,0,0, 3, zero, zero, val) 
        end if
 
-       if ( mat%planeactive(3) .ne. 0 ) then 
+       if ( mat%plane .eq. 3 ) then 
           ! j = js
           val = - mat%finc(1) ! - Ex_inc
-          call CalcHComp(mat, Hz, 0,-1,0, 1, val, zero, zero, 2)
+          call CalcHComp(mat, Hz, 0,1,0, 1, val, zero, zero)
           val = + mat%finc(3) ! + Ez_inc
-          call CalcHComp(mat, Hx, 0,-1,0, 3, zero, zero, val, 2)
+          call CalcHComp(mat, Hx, 0,1,0, 3, zero, zero, val)
        end if
 
-       if ( mat%planeactive(4) .ne. 0 ) then 
+       if ( mat%plane .eq. 4 ) then 
           ! j = je
           val = + mat%finc(1) ! + Ex_inc
-          call CalcHComp(mat, Hz, 0,0,0, 1, val, zero, zero, 2)
+          call CalcHComp(mat, Hz, 0,0,0, 1, val, zero, zero)
           val = - mat%finc(3) ! - Ez_inc
-          call CalcHComp(mat, Hx, 0,0,0, 3, zero, zero, val, 2)
+          call CalcHComp(mat, Hx, 0,0,0, 3, zero, zero, val)
        end if
 
-       if ( mat%planeactive(5) .ne. 0 ) then 
+       if ( mat%plane .eq. 5 ) then 
           ! k = ks
           val = + mat%finc(1) ! + Ex_inc
-          call CalcHComp(mat, Hx, 0,0,-1, 1, val, zero, zero, 3) 
+          call CalcHComp(mat, Hx, 0,0,1, 1, val, zero, zero) 
           val = - mat%finc(2) ! - Ey_inc
-          call CalcHComp(mat, Hy, 0,0,-1, 2, zero, val, zero, 3) 
+          call CalcHComp(mat, Hy, 0,0,1, 2, zero, val, zero) 
        end if
        
-       if ( mat%planeactive(6) .ne. 0 ) then 
+       if ( mat%plane .eq. 6 ) then 
           ! k = ke
           val = - mat%finc(1) ! + Ex_inc
-          call CalcHComp(mat, Hx, 0,0,0, 1, val, zero, zero, 3) 
+          call CalcHComp(mat, Hx, 0,0,0, 1, val, zero, zero) 
           val = + mat%finc(2) ! - Ey_inc
-          call CalcHComp(mat, Hy, 0,0,0, 2, zero, val, zero, 3) 
+          call CalcHComp(mat, Hy, 0,0,0, 2, zero, val, zero) 
        end if
 
     })
@@ -559,39 +546,37 @@ contains
 
     contains
 
-      subroutine CalcHComp(mat, F, o1,o2,o3, l, fx, fy, fz, c)
+      subroutine CalcHComp(mat, H, o1,o2,o3, l, fx, fy, fz)
 
         type(T_MATTFSOURCE) :: mat
-        integer :: is,ie,js,je,ks,ke
-        M4_FTYPE, dimension(M4_RANGE(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX)) :: F
-        integer :: l, o1,o2,o3, c
+        M4_FTYPE, dimension(M4_RANGE(IMIN:IMAX, JMIN:JMAX, KMIN:KMAX)) :: H
+        integer :: l, o1,o2,o3
         real(kind=8) :: fx, fy, fz
         
         M4_REGLOOP_DECL(reg,p,i,j,k,w(2))
         real(kind=8) :: wavefct, d, dd
         integer :: n, di
 
-        M4_MODOBJ_GETREG(mat,reg)
-
         n = mat%signalp + mat%maxdelay * mat%tres - 0.5 * mat%tres
          
+        M4_MODOBJ_GETREG(mat,reg)
+
         M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-          ! time delay of inj field component in (i,j,k) from origin
+                 ! time delay of inj field component in (i,j,k) from origin
 
-          d = mat%delay(i,j,k) + mat%cdelay(l)
-          di = int(d * real(mat%tres) + 0.5)
-          wavefct = mat%signal(mod(n-di , mat%maxdelay * mat%tres ))
+                 d = mat%delay(i,j,k) + mat%cdelay(l)
+                 di = int(d * real(mat%tres) + 0.5)
+                 wavefct = mat%signal(mod(n-di , mat%maxdelay * mat%tres ))
 
-          ! update field component F from either fx or fy or fz
+                 ! update field component F from either fx or fy or fz
 
-          F(i+o1,j+o2,k+o3) = F(i+o1,j+o2,k+o3) +  DT * w(1) * mat%kinc(c) * wavefct * mat%muinv * ( &
-               fx/M4_SX(i,j,k) + &
-               fy/M4_SY(i,j,k) + &
-               fz/M4_SZ(i,j,k)    ) 
+                 H(i-o1,j-o2,k-o3) = H(i-o1,j-o2,k-o3) +  DT * wavefct * w(1) * mat%muinv * ( &
+                      fx/M4_SX(i,j,k) + &
+                      fy/M4_SY(i,j,k) + &
+                      fz/M4_SZ(i,j,k)    ) 
 
-        })
-
+         })
 
       end subroutine CalcHComp
 
@@ -659,7 +644,7 @@ contains
 end module mattfsource
 
 !
-! Authors:  J.Hamm
+! Authors:  J.Hamm, E.Kirby
 ! Modified: 26/04/2008
 !
 !======================================================================
