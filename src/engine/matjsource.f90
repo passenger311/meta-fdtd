@@ -53,13 +53,16 @@ module matjsource
 
      real(kind=8) :: theta, phi, psi           ! angles of incident wavefront
 
-     real(kind=8) :: wavefcte                  ! wave functions
+     real(kind=8) :: wavefct                   ! wave functions
      real(kind=8) :: finc(3)                   ! field components of incident field 
 
      logical :: planewave                      ! plane wave mode?
+
      real(kind=8) :: kinc(3)                   ! normed k vector of plane wave
      real(kind=8) :: orig(3)                   ! orgin of the coordinate system
      real(kind=8) :: pvel                      ! phase velocity
+
+     real(kind=8) :: nrefr
 
      ! time delay field from point of origin
      real(kind=8), pointer, dimension(:) :: delay  
@@ -68,8 +71,9 @@ module matjsource
      real(kind=8) :: cdelay(3)
 
      ! time signal lookup table
-     real(kind=8), pointer, dimension(:) :: signale 
-     integer :: signalep
+     integer :: tres
+     real(kind=8), pointer, dimension(:) :: signal 
+     integer :: signalp
 
      ! position of h field 
      integer, pointer, dimension(:,:) :: orient
@@ -141,7 +145,7 @@ contains
 
     M4_MODLOOP_DECL({MATJSOURCE},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
-    real(kind=8) :: r, in(3), mdelay
+    real(kind=8) :: r, rk(3), mdelay
     integer :: err
 
     M4_WRITE_DBG(". enter InitializeMatJSource")
@@ -213,9 +217,12 @@ contains
        j = mat%orig(2)
        k = mat%orig(3)
 
-       in(1) = sqrt( epsinvx(i,j,k) * M4_MUINVX(i,j,k) )  ! assumed to be homogeneous over source loc.
-       in(2) = sqrt( epsinvy(i,j,k) * M4_MUINVY(i,j,k) )
-       in(3) = sqrt( epsinvz(i,j,k) * M4_MUINVZ(i,j,k) )
+       ! calculate phase velocity
+
+       mat%pvel = 1.0 / mat%nrefr
+       call NumericalPhaseVelocity(mat%kinc, mat%omega0, mat%nrefr, SX, SY, SZ, mat%pvel)
+       M4_WRITE_INFO({"phase velocity = ",mat%pvel})
+
 
        allocate(mat%delay(reg%numnodes), stat = err )
        M4_ALLOC_ERROR(err,{"InitializeMatJSource"})
@@ -224,31 +231,41 @@ contains
        
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
        
-       ! project (i,j,k) location vector on kinc to create a distance field
+             ! project (i,j,k) location vector on kinc to create a distance field
+
+             rk(1) = M4_DISTX(mat%orig(1),i)
+             rk(2) = M4_DISTY(mat%orig(2),j)
+             rk(3) = M4_DISTZ(mat%orig(3),k)
        
-       r = in(1)*M4_DISTX(mat%orig(1),i)*mat%kinc(1) + in(2)*M4_DISTY(mat%orig(2),j)*mat%kinc(2) +  in(3)*M4_DISTZ(mat%orig(3),k)*mat%kinc(3)
+             ! distance projected to kinc
 
-       mat%delay(p) = r / ( mat%pvel * DT )
+             r = rk(1)*mat%kinc(1) + rk(2)*mat%kinc(2) +  rk(3)*mat%kinc(3)
 
-       if ( mat%delay(p) .gt. mdelay ) mdelay = mat%delay(p)
+             ! time for signal at origin to arrive at (i,j,k)
+
+             mat%delay(p) = r / ( mat%pvel * DT )
+
+             ! maximum delay
+
+             if ( mat%delay(p) .gt. mdelay ) mdelay = mat%delay(p)
 
        })
 
-       ! additional component delay times due to location of field components on staggered grid
 
-       mat%cdelay(1) = in(1)*.5*SX*mat%kinc(1) / ( mat%pvel * DT )
-       mat%cdelay(2) = in(2)*.5*SY*mat%kinc(2) / ( mat%pvel * DT )
-       mat%cdelay(3) = in(3)*.5*SZ*mat%kinc(3) / ( mat%pvel * DT )
+       mat%cdelay(1) = .5*SX*mat%kinc(1) /  ( mat%pvel * DT )
+       mat%cdelay(2) = .5*SY*mat%kinc(2) /  ( mat%pvel * DT )
+       mat%cdelay(3) = .5*SZ*mat%kinc(3) /  ( mat%pvel * DT )
 
-       mdelay =  mdelay  + sqrt( SX*SX + SY*SY + SZ*SZ )
+       mat%maxdelay = int(mdelay + 1) + sqrt( SX*SX + SY*SY + SZ*SZ )/( mat%pvel * DT )
 
-       mat%maxdelay = int(mdelay + 0.5) + 1
+       mat%tres = 100. ! increased time resolution of delay buffer by this factor 
 
-       allocate(mat%signale(0:mat%maxdelay-1), stat = err )
-       M4_ALLOC_ERROR(err,{"InitializeMatTfsf"})
+       allocate(mat%signal(0:mat%maxdelay * mat%tres -1) , stat = err )
+       M4_ALLOC_ERROR(err,{"InitializeMatTfSource"})
 
-       mat%signale = 0.
-       mat%signalep = 0 
+       mat%signal = 0.
+
+       mat%signalp = 0 ! initialise signal index pointers
 
     end if
 
@@ -274,7 +291,7 @@ contains
   
       if ( mat%planewave ) then
        
-         deallocate(mat%signale, mat%delay)
+         deallocate(mat%signal, mat%delay)
 
       end if
 
@@ -294,8 +311,8 @@ contains
 
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
     real(kind=8) :: ncyc1
-    real(kind=8) :: wavefct(3), d(3), dd(3)
-    integer :: di(3), l, n
+    real(kind=8) :: wavefct(3), d
+    integer :: di, l, n
 
     M4_MODLOOP_EXPR({MATJSOURCE},mat,{
 
@@ -310,29 +327,26 @@ contains
         M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
 M4_IFELSE_TM({
-           Ex(i,j,k) = Ex(i,j,k) + DT * w(1) * epsinvx(i,j,k) * mat%wavefcte
-           Ey(i,j,k) = Ey(i,j,k) + DT * w(2) * epsinvy(i,j,k) * mat%wavefcte
+           Ex(i,j,k) = Ex(i,j,k) + DT * w(1) * epsinvx(i,j,k) * mat%wavefct
+           Ey(i,j,k) = Ey(i,j,k) + DT * w(2) * epsinvy(i,j,k) * mat%wavefct
 })
 M4_IFELSE_TE({
-           Ez(i,j,k) = Ez(i,j,k) + DT * w(3) * epsinvz(i,j,k) * mat%wavefcte
+           Ez(i,j,k) = Ez(i,j,k) + DT * w(3) * epsinvz(i,j,k) * mat%wavefct
 })
 
         })
 
       else ! plane wave!
 
-         n = mat%signalep+mat%maxdelay
+         n = mat%signalp+mat%maxdelay
 
          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
          do l = 1,3 
             
-            d(l) = mat%delay(p) + mat%cdelay(l) ! time delay from origin
-            di(l) = int(d(l))
-            dd(l) = d(l) - di(l)
-            ! use linear interpolation to read time signal
-            wavefct(l) = (1. - dd(l)) * mat%signale(mod(n-di(l),mat%maxdelay)) + &
-                 dd(l) * mat%signale(mod(n-di(l)-1,mat%maxdelay))
+            d = mat%delay(p) + mat%cdelay(l)
+            di = int(d * real(mat%tres) + 0.5)
+            wavefct(l) = mat%signal(mod(n-di, mat%maxdelay*mat%tres ))
 
             w(l) = w(l) * mat%finc(l)
 
@@ -373,15 +387,15 @@ M4_IFELSE_TE({
 
        ncyc1 = 1.0*ncyc
        
-       mat%wavefcte = GaussianWave(ncyc1, mat%noffs, mat%natt, mat%nsus, mat%ndcy, &
+       mat%wavefct = GaussianWave(ncyc1, mat%noffs, mat%natt, mat%nsus, mat%ndcy, &
             mat%gamma, mat%omega0)
 
       ! store time signal for delayed h-field modulation
 
       if ( mat%planewave ) then
 
-         mat%signalep = mod(mat%signalep+1,mat%maxdelay)
-         mat%signale(mat%signalep) =  mat%wavefcte ! store signal function
+         mat%signalp = mod(mat%signalp+1,mat%maxdelay)
+         mat%signal(mat%signalp) =  mat%wavefct ! store signal function
 
       endif
 
@@ -398,8 +412,8 @@ M4_IFELSE_TE({
     real(kind=8) :: sum
     integer :: ncyc
     real(kind=8) :: Jx, Jy, Jz
-    real(kind=8) :: wavefct(3), d(3), dd(3)
-    integer :: di(3), l, n
+    real(kind=8) :: wavefct(3), d
+    integer :: di, l, n
    
     M4_MODLOOP_DECL({MATJSOURCE},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(6))
@@ -422,9 +436,9 @@ M4_IFELSE_TE({
           
           if ( mask(i,j,k) ) then
 
-             Jx = - w(1) * mat%wavefcte
-             Jy = - w(2) * mat%wavefcte
-             Jz = - w(3) * mat%wavefcte
+             Jx = - w(1) * mat%wavefct
+             Jy = - w(2) * mat%wavefct
+             Jz = - w(3) * mat%wavefct
           
              sum = sum + ( &
 M4_IFELSE_TM({ M4_VOLEX(i,j,k) * real(Ex(i,j,k)) * Jx + },{0. +}) &
@@ -438,21 +452,18 @@ M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * real(Ez(i,j,k)) * Jz   },{0.  }) &
 
        else ! plane wave!
 
-          n = mat%signalep+mat%maxdelay
+          n = mat%signalp+mat%maxdelay
 
           M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
           if ( mask(i,j,k) ) then
 
              do l = 1,3 
-            
-                d(l) = mat%delay(p) + mat%cdelay(l) ! time delay from origin
-                di(l) = int(d(l))
-                dd(l) = d(l) - di(l)
-                ! use linear interpolation to read time signal
-                wavefct(l) = (1. - dd(l)) * mat%signale(mod(n-di(l),mat%maxdelay)) + &
-                     dd(l) * mat%signale(mod(n-di(l)-1,mat%maxdelay))
                 
+                d = mat%delay(p) + mat%cdelay(l)
+                di = int(d * real(mat%tres) + 0.5)
+                wavefct(l) = mat%signal(mod(n-di, mat%maxdelay*mat%tres ))
+
                 w(l) = w(l) * mat%finc(l)
                 
              end do

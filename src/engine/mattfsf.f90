@@ -244,8 +244,8 @@ contains
     ! inverse material indices and refractive index.
 
     mat%epsinv = 1./ mat%eps
-    mat%muinv = 1./ mat%mu
-    mat%nrefr = 1./sqrt( mat%epsinv * mat%muinv )
+    mat%muinv  = 1./ mat%mu
+    mat%nrefr  = 1./sqrt( mat%epsinv * mat%muinv )
 
     ! scale planewave components to couple into dielectric material
 
@@ -305,7 +305,7 @@ contains
     mat%cdelay(5) = mat%cdelay(1) + mat%cdelay(3) 
     mat%cdelay(6) = mat%cdelay(1) + mat%cdelay(2) 
 
-    mat%maxdelay = int(mdelay + 1) + 1
+    mat%maxdelay = int(mdelay + 1) + sqrt( SX*SX + SY*SY + SZ*SZ )/( mat%pvel * DT )
 
     mat%tres = 100. ! increased time resolution of delay buffer by this factor 
 
