@@ -123,6 +123,9 @@ contains
     mat%theta = angles(2)
     mat%psi = angles(3)
 
+    call readfloat(funit, lcount, mat%nrefr) 
+
+    
 
     })
 
@@ -236,17 +239,6 @@ contains
     j = mat%orig(2) 
     k = mat%orig(3)  
 
-    ! get inverse material indices and refractive index at origin.
-
-    if ( epsinvx(i,j,k) .ne. epsinvy(i,j,k) .or. epsinvx(i,j,k) .ne. epsinvz(i,j,k)  .or. &
-         M4_MUINVX(i,j,k) .ne. M4_MUINVY(i,j,k) .or. M4_MUINVX(i,j,k) .ne. M4_MUINVZ(i,j,k)  ) then
-       M4_FATAL_ERROR("Box origin is not set within isotropic material!")
-    end if
-
-
-    mat%epsinv = epsinvx(i,j,k)
-    mat%muinv = M4_MUINVX(i,j,k)
-    mat%nrefr = 1./sqrt( mat%epsinv * mat%muinv )
 
     ! plane
 
@@ -439,10 +431,10 @@ contains
                  
                  ! update field component F from either fx or fy or fz
                  
-                 E(i,j,k) = E(i,j,k) +  DT  * wavefct * w(2) * mat%epsinv * ( &
-                      fx/M4_SX(i,j,k) + &
-                      fy/M4_SY(i,j,k) + &
-                      fz/M4_SZ(i,j,k)  )
+                 E(i,j,k) = E(i,j,k) +  DT  * wavefct * w(2) * ( &
+                      epsinvx(i,j,k) * fx/M4_SX(i,j,k) + &
+                      epsinvy(i,j,k) * fy/M4_SY(i,j,k) + &
+                      epsinvz(i,j,k) * fz/M4_SZ(i,j,k)  )
 
          })
 
@@ -571,10 +563,10 @@ contains
 
                  ! update field component F from either fx or fy or fz
 
-                 H(i-o1,j-o2,k-o3) = H(i-o1,j-o2,k-o3) +  DT * wavefct * w(1) * mat%muinv * ( &
-                      fx/M4_SX(i,j,k) + &
-                      fy/M4_SY(i,j,k) + &
-                      fz/M4_SZ(i,j,k)    ) 
+                 H(i-o1,j-o2,k-o3) = H(i-o1,j-o2,k-o3) +  DT * wavefct * w(1) * ( &
+                      M4_MUINVX(i-o1,j-o2,k-o3) * fx/M4_SX(i,j,k) + &
+                      M4_MUINVY(i-o1,j-o2,k-o3) * fy/M4_SY(i,j,k) + &
+                      M4_MUINVZ(i-o1,j-o2,k-o3) * fz/M4_SZ(i,j,k)    ) 
 
          })
 

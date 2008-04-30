@@ -57,7 +57,7 @@ module mattfsf
 
      real(kind=8) :: nrefr                     ! refractive index
 
-     real(kind=8) :: epsinv,muinv              ! inverse material constant
+     real(kind=8) :: eps,mu,epsinv,muinv       ! material constants
 
      real(kind=8) :: wavefct                   ! wave function
 
@@ -124,6 +124,10 @@ contains
     mat%psi = angles(3)
 
     call readintvec(funit, lcount, mat%planeactive, 6)
+
+    call readfloats(funit,lcount,v,2)
+    mat%eps = v(1)
+    mat%mu  = v(2)
 
     })
 
@@ -237,16 +241,10 @@ contains
     j = mat%orig(2) 
     k = mat%orig(3)  
 
-    ! get inverse material indices and refractive index at origin.
+    ! inverse material indices and refractive index.
 
-    if ( epsinvx(i,j,k) .ne. epsinvy(i,j,k) .or. epsinvx(i,j,k) .ne. epsinvz(i,j,k)  .or. &
-         M4_MUINVX(i,j,k) .ne. M4_MUINVY(i,j,k) .or. M4_MUINVX(i,j,k) .ne. M4_MUINVZ(i,j,k)  ) then
-       M4_FATAL_ERROR("Box origin is not set within isotropic material!")
-    end if
-
-
-    mat%epsinv = epsinvx(i,j,k)
-    mat%muinv = M4_MUINVX(i,j,k)
+    mat%epsinv = 1./ mat%eps
+    mat%muinv = 1./ mat%mu
     mat%nrefr = 1./sqrt( mat%epsinv * mat%muinv )
 
     ! scale planewave components to couple into dielectric material
