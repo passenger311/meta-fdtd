@@ -21,9 +21,9 @@ M4= m4 $(M4DEFINE)
 M4= m4 $(M4DEFINE)
 
 
-MATLIST=$(shell ./mlist.pl -s mat.def 2>/dev/null)
-DIAGLIST=$(shell ./mlist.pl -s diag.def 2>/dev/null)
-OUTGPLLIST=$(shell ./mlist.pl -s outgpl.def 2>/dev/null)
+MATLIST=$(shell ./scripts/mlist.pl -s mat.def 2>/dev/null)
+DIAGLIST=$(shell ./scripts/mlist.pl -s diag.def 2>/dev/null)
+OUTGPLLIST=$(shell ./scripts/mlist.pl -s outgpl.def 2>/dev/null)
 MATOBJ= $(patsubst %,%.o,$(MATLIST))
 DIAGOBJ= $(patsubst %,%.o,$(DIAGLIST))
 OUTGPLOBJ= $(patsubst %,%_outgpl.o,$(OUTGPLLIST))
