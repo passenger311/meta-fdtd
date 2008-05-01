@@ -417,12 +417,8 @@ M4_IFELSE_1D({},{
       M4_FTYPE, dimension(1:3,is:ie,js:je,ks:ke) :: B
       integer i, j, k
       M4_FTYPE :: Bxo, Byo, Bzo, Exh, Eyh, Ezh
-      real(kind=8) dtx, dty, dtz
       
-      dtx = DT/SX
-      dty = DT/SY
-      dtz = DT/SZ   
-
+  
 !      M4_WRITE_DBG({"STEP PML H: ", is, ie, js, je, ks, ke})
         
 M4_IFELSE_3D({!$OMP PARALLEL DO PRIVATE(Exh,Eyh,Ezh,Bxo,Byo,Bzo)})
@@ -451,19 +447,19 @@ M4_IFELSE_TM({
                
 M4_IFELSE_TE({
                B(1,i,j,k) = cmypml(4,j)*B(1,i,j,k) + cmypml(2,j) * ( &
-M4_IFELSE_1D({0.&},{ - dty*( Ez(i,j+1,k) - Ezh )           &     })
-M4_IFELSE_3D({       + dtz*( Ey(i,j,k+1) - Eyh )           &     })
+M4_IFELSE_1D({0.&},{ - DT/M4_HSY(i,j,k)*( Ez(i,j+1,k) - Ezh )           &     })
+M4_IFELSE_3D({       + DT/M4_HSZ(i,j,k)*( Ey(i,j,k+1) - Eyh )           &     })
                      )
                B(2,i,j,k) = cmzpml(4,k)*B(2,i,j,k) + cmzpml(2,k) * ( &
-M4_IFELSE_3D({       - dtz*( Ex(i,j,k+1) - Exh )           &     })
-                     + dtx*( Ez(i+1,j,k) - Ezh )           &
+M4_IFELSE_3D({       - DT/M4_HSZ(i,j,k)*( Ex(i,j,k+1) - Exh )           &     })
+                     + DT/M4_HSX(i,j,k)*( Ez(i+1,j,k) - Ezh )           &
                      )
 })
 
 M4_IFELSE_TM({
                B(3,i,j,k) = cmxpml(4,i)*B(3,i,j,k) + cmxpml(2,i) * ( &
-                     - dtx*( Ey(i+1,j,k) - Eyh )           &
-M4_IFELSE_1D({},{    + dty*( Ex(i,j+1,k) - Exh )           &     })
+                     - DT/M4_HSX(i,j,k)*( Ey(i+1,j,k) - Eyh )           &
+M4_IFELSE_1D({},{    + DT/M4_HSY(i,j,k)*( Ex(i,j+1,k) - Exh )           &     })
                      )        
              
 })  
@@ -526,12 +522,8 @@ M4_IFELSE_3D({!$OMP END PARALLEL DO})
       M4_FTYPE, dimension(1:3,is:ie,js:je,ks:ke) :: D
       
       integer :: i, j, k
-      real(kind=8) :: dtx, dty, dtz
       M4_FTYPE :: Dxo, Dyo, Dzo, Hxh, Hyh, Hzh    
   
-      dtx = DT/SX
-      dty = DT/SY
-      dtz = DT/SZ
 
 !      M4_WRITE_DBG({"STEP PML E: ", is, ie, js, je, ks, ke})
   
@@ -563,19 +555,19 @@ M4_IFELSE_TE({
 M4_IFELSE_TM({
 
                D(1,i,j,k) =  ceypml(4,j)*D(1,i,j,k) + ceypml(2,j) * ( &
-M4_IFELSE_1D({0.&},{ + dty * ( Hzh - Hz(i,j-1,k) )           &    })
-M4_IFELSE_3D({       - dtz * ( Hyh - Hy(i,j,k-1) )           &    })
+M4_IFELSE_1D({0.&},{ + DT/M4_SY(i,j,k) * ( Hzh - Hz(i,j-1,k) )           &    })
+M4_IFELSE_3D({       - DT/M4_SZ(i,j,k) * ( Hyh - Hy(i,j,k-1) )           &    })
                      )
                D(2,i,j,k) =  cezpml(4,k)*D(2,i,j,k) + cezpml(2,k) * ( &
-M4_IFELSE_3D({       + dtz * ( Hxh - Hx(i,j,k-1) )           &    })
-                     - dtx * ( Hzh - Hz(i-1,j,k) )           &
+M4_IFELSE_3D({       + DT/M4_SZ(i,j,k) * ( Hxh - Hx(i,j,k-1) )           &    })
+                     - DT/M4_SX(i,j,k) * ( Hzh - Hz(i-1,j,k) )           &
                     )
 })
 
 M4_IFELSE_TE({
                D(3,i,j,k) =  cexpml(4,i)*D(3,i,j,k) + cexpml(2,i) * ( &
-                    + dtx * ( Hyh - Hy(i-1,j,k) )           &
-M4_IFELSE_1D({},{   - dty * ( Hxh - Hx(i,j-1,k) )           &    })
+                    + DT/M4_SX(i,j,k) * ( Hyh - Hy(i-1,j,k) )           &
+M4_IFELSE_1D({},{   - DT/M4_SY(i,j,k) * ( Hxh - Hx(i,j-1,k) )           &    })
                     )
 })
                ! Calc E
@@ -611,6 +603,6 @@ end module pml
 
 !
 ! Authors:  A.Klaedtke, S.Scholz, J.Hamm
-! Modified: 4/12/2007
+! Modified: 1/5/2008
 !
 !======================================================================
