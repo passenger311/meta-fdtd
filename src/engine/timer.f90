@@ -20,7 +20,7 @@ module timer
 
   character(len=20), private, parameter :: modname = 'TIMER'
 
-  public :: CheckTimer, ResetTimer, DisplayTotalTimer
+  public :: CheckTimer, ResetTimer, DisplayTotalTimer, DisplayMcpsTimer
   public :: StartTimer, StopTimer
 
 
@@ -140,6 +140,19 @@ contains
     M4_WRITE_FMT_INFO({A,F10.6,A},{str,timervalue(i,1)," secs"}) 
 
   end subroutine DisplayTotalTimer
+
+
+!----------------------------------------------------------------------
+
+  subroutine DisplayMcpsTimer(str,i,cells)
+
+    character(len=*) :: str
+    integer :: i,cells
+
+    M4_WRITE_FMT_INFO({A,F10.6,A},{str,cells/(timervalue(i,1)*1.e6)," mcps"}) 
+
+  end subroutine DisplayMcpsTimer
+
 
 !----------------------------------------------------------------------
 

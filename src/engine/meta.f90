@@ -30,7 +30,7 @@ program meta
   implicit none
 
   character(len=STRLNG), parameter :: modname = "META"
-  integer :: ncyc, l , prog0, prog1
+  integer :: ncyc, l , prog0, prog1, cells
   character(len=12) :: str
   character(len=1) :: busychar ='|'
 
@@ -308,6 +308,12 @@ M4_IFELSE_MPI(call FinalizeMPIComms)
      call DisplayTotalTimer("Output : ",9)
      call DisplayTotalTimer("Comms  : ",10)
      call DisplayTotalTimer("Total  : ",1)
+     write(6,*) "*"
+     cells = NCYCMAX * (IEIG-IBIG+1) * ( JEIG-JBIG+1) * (KEIG-KBIG+1)
+     call DisplayMcpsTimer( "Fdtd   : ",2, cells)
+     cells = NCYCMAX * (IBIG-IBEG+1) * ( JBIG-JBEG+1) * (KBIG-KBEG+1)
+     call DisplayMcpsTimer( "Bound  : ",4, cells)
+
      write(6,*) "*"
      write(6,*) "* ----------------------------------------------------------------------- "
      M4_WRITE_INFO("FINALIZE")
