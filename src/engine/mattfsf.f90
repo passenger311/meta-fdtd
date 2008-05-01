@@ -90,7 +90,6 @@ contains
     M4_MODREAD_DECL({MATTFSF}, funit,lcount,mat,reg,out)
     real(kind=8) :: v(4)
     logical :: eof, err
-    real(kind=8) :: angles(3)
     character(len=LINELNG) :: line
 
     M4_WRITE_DBG(". enter ReadMatTfsfObj")
@@ -111,23 +110,19 @@ contains
     
     ! read angles: phi, theta, psi
 
-    angles = 0.
-
     call readline(funit,lcount,eof,line)
 
     err = .false.
-    call getfloats(line,angles,3,err)
-    M4_PARSE_ERROR({err},lcount,{bad format for plane wave angles})
+    call getfloats(line,v,4,err)
+   
+    M4_PARSE_ERROR({err},lcount,{EXPECTED phi,theta,psi,nrefr!})
 
-    mat%phi = angles(1)
-    mat%theta = angles(2)
-    mat%psi = angles(3)
+    mat%phi = v(1)
+    mat%theta = v(2)
+    mat%psi = v(3)
+    mat%nrefr = v(4)
 
     call readintvec(funit, lcount, mat%planeactive, 6)
-
-    call readfloats(funit,lcount,v,2)
-    mat%eps = v(1)
-    mat%mu  = v(2)
 
     })
 
@@ -243,16 +238,16 @@ contains
 
     ! inverse material indices and refractive index.
 
-    mat%epsinv = 1./ mat%eps
-    mat%muinv  = 1./ mat%mu
-    mat%nrefr  = 1./sqrt( mat%epsinv * mat%muinv )
+    !mat%epsinv = 1./ mat%eps
+    !mat%muinv  = 1./ mat%mu
+    !mat%nrefr  = 1./sqrt( mat%epsinv * mat%muinv )
 
     ! scale planewave components to couple into dielectric material
 
     do l = 1,3
 
-       mat%finc(l)   =  mat%amp * mat%finc(l)   * 1./sqrt(mat%muinv)
-       mat%finc(l+3) =  mat%amp * mat%finc(l+3) * 1./sqrt(mat%epsinv)
+       mat%finc(l)   =  mat%amp * mat%finc(l)                 !* 1./sqrt(mat%muinv)
+       mat%finc(l+3) =  mat%amp * mat%finc(l+3) * 1/mat%nrefr !* 1./sqrt(mat%epsinv)
 
     end do
 
@@ -445,10 +440,10 @@ contains
                  
                  ! update field component F from either fx or fy or fz
                  
-                 F(i,j,k) = F(i,j,k) +  DT  * wavefct * mat%epsinv * ( &
-                      fx/M4_SX(i,j,k) + &
-                      fy/M4_SY(i,j,k) + &
-                      fz/M4_SZ(i,j,k)  )
+                 F(i,j,k) = F(i,j,k) +  DT  * wavefct * ( &
+                      epsinvx(i,j,k)*fx/M4_SX(i,j,k) + &
+                      epsinvy(i,j,k)*fy/M4_SY(i,j,k) + &
+                      epsinvz(i,j,k)*fz/M4_SZ(i,j,k)  )
 
               end do
            end do
@@ -579,10 +574,10 @@ contains
 
                  ! update field component F from either fx or fy or fz
 
-                 F(i,j,k) = F(i,j,k) +  DT * wavefct * mat%muinv * ( &
-                      fx/M4_SX(i,j,k) + &
-                      fy/M4_SY(i,j,k) + &
-                      fz/M4_SZ(i,j,k)    ) 
+                 F(i,j,k) = F(i,j,k) +  DT * wavefct *  ( &
+                      M4_MUINVX(i,j,k) * fx/M4_HSX(i,j,k) + &
+                      M4_MUINVY(i,j,k) * fy/M4_HSY(i,j,k) + &
+                      M4_MUINVZ(i,j,k) * fz/M4_HSZ(i,j,k)    ) 
 
               end do
            end do

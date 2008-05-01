@@ -394,18 +394,9 @@ M4_IFELSE_WMU({
 
   subroutine StepH
 
-    real(kind=8) :: dtx, dty, dtz
     M4_FTYPE :: Exh,Eyh,Ezh
     integer :: i, j, k
-    
-    dtx = DT/Sx
-    dty = DT/Sy
-    dtz = DT/Sz
 
-    ! H in GT+1/2DT
-    ! M4_IFELSE_1D({1D},{NOT 1D})
-    ! M4_IFELSE_2D({2D},{NOT 2D})
-    ! M4_IFELSE_3D({3D},{NOT 3D})
 
 M4_IFELSE_3D({!$OMP PARALLEL DO PRIVATE(Exh,Eyh,Ezh)})
     do k=KBIG, KEIG
@@ -426,19 +417,19 @@ M4_IFELSE_TE({
 
 M4_IFELSE_TE({
              Hx(i,j,k) =  Hx(i,j,k) + M4_MUINVX(i,j,k) * ( &
-M4_IFELSE_3D({       + dtz*( Ey(i,j,k+1) - Eyh ) &   },{})
-M4_IFELSE_1D({0.&},{ - dty*( Ez(i,j+1,k) - Ezh ) &      })
+M4_IFELSE_3D({       + DT/M4_HSZ(i,j,k)*( Ey(i,j,k+1) - Eyh ) &   },{})
+M4_IFELSE_1D({0.&},{ - DT/M4_HSY(i,j,k)*( Ez(i,j+1,k) - Ezh ) &      })
                      )
              Hy(i,j,k) = Hy(i,j,k) + M4_MUINVY(i,j,k) * ( &
-                    + dtx*( Ez(i+1,j,k) - Ezh ) &
-M4_IFELSE_3D({      - dtz*( Ex(i,j,k+1) - Exh ) &      })
+                    + DT/M4_HSX(i,j,k)*( Ez(i+1,j,k) - Ezh ) &
+M4_IFELSE_3D({      - DT/M4_HSZ(i,j,k)*( Ex(i,j,k+1) - Exh ) &      })
                   )
 })
 
 M4_IFELSE_TM({
              Hz(i,j,k) = Hz(i,j,k) +  M4_MUINVZ(i,j,k) * ( &
-                    - dtx*( Ey(i+1,j,k) - Eyh ) &
-M4_IFELSE_1D({},{   + dty*( Ex(i,j+1,k) - Exh ) &      })
+                    - DT/M4_HSX(i,j,k)*( Ey(i+1,j,k) - Eyh ) &
+M4_IFELSE_1D({},{   + DT/M4_HSY(i,j,k)*( Ex(i,j+1,k) - Exh ) &      })
 				    )
 })
 
@@ -460,15 +451,9 @@ M4_IFELSE_3D({ !$OMP END PARALLEL DO })
 
     implicit none
     
-    real(kind=8) :: dtx, dty, dtz
     M4_FTYPE :: Hxh, Hyh, Hzh
     integer :: i, j, k
-    
-    dtx = DT/Sx
-    dty = DT/Sy
-    dtz = DT/Sz
-    
-    ! E in GT + DT
+
 
 M4_IFELSE_3D({!$OMP PARALLEL DO PRIVATE(Hxh,Hyh,Hzh)})
    do k=KBIG, KEIG
@@ -490,20 +475,20 @@ M4_IFELSE_TM({
 M4_IFELSE_TM({
 
              Ex(i,j,k) =  Ex(i,j,k) + epsinvx(i,j,k) *( &
-M4_IFELSE_1D({0.&},{ + dty*( Hzh - Hz(i,j-1,k) ) &             })
-M4_IFELSE_3D({       - dtz*( Hyh - Hy(i,j,k-1) ) &          },{})
+M4_IFELSE_1D({0.&},{ + DT/M4_SY(i,j,k)*( Hzh - Hz(i,j-1,k) ) &             })
+M4_IFELSE_3D({       - DT/M4_SZ(i,j,k)*( Hyh - Hy(i,j,k-1) ) &          },{})
                      )
              Ey(i,j,k) =  Ey(i,j,k) + epsinvy(i,j,k) * ( &
-                     - dtx*( Hzh - Hz(i-1,j,k) ) &
-M4_IFELSE_3D({       + dtz*( Hxh - Hx(i,j,k-1) ) &             })
+                     - DT/M4_SX(i,j,k)*( Hzh - Hz(i-1,j,k) ) &
+M4_IFELSE_3D({       + DT/M4_SZ(i,j,k)*( Hxh - Hx(i,j,k-1) ) &             })
                     )
 })
 
 M4_IFELSE_TE({
 
              Ez(i,j,k) =  Ez(i,j,k) + epsinvz(i,j,k) * ( &
-                     + dtx*( Hyh - Hy(i-1,j,k) )  &
-M4_IFELSE_1D({},{    - dty*( Hxh - Hx(i,j-1,k) )  &            })
+                     + DT/M4_SX(i,j,k)*( Hyh - Hy(i-1,j,k) )  &
+M4_IFELSE_1D({},{    - DT/M4_SY(i,j,k)*( Hxh - Hx(i,j-1,k) )  &            })
                      )
 })
 
@@ -523,6 +508,6 @@ M4_IFELSE_3D({!$OMP END PARALLEL DO })
 end module fdtd
 
 ! Authors:  S.Scholz, A.Klaedtke, J.Hamm 
-! Modified: 4/12/2007
+! Modified: 1/5/2008
 !
 !======================================================================

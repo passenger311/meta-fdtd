@@ -90,7 +90,6 @@ contains
     M4_MODREAD_DECL({MATTFSOURCE}, funit,lcount,mat,reg,out)
     real(kind=8) :: v(4)
     logical :: eof, err
-    real(kind=8) :: angles(3)
     character(len=LINELNG) :: line
 
     M4_WRITE_DBG(". enter ReadMatTfSourceObj")
@@ -109,23 +108,17 @@ contains
     mat%nsus =  v(3)
     mat%ndcy =  v(4)
     
-    ! read angles: phi, theta, psi
-
-    angles = 0.
-
     call readline(funit,lcount,eof,line)
 
     err = .false.
-    call getfloats(line,angles,3,err)
-    M4_PARSE_ERROR({err},lcount,{bad format for plane wave angles})
+    call getfloats(line,v,4,err)
+    M4_PARSE_ERROR({err},lcount,{EXPECTED phi,theta,psi,nrefr!})
 
-    mat%phi = angles(1)
-    mat%theta = angles(2)
-    mat%psi = angles(3)
+    mat%phi = v(1)
+    mat%theta = v(2)
+    mat%psi = v(3)
+    mat%nrefr = v(4)
 
-    call readfloat(funit, lcount, mat%nrefr) 
-
-    
 
     })
 
@@ -187,6 +180,7 @@ contains
     mat%finc(6) = -cos(DEG*mat%psi)*sin(DEG*mat%theta)
 
     ! decide on origin according to quadrant into which we emmit
+
     mat%theta = abs(mat%theta)
 
     if ( mat%theta .gt. 180 ) then

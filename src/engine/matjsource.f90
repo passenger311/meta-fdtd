@@ -94,7 +94,6 @@ contains
     M4_MODREAD_DECL({MATJSOURCE}, funit,lcount,mat,reg,out)
     real(kind=8) :: v(4)
     logical :: eof, err
-    real(kind=8) :: angles(3)
     character(len=LINELNG) :: line
 
     M4_WRITE_DBG(". enter ReadMatJSourceObj")
@@ -118,21 +117,24 @@ contains
     ! optional: configure plane wave source? 
 
     err = .false.
-    angles = 0.
     mat%phi = 0.
     mat%theta = 0.
     mat%psi = 0.
 
-    call readline(funit,lcount,eof,line)
-    call getlogical(line,mat%planewave,err)
-    call getfloats(line,angles,3,err)
-    M4_PARSE_ERROR({err},lcount,{PLANE WAVE ANGLES})
-    if ( mat%planewave ) then
-       mat%phi = angles(1)
-       mat%theta = angles(2)
-       mat%psi = angles(3)
-    end if
+    call readlogical(funit,lcount,mat%planewave)
 
+    call readline(funit,lcount,eof,line)
+
+    err = .false.
+    call getfloats(line,v,4,err)
+
+    M4_PARSE_ERROR({err},lcount,{EXPECTED phi,theta,psi,nrefr!})
+
+    mat%phi = v(1)
+    mat%theta = v(2)
+    mat%psi = v(3)
+    mat%nrefr = v(4)
+     
     })
 
     M4_WRITE_DBG(". exit ReadMatJSourceObj")
@@ -175,9 +177,15 @@ contains
        mat%finc(3) = sin(DEG*mat%psi)*sin(DEG*mat%theta)
 
        ! decide on origin according to quadrant into which we emmit
-       mat%theta = mod(mat%theta, 180.)
-       mat%phi = mod(mat%phi, 360.)
-       mat%psi = mod(mat%psi, 360.)
+
+       mat%theta = abs(mat%theta)
+       
+       if ( mat%theta .gt. 180 ) then
+          M4_FATAL_ERROR("0 <= Theta <= 180!")
+       endif
+       
+       mat%phi = mod(mat%phi+360., 360.)
+       mat%psi = mod(mat%psi+360., 360.)
 
        if ( mat%theta .ge. 0. .and. mat%theta .lt. 90. ) then
           mat%orig(3) = reg%ks
@@ -204,18 +212,6 @@ contains
           mat%orig(1) = reg%is
           mat%orig(2) = reg%je
        end if
-
-       ! determine numerical phase velocity
-       
-       mat%pvel = 1.
-
-!       call NumericalPhaseVelocity(mat%kinc, mat%omega0, SX, SY, SZ, mat%pvel)
-
-       ! optical delay of point-to-origin field
-
-       i = mat%orig(1)
-       j = mat%orig(2)
-       k = mat%orig(3)
 
        ! calculate phase velocity
 
@@ -338,7 +334,7 @@ M4_IFELSE_TE({
 
       else ! plane wave!
 
-         n = mat%signalp+mat%maxdelay
+         n = mat%signalp+mat%maxdelay*mat%tres
 
          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
@@ -346,9 +342,11 @@ M4_IFELSE_TE({
             
             d = mat%delay(p) + mat%cdelay(l)
             di = int(d * real(mat%tres) + 0.5)
-            wavefct(l) = mat%signal(mod(n-di, mat%maxdelay*mat%tres ))
+            wavefct(l) = mat%signal(mod(n-di, mat%maxdelay*mat%tres ))            
 
-            w(l) = w(l) * mat%finc(l)
+!            write(6,*) mat%delay(p),mat%cdelay(l),mat%maxdelay 
+
+!            w(l) = w(l) * mat%finc(l)
 
          end do
 
@@ -375,7 +373,8 @@ M4_IFELSE_TE({
 
     M4_MODLOOP_DECL({MATJSOURCE},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
-    real(kind=8) :: ncyc1
+    real(kind=8) :: ncyc1, ddt
+    integer :: sp, l
 
     M4_MODLOOP_EXPR({MATJSOURCE},mat,{
 
@@ -385,17 +384,36 @@ M4_IFELSE_TE({
 
        ! pre-calculate time signal for e-field modulation
 
-       ncyc1 = 1.0*ncyc
-       
-       mat%wavefct = GaussianWave(ncyc1, mat%noffs, mat%natt, mat%nsus, mat%ndcy, &
-            mat%gamma, mat%omega0)
+      
 
       ! store time signal for delayed h-field modulation
 
-      if ( mat%planewave ) then
+      if ( .not. mat%planewave ) then
 
-         mat%signalp = mod(mat%signalp+1,mat%maxdelay)
-         mat%signal(mat%signalp) =  mat%wavefct ! store signal function
+         ncyc1 = 1.0*ncyc
+         
+         mat%wavefct = GaussianWave(ncyc1, mat%noffs, mat%natt, mat%nsus, mat%ndcy, &
+              mat%gamma, mat%omega0)
+         
+      else
+
+         ddt = 1.0/real(mat%tres)
+
+         do l = 1, mat%tres
+
+            ncyc1 = 1.0*ncyc  + l * ddt 
+          
+            mat%wavefct = GaussianWave(ncyc1, mat%noffs, mat%natt, mat%nsus, mat%ndcy, & 
+                 mat%gamma, mat%omega0)
+
+            ! store time signal for delayed e-field modulation
+
+            sp = mod(mat%signalp+l ,mat%maxdelay * mat%tres)
+            mat%signal(sp) = mat%wavefct                ! store signal function
+
+         end do
+
+         mat%signalp = sp
 
       endif
 
@@ -452,7 +470,7 @@ M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * real(Ez(i,j,k)) * Jz   },{0.  }) &
 
        else ! plane wave!
 
-          n = mat%signalp+mat%maxdelay
+          n = mat%signalp+mat%maxdelay*mat%tres
 
           M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
@@ -464,7 +482,7 @@ M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * real(Ez(i,j,k)) * Jz   },{0.  }) &
                 di = int(d * real(mat%tres) + 0.5)
                 wavefct(l) = mat%signal(mod(n-di, mat%maxdelay*mat%tres ))
 
-                w(l) = w(l) * mat%finc(l)
+               ! w(l) = w(l) * mat%finc(l)
                 
              end do
 

@@ -552,7 +552,7 @@ contains
     if ( eof ) err = .true.
     call getlogical(line, val, err)
     if ( line .ne. "" ) err = .true.
-    M4_SYNTAX_ERROR(err,lcount,{"1 INTEGER"})
+    M4_SYNTAX_ERROR(err,lcount,{"1 LOGICAL"})
 
   end subroutine readlogical
 
