@@ -8,7 +8,7 @@
 
 M4_ARCH=SX6
 
-include ../Make.sx6
+include ../Make.sx
 
 # --- compiler set
 
