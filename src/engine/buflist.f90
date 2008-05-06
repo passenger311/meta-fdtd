@@ -53,7 +53,7 @@ module buflist
      real(kind=8), pointer, dimension(:,:) :: rdata    ! real field buffer
      complex(kind=8), pointer, dimension(:,:) :: cdata ! complex field buffer
      M4_FTYPE, pointer, dimension(:,:) :: data          
-     logical :: iscf = .false.						   ! complex data?			
+     logical :: iscf = .false.			       ! complex data?			
      integer :: size = 0                               ! size of buffer
      integer :: regidx = 0                             ! region index
      integer :: idx = 0                                ! this objects index

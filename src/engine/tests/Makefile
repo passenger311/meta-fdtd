@@ -16,7 +16,7 @@ include ../../define.mk
 
 # ---------------------------------------------------------------------
 
-.PHONY: clean proper all tests default
+.PHONY: clean proper all tests info default
 
 .PHONY: clean proper default
 
@@ -24,12 +24,13 @@ default: all
 
 all: tests clean
 
+info:
+	@echo "."
+	@echo ". RUNNING ENGINE TESTS"
+	@echo "."
+
 tests: 
-	@echo "."
-	@echo ". RUNNING TESTS"
-	@echo "."
 	@./run-all ../$(ENGINE)
-	@echo "."
 
 .PHONY: clean proper
 

@@ -13,9 +13,12 @@ include ./define.mk
 .PHONY: default clean proper distclean fftpack5 engine config post run  build tests
 
 build: 
-	@echo ". CREATE BUILD [$(BUILDDIR)]"
 	-@$(MAKE) -s proper
-	-@$(MAKE) -s config post run
+	@echo 
+	@echo "+ CREATE BUILD [$(BUILDDIR)]"
+	-@$(MAKE) -s config
+	-@$(MAKE) -s post
+	-@$(MAKE) -s run
 	-@$(MAKE) -s engine DIM=1 
 	-@$(MAKE) -s engine DIM=2 
 	-@$(MAKE) -s engine DIM=3
@@ -23,7 +26,10 @@ build:
 	-@$(MAKE) -s engine DIM=2 CF=1
 	-@$(MAKE) -s engine DIM=3 CF=1
 	-@$(MAKE) -s engine-tests
-	@echo ". BUILD COMPLETED [$(BUILDDIR)]"
+	@cd $(BUILDDIR)/engine-tests; $(MAKE) -s info all; cd .. 
+	@echo "."
+	@echo "+ BUILD COMPLETED [$(BUILDDIR)]"
+	@echo
 
 default: all
 
@@ -35,13 +41,16 @@ ifneq ($(FFT),)
 endif 
 
 engine-tests:
+	@echo "."
+	@echo ". ENGINE TESTS"
+	@echo "."
 	@cd engine && $(MAKE) -s install-tests
 
 engine:
-	@cd $@ && $(MAKE) -s all install
+	@cd $@ && $(MAKE) -s info all install
 
 config post run:
-	@cd $@ && $(MAKE) -s all install
+	@cd $@ && $(MAKE) -s info all install
 
 clean proper: 
 	@cd engine; $(MAKE) -s $@; cd ..

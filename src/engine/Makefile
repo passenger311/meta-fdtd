@@ -93,10 +93,12 @@ EXE = meta
 
 default: all
 
-all: info check $(ENGINE)/$(EXE) sign
+all: check $(ENGINE)/$(EXE) sign
 
 info:
+	@echo "."
 	@echo ". ENGINE [$(BUILDDIR)/$(ENGINE)]"
+	@echo "."
 
 check: 
 	@if [ "`cat BUILD 2>/dev/null`" != "$(BUILDDIR)" ]; then \

@@ -23,10 +23,12 @@ material.pm
 
 default: all
 
-all: info install  
+all: install  
 
 info: 
-	@echo ". CONFIG PREPROCESSOR"
+	@echo "."
+	@echo ". CONFIG"
+	@echo "."
 
 install: build-dir
 	@echo [INSTALL] $(BUILDFILES)

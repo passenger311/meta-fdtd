@@ -28,7 +28,9 @@ mpiwrap.sh
 default: all
 
 info: 
+	@echo "."
 	@echo ". RUN SCRIPTS"
+	@echo "."
 
 all: info install
 

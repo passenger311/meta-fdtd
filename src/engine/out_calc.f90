@@ -105,19 +105,23 @@ contains
       val = buf%data(p,:)
       if ( pa .eq. 1 ) then
          M4_IFELSE_CF({
-         do i = 1, buf%numslot
-            val(i) = abs(buf%data(p,i))
-         end do
+           do i = 1, buf%numslot
+              val(i) = abs(buf%cdata(p,i))
+           end do
+         },{
+           do i = 1, buf%numslot
+              val(i) = abs(buf%data(p,i))
+           end do
          })
       else
          if ( pa .eq. 2 ) then
             M4_IFELSE_CF({
              do i = 1, buf%numslot
-                val(i) = atan2(aimag(buf%data(p,i)),real(buf%data(p,i)))
+                val(i) = atan2(aimag(buf%cdata(p,i)),real(buf%cdata(p,i)))
              end do
-             },{
-             val = 0.0
-             })
+            },{
+               val = 0.0
+            })
          endif
       endif
       
