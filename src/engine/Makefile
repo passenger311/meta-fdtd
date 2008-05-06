@@ -163,7 +163,7 @@ clean:
 	@rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod *_m4.f90 *_m4.F90 *_m4.tmp BUILD VERSION FLAVOUR MANIFEST
 
 proper: clean
-	@cd testsuite; make proper
+	@cd testsuite; $(MAKE) -s proper
 	@rm -f $(PREEXE) *.o *~ *.gpl *.vtk *.set
 	@rm -rf meta1* meta2* meta3* 
 

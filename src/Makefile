@@ -10,7 +10,7 @@ ARCH=gnu
 endif
 include ./define.mk
 
-.PHONY: default clean proper distclean fftpack5 engine config post run all all-tests build tests
+.PHONY: default clean proper distclean fftpack5 engine config post run  build tests
 
 build: 
 	@echo ". CREATE BUILD [$(BUILDDIR)]"
@@ -25,7 +25,7 @@ build:
 	-@$(MAKE) -s tests
 	@echo ". BUILD COMPLETED [$(BUILDDIR)]"
 
-all-tests: all tests
+default: all
 
 all: fftpack5 config post run engine 
 
@@ -37,7 +37,7 @@ endif
 engine:
 	@cd $@ && $(MAKE) -s all install
 
-config post run tests:
+config post run:
 	@cd $@ && $(MAKE) -s all install
 
 clean proper: 
@@ -45,7 +45,6 @@ clean proper:
 	@cd config; $(MAKE) -s $@; cd ..
 	@cd post; $(MAKE) -s $@; cd ..
 	@cd run; $(MAKE) -s $@; cd ..
-	@cd tests; $(MAKE) -s $@; cd ..
 ifneq ($(FFT),)
 	@cd fftpack5; $(MAKE) -s $@; cd ..
 endif 
