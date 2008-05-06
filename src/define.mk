@@ -67,6 +67,7 @@ endif
 ifneq ($(TM),)
 ifeq ($(DIM),2)
 ENG_TE=-tm
+M4DEFINE+=-DM4_TMLBL=1
 M4DEFINE+=-DM4_TM=1
 endif
 endif
@@ -75,6 +76,7 @@ ifneq ($(TE),)
 ifeq  ($(DIM),2)
 ifeq ($(TM),)
 ENG_TE=-te
+M4DEFINE+=-DM4_TELBL=1
 M4DEFINE+=-DM4_TE=1
 endif
 endif
@@ -104,11 +106,6 @@ build-dir:
 	echo "[CREATE] $(BUILDDIR)"; \
 	mkdir ../$(BUILDDIR); \
 	fi
-	@if [ ! -d ../$(ENGINEDIR) ]; then \
-	mkdir ../$(ENGINEDIR); \
-	echo "[CREATE] $(ENGINEDIR)"; \
-	fi
-
 
 
 
