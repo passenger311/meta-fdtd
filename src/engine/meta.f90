@@ -38,8 +38,6 @@ program meta
 ! =========================== INITIALIZATION ==========================
 
 
-  call CheckTimer
-
   ! --- startup MPI
 
   call InitializeMPIWorld
@@ -54,6 +52,8 @@ program meta
   	 M4_WRITE_INFO("START")
 
   end if
+
+  call CheckTimer
 
   do l=0, numproc-1
 

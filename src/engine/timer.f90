@@ -77,7 +77,7 @@ contains
     clockgranularity = checktick()
 
     if ( clockgranularity  .ne. 1 ) then
-       M4_FATAL_ERROR({"Clock granularity is bigger than 1 microsecond!"})
+       M4_WRITE_INFO({"Clock granularity is ",clockgranularity," microseconds!"})
     end if
 
   end subroutine CheckTimer
