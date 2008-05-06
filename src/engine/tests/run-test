@@ -1,8 +1,13 @@
 #!/bin/bash
 echo -n ". $1 "
+
 LEN=${#1}
 let DOTS=20-$LEN
-for i in `seq 1 $DOTS`; do SPAC=".$SPAC"; done
+while [ $DOTS -gt 0 ]; do
+SPAC=".$SPAC"
+let DOTS=DOTS-1
+done
+
 echo -n "$SPAC "
 
 if [ -f $1/run ]; then
