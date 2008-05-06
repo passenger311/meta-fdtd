@@ -22,7 +22,7 @@ build:
 	-@$(MAKE) -s engine DIM=1 CF=1
 	-@$(MAKE) -s engine DIM=2 CF=1
 	-@$(MAKE) -s engine DIM=3 CF=1
-	-@$(MAKE) -s tests
+	-@$(MAKE) -s engine-tests
 	@echo ". BUILD COMPLETED [$(BUILDDIR)]"
 
 default: all
@@ -33,6 +33,9 @@ fftpack5:
 ifneq ($(FFT),)
 	@cd $@ && $(MAKE) -s all
 endif 
+
+engine-tests:
+	@cd engine && $(MAKE) -s install-tests
 
 engine:
 	@cd $@ && $(MAKE) -s all install
