@@ -91,10 +91,6 @@ M4OBJ=$(patsubst %.o,%_m4.f90,$(OBJ))
 
 EXE = meta
 
-ENGINEFILES=\
-$(EXE)\
-MANIFEST
-
 default: all
 
 all: info check $(ENGINE)/$(EXE) sign
@@ -112,8 +108,13 @@ check:
 	@echo "`date +%y%m%d`" >VERSION
 
 install: build-dir
-	@echo [INSTALL] $(ENGINEFILES)
-	@cp $(ENGINEFILES) ../$(ENGINEDIR)
+	@echo [INSTALL] $(ENGINE)
+	@cp -a $(ENGINE) ../$(BUILDDIR)
+
+
+install-tests: build-dir
+	@echo [INSTALL] testsuite
+	@cp -a testsuite ../$(BUILDDIR)/
 
 
 $(ENGINE):
@@ -121,7 +122,7 @@ $(ENGINE):
 
 sign: $(ENGINE)
 	@echo [SIGN]  $(ENGINE)/MANIFEST
-	@$(M4) manifest.m4 manifest.inf >$(ENGINE)/MANIFEST
+	@$(M4) manifest.m4 manifest.inf | sed '/^ *$$/d' >$(ENGINE)/MANIFEST
 
 $(BOBJ): %.o : %.f90
 	@echo [F90] $@
@@ -159,7 +160,7 @@ $(ENGINE)/$(EXE) : $(TOBJ) $(FOBJ) $(BOBJ) second_wall.o $(ENGINE)
 	@$(strip @$(CC) $(CCFLAGS) -c $<)
 
 clean:
-	@rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod *_m4.f90 *_m4.F90 *_m4.tmp BUILD FLAVOUR
+	@rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod *_m4.f90 *_m4.F90 *_m4.tmp BUILD FLAVOUR MANIFEST
 
 proper: clean
 	@rm -f $(EXE) $(PREEXE) *.o *~ *.gpl *.vtk *.set
