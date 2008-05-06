@@ -5,6 +5,7 @@
         my $str = shift;
         $str =~ s/^\s+//;
         $str =~ s/\s+$//;
+	$str =~ s/D/E/;
         $! = 0;
         my($num, $unparsed) = strtod($str);
         if (($str eq '') || ($unparsed != 0) || $!) {
@@ -33,8 +34,11 @@ while(<RH>) {
     if ( ! /^\s*$/ && ! /^\#/ ) {
 	$c =~ /(\S+)$/;
 	$val = $1;
+	$val =~ s/D/E/;
 	$r =~ /(\S+)$/;
 	$rval = $1;
+	$rval =~ s/D/E/;
+
 	if (! is_numeric $val ) { $failed = 1; last; } 
 	if ( $rval != 0. ) {
 	    $diff = abs(($val - $rval)/$rval)* 100.;
