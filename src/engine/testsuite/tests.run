@@ -1,0 +1,16 @@
+./run-test startup-1d
+./run-test startup-2d                                        
+./run-test startup-3d
+./run-test startup-1d-cf
+./run-test startup-2d-cf
+./run-test startup-3d-cf
+./run-test pec-1d
+./run-test pec-2d
+./run-test pec-3d
+./run-test sbc-1d
+./run-test sbc-2d
+./run-test sbc-3d
+./run-test pml-1d
+./run-test pml-2d
+./run-test pml-3d
+

@@ -1,0 +1,30 @@
+#!/bin/bash
+echo -n ". $1 "
+LEN=${#1}
+let DOTS=20-$LEN
+for i in `seq 1 $DOTS`; do SPAC=".$SPAC"; done
+echo -n "$SPAC "
+
+if [ -f $1/run ]; then
+    cd $1
+    echo "#!/bin/bash" >run_sh
+    m4 ../tests.m4 ./run >>run_sh
+    chmod a+x ./run_sh 
+    ./run_sh
+    ERR=$?
+    if [ $ERR == 2 ]; then
+	echo "[SKIP]"
+	echo "$1 $SPAC [SKIP]" >>../TESTED
+	exit 0
+    fi	
+    if [ $ERR == 0 ]; then
+	echo "[OK]"
+	echo "$1 $SPAC [OK]" >>../TESTED
+    else
+	echo "[FAILED]"
+	echo "$1 $SPAC [FAILED]" >>../TESTED
+    fi	
+else
+    echo "[SKIP]"
+    echo "$1 $SPAC [SKIP]" >>../TESTED
+fi
