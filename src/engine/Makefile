@@ -114,7 +114,8 @@ install: build-dir
 
 install-tests: build-dir
 	@echo [INSTALL] testsuite
-	@cp -a testsuite ../$(BUILDDIR)/
+	@rm -rf ../$(BUILDDIR)/engine-tests
+	@cp -a tests ../$(BUILDDIR)/engine-tests
 
 
 $(ENGINE):
