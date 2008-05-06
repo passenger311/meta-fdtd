@@ -53,14 +53,14 @@ program meta
 
   end if
 
-  call CheckTimer
-
   do l=0, numproc-1
 
 M4_IFELSE_MPI(call SynchronizeMPIWorld)
   
      if (myrank .eq. l) then
 
+        write(6,*) "*"
+        call CheckTimer
         write(6,*) "*"
         write(6,*) "* initialising modules: myrank = ", ranklbl
 
