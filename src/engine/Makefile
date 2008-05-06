@@ -160,11 +160,12 @@ $(ENGINE)/$(EXE) : $(TOBJ) $(FOBJ) $(BOBJ) second_wall.o $(ENGINE)
 	@$(strip @$(CC) $(CCFLAGS) -c $<)
 
 clean:
-	@rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod *_m4.f90 *_m4.F90 *_m4.tmp BUILD FLAVOUR MANIFEST
+	@rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod *_m4.f90 *_m4.F90 *_m4.tmp BUILD VERSION FLAVOUR MANIFEST
 
 proper: clean
-	@rm -f $(EXE) $(PREEXE) *.o *~ *.gpl *.vtk *.set
-
+	@cd testsuite; make proper
+	@rm -f $(PREEXE) *.o *~ *.gpl *.vtk *.set
+	@rm -rf meta1* meta2* meta3* 
 
 # ---------------------------------------------------------------------
 
