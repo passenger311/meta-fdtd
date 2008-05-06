@@ -137,7 +137,7 @@ contains
     character(len=*) :: str
     integer :: i
 
-    M4_WRITE_FMT_INFO({A,F10.6,A},{str,timervalue(i,1)," secs"}) 
+    M4_WRITE_FMT_INFO({A,F15.6,A},{str,timervalue(i,1)," secs"}) 
 
   end subroutine DisplayTotalTimer
 
@@ -149,7 +149,7 @@ contains
     character(len=*) :: str
     integer :: i,cells
 
-    M4_WRITE_FMT_INFO({A,F10.6,A},{str,cells/(timervalue(i,1)*1.e6)," mcps"}) 
+    M4_WRITE_FMT_INFO({A,F15.6,A},{str,cells/(timervalue(i,1)*1.e6)," mcps"}) 
 
   end subroutine DisplayMcpsTimer
 

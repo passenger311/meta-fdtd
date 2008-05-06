@@ -97,7 +97,7 @@ MANIFEST
 
 default: all
 
-all: info check $(EXE) sign
+all: info check $(ENGINE)/$(EXE) sign
 
 info:
 	@echo ". ENGINE [$(BUILDDIR)/$(ENGINE)]"
@@ -115,9 +115,13 @@ install: build-dir
 	@echo [INSTALL] $(ENGINEFILES)
 	@cp $(ENGINEFILES) ../$(ENGINEDIR)
 
-sign:  
-	@echo [SIGN] MANIFEST
-	@$(M4) manifest.m4 manifest.inf >MANIFEST
+
+$(ENGINE):
+	@mkdir $(ENGINE)
+
+sign: $(ENGINE)
+	@echo [SIGN]  $(ENGINE)/MANIFEST
+	@$(M4) manifest.m4 manifest.inf >$(ENGINE)/MANIFEST
 
 $(BOBJ): %.o : %.f90
 	@echo [F90] $@
@@ -146,9 +150,9 @@ $(TOBJ): %.o : %.f90 $(BOBJ) $(FOBJ) BUILD FLAVOUR
 	fi
 	@$(strip $(F90) $(F90FLAGS_NOOPT) -c $*_m4.f90 -o $@)
 
-$(EXE) : $(TOBJ) $(FOBJ) $(BOBJ) second_wall.o
+$(ENGINE)/$(EXE) : $(TOBJ) $(FOBJ) $(BOBJ) second_wall.o $(ENGINE)
 	@echo [LD] $@
-	@$(strip @$(F90) $(LDFLAGS) $^ -o $(EXE))
+	@$(strip $(F90) $(LDFLAGS) $(TOBJ) $(FOBJ) $(BOBJ) second_wall.o -o $(ENGINE)/$(EXE))
 
 %.o : %.c
 	@echo [CC] $@
