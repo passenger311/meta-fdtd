@@ -4,9 +4,9 @@
   1             	! partitions
   250	          	! ncyc
   0.576           	! dt
-  0 49	         	! i range
-  0 49        		! j range
-  0 49 			! k range
+  0 255	         	! i range
+  0 255        		! j range
+  0 255			! k range
 )GRID
 
 

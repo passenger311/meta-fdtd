@@ -72,6 +72,11 @@ contains
 
          call readline(UNITTMP,lcount,eof,line)
 
+         if ( eof ) then
+            M4_WRITE_DBG({"Encountered EOF!"})
+            exit
+         end if
+
          call getstring(line,string,err)
 
          M4_PARSE_ERROR(err,lcount)
@@ -108,8 +113,6 @@ contains
 
          end select
 
-         if ( eof ) exit
-        
       end do
 
       close(UNITTMP)

@@ -76,9 +76,7 @@ contains
 
     clockgranularity = checktick()
 
-    if ( clockgranularity  .ne. 1 ) then
-       M4_WRITE_INFO({"Clock granularity is ",clockgranularity," microseconds!"})
-    end if
+    M4_WRITE_INFO({"clock granularity is ",clockgranularity," microseconds!"})
 
   end subroutine CheckTimer
 
@@ -149,7 +147,7 @@ contains
     character(len=*) :: str
     integer :: i,cells
 
-    M4_WRITE_FMT_INFO({A,F15.6,A},{str,cells/(timervalue(i,1)*1.e6)," mcps"}) 
+    M4_WRITE_FMT_INFO({A,F15.6,A},{str,cells/1000000./timervalue(i,1)," mcps"}) 
 
   end subroutine DisplayMcpsTimer
 

@@ -160,7 +160,7 @@ $(ENGINE)/$(EXE) : $(TOBJ) $(FOBJ) $(BOBJ) second_wall.o $(ENGINE)
 
 %.o : %.c
 	@echo [CC] $@
-	@$(strip @$(CXX) $(CCFLAGS) -c $<)
+	@$(strip @$(CC) $(CCFLAGS) -c $<)
 
 clean:
 	@rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod *_m4.f90 *_m4.F90 *_m4.tmp BUILD VERSION FLAVOUR MANIFEST

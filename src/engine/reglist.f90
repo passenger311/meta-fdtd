@@ -452,10 +452,20 @@ contains
     M4_WRITE_DBG(". enter CreateRegObjEnd")
 
     if ( numnodes .eq. 0 ) then
+
        reg%isbox = .true.
        deallocate(tmpmask)
        deallocate(tmpval)
+
+       M4_WRITE_DBG({" created regobj num = ", numregobj})
+       M4_IFELSE_DBG({call EchoRegObj(reg)})
+       
+       regobj(numregobj) = reg
+       
+       M4_WRITE_DBG(". exit CreateRegObjEnd")
+
        return
+
     endif
 
     if ( auto ) then ! try to figure out the best loop mode

@@ -141,7 +141,6 @@ contains
     
     M4_MODOBJ_GETREG(mat,reg)
  
-
     if ( .not. reg%isbox ) then
        M4_FATAL_ERROR("Region must be a single box!")
     endif
@@ -154,7 +153,7 @@ contains
 
 
     if ( mat%plane .eq. 0 ) then
-       M4_FATAL_ERROR("Box region must define a plane!")
+       M4_FATAL_ERROR("Box region must define a proper plane!")
     end if
 
     ! center frequency
