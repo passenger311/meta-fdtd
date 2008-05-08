@@ -121,6 +121,10 @@ contains
     do i = 1,M4_SDIM*2
        planebound(i) = Max(planebound(i),0)
     end do
+
+    do i = M4_SDIM*2+1, 6
+       planebound(i) = 0
+    end do
     
     call InitializePec(planebound,0)
     call InitializePml(planebound,1)

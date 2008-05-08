@@ -145,9 +145,12 @@ contains
   subroutine DisplayMcpsTimer(str,i,cells)
 
     character(len=*) :: str
-    integer :: i,cells
+    integer :: i
+    real(kind=8) :: cells
 
-    M4_WRITE_FMT_INFO({A,F15.6,A},{str,cells/1000000./timervalue(i,1)," mcps"}) 
+! million cells per second
+    
+    M4_WRITE_FMT_INFO({A,F15.6,A},{str,1.e-6*cells/timervalue(i,1)," mcps"}) 
 
   end subroutine DisplayMcpsTimer
 

@@ -286,6 +286,10 @@ contains
 
              if ( mat%delay(i,j,k) .gt. mdelay ) mdelay = mat%delay(i,j,k)
 
+             if ( mat%delay(i,j,k) .lt. 0 ) then
+                M4_FATAL_ERROR({"got delay = ",  mat%delay(i,j,k), " at ",i,j,k})
+             end if
+
           end do
        end do
     end do
@@ -405,7 +409,7 @@ contains
           ! k = ke
           val = - mat%finc(5) ! - Hy_inc
           call CalcEComp(mat, reg%is, reg%ie-1, reg%js, reg%je, reg%ke, reg%ke, Ex, 0,0,0, 5, zero, val, zero) 
-          val = - mat%finc(4) ! - Hx_inc
+          val = + mat%finc(4) ! + Hx_inc
           call CalcEComp(mat, reg%is, reg%ie, reg%js, reg%je-1, reg%ke, reg%ke, Ey, 0,0,0, 4, val, zero, zero) 
        end if
 
@@ -529,18 +533,18 @@ contains
 
        if ( mat%planeactive(5) .ne. 0 ) then 
           ! k = ks
-          val = + mat%finc(1) ! + Ex_inc
-          call CalcHComp(mat, reg%is, reg%ie-1, reg%js, reg%je, reg%ks-1, reg%ks-1, Hx, 0,0,1, 1, val, zero, zero) 
           val = - mat%finc(2) ! - Ey_inc
-          call CalcHComp(mat, reg%is, reg%ie, reg%js, reg%je-1, reg%ks-1, reg%ks-1, Hy, 0,0,1, 2, zero, val, zero) 
+          call CalcHComp(mat, reg%is, reg%ie, reg%js, reg%je-1, reg%ks-1, reg%ks-1, Hx, 0,0,1, 2, val, zero, zero) 
+          val = + mat%finc(1) ! + Ex_inc
+          call CalcHComp(mat, reg%is, reg%ie-1, reg%js, reg%je, reg%ks-1, reg%ks-1, Hy, 0,0,1, 1, zero, val, zero) 
        end if
        
        if ( mat%planeactive(6) .ne. 0 ) then 
           ! k = ke
-          val = - mat%finc(1) ! + Ex_inc
-          call CalcHComp(mat, reg%is, reg%ie-1, reg%js, reg%je, reg%ke, reg%ke, Hx, 0,0,0, 1, val, zero, zero) 
           val = + mat%finc(2) ! - Ey_inc
-          call CalcHComp(mat, reg%is, reg%ie, reg%js, reg%je-1, reg%ke, reg%ke, Hy, 0,0,0, 2, zero, val, zero) 
+          call CalcHComp(mat, reg%is, reg%ie, reg%js, reg%je-1, reg%ke, reg%ke, Hx, 0,0,0, 2, val, zero, zero) 
+          val = - mat%finc(1) ! + Ex_inc
+          call CalcHComp(mat, reg%is, reg%ie-1, reg%js, reg%je, reg%ke, reg%ke, Hy, 0,0,0, 1, zero, val, zero) 
        end if
 
     })

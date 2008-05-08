@@ -390,7 +390,7 @@ contains
           ! k = ke
           val = - mat%finc(5) ! - Hy_inc
           call CalcEComp(mat, Ex, 0,0,0, 5, zero, val, zero) 
-          val = - mat%finc(4) ! - Hx_inc
+          val = + mat%finc(4) ! - Hx_inc
           call CalcEComp(mat, Ey, 0,0,0, 4, val, zero, zero) 
        end if
 
@@ -512,18 +512,18 @@ contains
 
        if ( mat%plane .eq. 5 ) then 
           ! k = ks
-          val = + mat%finc(1) ! + Ex_inc
-          call CalcHComp(mat, Hx, 0,0,1, 1, val, zero, zero) 
           val = - mat%finc(2) ! - Ey_inc
-          call CalcHComp(mat, Hy, 0,0,1, 2, zero, val, zero) 
+          call CalcHComp(mat, Hx, 0,0,1, 2, val, zero, zero) 
+          val = + mat%finc(1) ! + Ex_inc
+          call CalcHComp(mat, Hy, 0,0,1, 1, zero, val, zero) 
        end if
        
        if ( mat%plane .eq. 6 ) then 
           ! k = ke
-          val = - mat%finc(1) ! + Ex_inc
-          call CalcHComp(mat, Hx, 0,0,0, 1, val, zero, zero) 
           val = + mat%finc(2) ! - Ey_inc
-          call CalcHComp(mat, Hy, 0,0,0, 2, zero, val, zero) 
+          call CalcHComp(mat, Hx, 0,0,0, 2, val, zero, zero) 
+          val = - mat%finc(1) ! + Ex_inc
+          call CalcHComp(mat, Hy, 0,0,0, 1, zero, val, zero) 
        end if
 
     })
