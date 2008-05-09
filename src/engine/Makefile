@@ -15,7 +15,7 @@ include ../define.mk
 
 # ---------------------------------------------------------------------
 
-.PHONY: clean proper default install all info sign check
+.PHONY: clean proper default install all info sign check fftpack5 
 
 M4= m4 $(M4DEFINE)
 M4= m4 $(M4DEFINE)
@@ -34,8 +34,9 @@ OUTHD5= outhd5.o
 FDTD_OUTHD5= fdtd_outhd5.o
 endif
 
+
 # basic objects
-BOBJ=\
+BASIC_OBJ=\
 constant.o\
 strings.o\
 parse.o\
@@ -49,7 +50,7 @@ list.o\
 grid.o
 
 # core objects
-FOBJ=\
+CORE_OBJ=\
 numerics.o\
 signal.o\
 fdtd.o\
@@ -77,7 +78,7 @@ $(OUTHD5)\
 mpicomms.o
 
 # top objects
-TOBJ=\
+TOP_OBJ=\
 out.o\
 bound.o\
 config.o\
@@ -86,14 +87,16 @@ timer.o\
 meta.o
 
 
-OBJ=$(BOBJ) $(FOBJ)
+OBJ=$(BASIC_OBJ) $(CORE_OBJ)
 M4OBJ=$(patsubst %.o,%_m4.f90,$(OBJ))
+FFTPACK_OBJ2 = $(patsubst fftpack5/%,%,$(FFTPACK_OBJ))
+
 
 EXE = meta
 
 default: all
 
-all: check $(ENGINE)/$(EXE) sign
+all: check fftpack5/libfftpack.a $(ENGINE)/$(EXE) sign
 
 info:
 	@echo "."
@@ -127,7 +130,10 @@ sign: $(ENGINE)
 	@echo [SIGN]  $(ENGINE)/MANIFEST
 	@$(M4) manifest.m4 manifest.inf | sed '/^ *$$/d' >$(ENGINE)/MANIFEST
 
-$(BOBJ): %.o : %.f90
+fftpack5/libfftpack.a:
+	@ cd fftpack5; $(MAKE) -s all
+
+$(BASIC_OBJ): %.o : %.f90
 	@echo [F90] $@
 	@if [ -f $*.m4 ]; then \
 	$(M4) $*.m4 $< >$*_m4.f90; \
@@ -136,7 +142,7 @@ $(BOBJ): %.o : %.f90
 	fi
 	@$(strip $(F90) $(F90FLAGS_NOOPT) -c $*_m4.f90 -o $@)
 
-$(FOBJ) : %.o : %.f90 $(BOBJ) BUILD FLAVOUR
+$(CORE_OBJ) : %.o : %.f90 $(BASIC_OBJ) BUILD FLAVOUR
 	@echo [F90] $@
 	@if [ -f $*.m4 ]; then \
 	$(M4) $*.m4 $< >$*_m4.f90; \
@@ -145,7 +151,7 @@ $(FOBJ) : %.o : %.f90 $(BOBJ) BUILD FLAVOUR
 	fi
 	@$(strip $(F90) $(F90FLAGS_OPT) -c $*_m4.f90 -o $@)
 
-$(TOBJ): %.o : %.f90 $(BOBJ) $(FOBJ) BUILD FLAVOUR
+$(TOP_OBJ): %.o : %.f90 $(BASIC_OBJ) $(CORE_OBJ) BUILD FLAVOUR
 	@echo [F90] $@
 	@if [ -f $*.m4 ]; then \
 	$(M4) $*.m4 $< >$*_m4.f90; \
@@ -154,9 +160,9 @@ $(TOBJ): %.o : %.f90 $(BOBJ) $(FOBJ) BUILD FLAVOUR
 	fi
 	@$(strip $(F90) $(F90FLAGS_NOOPT) -c $*_m4.f90 -o $@)
 
-$(ENGINE)/$(EXE) : $(TOBJ) $(FOBJ) $(BOBJ) second_wall.o $(ENGINE)
+$(ENGINE)/$(EXE) : $(TOP_OBJ) $(CORE_OBJ) $(BASIC_OBJ) second_wall.o $(ENGINE)
 	@echo [LD] $@
-	@$(strip $(F90) $(LDFLAGS) $(TOBJ) $(FOBJ) $(BOBJ) second_wall.o -o $(ENGINE)/$(EXE))
+	@$(strip $(F90) $(LDFLAGS) $(TOP_OBJ) $(CORE_OBJ) $(BASIC_OBJ) fftpack5/libfftpack.a second_wall.o -o $(ENGINE)/$(EXE))
 
 %.o : %.c
 	@echo [CC] $@
@@ -168,6 +174,7 @@ clean:
 proper: clean
 	@cd tests; $(MAKE) -s proper
 	@rm -f $(PREEXE) *.o *~ *.gpl *.vtk *.set
+	@rm -f fftpack5/*.o fftpack5/*.a
 	@rm -rf meta1* meta2* meta3* 
 
 # ---------------------------------------------------------------------
