@@ -66,14 +66,21 @@ contains
   subroutine ReadDiagEBalObj(funit,lcount)
 
     M4_MODREAD_DECL({DIAGEBAL}, funit,lcount,diag,reg,out)
+    integer :: v(3)
 
     M4_WRITE_DBG(". enter ReadMatEBalObj")
     
     M4_MODREAD_EXPR({DIAGEBAL}, funit,lcount,diag,reg,0,out, {
 
-    ! read diag parameters here, as defined in diag data structure
-    read(funit,*) diag%ns, diag%ne, diag%dn
- 
+    call readints(funit,lcount,v,3) 
+    diag%ns = v(1)
+    diag%ne = v(2)
+    diag%dn = v(3)
+    
+    if ( diag%ns .ge. diag%ne .or. diag%ns .lt. 0 .or. diag%dn .lt. 1 ) then
+       M4_FATAL_ERROR({"error in time window specification"})
+    end if
+
     })
 
     M4_WRITE_DBG(". exit ReadMatEBalObj")
