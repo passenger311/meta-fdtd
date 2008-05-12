@@ -36,9 +36,9 @@ module diagpspec
      
   character(len=80) :: fmt, filename
 
-  integer :: numfreq, stride
+  integer :: numsteps, numfield, lot
 
-  logical :: done
+  logical :: done, nohfield
   
   integer :: npointer 
 
@@ -68,23 +68,28 @@ contains
     call getstring(line,diag%fmt,err)
     call getstring(line,diag%filename,err)
     M4_SYNTAX_ERROR({eof .or. err .or. line .ne. ""},lcount,"FMT FILENAME")
-    M4_WRITE_DBG({"fmt filename: ",TRIM(diag%fmt)," ", TRIM(diag%filename)})
 
+    M4_WRITE_DBG({"fmt filename: ",TRIM(diag%fmt)," ", TRIM(diag%filename)})
 
     call readints(funit,lcount,v,3) 
     diag%ns = v(1)
     diag%ne = v(2)
     diag%dn = v(3)
 
+    ! time window
     if ( diag%ns .ge. diag%ne .or. diag%ns .lt. 0 .or. dn .lt. 1 ) then
        M4_PARSE_ERROR({error in time window specification})
     end if
 
+    ! face normal vector for S.n projection
     call readfloats(funit,lcount,v,2) 
     diag%phi = v(1)
     diag%theta = v(2)
     
+    ! assume |H| = |E| / n?
+    call readlogical(funit,lcount,diag%nohfield)
 
+    
     })
 
     M4_WRITE_DBG(". exit ReadMatPSpecObj")
@@ -108,15 +113,29 @@ contains
     diag%kinc(2) = sin(DEG*diag%theta)*sin(DEG*diag%phi)
     diag%kinc(3) = cos(DEG*diag%theta)
     
-    diag%numfreq = (diag%ne-diag%ns)/diag%dn + 1
+    diag%numsteps = (diag%ne-diag%ns)/diag%dn + 1
 
-    diag%stride = reg%numnodes * 6
+    if ( mat%nohfield ) then
 
-    allocate(field(1:diag%numfreq,1:reg%numnodes,6))
+       diag%numfield = 3
+
+    else
+
+       diag%numfield = 6
+
+    end if
+
+    diag%lot = reg%numnodes * diag%numfield
+
+    allocate(diag%field(1:diag%numsteps,1:reg%numnodes,diag%numfield)) ! test allocation (do we have the memory?)
     M4_ALLOC_ERROR(err,"InitializeDiagPSpec")
+
+    deallocate(field)
 
     diag%npointer = 0
     
+    diag%field = 0
+
     diag%done = .false.
 
     M4_IFELSE_DBG({call EchoDiagPSpecObj(diag)}, stat = err)
@@ -134,7 +153,6 @@ contains
     M4_WRITE_DBG(". enter FinalizeDiagPSpec")
     M4_MODLOOP_EXPR({DIAGPSPEC},diag,{
 
-       deallocate(field)
 
     })
     M4_WRITE_DBG(". exit FinalizeDiagPSpec")
@@ -147,7 +165,7 @@ contains
 
     integer :: ncyc
 
-    ! nop
+    ! nop -> do everything in StepE!
   
   end subroutine StepHDiagPSpec
 
@@ -166,31 +184,117 @@ contains
        ! this loops over all diag structures, setting diag
 
        M4_MODOBJ_GETREG(diag,reg)
-       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-       
+
+       if ( diag%done ) cycle
+
+       if ( ncyc .eq. diag%ns ) then
+
+          allocate(field(0:diag%numsteps-1,1:reg%numnodes,diag%numfield))
+          M4_ALLOC_ERROR(err,"StepEDiagPSpec")
+
+          call InitializeFields
+
+       end if
+
        if ( ncyc .ge. diag%ns .and. ncyc .le. diag%ne .and. &
             mod(ncyc-diag%ns,diag%dn) .eq. 0) then
           
-! record e and h field components
           
+          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+       
+! record e and h field components averaged to yee-cell center
+
+
+          diag%field(diag%npointer,p,1) = 0.5 * ( Ex(M4_COORD(i-1,j,k)) + Ex(M4_COORD(i,j,k)) )
+          diag%field(diag%npointer,p,2) = 0.5 * ( Ey(M4_COORD(i,j-1,k)) + Ey(M4_COORD(i,j,k)) )
+          diag%field(diag%npointer,p,3) = 0.5 * ( Ez(M4_COORD(i,j,k-1)) + Ez(M4_COORD(i,j,k)) )
+
+          if ( diag%nohfield ) then
+
+             diag%field(diag%npointer,p,4) = 0.25 * ( Hx(M4_COORD(i,j,k)) + Hx(M4_COORD(i,j-1,k)) + Hx(M4_COORD(i,j,k-1)) + Hx(M4_COORD(i,j-1,k-1)) )
+             diag%field(diag%npointer,p,5) = 0.25 * ( Hy(M4_COORD(i,j,k)) + Hy(M4_COORD(i-1,j,k)) + Hy(M4_COORD(i,j,k-1)) + Hy(M4_COORD(i-1,j,k-1)) )
+             diag%field(diag%npointer,p,6) = 0.25 * ( Hz(M4_COORD(i,j,k)) + Hz(M4_COORD(i-1,j,k)) + Hz(M4_COORD(i,j-1,k)) + Hz(M4_COORD(i-1,j-1,k)) )
+          
+          end if
+
           diag%npointer = diag%npointer + 1
-
-          diag%fields(diag%npointer,p,1) = Ex(i,j,k)
-          diag%fields(diag%npointer,p,2) = Ey(i,j,k)
-          diag%fields(diag%npointer,p,3) = Ez(i,j,k)
-
-          diag%fields(diag%npointer,p,4) = Hx(i,j,k)
-          diag%fields(diag%npointer,p,5) = Hy(i,j,k)
-          diag%fields(diag%npointer,p,6) = Hz(i,j,k)
           
+       })      
+
+       end if
+
+       if ( ncyc .ge. diag%ne .and. .not. diag%done ) then
+
+          call FourierTransformFields
+
+          call WriteSpectrum
+
+          deallocate(field)
+
+          diag%done = .true. ! we are done here
+
        end if
 
 
-
-       })      
     })
 
   end subroutine StepEDiagPSpec
+
+!----------------------------------------------------------------------
+
+  subroutine InitializeFields
+
+    integer :: ier = 0
+
+    M4_IFELSE_CF({
+
+    call CFFTMI(diag%numsteps, diag%wsave, diag%lensav, ier)
+    M4_FATAL_ERROR({ier .ne. 0},{"CFFTMI failed!"}
+
+    },{
+
+    call RFFTMI(diag%numsteps, diag%wsave, diag%lensav, ier)
+    M4_FATAL_ERROR({ier .ne. 0},{"RFFTMI failed!"}
+
+    })
+
+  end subroutine InitializeFields
+
+!----------------------------------------------------------------------
+
+  subroutine FourierTransformFields
+
+    integer :: ier
+    
+    M4_IFELSE_CF({
+
+! ---- perform complex fft
+! SUBROUTINE CFFTMF (LOT, JUMP, N, INC, C, LENC, WSAVE, LENSAV, WORK, LENWRK, IER)
+! INTEGER LOT, JUMP, N, INC, LENC, LENSAV, LENWRK, IER 
+! COMPLEX C(LENC) 
+! REAL WSAVE(LENSAV), WORK(LENWRK)
+
+    call CFFTMB(diag%lot, diag%numsteps, diag%numsteps, 1, fields, diag%lot*diag%numsteps, diag%wsave, diag%lensav, diag%work, diag%lenwrk, ier)
+    
+    },{
+! perform real fft    
+
+    call RFFTMB(diag%lot, diag%numsteps, diag%numsteps, 1, fields, diag%lot*diag%numsteps, diag%wsave, diag%lensav, diag%work, diag%lenwrk, ier)
+    
+    })
+
+  end subroutine FourierTransformFields
+
+
+!----------------------------------------------------------------------
+
+  subroutine WriteSpectrum
+
+    
+
+
+
+  end subroutine WriteSpectrum
 
 !----------------------------------------------------------------------
 
