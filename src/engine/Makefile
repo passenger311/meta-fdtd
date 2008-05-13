@@ -169,7 +169,7 @@ $(ENGINE)/$(EXE) : $(TOP_OBJ) $(CORE_OBJ) $(BASIC_OBJ) second_wall.o $(ENGINE)
 	@$(strip @$(CC) $(CCFLAGS) -c $<)
 
 clean:
-	@rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod *_m4.f90 *_m4.F90 *_m4.tmp BUILD VERSION FLAVOUR MANIFEST
+	@rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *_m4.f90 *_m4.F90 *_m4.tmp BUILD VERSION FLAVOUR MANIFEST
 
 proper: clean
 	@cd tests; $(MAKE) -s proper

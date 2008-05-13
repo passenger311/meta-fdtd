@@ -71,15 +71,11 @@ contains
       do
 
          call readline(UNITTMP,lcount,eof,line)
-
-         if ( eof ) then
-            M4_WRITE_DBG({"Encountered EOF!"})
-            exit
-         end if
-
+         if ( eof ) exit
+         
          call getstring(line,string,err)
 
-         M4_PARSE_ERROR(err,lcount)
+         M4_SYNTAX_ERROR(err,lcount,{"[STRING]"})
 
          M4_WRITE_DBG({"got token ",TRIM(string)})
  
@@ -109,11 +105,13 @@ contains
                cycle
             endif
             
-            M4_PARSE_ERROR(err,lcount)
+            M4_BADTOKEN_ERROR(err,lcount,string)
 
          end select
 
       end do
+
+      M4_WRITE_INFO({"closing config (0): ", TRIM(file)})
 
       close(UNITTMP)
 

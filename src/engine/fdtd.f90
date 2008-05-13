@@ -103,9 +103,7 @@ contains
 
    M4_WRITE_DBG({". enter ReadConfigFdtd"})
       
-   if ( string .ne. "(FDTD" ) then
-      M4_FATAL_ERROR({"BAD SECTION IDENTIFIER: ReadConfigFdtd"})
-   endif
+   M4_SYNTAX_ERROR({string .ne. "(FDTD"},lcount,{"(FDTD"})
    
    err = .false.
    
@@ -114,27 +112,27 @@ contains
       call readline(funit,lcount,eof,line)
       call getstring(line,string,err)
 
-      M4_PARSE_ERROR(err,lcount)
+      M4_SYNTAX_ERROR(err,lcount,{"[STRING]"})
       M4_WRITE_DBG({"got token ",TRIM(string)})
  
       select case (string)
       case("(EHFIELDS") 
          call readline(funit,lcount,eof,line)
          call getstring(line,string,err)
-         M4_PARSE_ERROR({string .ne. "(REG"},lcount)
+         M4_SYNTAX_ERROR({string .ne. "(REG"},lcount,{"(REG"})
          call ReadRegObj(reg, fdtdreg, funit, lcount, 6)
          reginitidx = reg%idx
       case("(EPSILON")
          call readline(funit,lcount,eof,line)
          call getstring(line,string,err)
-         M4_PARSE_ERROR({string .ne. "(REG"},lcount)
+         M4_SYNTAX_ERROR({string .ne. "(REG"},lcount,{"(REG"})
          call ReadRegObj(reg, fdtdreg, funit, lcount, 3)
          regepsidx = reg%idx
       M4_IFELSE_WMU({           
       case("(MU") 
          call readline(funit,lcount,eof,line)
          call getstring(line,string,err)
-         M4_PARSE_ERROR({string .ne. "(REG"},lcount)
+         M4_SYNTAX_ERROR({string .ne. "(REG"},lcount,{"(REG"})
          call ReadRegObj(reg, fdtdreg, funit, lcount, 3)
          regmuidx = reg%idx
       })
@@ -143,7 +141,7 @@ contains
       case(")FDTD")
          exit
       case default	
-         M4_PARSE_ERROR(err,lcount)
+         M4_BADTOKEN_ERROR(err,lcount,string)
       end select
 
    enddo

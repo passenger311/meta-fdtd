@@ -114,13 +114,14 @@ contains
     err = .false.
 
     call readline(funit,lcount,eof,line)
+    M4_EOF_ERROR(eof,lcount)
     call getstring(line,fmt,err)
     call getstring(line,filename,err)
-    M4_SYNTAX_ERROR({eof .or. err .or. line .ne. ""},lcount,"FMT FILENAME")
+    M4_SYNTAX_ERROR({line .ne. ""},lcount,"FMT FILENAME")
     M4_WRITE_DBG({"fmt filename: ",TRIM(fmt)," ", TRIM(filename)})
 
     call readline(funit,lcount,eof,line)
-    M4_PARSE_ERROR(eof,lcount,{UNEXPECTED EOF})
+    M4_EOF_ERROR(eof,lcount)
     ! first try to read timestep information
     call getints(line, val, 3, err)
     ns = val(1)
@@ -144,12 +145,12 @@ contains
        end if
        M4_SYNTAX_ERROR({err .or. line .ne. ""},lcount,"FN [MODE [SNAP]]")
        call readline(funit,lcount,eof,line)
-       M4_PARSE_ERROR(eof,lcount,{UNEXPECTED EOF})
+       M4_EOF_ERROR(eof,lcount)
        call getints(line, val, 3, err)
        ns = val(1)
        ne = val(2)
        dn = val(3)
-       M4_SYNTAX_ERROR({err .or. line .ne. ""},lcount,"3 INTEGERS")
+       M4_SYNTAX_ERROR({err .or. line .ne. ""},lcount,"[INTEGERS]")
        M4_WRITE_DBG({"ns ne dn: ",ns, ne, dn })
     else
        M4_WRITE_DBG({"ns ne dn: ",ns, ne, dn })
@@ -169,7 +170,7 @@ contains
        call readtoken(funit, lcount, ")OUT")
        call SetOutObj(out, fmt, snap, modl, filename, fn, mode, ns, ne, dn, reg)
     else
-       M4_PARSE_ERROR({line .ne. ")OUT"},lcount)
+       M4_SYNTAX_ERROR({line .ne. ")OUT"},lcount,{")OUT"})
        M4_WRITE_DBG({"using default region!"})
        call SetOutObj(out, fmt, snap, modl, filename, fn, mode, ns, ne, dn, regdef)  
     end if

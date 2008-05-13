@@ -533,7 +533,7 @@ contains
     if ( eof ) err = .true.
     call getint(line, val, err)
     if ( line .ne. "" ) err = .true.
-    M4_SYNTAX_ERROR(err,lcount,{"1 INTEGER"})
+    M4_SYNTAX_ERROR(err,lcount,"[INTEGER]")
 
   end subroutine readint
 
@@ -552,7 +552,7 @@ contains
     if ( eof ) err = .true.
     call getlogical(line, val, err)
     if ( line .ne. "" ) err = .true.
-    M4_SYNTAX_ERROR(err,lcount,{"1 LOGICAL"})
+    M4_SYNTAX_ERROR(err,lcount,"[LOGICAL]")
 
   end subroutine readlogical
 
@@ -571,7 +571,7 @@ contains
     if ( eof ) err = .true.
     call getfloat(line, val, err)
     if ( line .ne. "" ) err = .true.
-    M4_SYNTAX_ERROR(err,lcount,{"1 FLOAT"})
+    M4_SYNTAX_ERROR(err,lcount,"[FLOAT]")
 
   end subroutine readfloat
 
@@ -591,7 +591,7 @@ contains
     if ( eof ) err = .true.
     call getints(line, val, num, err)
     if ( line .ne. "" ) err = .true.
-    M4_SYNTAX_ERROR(err,lcount,{TRIM(i2str(num)), " INTEGERS"})
+    M4_SYNTAX_ERROR(err,lcount,"[INTEGERS]")
 
   end subroutine readints
 
@@ -612,7 +612,7 @@ contains
     if ( eof ) err = .true.
     call getintvec(line, val, num, ":", err)
     if ( line .ne. "" ) err = .true.
-    M4_SYNTAX_ERROR(err,lcount,{TRIM(i2str(num)), " INTEGERS"})
+    M4_SYNTAX_ERROR(err,lcount,"[INTEGERS]")
 
   end subroutine readintvec
 
@@ -633,7 +633,7 @@ contains
     if ( eof ) err = .true.
     call getfloats(line, val, num, err)
     if ( line .ne. "" ) err = .true.
-    M4_SYNTAX_ERROR(err,lcount,{TRIM(i2str(num)), " FLOATS"})
+    M4_SYNTAX_ERROR(err,lcount,"[FLOATS]")
 
   end subroutine readfloats
 

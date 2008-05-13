@@ -31,6 +31,7 @@ module diagebal
   use reglist
   use outlist
   use grid
+  use parse
   use fdtd
   use mat
 

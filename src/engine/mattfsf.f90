@@ -115,7 +115,7 @@ contains
     err = .false.
     call getfloats(line,v,4,err)
    
-    M4_PARSE_ERROR({err},lcount,{EXPECTED phi,theta,psi,nrefr!})
+    M4_SYNTAX_ERROR({err},lcount,{"[FLOATS]: phi,theta,psi,nrefr"})
 
     mat%phi = v(1)
     mat%theta = v(2)

@@ -91,21 +91,18 @@ define({M4_MODREAD_EXPR},{
 ! read regobj information
 
     call readline($2,$3, m4_eof, m4_string)
-    M4_PARSE_ERROR({m4_eof},$3,{UNEXPECTED EOF})
+    M4_EOF_ERROR({m4_eof},$3)
     M4_WRITE_DBG({"got token: ",TRIM(m4_string)})
-    if ( m4_string .eq. "(REG" ) then
-       M4_WRITE_DBG({"got token (REG -> ReadRegObj"})
-       call ReadRegObj($5, fdtdreg, $2, $3, $6)
-       $4%regidx = reg%idx
-    else
-       M4_FATAL_ERROR({"NO REGION DEFINED: Read$1Obj"})
-    end if
+    M4_SYNTAX_ERROR({m4_string .ne. "(REG"},$3,{"(REG"})
+    M4_WRITE_DBG({"got token (REG -> ReadRegObj"})
+    call ReadRegObj($5, fdtdreg, $2, $3, $6)
+    $4%regidx = reg%idx
 
 ! get terminator
 
     do	
       call readline($2,$3, m4_eof, m4_string)
-      M4_PARSE_ERROR({m4_eof},$3,{UNEXPECTED EOF})
+      M4_EOF_ERROR({m4_eof},$3)
       select case (m4_string)
       case("(OUT") 
 	M4_WRITE_DBG({"got token (OUT -> ReadOutObj"})

@@ -238,19 +238,19 @@ contains
              lcount = lcstack(unit-UNITTMP)+1 ! restore line count
              M4_WRITE_INFO({"return to config (",TRIM(i2str(unit-UNITTMP)),")"})
              call readline(unit,lcount,eof,line)
-             M4_PARSE_ERROR({err},lcount,{UNEXPECTED EOF})
+             M4_EOF_ERROR({err},lcount)
              call gettoken(line,")LOAD",err)
              M4_SYNTAX_ERROR({err},lcount,{")LOAD"})
              M4_WRITE_DBG({"consumed )LOAD"})          
              cycle
           else
-             M4_PARSE_ERROR({err},lcount,{UNEXPECTED EOF})
+             M4_EOF_ERROR({err},lcount)
           end if
        end if
 
        call getstring(line,string,err)
        M4_WRITE_DBG({"got token ",TRIM(string)})
-       M4_PARSE_ERROR({err},lcount)
+       M4_SYNTAX_ERROR({err},lcount,"[STRING]")
            
        select case ( string ) 
        case( "(POINT" ) 
@@ -258,7 +258,7 @@ contains
              pvec = defpvec
              fvec = 1.0
              call readline(unit,lcount,eof,line)
-             M4_PARSE_ERROR({eof},lcount,{UNEXPECTED EOF})
+             M4_EOF_ERROR({eof},lcount)
              call getintvec(line, pvec, 3, ":", err)   ! read up to 3 ints till the : 
              call getfloatvec(line, fvec, 6, ":", err) ! then read up to 6 floats
              if ( err ) then
@@ -273,7 +273,7 @@ contains
              bvec = defbvec
              fvec = 1.0
              call readline(unit,lcount,eof,line)
-             M4_PARSE_ERROR({eof},lcount,{UNEXPECTED EOF})
+             M4_EOF_ERROR({eof},lcount)
              call getintvec(line, bvec, 9, ":", err)   ! read up to 9 ints till the : 
              call getfloatvec(line, fvec, 6, ":", err) ! then read up to 6 floats
              if ( err ) then
@@ -311,16 +311,16 @@ contains
        case("(FILL") ! a list of values
           fvec = 1.0
           call readline(unit,lcount,eof,line)
-          M4_PARSE_ERROR({eof},lcount,{UNEXPECTED EOF})
+          M4_EOF_ERROR({eof},{lcount})
           call getfloatvec(line, fvec, 6, ":", err) ! then read up to 6 floats
-          M4_SYNTAX_ERROR({err},lcount,{"FLOAT VECTOR"})
+          M4_SYNTAX_ERROR({err},lcount,"[FLOATS]")
           call FillValueRegObj(reg, fvec)
           call readtoken(unit,lcount,")FILL")
        case("(SET") ! a list of values
           do 
              fvec = 1.0
              call readline(unit,lcount,eof,line)
-             M4_PARSE_ERROR({eof},lcount,{UNEXPECTED EOF})
+             M4_EOF_ERROR({eof},lcount)
              call getfloatvec(line, fvec, 6, ":", err) ! then read up to 6 floats
              if ( err ) then
                 M4_WRITE_DBG({"end of set list"})
@@ -340,7 +340,7 @@ contains
        case(")REG")
           exit
        case default
-          M4_PARSE_ERROR(.true.,lcount,{UNKNOWN TOKEN})
+          M4_BADTOKEN_ERROR({.true.},lcount,string)
        end select
 
     end do

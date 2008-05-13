@@ -39,28 +39,46 @@ $2
 call StopMPELog($1)  
 },$2)})
 
-define({M4_WRITE_DBG}, {M4_IFELSE_DBG({write(6,*) "!DBG (",TRIM(modname),") ", $1})})
-define({M4_WRITE_INFO}, {write(STDOUT,*) "!INF (",TRIM(modname),") ", $1 })
+define({M4_WRITE_DBG}, {M4_IFELSE_DBG({write(6,*) "!DBG (",TRIM(modname),") ", &
+$1})})
+define({M4_WRITE_FMT_INFO}, {write(STDOUT,'(A,A,A,$1)') " !DBG (",TRIM(modname),") ", &
+$2 })
+define({M4_WRITE_INFO}, {write(STDOUT,*) "!INF (",TRIM(modname),") ", &
+$1 })
 define({M4_WRITE_FMT_INFO}, {write(STDOUT,'(A,A,A,$1)') " !INF (",TRIM(modname),") ", $2 })
-define({M4_WRITE_WARN}, {write(STDOUT,*) "!WRN (",TRIM(modname),") ", $1 })
-define({M4_FATAL_ERROR}, {write(STDERR,*) "!ERR (",TRIM(modname),") ", $1
+define({M4_WRITE_WARN}, {write(STDOUT,*) "!WRN (",TRIM(modname),") ", &
+$1 })
+define({M4_WRITE_FMT_WARN}, {write(STDOUT,'(A,A,A,$1)') " !WRN (",TRIM(modname),") ", $2 })
+define({M4_WRITE_ERROR}, {write(STDOUT,*) "!ERR (",TRIM(modname),") ", &
+$1
 stop
 })
-define({M4_SYNTAX_ERROR},{
-if ( $1 ) then
-M4_FATAL_ERROR({"INPUT ERROR (@",TRIM(i2str($2-1)),") EXPECTED ",$3})
-endif
+define({M4_WRITE_FMT_ERROR}, {write(STDOUT,'(A,A,A,$1)') " !ERR (",TRIM(modname),") ", &
+$2 
+stop
 })
+define({M4_FATAL_ERROR},{M4_WRITE_ERROR({$1})})
 define({M4_PARSE_ERROR},{
 if ( $1 ) then
-M4_FATAL_ERROR({"INPUT ERROR (@",TRIM(i2str($2-1)),") $3"})
+M4_WRITE_FMT_ERROR({A,A,A,$3},{"PARSE ERROR (@",TRIM(i2str($2-1)),") ",&
+{$4}})
 endif
 })
-define({M4_ALLOC_ERROR}, {if ( $1 .ne. 0 ) then
-M4_FATAL_ERROR({"OUT OF MEMORY ",$2})
+define({M4_EOF_ERROR},{
+M4_PARSE_ERROR({$1},{$2},{A},"UNEXPECTED EOF")
+})
+define({M4_SYNTAX_ERROR},{
+M4_PARSE_ERROR({$1},{$2},{A,A},{"EXPECTED ",TRIM($3)})
+})
+define({M4_BADTOKEN_ERROR},{
+M4_PARSE_ERROR({$1},{$2},{A,A},{"GOT BAD TOKEN ",TRIM($3)})
+})
+define({M4_ALLOC_ERROR}, {
+if ( $1 .ne. 0 ) then
+M4_WRITE_ERROR({"OUT OF MEMORY ",$2})
 endif
 })
 define({M4_OPEN_ERROR}, {if ( $1 .ne. 0 ) then
-M4_FATAL_ERROR({"COULD NOT OPEN FILE ",$2})
+M4_WRITE_ERROR({"COULD NOT OPEN FILE ",$2})
 endif
 })

@@ -77,7 +77,7 @@ contains
       call readline(funit,lcount,eof,line)
       call getstring(line,string,err)
       
-      M4_PARSE_ERROR(err,lcount)
+      M4_SYNTAX_ERROR(err,lcount,{"[STRING]"})
       M4_WRITE_DBG({"got token ",TRIM(string)})
  
       select case (string)
@@ -93,7 +93,7 @@ contains
       case( ")BOUND" )
          exit
       case default	
-         M4_PARSE_ERROR(.true.,lcount,{UNKNOWN TOKEN})
+         M4_BADTOKEN_ERROR(.true.,lcount,{string})
       end select
 
     enddo
