@@ -147,7 +147,7 @@ contains
  
 
     if ( .not. reg%isbox ) then
-       M4_FATAL_ERROR("Region must be a single box!")
+       M4_FATAL_ERROR("REGION MUST BE SINGLE BOX!")
     endif
 
     ! switch off box planes

@@ -30,9 +30,9 @@ default: all
 all: $(FFTLIB)
 
 $(FFTLIB): $(OBJ)
-	rm -f $(FFTLIB)
+	@rm -f $(FFTLIB)
 	@echo [AR] $@
-	@$(AR) -q $(FFTLIB) $(OBJ) 
+	@$(AR) -q $(FFTLIB) $(OBJ) 2>/dev/null 
 
 .f.o:
 	@echo [F90] $@

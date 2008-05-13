@@ -419,8 +419,6 @@ M4_IFELSE_1D({},{
       M4_FTYPE :: Bxo, Byo, Bzo, Exh, Eyh, Ezh
       
   
-!      M4_WRITE_DBG({"STEP PML H: ", is, ie, js, je, ks, ke})
-        
 M4_IFELSE_3D({!$OMP PARALLEL DO PRIVATE(Exh,Eyh,Ezh,Bxo,Byo,Bzo)})
       do k=ks, ke     
 M4_IFELSE_2D({!$OMP PARALLEL DO PRIVATE(Exh,Eyh,Ezh,Bxo,Byo,Bzo)})
@@ -525,8 +523,6 @@ M4_IFELSE_3D({!$OMP END PARALLEL DO})
       M4_FTYPE :: Dxo, Dyo, Dzo, Hxh, Hyh, Hzh    
   
 
-!      M4_WRITE_DBG({"STEP PML E: ", is, ie, js, je, ks, ke})
-  
 M4_IFELSE_3D({!$OMP PARALLEL DO PRIVATE(Hxh,Hyh,Hzh,Dxo,Dyo,Dzo,epsinvx,epsinvy,epsinvz)}) 
       do k=ks, ke
 M4_IFELSE_2D({!$OMP PARALLEL DO PRIVATE(Hxh,Hyh,Hzh,Dxo,Dyo,Dzo,epsinvx,epsinvy,epsinvz)}) 
@@ -589,8 +585,6 @@ M4_IFELSE_1D({!$OMP END PARALLEL DO})
 M4_IFELSE_2D({!$OMP END PARALLEL DO})
       enddo
 M4_IFELSE_3D({!$OMP END PARALLEL DO})
-
-!     M4_WRITE_DBG({"done"})
  
     end subroutine DoStepEPml
     

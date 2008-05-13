@@ -65,7 +65,7 @@ contains
          })
          
       case default
-         M4_FATAL_ERROR({"RECEIVED BAD TOKEN ", TRIM(string) ,": ReadConfig/mat"})
+         M4_BADTOKEN_ERROR({string(1:1) .ne. "!"},lcount,string)
       end select
       
     end subroutine ReadConfigMat

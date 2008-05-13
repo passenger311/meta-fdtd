@@ -79,7 +79,7 @@ contains
     diag%dn = v(3)
     
     if ( diag%ns .ge. diag%ne .or. diag%ns .lt. 0 .or. diag%dn .lt. 1 ) then
-       M4_FATAL_ERROR({"error in time window specification"})
+       M4_FATAL_ERROR({"BAD TIME WINDOW!"})
     end if
 
     })

@@ -61,9 +61,7 @@ contains
        })
        
     case default
-       if ( string(1:1) .ne. "!" ) then
-          M4_FATAL_ERROR({"RECEIVED BAD TOKEN: ReadConfig/diag"})
-       endif
+       M4_BADTOKEN_ERROR({string(1:1) .ne. "!"},lcount,string)
     end select
     
   end subroutine ReadConfigDiag

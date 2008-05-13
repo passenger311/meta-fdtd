@@ -72,12 +72,10 @@ contains
 
 
     ! TODO: configure phase factors for PBCs here.
-
-    ! call readint(funit, lcount, PMLMAX)
-    ! M4_WRITE_DBG({"read PMLMAX: ", PMLMAX})
-
+    ! ...
 
     ! TODO: add some checks on numerical values
+    ! ...
 
     modconfigured = .true.
 
