@@ -14,6 +14,7 @@
 module timer
 
   use constant
+  use strings
  
   private
   save
@@ -76,7 +77,7 @@ contains
 
     clockgranularity = checktick()
 
-    M4_WRITE_INFO({"clock granularity is ",clockgranularity," microseconds!"})
+    M4_WRITE_INFO({"clock granularity is ",TRIM(i2str(clockgranularity))," microsecond(s)!"})
 
   end subroutine CheckTimer
 

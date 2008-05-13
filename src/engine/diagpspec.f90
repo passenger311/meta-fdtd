@@ -155,6 +155,8 @@ contains
 
     end if
 
+    write(6,*) diag%numfield
+
     diag%lot = reg%numnodes * diag%numfield
 
     M4_WRITE_INFO({"TOTAL POINTS = ",TRIM(i2str(diag%lot*diag%numsteps))})
@@ -229,6 +231,7 @@ contains
           M4_ALLOC_ERROR(ier,"StepEDiagPSpec")
 
           diag%field = 0.
+          diag%npointer = 0
 
           call InitializeFields(diag)
 
@@ -252,8 +255,7 @@ contains
           diag%field(diag%npointer,p,1) = Ep1
           diag%field(diag%npointer,p,2) = Ep2
 
-
-          if ( diag%nohfield ) then ! store H field projections
+          if ( .not. diag%nohfield ) then ! store H field projections
 
              Hxh = 0.25 * ( Hx(M4_COORD(i,j,k)) + Hx(M4_COORD(i,j-1,k)) + Hx(M4_COORD(i,j,k-1)) + Hx(M4_COORD(i,j-1,k-1)) )
              Hyh = 0.25 * ( Hy(M4_COORD(i,j,k)) + Hy(M4_COORD(i-1,j,k)) + Hy(M4_COORD(i,j,k-1)) + Hy(M4_COORD(i-1,j,k-1)) )
@@ -266,10 +268,10 @@ contains
              diag%field(diag%npointer,p,4) = Hp2
           
           end if
+          
+          })      
 
           diag%npointer = diag%npointer + 1
-          
-       })      
 
        end if
 
