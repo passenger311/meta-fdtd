@@ -160,7 +160,9 @@ contains
 
     diag%lot = reg%numnodes * diag%numfield
 
-    M4_WRITE_INFO({"TOTAL POINTS = ",TRIM(i2str(diag%lot*diag%numsteps))})
+    M4_WRITE_DBG({"kinc = ",diag%kinc(1),diag%kinc(2),diag%kinc(3)})
+
+    M4_WRITE_INFO({"points x steps = ",TRIM(i2str(reg%numnodes))," x ",TRIM(i2str(diag%numsteps)) })
 
     allocate(diag%field(0:diag%numsteps-1,1:reg%numnodes,diag%numfield),stat=ier) ! test allocation (do we have the memory?)
     M4_ALLOC_ERROR({ier},"InitializeDiagPSpec")
@@ -226,7 +228,7 @@ contains
 
        if ( ncyc .eq. diag%ns ) then
 
-          M4_WRITE_INFO({"Initializing FFT #",TRIM(i2str(diag%idx))})
+          M4_WRITE_INFO({"initializing fft #",TRIM(i2str(diag%idx))})
 
           allocate(diag%field(0:diag%numsteps-1,1:reg%numnodes,diag%numfield),stat=ier)
           M4_ALLOC_ERROR(ier,"StepEDiagPSpec")
@@ -246,9 +248,9 @@ contains
        
           ! store E field projections
           
-          Exh = real( 0.5 * ( Ex(M4_COORD(i-1,j,k)) + Ex(M4_COORD(i,j,k)) ) )
-          Eyh = real( 0.5 * ( Ey(M4_COORD(i-1,j,k)) + Ey(M4_COORD(i,j,k)) ) )
-          Ezh = real( 0.5 * ( Ez(M4_COORD(i-1,j,k)) + Ez(M4_COORD(i,j,k)) ) )
+          Exh = real( 0.5 * ( Ex(M4_COORD(i,j,k)) + Ex(M4_COORD(i-1,j,k)) ) )
+          Eyh = real( 0.5 * ( Ey(M4_COORD(i,j,k)) + Ey(M4_COORD(i,j-1,k)) ) )
+          Ezh = real( 0.5 * ( Ez(M4_COORD(i,j,k)) + Ez(M4_COORD(i,j,k-1)) ) )
 
           Ep1 = diag%finc(1,1)*Exh + diag%finc(2,1)*Eyh + diag%finc(3,1)*Ezh
           Ep2 = diag%finc(1,2)*Exh + diag%finc(2,2)*Eyh + diag%finc(3,2)*Ezh
@@ -331,9 +333,9 @@ contains
     
     type(T_DIAGPSPEC) :: diag
 
-    integer :: ier
+    integer :: ier = 0
 
-    M4_WRITE_INFO({"Performing FFT #",TRIM(i2str(diag%idx))})
+    M4_WRITE_INFO({"performing fft #",TRIM(i2str(diag%idx))})
     
 
     call RFFTMF(diag%lot, diag%numsteps, diag%numsteps, 1, diag%field, &
@@ -365,7 +367,7 @@ contains
 
     fn = cat2(diag%filename,sfx)
     
-    M4_WRITE_INFO({"Writing Spectrum #",TRIM(i2str(diag%idx)), " -> ", TRIM(fn)})
+    M4_WRITE_INFO({"writing spectrum #",TRIM(i2str(diag%idx)), " -> ", TRIM(fn)})
 
     M4_MODOBJ_GETREG(diag,reg)
 

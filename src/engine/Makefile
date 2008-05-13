@@ -49,9 +49,13 @@ outlist.o\
 list.o\
 grid.o
 
+# third party objects
+
+THIRD_OBJ=\
+fftpack5.o
+
 # core objects
 CORE_OBJ=\
-fftpack5.o\
 numerics.o\
 signal.o\
 fdtd.o\
@@ -86,10 +90,6 @@ config.o\
 manifest.o\
 timer.o\
 meta.o
-
-
-OBJ=$(BASIC_OBJ) $(CORE_OBJ)
-M4OBJ=$(patsubst %.o,%_m4.f90,$(OBJ))
 
 
 EXE = meta
@@ -142,6 +142,10 @@ $(BASIC_OBJ): %.o : %.f90
 	fi
 	@$(strip $(F90) $(F90FLAGS_NOOPT) -c $*_m4.f90 -o $@)
 
+$(THIRD_OBJ) : %.o : %.f90
+	@echo [F90] $@
+	@$(strip $(F90) $(F90FLAGS_OPT) -c $*.f90 -o $@)
+
 $(CORE_OBJ) : %.o : %.f90 $(BASIC_OBJ) BUILD FLAVOUR
 	@echo [F90] $@
 	@if [ -f $*.m4 ]; then \
@@ -160,9 +164,9 @@ $(TOP_OBJ): %.o : %.f90 $(BASIC_OBJ) $(CORE_OBJ) BUILD FLAVOUR
 	fi
 	@$(strip $(F90) $(F90FLAGS_NOOPT) -c $*_m4.f90 -o $@)
 
-$(ENGINE)/$(EXE) : $(TOP_OBJ) $(CORE_OBJ) $(BASIC_OBJ) second_wall.o $(ENGINE)
+$(ENGINE)/$(EXE) : $(TOP_OBJ) $(CORE_OBJ) $(THIRD_OBJ) $(BASIC_OBJ) second_wall.o $(ENGINE)
 	@echo [LD] $@
-	@$(strip $(F90) $(LDFLAGS) $(TOP_OBJ) $(CORE_OBJ) $(BASIC_OBJ) second_wall.o -o $(ENGINE)/$(EXE))
+	@$(strip $(F90) $(LDFLAGS) $(TOP_OBJ) $(CORE_OBJ) $(THIRD_OBJ) $(BASIC_OBJ) second_wall.o -o $(ENGINE)/$(EXE))
 
 %.o : %.c
 	@echo [CC] $@
