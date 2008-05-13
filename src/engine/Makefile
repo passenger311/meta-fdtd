@@ -173,7 +173,7 @@ clean:
 
 proper: clean
 	@cd tests; $(MAKE) -s proper
-	@rm -f $(PREEXE) *.o *~ *.gpl *.vtk *.set
+	@rm -f $(PREEXE) *.o *~ *.gpl *.vtk *.set *.mod
 	@rm -f fftpack5/*.o fftpack5/*.a
 	@rm -rf meta1* meta2* meta3* 
 

@@ -157,10 +157,13 @@ contains
 
     diag%lot = reg%numnodes * diag%numfield
 
+    M4_WRITE_INFO({"TOTAL POINTS = ",TRIM(i2str(diag%lot*diag%numsteps))})
+
     allocate(diag%field(0:diag%numsteps-1,1:reg%numnodes,diag%numfield),stat=ier) ! test allocation (do we have the memory?)
     M4_ALLOC_ERROR({ier},"InitializeDiagPSpec")
 
     deallocate(diag%field)
+
 
     diag%npointer = 0
     
