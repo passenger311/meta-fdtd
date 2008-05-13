@@ -60,6 +60,7 @@ M4_IFELSE_MPI(call SynchronizeMPIWorld)
   
      if (myrank .eq. l) then
 
+        write(6,*) "*"
         write(6,*) "* initialising modules: myrank = ", ranklbl
         call CheckTimer
         write(6,*) "* -> InitializeList"

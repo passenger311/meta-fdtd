@@ -27,6 +27,10 @@ module diagpspec
   private
   save
 
+
+  character(len=20), parameter :: sfx = ".pspec"
+
+
   M4_MODHEAD_DECL({DIAGPSPEC},100,{
 
   integer :: ns, ne, dn  ! time stepping 
@@ -43,7 +47,7 @@ module diagpspec
   
   integer :: npointer 
 
-  M4_FTYPE, pointer, dimension(:,:,:) :: field
+  real(kind=8), pointer, dimension(:,:,:) :: field
 
   ! for fourier transform
 
@@ -75,11 +79,10 @@ contains
 
     call readline(funit,lcount,eof,line)
     M4_EOF_ERROR(eof,lcount)
-    call getstring(line,diag%fmt,err)
     call getstring(line,diag%filename,err)
-    M4_SYNTAX_ERROR({line .ne. ""},lcount,"FMT FILENAME")
+    M4_SYNTAX_ERROR({line .ne. ""},lcount,"FILENAME")
 
-    M4_WRITE_DBG({"fmt filename: ",TRIM(diag%fmt)," ", TRIM(diag%filename)})
+    M4_WRITE_DBG({"filename: ", TRIM(diag%filename)})
 
     call readints(funit,lcount,v,3) 
     diag%ns = v(1)
@@ -155,8 +158,6 @@ contains
 
     end if
 
-    write(6,*) diag%numfield
-
     diag%lot = reg%numnodes * diag%numfield
 
     M4_WRITE_INFO({"TOTAL POINTS = ",TRIM(i2str(diag%lot*diag%numsteps))})
@@ -213,7 +214,7 @@ contains
     M4_MODLOOP_DECL({DIAGPSPEC},diag)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(0))
     
-    M4_FTYPE :: Exh, Eyh, Ezh, Hxh, Hyh, Hzh, Ep1, Ep2, Hp1, Hp2
+    real(kind=8) :: Exh, Eyh, Ezh, Hxh, Hyh, Hzh, Ep1, Ep2, Hp1, Hp2
 
     M4_MODLOOP_EXPR({DIAGPSPEC},diag,{
 
@@ -225,7 +226,7 @@ contains
 
        if ( ncyc .eq. diag%ns ) then
 
-          M4_WRITE_INFO({"Initializing #",TRIM(i2str(diag%idx))})
+          M4_WRITE_INFO({"Initializing FFT #",TRIM(i2str(diag%idx))})
 
           allocate(diag%field(0:diag%numsteps-1,1:reg%numnodes,diag%numfield),stat=ier)
           M4_ALLOC_ERROR(ier,"StepEDiagPSpec")
@@ -245,9 +246,9 @@ contains
        
           ! store E field projections
           
-          Exh = 0.5 * ( Ex(M4_COORD(i-1,j,k)) + Ex(M4_COORD(i,j,k)) )
-          Eyh = 0.5 * ( Ey(M4_COORD(i-1,j,k)) + Ey(M4_COORD(i,j,k)) )
-          Ezh = 0.5 * ( Ez(M4_COORD(i-1,j,k)) + Ez(M4_COORD(i,j,k)) )
+          Exh = real( 0.5 * ( Ex(M4_COORD(i-1,j,k)) + Ex(M4_COORD(i,j,k)) ) )
+          Eyh = real( 0.5 * ( Ey(M4_COORD(i-1,j,k)) + Ey(M4_COORD(i,j,k)) ) )
+          Ezh = real( 0.5 * ( Ez(M4_COORD(i-1,j,k)) + Ez(M4_COORD(i,j,k)) ) )
 
           Ep1 = diag%finc(1,1)*Exh + diag%finc(2,1)*Eyh + diag%finc(3,1)*Ezh
           Ep2 = diag%finc(1,2)*Exh + diag%finc(2,2)*Eyh + diag%finc(3,2)*Ezh
@@ -257,9 +258,9 @@ contains
 
           if ( .not. diag%nohfield ) then ! store H field projections
 
-             Hxh = 0.25 * ( Hx(M4_COORD(i,j,k)) + Hx(M4_COORD(i,j-1,k)) + Hx(M4_COORD(i,j,k-1)) + Hx(M4_COORD(i,j-1,k-1)) )
-             Hyh = 0.25 * ( Hy(M4_COORD(i,j,k)) + Hy(M4_COORD(i-1,j,k)) + Hy(M4_COORD(i,j,k-1)) + Hy(M4_COORD(i-1,j,k-1)) )
-             Hzh = 0.25 * ( Hz(M4_COORD(i,j,k)) + Hz(M4_COORD(i-1,j,k)) + Hz(M4_COORD(i,j-1,k)) + Hz(M4_COORD(i-1,j-1,k)) )
+             Hxh = real( 0.25 * ( Hx(M4_COORD(i,j,k)) + Hx(M4_COORD(i,j-1,k)) + Hx(M4_COORD(i,j,k-1)) + Hx(M4_COORD(i,j-1,k-1)) ) )
+             Hyh = real( 0.25 * ( Hy(M4_COORD(i,j,k)) + Hy(M4_COORD(i-1,j,k)) + Hy(M4_COORD(i,j,k-1)) + Hy(M4_COORD(i-1,j,k-1)) ) )
+             Hzh = real( 0.25 * ( Hz(M4_COORD(i,j,k)) + Hz(M4_COORD(i-1,j,k)) + Hz(M4_COORD(i,j-1,k)) + Hz(M4_COORD(i-1,j-1,k)) ) )
 
              Hp1 =  diag%finc(4,1)*Hxh + diag%finc(5,1)*Hyh + diag%finc(6,1)*Hzh
              Hp2 =  diag%finc(4,2)*Hxh + diag%finc(5,2)*Hyh + diag%finc(6,2)*Hzh
@@ -276,8 +277,6 @@ contains
        end if
 
        if ( ncyc .ge. diag%ne .and. .not. diag%done ) then
-
-          M4_WRITE_INFO({"Finalizing #",TRIM(i2str(diag%idx))})
 
           call FourierTransformFields(diag)
 
@@ -309,21 +308,6 @@ contains
     allocate(diag%wsave(1:diag%lensav), stat = ier)
     M4_ALLOC_ERROR({ier},{"InitializeFields"})
 
-    M4_IFELSE_CF({
-
-    diag%lenwrk = 2 * diag%numsteps * diag%lot
-
-    ! call fftpack5 complex initialization
-
-    call CFFTMI(diag%numsteps, diag%wsave, diag%lensav, ier)
-    if ( ier .ne. 0 ) then
-       M4_FATAL_ERROR({"CFFTMI FAILED!"})
-    end if
-
-    },{
-
-    diag%lenwrk = diag%numsteps * diag%lot
-
     ! call fftpack5 real initialization
 
     call RFFTMI(diag%numsteps, diag%wsave, diag%lensav, ier)
@@ -331,9 +315,9 @@ contains
        M4_FATAL_ERROR({"RFFTMI FAILED!"})
     end if
 
-    })
-
     ! allocate work array for fft
+
+    diag%lenwrk = diag%numsteps * diag%lot
 
     allocate(diag%work(1:diag%lenwrk), stat = ier)
     M4_ALLOC_ERROR({ier},{"InitializeFields"})
@@ -348,29 +332,15 @@ contains
     type(T_DIAGPSPEC) :: diag
 
     integer :: ier
+
+    M4_WRITE_INFO({"Performing FFT #",TRIM(i2str(diag%idx))})
     
-    M4_IFELSE_CF({
-
-    ! call fftpack5 complex forward transform
-
-    call CFFTMF(diag%lot, diag%numsteps, diag%numsteps, 1, diag%field, &
-         diag%lot*diag%numsteps, diag%wsave, diag%lensav, diag%work, diag%lenwrk, ier)
-    if ( ier .ne. 0 ) then 
-       M4_FATAL_ERROR({"CFFTMF failed!"})
-    end if
-       
-
-    },{
-
-    ! call fftpack5 real forward transform
 
     call RFFTMF(diag%lot, diag%numsteps, diag%numsteps, 1, diag%field, &
          diag%lot*diag%numsteps, diag%wsave, diag%lensav, diag%work, diag%lenwrk, ier)
     if ( ier .ne. 0 ) then
        M4_FATAL_ERROR({"RFFTMF failed!"})
     end if
-
-    })
 
     deallocate(diag%wsave)
     deallocate(diag%work)
@@ -383,8 +353,86 @@ contains
   subroutine WriteSpectrum(diag)
 
     type(T_DIAGPSPEC) :: diag
-    
 
+    type(T_REG) :: reg
+    character(len=STRLNG) :: fn
+    integer :: w, ios,i,j,k,p
+
+    real(kind=8) :: nrefr
+    real(kind=8) :: Ep1c, Ep2c, Hp1c, Hp2c,  Ep1s, Ep2s, Hp1s, Hp2s
+    real(kind=8) :: SumUp1, SumUp2
+    integer :: nh
+
+    fn = cat2(diag%filename,sfx)
+    
+    M4_WRITE_INFO({"Writing Spectrum #",TRIM(i2str(diag%idx)), " -> ", TRIM(fn)})
+
+    M4_MODOBJ_GETREG(diag,reg)
+
+    open(UNITTMP,FILE=fn,STATUS="unknown", IOSTAT=ios)
+    M4_OPEN_ERROR(ios,fn)
+
+    write(UNITTMP,*) "! PSPEC"
+    write(UNITTMP,*) "! N: ",TRIM(i2str(diag%ns))," ",TRIM(i2str(diag%ne))," ",TRIM(i2str(diag%dn))
+
+    if ( mod(diag%numsteps,2) .eq. 0 ) then 
+       nh = diag%numsteps/2 - 1
+    else
+       nh = (diag%numsteps-1)/2
+    end if
+
+    write(UNITTMP,*) "! F: 1 ",TRIM(i2str(nh))
+
+    do w = 1, nh 
+
+       SumUp1 = 0.
+       SumUp2 = 0.
+
+! integrate power flux over spatial area       
+       do p = 1, reg%numnodes
+
+          Ep1c = diag%field(2*w,p,1)
+          Ep2c = diag%field(2*w,p,2)
+
+          Ep1s = diag%field(2*w+1,p,1)
+          Ep2s = diag%field(2*w+1,p,2)
+
+          if ( .not. diag%nohfield ) then
+            
+             Hp1c = diag%field(2*w,p,3)
+             Hp2c = diag%field(2*w,p,4)
+
+             Hp1s = diag%field(2*w+1,p,3)
+             Hp2s = diag%field(2*w+1,p,4)
+
+          else
+
+             ! that's not quite correct, but does it should not matter too much!
+
+             i = reg%i(p)
+             j = reg%j(p)
+             k = reg%k(p)
+
+             nrefr = 1./sqrt(epsinvx(M4_COORD(i,j,k))*M4_MUINVX(i,j,k))
+
+             Hp1c = Ep1c/nrefr
+             Hp2c = Ep2c/nrefr
+
+             Hp1s = Ep1s/nrefr
+             Hp2s = Ep2s/nrefr
+             
+          end if
+
+          SumUp1 = SumUp1 + Ep1c * Hp1c + Ep1s * Hp1s
+          SumUp2 = SumUp2 + Ep2c * Hp2c + Ep1s * Hp1s
+
+       end do
+
+       write(UNITTMP,*) w, SumUp1, SumUp2
+
+    end do
+
+    close(UNITTMP)
 
 
   end subroutine WriteSpectrum

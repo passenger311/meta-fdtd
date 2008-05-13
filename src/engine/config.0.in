@@ -379,8 +379,8 @@
  
 
 (DIAGPSPEC
-GPL test	! output format and filename
-0 1000 10	! time window
+test		! filename ( .pspec )
+0 1000 1	! time window
 0. 0. 0. 	! polarizer:  phi, theta, psi
 .F.
 (REG
