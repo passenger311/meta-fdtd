@@ -157,15 +157,13 @@ contains
 
     diag%lot = reg%numnodes * diag%numfield
 
-    allocate(diag%field(1:diag%numsteps,1:reg%numnodes,diag%numfield),stat=ier) ! test allocation (do we have the memory?)
+    allocate(diag%field(0:diag%numsteps-1,1:reg%numnodes,diag%numfield),stat=ier) ! test allocation (do we have the memory?)
     M4_ALLOC_ERROR({ier},"InitializeDiagPSpec")
 
     deallocate(diag%field)
 
     diag%npointer = 0
     
-    diag%field = 0
-
     diag%done = .false.
 
     M4_IFELSE_DBG({call EchoDiagPSpecObj(diag)})
@@ -222,8 +220,12 @@ contains
 
        if ( ncyc .eq. diag%ns ) then
 
+          M4_WRITE_INFO({"Initializing #",TRIM(i2str(diag%idx))})
+
           allocate(diag%field(0:diag%numsteps-1,1:reg%numnodes,diag%numfield),stat=ier)
           M4_ALLOC_ERROR(ier,"StepEDiagPSpec")
+
+          diag%field = 0.
 
           call InitializeFields(diag)
 
@@ -270,6 +272,8 @@ contains
 
        if ( ncyc .ge. diag%ne .and. .not. diag%done ) then
 
+          M4_WRITE_INFO({"Finalizing #",TRIM(i2str(diag%idx))})
+
           call FourierTransformFields(diag)
 
           call WriteSpectrum(diag)
@@ -307,7 +311,9 @@ contains
     ! call fftpack5 complex initialization
 
     call CFFTMI(diag%numsteps, diag%wsave, diag%lensav, ier)
-    if ( ier .ne. 0 ) M4_FATAL_ERROR({"CFFTMI failed!"})
+    if ( ier .ne. 0 ) then
+       M4_FATAL_ERROR({"CFFTMI FAILED!"})
+    end if
 
     },{
 
@@ -316,7 +322,9 @@ contains
     ! call fftpack5 real initialization
 
     call RFFTMI(diag%numsteps, diag%wsave, diag%lensav, ier)
-    if ( ier .ne. 0 ) M4_FATAL_ERROR({"RFFTMI failed!"})
+    if ( ier .ne. 0 ) then 
+       M4_FATAL_ERROR({"RFFTMI FAILED!"})
+    end if
 
     })
 
@@ -342,16 +350,21 @@ contains
 
     call CFFTMF(diag%lot, diag%numsteps, diag%numsteps, 1, diag%field, &
          diag%lot*diag%numsteps, diag%wsave, diag%lensav, diag%work, diag%lenwrk, ier)
-    if ( ier .ne. 0 ) M4_FATAL_ERROR({"CFFTMF failed!"})
-    
+    if ( ier .ne. 0 ) then 
+       M4_FATAL_ERROR({"CFFTMF failed!"})
+    end if
+       
+
     },{
 
     ! call fftpack5 real forward transform
 
     call RFFTMF(diag%lot, diag%numsteps, diag%numsteps, 1, diag%field, &
          diag%lot*diag%numsteps, diag%wsave, diag%lensav, diag%work, diag%lenwrk, ier)
-     if ( ier .ne. 0 ) M4_FATAL_ERROR({"RFFTMF failed!"})
-    
+    if ( ier .ne. 0 ) then
+       M4_FATAL_ERROR({"RFFTMF failed!"})
+    end if
+
     })
 
     deallocate(diag%wsave)
