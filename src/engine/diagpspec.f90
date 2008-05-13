@@ -47,14 +47,14 @@ module diagpspec
   
   integer :: npointer 
 
-  real(kind=8), pointer, dimension(:,:,:) :: field
+  real(kind=4), pointer, dimension(:,:,:) :: field
 
   ! for fourier transform
 
-  real(kind=8), pointer, dimension(:) :: wsave
+  real(kind=4), pointer, dimension(:) :: wsave
   integer :: lensav
 
-  real(kind=8), pointer, dimension(:) :: work
+  real(kind=4), pointer, dimension(:) :: work
   integer :: lenwrk
 
   })
@@ -314,7 +314,7 @@ contains
 
     call RFFTMI(diag%numsteps, diag%wsave, diag%lensav, ier)
     if ( ier .ne. 0 ) then 
-       M4_FATAL_ERROR({"RFFTMI FAILED!"})
+       M4_FATAL_ERROR({"DFFTMI FAILED!"})
     end if
 
     ! allocate work array for fft
