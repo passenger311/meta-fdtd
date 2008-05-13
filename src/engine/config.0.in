@@ -382,7 +382,7 @@
 GPL test	! output format and filename
 0 1000 10	! time window
 0. 0. 0. 	! polarizer:  phi, theta, psi
-.T.
+.F.
 (REG
    (BOX
       -30 30 1 -30 30 1 : 1. 1. 1. 

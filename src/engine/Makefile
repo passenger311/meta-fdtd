@@ -15,7 +15,7 @@ include ../define.mk
 
 # ---------------------------------------------------------------------
 
-.PHONY: clean proper default install all info sign check fftpack5 
+.PHONY: clean proper default install all info sign check 
 
 M4= m4 $(M4DEFINE)
 M4= m4 $(M4DEFINE)
@@ -51,6 +51,7 @@ grid.o
 
 # core objects
 CORE_OBJ=\
+fftpack5.o\
 numerics.o\
 signal.o\
 fdtd.o\
@@ -89,14 +90,13 @@ meta.o
 
 OBJ=$(BASIC_OBJ) $(CORE_OBJ)
 M4OBJ=$(patsubst %.o,%_m4.f90,$(OBJ))
-FFTPACK_OBJ2 = $(patsubst fftpack5/%,%,$(FFTPACK_OBJ))
 
 
 EXE = meta
 
 default: all
 
-all: check fftpack5/libfftpack.a $(ENGINE)/$(EXE) sign
+all: check $(ENGINE)/$(EXE) sign
 
 info:
 	@echo "."
@@ -162,7 +162,7 @@ $(TOP_OBJ): %.o : %.f90 $(BASIC_OBJ) $(CORE_OBJ) BUILD FLAVOUR
 
 $(ENGINE)/$(EXE) : $(TOP_OBJ) $(CORE_OBJ) $(BASIC_OBJ) second_wall.o $(ENGINE)
 	@echo [LD] $@
-	@$(strip $(F90) $(LDFLAGS) $(TOP_OBJ) $(CORE_OBJ) $(BASIC_OBJ) fftpack5/libfftpack.a second_wall.o -o $(ENGINE)/$(EXE))
+	@$(strip $(F90) $(LDFLAGS) $(TOP_OBJ) $(CORE_OBJ) $(BASIC_OBJ) second_wall.o -o $(ENGINE)/$(EXE))
 
 %.o : %.c
 	@echo [CC] $@
