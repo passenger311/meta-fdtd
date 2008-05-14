@@ -43,7 +43,7 @@ module diagpspec
 
   integer :: numsteps, numfield, lot
 
-  logical :: done, nohfield
+  logical :: done
   
   integer :: npointer 
 
@@ -101,7 +101,7 @@ contains
     diag%psi = w(3)
     
     ! assume |H| = |E| / n?
-    call readlogical(funit,lcount,diag%nohfield)
+    ! call readlogical(funit,lcount,diag%nohfield)
 
     
     })
@@ -148,15 +148,8 @@ contains
 
     diag%numsteps = (diag%ne-diag%ns)/diag%dn + 1
 
-    if ( diag%nohfield ) then
 
-       diag%numfield = 2
-
-    else
-
-       diag%numfield = 4
-
-    end if
+    diag%numfield = 4
 
     diag%lot = reg%numnodes * diag%numfield
 
@@ -168,7 +161,6 @@ contains
     M4_ALLOC_ERROR({ier},"InitializeDiagPSpec")
 
     deallocate(diag%field)
-
 
     diag%npointer = 0
     
@@ -258,19 +250,15 @@ contains
           diag%field(diag%npointer,p,1) = Ep1
           diag%field(diag%npointer,p,2) = Ep2
 
-          if ( .not. diag%nohfield ) then ! store H field projections
+          Hxh = real( 0.25 * ( Hx(M4_COORD(i,j,k)) + Hx(M4_COORD(i,j-1,k)) + Hx(M4_COORD(i,j,k-1)) + Hx(M4_COORD(i,j-1,k-1)) ) )
+          Hyh = real( 0.25 * ( Hy(M4_COORD(i,j,k)) + Hy(M4_COORD(i-1,j,k)) + Hy(M4_COORD(i,j,k-1)) + Hy(M4_COORD(i-1,j,k-1)) ) )
+          Hzh = real( 0.25 * ( Hz(M4_COORD(i,j,k)) + Hz(M4_COORD(i-1,j,k)) + Hz(M4_COORD(i,j-1,k)) + Hz(M4_COORD(i-1,j-1,k)) ) )
 
-             Hxh = real( 0.25 * ( Hx(M4_COORD(i,j,k)) + Hx(M4_COORD(i,j-1,k)) + Hx(M4_COORD(i,j,k-1)) + Hx(M4_COORD(i,j-1,k-1)) ) )
-             Hyh = real( 0.25 * ( Hy(M4_COORD(i,j,k)) + Hy(M4_COORD(i-1,j,k)) + Hy(M4_COORD(i,j,k-1)) + Hy(M4_COORD(i-1,j,k-1)) ) )
-             Hzh = real( 0.25 * ( Hz(M4_COORD(i,j,k)) + Hz(M4_COORD(i-1,j,k)) + Hz(M4_COORD(i,j-1,k)) + Hz(M4_COORD(i-1,j-1,k)) ) )
+          Hp1 =  diag%finc(4,1)*Hxh + diag%finc(5,1)*Hyh + diag%finc(6,1)*Hzh
+          Hp2 =  diag%finc(4,2)*Hxh + diag%finc(5,2)*Hyh + diag%finc(6,2)*Hzh
 
-             Hp1 =  diag%finc(4,1)*Hxh + diag%finc(5,1)*Hyh + diag%finc(6,1)*Hzh
-             Hp2 =  diag%finc(4,2)*Hxh + diag%finc(5,2)*Hyh + diag%finc(6,2)*Hzh
-
-             diag%field(diag%npointer,p,3) = Hp1
-             diag%field(diag%npointer,p,4) = Hp2
-          
-          end if
+          diag%field(diag%npointer,p,3) = Hp1
+          diag%field(diag%npointer,p,4) = Hp2
           
           })      
 
@@ -399,27 +387,11 @@ contains
           Ep1s = diag%field(2*l,p,1)
           Ep2s = diag%field(2*l,p,2)
 
-          if ( .not. diag%nohfield ) then
-            
-             Hp1c = diag%field(2*l-1,p,3)
-             Hp2c = diag%field(2*l-1,p,4)
+          Hp1c = diag%field(2*l-1,p,3)
+          Hp2c = diag%field(2*l-1,p,4)
 
-             Hp1s = diag%field(2*l,p,3)
-             Hp2s = diag%field(2*l,p,4)
-
-          else
-
-             ! that's not quite correct, but does it should not matter too much!
-
-             nrefr = 1./sqrt(epsinvx(M4_COORD(i,j,k))*M4_MUINVX(i,j,k))
-
-             Hp1c = Ep1c * nrefr
-             Hp2c = Ep2c * nrefr
-
-             Hp1s = Ep1s * nrefr
-             Hp2s = Ep2s * nrefr
-             
-          end if
+          Hp1s = diag%field(2*l,p,3)
+          Hp2s = diag%field(2*l,p,4)
 
           SumUp1 = SumUp1 + Ep1c * Hp1c + Ep1s * Hp1s
           SumUp2 = SumUp2 + Ep2c * Hp2c + Ep2s * Hp2s
