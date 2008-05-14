@@ -162,7 +162,7 @@ contains
 
     M4_WRITE_DBG({"kinc = ",diag%kinc(1),diag%kinc(2),diag%kinc(3)})
 
-    M4_WRITE_INFO({"points x steps = ",TRIM(i2str(reg%numnodes))," x ",TRIM(i2str(diag%numsteps)) })
+    M4_WRITE_INFO({"comp x points x steps = ",TRIM(i2str(diag%numfield))," x ",TRIM(i2str(reg%numnodes))," x ",TRIM(i2str(diag%numsteps)) })
 
     allocate(diag%field(0:diag%numsteps-1,1:reg%numnodes,diag%numfield),stat=ier) ! test allocation (do we have the memory?)
     M4_ALLOC_ERROR({ier},"InitializeDiagPSpec")
@@ -228,7 +228,7 @@ contains
 
        if ( ncyc .eq. diag%ns ) then
 
-          M4_WRITE_INFO({"initializing fft #",TRIM(i2str(diag%idx))})
+          M4_WRITE_INFO({"recording fft #",TRIM(i2str(diag%idx))})
 
           allocate(diag%field(0:diag%numsteps-1,1:reg%numnodes,diag%numfield),stat=ier)
           M4_ALLOC_ERROR(ier,"StepEDiagPSpec")
@@ -393,19 +393,19 @@ contains
 ! integrate power flux over spatial area       
        do p = 1, reg%numnodes
 
-          Ep1c = diag%field(2*w,p,1)
-          Ep2c = diag%field(2*w,p,2)
+          Ep1c = diag%field(2*w-1,p,1)
+          Ep2c = diag%field(2*w-1,p,2)
 
-          Ep1s = diag%field(2*w+1,p,1)
-          Ep2s = diag%field(2*w+1,p,2)
+          Ep1s = diag%field(2*w,p,1)
+          Ep2s = diag%field(2*w,p,2)
 
           if ( .not. diag%nohfield ) then
             
-             Hp1c = diag%field(2*w,p,3)
-             Hp2c = diag%field(2*w,p,4)
+             Hp1c = diag%field(2*w-1,p,3)
+             Hp2c = diag%field(2*w-1,p,4)
 
-             Hp1s = diag%field(2*w+1,p,3)
-             Hp2s = diag%field(2*w+1,p,4)
+             Hp1s = diag%field(2*w,p,3)
+             Hp2s = diag%field(2*w,p,4)
 
           else
 
@@ -426,7 +426,7 @@ contains
           end if
 
           SumUp1 = SumUp1 + Ep1c * Hp1c + Ep1s * Hp1s
-          SumUp2 = SumUp2 + Ep2c * Hp2c + Ep1s * Hp1s
+          SumUp2 = SumUp2 + Ep2c * Hp2c + Ep2s * Hp2s
 
        end do
 

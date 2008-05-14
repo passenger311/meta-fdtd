@@ -46,13 +46,13 @@
 
 (FDTD
 
-(!EPSILON
+(EPSILON
   (REG
-    (BOX
+    (!BOX
 	-200 +200 1 -200 +200 1 : 1. 1. 1.
     )BOX
     (BOX
-	-50 50 1 -200 200 1 : 4. 4. 4.
+	-200 200 1 -200 200 1 : 4. 4. 4.
     )BOX
   )REG
 )EPSILON
@@ -70,7 +70,7 @@
   (OUT
     VTK test_xy_en
     En N
-    0 2000 1000
+    2000 3000 200
     (REG
       (BOX
 	 -200 200 1 -200 200 1 
@@ -81,7 +81,7 @@
   (OUT
     VTK test1_xy_e
     E N 
-    800 2000 200
+    1000 2000 200
     (REG
       (BOX
 	 -200 200 1 -200 200 1
@@ -92,7 +92,7 @@
   (OUT
     VTK test1_xy_p
     P N
-    0 2000 1000
+    2000 3000 200
     (REG
       (BOX
 	 -200 200 1 -200 200 1
@@ -103,7 +103,7 @@
   (OUT
     VTK test1_xy_ez
     Ez N
-    0 2000 1000
+    2000 3000 200
     (REG
       (BOX
 	 -200 200 1 -200 200 1 
@@ -115,7 +115,7 @@
   (OUT
     VTK test1_xy_hz
     Hz N
-    800 2000 200
+    1000 2000 200
     (REG
       (BOX
 	 -200 200 1 -200 200 1 
@@ -167,10 +167,10 @@
 ! -----------------------------------------------------------------------
 
     
-(MATJSOURCE
+(!MATJSOURCE
 0.0133333333		! inv vacuum wavelength in units of [2 pi c]
-700             	! half width in timedomain (dn)
-0 1200 800 1200         ! offset, attack, sustain, decay periods [dt]
+20             		! half width in timedomain (dn)
+2000 40 0 40        	! offset, attack, sustain, decay periods [dt]
 .T.			! planewave mode?
 -45.0 90.0 0.0 2.0	! planewave: phi, theta, psi, nrefr  
 (REG
@@ -253,17 +253,17 @@
 ! -----------------------------------------------------------------------
 
     
-(!MATTFSF
+(MATTFSF
 0.0133333333		! inv vacuum wavelength in units of [2 pi c]
 !0.01333333333		! inv vacuum wavelength in units of [2 pi c]
 2.			! amplitude
 600           		! half width in timedomain (dn)
 0 1000 1000 0         	! offset, attack, sustain, decay periods [dt]
-65. 90.0 0.0 1.		! planewave: phi, theta, psi, nrefr 
+65. 90.0 0.0 2.		! planewave: phi, theta, psi, nrefr 
 1 1 1 1 0 0		! active planes
 (REG
   (BOX
-      -150 150 1 -150 150  
+      -150 150 1 -150 150 1
   )BOX		
 )REG
 )MATTFSF
@@ -378,17 +378,20 @@
 ! -----------------------------------------------------------------------
  
 
-(DIAGPSPEC
+(!DIAGPSPEC
 test		! filename ( .pspec )
-0 1535 1	! time window
-90. 90. 0. 	! polarizer:  phi, theta, psi
-.F.		! no h fields. 
+0 4095 1	! time window
+0. 90. 90. 	! polarizer:  phi, theta, psi
+.T.		! no h fields. 
 (REG
-   (POINT 
-	180 180 
+   (!POINT 
+	175 -175 
    )POINT
-   (!BOX
-      -180 180 1 180 180 1 : 1. 1. 1. 
+   (BOX
+  !    -175 175 1 175 175 1 
+     -175 175 1 -175 -175 1 
+  !   175 175 1 -175 175 1 
+  !   -175 -175 1 -175 175 1 
    )BOX
 )REG
 )DIAGPSPEC

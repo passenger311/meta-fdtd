@@ -342,7 +342,7 @@ contains
 
     M4_MODLOOP_EXPR({MATTFSOURCE},mat,{
 
-       if ( ncyc .gt. mat%nend ) cycle 
+       if ( ncyc .lt. mat%noffs .or. ncyc .gt. mat%nend ) cycle 
 
        M4_MODOBJ_GETREG(mat,reg)
 
@@ -451,7 +451,7 @@ contains
 
     M4_MODLOOP_EXPR({MATTFSOURCE},mat,{
 
-       if ( ncyc .gt. mat%nend ) cycle 
+       if ( ncyc .lt.mat%noffs .or. ncyc .gt. mat%nend ) cycle 
 
        M4_MODOBJ_GETREG(mat,reg)
 

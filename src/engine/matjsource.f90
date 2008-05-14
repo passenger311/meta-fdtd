@@ -265,7 +265,7 @@ contains
 
     end if
 
-    mat%nend = mat%natt + mat%nsus + mat%ndcy + mat%maxdelay
+    mat%nend = mat%noffs +mat%natt + mat%nsus + mat%ndcy + mat%maxdelay
 
     M4_IFELSE_DBG({call EchoMatJSourceObj(mat)},{call DisplayMatJSourceObj(mat)})
       
@@ -312,7 +312,7 @@ contains
 
     M4_MODLOOP_EXPR({MATJSOURCE},mat,{
 
-      if ( ncyc .gt. mat%nend ) cycle 
+      if ( ncyc .lt. mat%noffs .or. ncyc .gt. mat%nend ) cycle 
 
       M4_MODOBJ_GETREG(mat,reg)
 
@@ -439,6 +439,8 @@ M4_IFELSE_TE({
     sum = 0
 
     M4_MODLOOP_EXPR({MATJSOURCE},mat,{
+
+       if ( ncyc .lt. mat%noffs .or. ncyc .gt. mat%nend ) cycle 
 
     ! this loops over all mat structures, setting mat
 

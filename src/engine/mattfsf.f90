@@ -201,9 +201,9 @@ contains
 
     if ( DIM .eq. 3 ) then
        if ( mat%theta .ge. 0. .and. mat%theta .lt. 90. ) then
-          mat%orig(3) = reg%ks-1
+          mat%orig(3) = reg%ks-2
        else
-          mat%orig(3) = reg%ke+1
+          mat%orig(3) = reg%ke+2
        endif
     else
         mat%orig(3) = reg%ks
@@ -211,23 +211,23 @@ contains
 
 
     if ( mat%phi .ge. 0. .and. mat%phi .lt. 90. ) then
-       mat%orig(1) = reg%is-1
-       mat%orig(2) = reg%js-1
+       mat%orig(1) = reg%is-2
+       mat%orig(2) = reg%js-2
     end if
 
     if ( mat%phi .ge. 90. .and. mat%phi .lt. 180 ) then
-       mat%orig(1) = reg%ie+1
-       mat%orig(2) = reg%js-1
+       mat%orig(1) = reg%ie+2
+       mat%orig(2) = reg%js-2
     end if
 
     if ( mat%phi .ge. 180. .and. mat%phi .lt. 270. ) then
-       mat%orig(1) = reg%ie+1
-       mat%orig(2) = reg%je+1
+       mat%orig(1) = reg%ie+2
+       mat%orig(2) = reg%je+2
     end if
     
     if ( mat%phi .ge. 270. .and. mat%phi .lt. 360. ) then
-       mat%orig(1) = reg%is-1
-       mat%orig(2) = reg%je+1
+       mat%orig(1) = reg%is-2
+       mat%orig(2) = reg%je+2
     end if
     
     ! optical delay of point-to-origin field
@@ -247,7 +247,7 @@ contains
     do l = 1,3
 
        mat%finc(l)   =  mat%amp * mat%finc(l)                 !* 1./sqrt(mat%muinv)
-       mat%finc(l+3) =  mat%amp * mat%finc(l+3) * 1/mat%nrefr !* 1./sqrt(mat%epsinv)
+       mat%finc(l+3) =  mat%amp * mat%finc(l+3) * mat%nrefr   !* 1./sqrt(mat%epsinv)
 
     end do
 
@@ -360,7 +360,7 @@ contains
 
     M4_MODLOOP_EXPR({MATTFSF},mat,{
 
-       if ( ncyc .gt. mat%nend ) cycle 
+      if ( ncyc .lt. mat%noffs .or. ncyc .gt. mat%nend ) cycle 
 
        M4_MODOBJ_GETREG(mat,reg)
 
@@ -472,7 +472,7 @@ contains
 
     M4_MODLOOP_EXPR({MATTFSF},mat,{
 
-       if ( ncyc .gt. mat%nend ) cycle 
+       if ( ncyc .lt. mat%noffs .or. ncyc .gt. mat%nend ) cycle 
 
        M4_MODOBJ_GETREG(mat,reg)
 
