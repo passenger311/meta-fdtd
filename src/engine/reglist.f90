@@ -509,6 +509,7 @@ contains
           M4_FATAL_ERROR({"BAD NODE COUNT!"})
        endif
        numnodes = num ! new node number
+
     end if
 
     reg%numnodes = numnodes
@@ -806,7 +807,7 @@ contains
     logical :: isunit
     real(kind=8), pointer, dimension(:,:) :: newval
     
-    if ( reg%numval .eq. 0 .and. reg%numnodes .eq. 0 ) return
+    if ( reg%numval .eq. 0 .or. reg%numnodes .eq. 0 ) return
 
     allocate(reg%valptr(1:reg%numnodes), stat = err)
     M4_ALLOC_ERROR(err,{"CompressValRegObj"})

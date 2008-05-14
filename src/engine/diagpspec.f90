@@ -359,19 +359,20 @@ contains
 
     M4_MODOBJ_GETREG(diag,reg)
 
-    open(UNITTMP,FILE=fn,STATUS="unknown", IOSTAT=ios)
-    M4_OPEN_ERROR(ios,fn)
-
-    write(UNITTMP,*) "! PSPEC"
-    write(UNITTMP,*) "! N: ",TRIM(i2str(diag%ns))," ",TRIM(i2str(diag%ne))," ",TRIM(i2str(diag%dn))
-
     if ( mod(diag%numsteps,2) .eq. 0 ) then 
        nh = diag%numsteps/2 - 1
     else
        nh = (diag%numsteps-1)/2
     end if
 
-    write(UNITTMP,*) "! F: 1 ",TRIM(i2str(nh))
+    open(UNITTMP,FILE=fn,STATUS="unknown", IOSTAT=ios)
+    M4_OPEN_ERROR(ios,fn)
+
+    write(UNITTMP,*) "! TFRAME: ",TRIM(i2str(diag%ns))," ",TRIM(i2str(diag%ne))," ",TRIM(i2str(diag%dn))
+    write(UNITTMP,*) "! DT = ", DT
+    write(UNITTMP,*) "! FFRAME: 1 ",TRIM(i2str(nh))
+    write(UNITTMP,*) "! DF = ", 1./(diag%numsteps*DT)
+    write(UNITTMP,*) "! DATA: FREQ SP1 SP2"
 
     do l = 1, nh 
 
@@ -398,7 +399,8 @@ contains
 
        })
 
-       write(UNITTMP,*) l, SumUp1, SumUp2
+
+       write(UNITTMP,*) l/(diag%numsteps*DT), SumUp1/reg%numnodes, SumUp2/reg%numnodes
 
     end do
 
