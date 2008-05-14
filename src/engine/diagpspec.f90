@@ -356,9 +356,9 @@ contains
 
     type(T_DIAGPSPEC) :: diag
 
-    type(T_REG) :: reg
     character(len=STRLNG) :: fn
-    integer :: w, ios,i,j,k,p
+    integer :: l, ios
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(0))
 
     real(kind=8) :: nrefr
     real(kind=8) :: Ep1c, Ep2c, Hp1c, Hp2c,  Ep1s, Ep2s, Hp1s, Hp2s
@@ -385,52 +385,48 @@ contains
 
     write(UNITTMP,*) "! F: 1 ",TRIM(i2str(nh))
 
-    do w = 1, nh 
+    do l = 1, nh 
 
        SumUp1 = 0.
        SumUp2 = 0.
 
-! integrate power flux over spatial area       
-       do p = 1, reg%numnodes
+! integrate power flux over spatial area    
+       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+   
+          Ep1c = diag%field(2*l-1,p,1)
+          Ep2c = diag%field(2*l-1,p,2)
 
-          Ep1c = diag%field(2*w-1,p,1)
-          Ep2c = diag%field(2*w-1,p,2)
-
-          Ep1s = diag%field(2*w,p,1)
-          Ep2s = diag%field(2*w,p,2)
+          Ep1s = diag%field(2*l,p,1)
+          Ep2s = diag%field(2*l,p,2)
 
           if ( .not. diag%nohfield ) then
             
-             Hp1c = diag%field(2*w-1,p,3)
-             Hp2c = diag%field(2*w-1,p,4)
+             Hp1c = diag%field(2*l-1,p,3)
+             Hp2c = diag%field(2*l-1,p,4)
 
-             Hp1s = diag%field(2*w,p,3)
-             Hp2s = diag%field(2*w,p,4)
+             Hp1s = diag%field(2*l,p,3)
+             Hp2s = diag%field(2*l,p,4)
 
           else
 
              ! that's not quite correct, but does it should not matter too much!
 
-             i = reg%i(p)
-             j = reg%j(p)
-             k = reg%k(p)
-
              nrefr = 1./sqrt(epsinvx(M4_COORD(i,j,k))*M4_MUINVX(i,j,k))
 
-             Hp1c = Ep1c/nrefr
-             Hp2c = Ep2c/nrefr
+             Hp1c = Ep1c * nrefr
+             Hp2c = Ep2c * nrefr
 
-             Hp1s = Ep1s/nrefr
-             Hp2s = Ep2s/nrefr
+             Hp1s = Ep1s * nrefr
+             Hp2s = Ep2s * nrefr
              
           end if
 
           SumUp1 = SumUp1 + Ep1c * Hp1c + Ep1s * Hp1s
           SumUp2 = SumUp2 + Ep2c * Hp2c + Ep2s * Hp2s
 
-       end do
+       })
 
-       write(UNITTMP,*) w, SumUp1, SumUp2
+       write(UNITTMP,*) l, SumUp1, SumUp2
 
     end do
 
