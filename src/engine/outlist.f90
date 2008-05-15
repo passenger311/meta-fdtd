@@ -139,7 +139,7 @@ contains
        end if
        M4_SYNTAX_ERROR({err},lcount,"FN [MODE [SNAP]]")
        if ( line .eq. "" ) then
-          snap = .false.
+          snap = .true.
        else
           call getlogical(line,snap,err)
        end if

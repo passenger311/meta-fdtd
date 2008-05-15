@@ -225,9 +225,9 @@ contains
 
       if ( out%mode .ne. 'S' ) then
          if ( reg%isbox ) then
-            write(out%funit,"(E15.6E3)") real(vx,8), real(vy,8), real(vz,8)
+            write(out%funit,"(3E15.6E3)") real(vx,8), real(vy,8), real(vz,8)
          else
-            write(out%funit,"(M4_SDIM({I5}),(E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}),real(vx,8),real(vy,8),real(vz,8)
+            write(out%funit,"(M4_SDIM({I5}),(3E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}),real(vx,8),real(vy,8),real(vz,8)
          endif
       else
          sx = sx + vx
@@ -238,7 +238,7 @@ contains
       },{if ( reg%is .ne. reg%ie ) write(out%funit,*)}, {if ( reg%js .ne. reg%je ) write(out%funit,*)} )
 
       if ( out%mode .eq. 'S' ) then
-          write(out%funit,"(E15.6E3)") real(sx,8), real(sy,8), real(sz,8)
+          write(out%funit,"(3E15.6E3)") real(sx,8), real(sy,8), real(sz,8)
       endif
    
     end subroutine WriteVector

@@ -317,8 +317,6 @@ contains
 
     mat%nend = mat%noffs + mat%natt + mat%nsus + mat%ndcy + mat%maxdelay
 
-
-
     M4_IFELSE_DBG({call EchoMatTfsfObj(mat)},{call DisplayMatTfsfObj(mat)})
       
     })
@@ -430,6 +428,9 @@ contains
         integer :: n, di
         integer :: i,j,k
 
+        if ( je .lt. js ) je = js
+        if ( ke .lt. ks ) ke = ks
+        
         n = mat%signalp +  mat%maxdelay * mat%tres 
 
         do k = ks, ke
@@ -565,7 +566,10 @@ contains
         integer :: i,j,k
 
         n = mat%signalp + mat%maxdelay * mat%tres - 0.5 * mat%tres
-         
+
+        if ( je .lt. js ) je = js
+        if ( ke .lt. ks ) ke = ks
+                 
         do k = ks, ke
            do j = js, je
               do i = is, ie

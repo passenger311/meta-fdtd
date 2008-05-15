@@ -189,7 +189,6 @@ contains
     mat%phi = mod(mat%phi+360., 360.)
     mat%psi = mod(mat%psi+360., 360.)
 
-
     if ( DIM .eq. 3 ) then
        if ( mat%theta .ge. 0. .and. mat%theta .lt. 90. ) then
           mat%orig(3) = reg%ks-1
@@ -300,7 +299,6 @@ contains
     mat%nend = mat%noffs + mat%natt + mat%nsus + mat%ndcy + mat%maxdelay
 
 
-
     M4_IFELSE_DBG({call EchoMatTfSourceObj(mat)},{call DisplayMatTfSourceObj(mat)})
       
     })
@@ -352,6 +350,7 @@ contains
           call CalcEComp(mat, Ey, -1,0,0, 6, zero, zero, val) 
           val = - mat%finc(5) ! - Hy_inc
           call CalcEComp(mat, Ez, -1,0,0, 5, zero, val, zero) 
+ 
        endif
 
        if ( mat%plane .eq. 2 ) then 
