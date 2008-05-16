@@ -358,7 +358,9 @@ contains
 
     real(kind=8) :: nrefr
     real(kind=8) :: Ep1c, Ep2c, Hp1c, Hp2c,  Ep1s, Ep2s, Hp1s, Hp2s
-    real(kind=8) :: SumUp1, SumUp2, SumE1c, SumE1s, SumE2c, SumE2s, SumH1c, SumH1s, SumH2c, SumH2s   
+    real(kind=8) :: SumS1, SumS2, SumE1c, SumE1s, SumE2c, SumE2s, SumH1c, SumH1s, SumH2c, SumH2s   
+    real(kind=8) :: SumEa1,SumEa2,SumHa1,SumHa2,SumEph1,SumEph2,SumHph1,SumHph2
+    real(kind=8) :: norm, freq, j1, j2, ph1, ph2, ph1o, ph2o
        
     integer :: nh
 
@@ -377,16 +379,59 @@ contains
     open(UNITTMP,FILE=fn,STATUS="unknown", IOSTAT=ios)
     M4_OPEN_ERROR(ios,fn)
 
-    write(UNITTMP,*) "! TFRAME: ",TRIM(i2str(diag%ns))," ",TRIM(i2str(diag%ne))," ",TRIM(i2str(diag%dn))
-    write(UNITTMP,*) "! DT = ", DT
-    write(UNITTMP,*) "! FFRAME: 1 ",TRIM(i2str(nh))
-    write(UNITTMP,*) "! DF = ", 1./(diag%numsteps*DT)
-    write(UNITTMP,*) "! DATA: FREQ SP1 SP2"
+
+    select case ( diag%mode ) 
+    case( "Ecs" )
+       write(UNITTMP,*) "# ",TRIM(diag%mode)
+       write(UNITTMP,*) "# 4"
+    case( "Hcs" ) 
+       write(UNITTMP,*) "# ",TRIM(diag%mode)
+       write(UNITTMP,*) "# 4"
+    case( "Eap" )
+       write(UNITTMP,*) "# ",TRIM(diag%mode)
+       write(UNITTMP,*) "# 4"
+    case( "Hap" ) 
+       write(UNITTMP,*) "# ",TRIM(diag%mode)
+       write(UNITTMP,*) "# 4"
+    case ("S")
+       write(UNITTMP,*) "# ",TRIM(diag%mode)
+       write(UNITTMP,*) "# 2"
+    end select
+
+    write(UNITTMP,*) "# .inf tframe: ",TRIM(i2str(diag%ns))," ",TRIM(i2str(diag%ne))," ",TRIM(i2str(diag%dn))
+    write(UNITTMP,*) "# .inf dt = ", DT
+    write(UNITTMP,*) "# .inf fframe: 1 ",TRIM(i2str(nh))
+    write(UNITTMP,*) "# .inf df = ", 1./(diag%numsteps*DT)
+
+    j1 = 0.
+    j2 = 0.
+    ph1o = 5.
+    ph2o = 5.
 
     do l = 1, nh 
 
-       SumUp1 = 0.
-       SumUp2 = 0.
+       SumS1 = 0.
+       SumS2 = 0.
+
+       SumE1c = 0.
+       SumE1s = 0.
+       SumE2c = 0.
+       SumE2s = 0.
+
+       SumH1c = 0.
+       SumH1s = 0.
+       SumH2c = 0.
+       SumH2s = 0.
+
+       SumEa1 = 0.
+       SumEa2 = 0.
+       SumHa1 = 0.
+       SumHa2 = 0.
+
+       SumEph1 = 0.
+       SumEph2 = 0.
+       SumHph1 = 0.
+       SumHph2 = 0.
 
 ! integrate power flux over spatial area    
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
@@ -403,8 +448,8 @@ contains
           Hp1s = diag%field(2*l,p,3)
           Hp2s = diag%field(2*l,p,4)
 
-          SumUp1 = SumUp1 + Ep1c * Hp1c + Ep1s * Hp1s
-          SumUp2 = SumUp2 + Ep2c * Hp2c + Ep2s * Hp2s
+          SumS1 = SumS1 + Ep1c * Hp1c + Ep1s * Hp1s
+          SumS2 = SumS2 + Ep2c * Hp2c + Ep2s * Hp2s
 
           SumE1c = SumE1c + Ep1c 
           SumE1s = SumE1s + Ep1s
@@ -416,18 +461,40 @@ contains
           SumH2c = SumH2c + Hp2c 
           SumH2s = SumH2s + Hp2s
 
+          SumEa1 = SumEa1 + Ep1c * Ep1c + Ep1s * Ep1s
+          SumEa2 = SumEa2 + Ep2c * Ep2c + Ep2s * Ep2s
+
+          SumHa1 = SumHa1 + Hp1c * Hp1c + Hp1s * Hp1s
+          SumHa2 = SumHa2 + Hp2c * Hp2c + Hp2s * Hp2s
+
+          SumEph1 = SumEph1 + Ep1s/Ep1c
+          SumEph2 = SumEph2 + Ep2s/Ep2c
+
+          SumHph1 = SumHph1 + Hp1s/Hp1c
+          SumHph2 = SumHph2 + Hp2s/Hp2c
+
        })
 
+       norm = reg%numnodes
+       freq = l/(diag%numsteps*DT)
 
        select case ( diag%mode ) 
-       case( "E" )
-          write(UNITTMP,*) l/(diag%numsteps*DT), SumE1c/reg%numnodes, SumE1s/reg%numnodes, &
-               SumE2c/reg%numnodes, SumE2s/reg%numnodes
-       case( "H" ) 
-          write(UNITTMP,*) l/(diag%numsteps*DT), SumH1c/reg%numnodes, SumH1s/reg%numnodes, &
-               SumH2c/reg%numnodes, SumH2s/reg%numnodes
-       case  default 
-          write(UNITTMP,*) l/(diag%numsteps*DT), SumUp1/reg%numnodes, SumUp2/reg%numnodes
+       case( "Ecs" )
+          write(UNITTMP,*) freq, SumE1c/norm, SumE1s/norm, SumE2c/norm, SumE2s/norm
+       case( "Hcs" ) 
+          write(UNITTMP,*) freq, SumH1c/norm, SumH1s/norm, SumH2c/norm, SumH2s/norm
+       case( "Eap" )
+          ph1 = atan(SumEph1/norm)
+          if ( ph1 .lt. ph1o ) j1 = j1 + PI 
+          ph2 = atan(SumEph2/norm)
+          if ( ph2 .lt. ph2o ) j2 = j2 + PI
+          ph1o = ph1
+          ph2o = ph2
+          write(UNITTMP,*) freq, sqrt(SumEa1)/norm, (ph1+j1), sqrt(SumEa2)/norm, (ph2+j2)
+       case( "Hap" ) 
+          write(UNITTMP,*) freq, sqrt(SumHa1)/norm, atan(SumHph1)/norm, sqrt(SumHa2)/norm, atan(SumHph2)/norm
+       case ("S")
+          write(UNITTMP,*) freq, SumS1/norm, SumS2/norm
        end select
           
 
