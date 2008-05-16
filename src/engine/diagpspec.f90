@@ -39,7 +39,7 @@ module diagpspec
 
   real(kind=8) :: kinc(3), finc(6,2) ! normal plane vector and field components
      
-  character(len=80) :: fmt, filename
+  character(len=80) :: mode, filename
 
   integer :: numsteps, numfield, lot
 
@@ -81,6 +81,11 @@ contains
     M4_EOF_ERROR(eof,lcount)
     call getstring(line,diag%filename,err)
     M4_SYNTAX_ERROR({line .ne. ""},lcount,"FILENAME")
+
+    call readline(funit,lcount,eof,line)
+    M4_EOF_ERROR(eof,lcount)
+    call getstring(line,diag%mode,err)
+    M4_SYNTAX_ERROR({line .ne. ""},lcount,"MODE")
 
     M4_WRITE_DBG({"filename: ", TRIM(diag%filename)})
 
@@ -353,7 +358,8 @@ contains
 
     real(kind=8) :: nrefr
     real(kind=8) :: Ep1c, Ep2c, Hp1c, Hp2c,  Ep1s, Ep2s, Hp1s, Hp2s
-    real(kind=8) :: SumUp1, SumUp2
+    real(kind=8) :: SumUp1, SumUp2, SumE1c, SumE1s, SumE2c, SumE2s, SumH1c, SumH1s, SumH2c, SumH2s   
+       
     integer :: nh
 
     fn = cat2(diag%filename,sfx)
@@ -400,10 +406,30 @@ contains
           SumUp1 = SumUp1 + Ep1c * Hp1c + Ep1s * Hp1s
           SumUp2 = SumUp2 + Ep2c * Hp2c + Ep2s * Hp2s
 
+          SumE1c = SumE1c + Ep1c 
+          SumE1s = SumE1s + Ep1s
+          SumE2c = SumE2c + Ep2c 
+          SumE2s = SumE2s + Ep2s
+
+          SumH1c = SumH1c + Hp1c 
+          SumH1s = SumH1s + Hp1s
+          SumH2c = SumH2c + Hp2c 
+          SumH2s = SumH2s + Hp2s
+
        })
 
 
-       write(UNITTMP,*) l/(diag%numsteps*DT), SumUp1/reg%numnodes, SumUp2/reg%numnodes
+       select case ( diag%mode ) 
+       case( "E" )
+          write(UNITTMP,*) l/(diag%numsteps*DT), SumE1c/reg%numnodes, SumE1s/reg%numnodes, &
+               SumE2c/reg%numnodes, SumE2s/reg%numnodes
+       case( "H" ) 
+          write(UNITTMP,*) l/(diag%numsteps*DT), SumH1c/reg%numnodes, SumH1s/reg%numnodes, &
+               SumH2c/reg%numnodes, SumH2s/reg%numnodes
+       case  default 
+          write(UNITTMP,*) l/(diag%numsteps*DT), SumUp1/reg%numnodes, SumUp2/reg%numnodes
+       end select
+          
 
     end do
 
