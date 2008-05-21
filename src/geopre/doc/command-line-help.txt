@@ -1,0 +1,50 @@
+
+Usage: gridsetup [OPTIONS]... FILE
+
+Options:
+-cn <node-name>    Specifies Cluster Node name
+-om <output-list>  Selects "OutputList" section (default:"default")
+-os <output-file>  Selects "OutputFile" section (default:"default"), uses Single File Output Mode (SFOM)
+-s                 Silent mode (no output on screen), overwrite files without asking
+-o                 Overwrite files without asking
+-b                 Backup existing files before overwriting
+-n                 No output of parsing or value errors
+-f                 Print full statistics
+##EXT##-e                 Show Error Details
+
+Single File Output Mode (SFOM), uses OutputFile with id="default" as default
+-file <file>               Specifies Output file (mandatory for SFOM)
+-parameter <param.-name>   Parameter Selection (mandatory for SFOM)
+-format <format>           Format Selection (default: "vtk")
+-objectcut <object>        Cuts grid to fit contain only this object (same grid points)
+##EXT##-oyee <TRUE/FALSE>         Sets whether Output-File should contain all Yee-components
+
+Overwrite grid parameters (for one specified grid)
+-grid <grid-name>           Grid Selection (default: "default"). Must always be before other grid related parameters
+-points <x> <y> <z>         Sets number of points in X, Y and Z direction
+-origin <x> <y> <z>         Sets the origin of the grid
+-size <x> <y> <z>           Sets the size of the grid
+##EXT##-sg <ALWAYS/TRUE/FALSE>     Set Subgridding Mode
+##EXT##-yee <TRUE/FALSE>           Enables / disables grid doubling to be able to calculate all Yee-components
+##EXT##-sg_divisions <x> <y> <z>   Sets number subgridding steps in each direction
+##EXT##-pf_scale <scale>           Sets the scaling factor for pointframes
+##EXT##-pf_divisions <x> <y> <z>   Sets number of subdivisions in pointframes
+##EXT##-pf_facepoints <TRUE/FALSE> Enables / disables the creation of midpoints on pointframe faces
+
+Geometry Modifications
+-objects <object1>[,<object2>]...    <- no spaces allowed between objects
+                           Selection of objects to use
+-disable-objects <object1>[,<object2>]...   
+                           Disable use of given objects
+-new-parameter <parameter-name> <object1>[,<object2>]...    <- no spaces allowed between objects
+                           Add parameter <parameter-name> to given objects
+##EXT##-delete-parameter <parameter-name> <object1>[,<object2>]...    <- no spaces allowed between objects
+##EXT##                           Delete parameter <parameter-name> from given objects
+
+
+--help           Print Help (this message)
+--file-format    XML input-file-format description
+--extended-help  Print extended Help (show rarely used features)
+--version        Print version information
+--license        Print licensing information
+

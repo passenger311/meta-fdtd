@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GEOEN xmlns:GEOEN="http://xx" verified="false" xmi.version="1.2">
+
+<UnitDefinitions>
+	<Unit name="nm" type="length" factor="1E-9"/>
+	<Unit name="deg" type="angle" factor="0.017453292519943295"/>
+</UnitDefinitions>
+
+<ParameterDefinitions>
+	<Material id="drude1" type="DRUDE" lambda="24nm"/>
+	<ScalarField id="epsilon" values="epsl" default="1"/>
+</ParameterDefinitions>
+
+<GridDefinitions>
+	<Grid id="default" points="51,51,51" origin="-10,-10,-10" size="20,20,20" subgridding="ENABLED" subgriddingdivisions="5,5,5" />
+	<TempGrid id="default:0" points="51,51,51" origin="-10,-10,-10" size="20,20,20" subgridding="ENABLED" subgriddingdivisions="5,5,5" />
+	<TempGrid id="default:1" points="51,51,51" origin="-10,-10,-10" size="20,20,20" subgridding="ENABLED" subgriddingdivisions="5,5,5" />
+	subgridding = ENABLED (DISABLED, ALWAYS)
+	subgriddingdivisions = 5,5,5
+	yeegrid = TRUE (FALSE)
+	pointframescale = 2.0
+	pointframedivisions = 1,1,1
+	pointframefacepoints = TRUE (FALSE)
+	<Grid id="small" points="41,41,41" origin="0,0,0" size="20,20,20" subgridding="ENABLED" subgriddingdivisions="5,5,5" yeegrid="FALSE" />	
+	<Grid id="big" points="101,101,101" origin="-10,-10,-10" size="20,20,20" subgridding="ENABLED" yeegrid="FALSE" subgriddingdivisions="5,5,5" />
+</GridDefinitions>
+
+<Geometry00>
+  <Box position="1,5,-2.5" size="5,8,5" />
+</Geometry00>
+
+<Geometry>
+	<SimpleTransform translation="-6,-6,6">
+		<ConvexPrism height="4" points="4,4 | 7,-1 | 0,-1 | -2,4 | 0,5" />
+	</SimpleTransform>
+	<SimpleTransform translation="-6,-6,0">
+		<SimplePrism height="4" points="4,4 | 7,0 | 6,-1 | 6,-2 | 5,-1.5 | 5,0 | 2.5,-1.5 | 4,-2 | 4,-3 | 1,-4 | -4,4 | 0,2 | 1,2" />
+	</SimpleTransform>
+	<SimpleTransform scale="1" translation="-5,-5,-6">
+		<BezierPrism height="4" points="2,0 | 2,-5 | 3.5,-3 | 3.5,-6 | 3.5,-10 | -3.5,-10 | -3.5,-6 | -3.5,-3 | -2,-5 | -2,0" steps="10" />
+	</SimpleTransform>
+	<SimpleTransform translation="-10,-10,0">
+		<SimpleTransform scale="0.2">
+			<LogicAndNot id="epsilonstruct" parameter="epsilon:2">
+				<Sphere id="sphere1" position="10,10,10" radius="11.3" parameter="drude1" />
+				<SimpleTransform scale="1.2" translation="4,4,4" rotationaxis="1,1,1" rotationangle="0deg">
+					<LogicOr>
+						<Sphere radius="2" position="10,0,0"/>
+						<Cylinder radius="2" height="8" />
+					</LogicOr>
+				</SimpleTransform>
+			</LogicAndNot>
+		</SimpleTransform>
+	</SimpleTransform>
+	<SimpleTransform scale="1" translation="5,5,5">
+		<SimpleRotationZ>
+			<LogicOr>
+				<SimpleTransform translation="5,0,2">
+					<Cylinder radius="0.5" height="3" />
+				</SimpleTransform>
+				<Sphere radius="2" position="5,0,0"/>
+			</LogicOr>
+		</SimpleRotationZ>
+	</SimpleTransform>
+	<Ellipsoid id="ellipsoid1" position="10,1,5" scale="4,1,7" />
+</Geometry>
+
+<Detectors>
+	<PointListDetector timesteps="10" variables="Ex Ey Ez">
+		<GridPoint point="0,0,0" />
+		<GridPoint point="50,50,10" />
+		<GridPoint point="99,99,19" />
+	</PointListDetector>
+</Detectors>
+
+<OutputTemplates>
+	<OutputList id="default" cluster="TRUE" format="fortran_in">
+		id="default" 
+		gridsetup -cn node_04 XMLFILE.GEO
+		<OutputFile id="drude1" parameter="drude1" grid="default" file="mat_drude1.in" />
+		<TempOutputFile id="drude1:0" clusterindex="0" parameter="drude1" grid="default:0" file="mat_drude1.in" />
+		<OutputFile id="drude1:1" clusterindex="1" parameter="drude1" grid="default:1" file="mat_drude1.in" />
+		<OutputFile id="ka" parameter="drude1" grid="small" format="vtk" yeegrid="FALSE" file="mat_drude1_preview.vtk" />
+	</OutputList>
+	<OutputFile id="default" parameter="drude1" grid="big" yeegrid="FALSE" format="vtk" file="mat_drude1_preview.vtk" />
+	<OutputList id="preview" cluster="FALSE" yeegrid="FALSE">
+		gridsetup -o preview XMLFILE.GEO
+		<OutputFile id="drude1_pre" parameter="drude1" grid="small" format="vtk" file="mat_drude1_preview.vtk" />
+		<OutputFile parameter="drude1" grid="small" format="fortran_in" file="mat_drude1_preview.in" />
+		<OutputFile id="epsl_test" parameter="epsilon" grid="small" format="vtk" file="%DATETIME%_epsilon_test.vtk" yeegrid="FALSE" />
+		<OutputFile id="drude1_pre" parameter="drude1" grid="small" objectcut="ellipsoid1" format="vtk" file="object1.vtk" />
+		id: not mandatory for OutputFile
+		parameter: output parameter
+		grid: output grid
+		format: output file-format
+		objectcut: constrain output to single object, must be toplevel object
+		file: output file
+		yeegrid: write all yee grid components to file
+
+		
+	</OutputList>
+</OutputTemplates>
+
+<ClusterDescription totalnodes="10" splitmode="Z_AXIS">
+	<ClusterNode index="0" workload="5"/>
+	<ClusterNodeTemplates startindex="1" endindex="8" id="node_%INDEX:2%" workload="10" />
+	<ClusterNode index="9" workload="5"/>
+</ClusterDescription>
+</GEOEN>

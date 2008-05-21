@@ -1,0 +1,18 @@
+#	File	Function	Error Class	Description
+1001	Scene.cpp	readCommandLineArguments	ArgumentException	unknown parameter
+1002	Scene.cpp	readCommandLineArguments	ArgumentException	parameter missing
+1003	Scene.cpp	readCommandLineArguments	Exception	mandatory command-line parameters are missing
+1004	Scene.cpp	readCommandLineArguments	ValueParseException	unknown subgridding value, use TRUE, FALSE or ALWAYS
+2001	ArgumentReader.cpp	readVector3	ValueParseException	invalid vector string, wroing number of components
+2002	ArgumentReader.cpp	readVector2	ValueParseException	invalid vector string, wroing number of components
+2003	ArgumentReader.cpp	readReference	ValueException	unknown object reference
+2004	ArgumentReader.cpp	readVector3	ValueException	no value given
+2005	ArgumentReader.cpp	readVector2	ValueException	no value given
+2006	ArgumentReader.cpp	readBoolean	ValueParseException	unknown boolean value, use TRUE or FALSE
+3001	Scene.cpp	readSceneFile	FileException	no filename given
+3002	Scene.cpp	readSceneFile	FileException	could not open file
+3003	Scene.cpp	readSceneFile	FileParsingException	XML parsing error
+4001	GridBoxParser.cpp	startElement	ValueParsingError	invalid object
+
+
+

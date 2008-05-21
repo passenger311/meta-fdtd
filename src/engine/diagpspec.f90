@@ -33,15 +33,15 @@ module diagpspec
 
   M4_MODHEAD_DECL({DIAGPSPEC},100,{
 
-  integer :: ns, ne, dn  ! time stepping 
+  integer :: ns, ne, dn, nh  ! time stepping 
 
   real(kind=8) :: theta, phi, psi   ! angles for face normal projection and polarizer
 
   real(kind=8) :: kinc(3), finc(6,2) ! normal plane vector and field components
      
-  character(len=80) :: mode, filename
+  character(len=80) :: mode, filename, refname
 
-  integer :: numsteps, numfield, lot
+  integer :: numsteps, numfield, lot, numcomp
 
   logical :: done
   
@@ -82,12 +82,37 @@ contains
     call getstring(line,diag%filename,err)
     M4_SYNTAX_ERROR({line .ne. ""},lcount,"FILENAME")
 
+    M4_WRITE_DBG({"filename: ", TRIM(diag%filename)})
+
+
     call readline(funit,lcount,eof,line)
     M4_EOF_ERROR(eof,lcount)
     call getstring(line,diag%mode,err)
-    M4_SYNTAX_ERROR({line .ne. ""},lcount,"MODE")
 
-    M4_WRITE_DBG({"filename: ", TRIM(diag%filename)})
+    select case ( diag%mode ) 
+    case ( "S" )
+       diag%numcomp = 2
+    case ( "Ecs" ) 
+       diag%numcomp = 4
+    case ( "Hcs" ) 
+       diag%numcomp = 4
+    case ( "Eap" ) 
+       diag%numcomp = 4
+    case ( "Hap" ) 
+       diag%numcomp = 4
+    case default
+        M4_SYNTAX_ERROR(.true.,lcount,"S | Ecs | Eap | Hcs | Hap")
+    end select
+         
+    M4_WRITE_DBG({"mode: ", TRIM(diag%mode)})
+
+    call getstring(line,diag%refname,err)
+    if ( err ) diag%refname = "not_defined"
+
+    M4_SYNTAX_ERROR({line .ne. ""},lcount,"MODE [REF.FILENAME]")
+
+
+    M4_WRITE_DBG({"ref. filename: ", TRIM(diag%refname)})
 
     call readints(funit,lcount,v,3) 
     diag%ns = v(1)
@@ -129,6 +154,7 @@ contains
 
     M4_WRITE_DBG(". enter InitializeMatPSpec")
     M4_MODLOOP_EXPR({DIAGPSPEC},diag,{
+
     
     M4_MODOBJ_GETREG(diag,reg)
 
@@ -156,6 +182,12 @@ contains
 
     diag%numsteps = (diag%ne-diag%ns)/diag%dn + 1
 
+
+    if ( mod(diag%numsteps,2) .eq. 0 ) then 
+       diag%nh = diag%numsteps/2 - 1
+    else
+       diag%nh = (diag%numsteps-1)/2
+    end if
 
     diag%numfield = 4
 
@@ -353,15 +385,18 @@ contains
     type(T_DIAGPSPEC) :: diag
 
     character(len=STRLNG) :: fn
-    integer :: l, ios
+    integer :: l, m, ios
     M4_REGLOOP_DECL(reg,p,i,j,k,w(0))
 
-    real(kind=8) :: nrefr
+    real(kind=8) :: nrefr, df
     real(kind=8) :: Ep1c, Ep2c, Hp1c, Hp2c,  Ep1s, Ep2s, Hp1s, Hp2s
     real(kind=8) :: SumS1, SumS2, SumE1c, SumE1s, SumE2c, SumE2s, SumH1c, SumH1s, SumH2c, SumH2s   
     real(kind=8) :: SumEa1,SumEa2,SumHa1,SumHa2,SumEph1,SumEph2,SumHph1,SumHph2
+    real(kind=8) :: SumEph1_old,SumEph2_old,SumHph1_old,SumHph2_old
     real(kind=8) :: norm, freq, j1, j2, ph1, ph2, ph1o, ph2o
-       
+    real(kind=8) :: rfreq, rv(6), d1, d2
+    logical :: hasref
+
     integer :: nh
 
     fn = cat2(diag%filename,sfx)
@@ -370,45 +405,46 @@ contains
 
     M4_MODOBJ_GETREG(diag,reg)
 
-    if ( mod(diag%numsteps,2) .eq. 0 ) then 
-       nh = diag%numsteps/2 - 1
-    else
-       nh = (diag%numsteps-1)/2
-    end if
+    df = 1./((diag%ne-diag%ns+1)*DT)
 
     open(UNITTMP,FILE=fn,STATUS="unknown", IOSTAT=ios)
     M4_OPEN_ERROR(ios,fn)
 
+    write(UNITTMP,*) "# GPL: PSPEC"
+    write(UNITTMP,*) "# ",TRIM(diag%mode)," ! mode"
+    write(UNITTMP,*) "# ",TRIM(i2str(diag%ns))," ",TRIM(i2str(diag%ne))," ",TRIM(i2str(diag%dn)), " ! tframe"
+    write(UNITTMP,*) "# ", DT, " ! dt"
+    write(UNITTMP,*) "# 1 ",TRIM(i2str(diag%nh))," ! fframe"
+    write(UNITTMP,*) "# ", df, " ! df"
 
-    select case ( diag%mode ) 
-    case( "Ecs" )
-       write(UNITTMP,*) "# ",TRIM(diag%mode)
-       write(UNITTMP,*) "# 4"
-    case( "Hcs" ) 
-       write(UNITTMP,*) "# ",TRIM(diag%mode)
-       write(UNITTMP,*) "# 4"
-    case( "Eap" )
-       write(UNITTMP,*) "# ",TRIM(diag%mode)
-       write(UNITTMP,*) "# 4"
-    case( "Hap" ) 
-       write(UNITTMP,*) "# ",TRIM(diag%mode)
-       write(UNITTMP,*) "# 4"
-    case ("S")
-       write(UNITTMP,*) "# ",TRIM(diag%mode)
-       write(UNITTMP,*) "# 2"
-    end select
-
-    write(UNITTMP,*) "# .inf tframe: ",TRIM(i2str(diag%ns))," ",TRIM(i2str(diag%ne))," ",TRIM(i2str(diag%dn))
-    write(UNITTMP,*) "# .inf dt = ", DT
-    write(UNITTMP,*) "# .inf fframe: 1 ",TRIM(i2str(nh))
-    write(UNITTMP,*) "# .inf df = ", 1./(diag%numsteps*DT)
+    call OpenRefFile(UNITTMP+1, hasref)
 
     j1 = 0.
     j2 = 0.
-    ph1o = 5.
-    ph2o = 5.
 
-    do l = 1, nh 
+    SumHph1_old = -4.
+    SumHph2_old = -4.
+    SumEph1_old = -4.
+    SumEph2_old = -4.
+
+    select case ( diag%mode ) 
+    case( "Ecs" )
+       rv = 1.
+    case( "Hcs" )
+       rv = 1.
+    case( "Eap" )
+       rv = 1.
+       rv(2) = 0.
+       rv(4) = 0.
+    case( "Hap" ) 
+       rv = 1.
+       rv(2) = 0.
+       rv(4) = 0.
+    case ("S")
+       rv = 1.
+    end select
+    
+    do l = 1, diag%nh
 
        SumS1 = 0.
        SumS2 = 0.
@@ -467,34 +503,71 @@ contains
           SumHa1 = SumHa1 + Hp1c * Hp1c + Hp1s * Hp1s
           SumHa2 = SumHa2 + Hp2c * Hp2c + Hp2s * Hp2s
 
-          SumEph1 = SumEph1 + Ep1s/Ep1c
-          SumEph2 = SumEph2 + Ep2s/Ep2c
+          SumEph1 = SumEph1 + atan2(Ep1s,Ep1c)
+          SumEph2 = SumEph2 + atan2(Ep2s,Ep2c)
 
-          SumHph1 = SumHph1 + Hp1s/Hp1c
-          SumHph2 = SumHph2 + Hp2s/Hp2c
+          SumHph1 = SumHph1 + atan2(Hp1s,Hp1c)
+          SumHph2 = SumHph2 + atan2(Hp2s,Hp2c)
 
        })
 
        norm = reg%numnodes
-       freq = l/(diag%numsteps*DT)
+       freq = l*df 
+
+       if ( hasref ) then
+          read(UNITTMP+1,*,iostat=ios) rfreq, (rv(m), m=1, diag%numcomp, 1 )
+          if ( ios .ne. 0 ) then 
+             M4_WRITE_WARN({"eof in reference file!"})
+             close (UNITTMP+1)
+             hasref = .false.
+          end if
+       end if
 
        select case ( diag%mode ) 
        case( "Ecs" )
-          write(UNITTMP,*) freq, SumE1c/norm, SumE1s/norm, SumE2c/norm, SumE2s/norm
+          write(UNITTMP,*) freq, SumE1c/norm/rv(1), SumE1s/norm/rv(2), SumE2c/norm/rv(3), SumE2s/norm/rv(4)
        case( "Hcs" ) 
-          write(UNITTMP,*) freq, SumH1c/norm, SumH1s/norm, SumH2c/norm, SumH2s/norm
+          write(UNITTMP,*) freq, SumH1c/norm/rv(1), SumH1s/norm/rv(2), SumH2c/norm/rv(3), SumH2s/norm/rv(4)
        case( "Eap" )
-          ph1 = atan(SumEph1/norm)
-          if ( ph1 .lt. ph1o ) j1 = j1 + PI 
-          ph2 = atan(SumEph2/norm)
-          if ( ph2 .lt. ph2o ) j2 = j2 + PI
-          ph1o = ph1
-          ph2o = ph2
-          write(UNITTMP,*) freq, sqrt(SumEa1)/norm, (ph1+j1), sqrt(SumEa2)/norm, (ph2+j2)
+          SumEph1 = SumEph1/norm
+          SumEph2 = SumEph2/norm
+          d1 = SumEph1 - SumEph1_old
+          d2 = SumEph2 - SumEph2_old
+          if ( d1 .lt. -PI .and. d1 .ge. -2*PI ) j1 = j1 + 2.*PI
+          if ( d1 .gt. PI .and. d1 .le. 2*PI ) j1 = j1 - 2.*PI
+          if ( d2 .lt. -PI .and. d2 .ge. -2*PI ) j2 = j2 + 2.*PI
+          if ( d2 .gt. PI .and. d2 .le. 2*PI ) j2 = j2 - 2.*PI
+          SumEph1_old = SumEph1
+          SumEph2_old = SumEph2
+          SumEph1 = SumEph1 + PI + j1
+          SumEph2 = SumEph2 + PI + j2
+          if ( hasref ) then
+             SumEph1 = SumEph1 - rv(2)
+             SumEph2 = SumEph1 - rv(4)
+          end if
+          write(UNITTMP,*) freq, sqrt(SumEa1)/norm/rv(1), SumEph1-PI,  &
+               sqrt(SumEa2)/norm/rv(3),SumEph2-PI
        case( "Hap" ) 
-          write(UNITTMP,*) freq, sqrt(SumHa1)/norm, atan(SumHph1)/norm, sqrt(SumHa2)/norm, atan(SumHph2)/norm
+          SumEph1 = SumEph1/norm
+          SumEph2 = SumEph2/norm
+          d1 = SumEph1 - SumEph1_old
+          d2 = SumEph2 - SumEph2_old
+          if ( d1 .lt. -PI .and. d1 .ge. -2*PI ) j1 = j1 + 2.*PI
+          if ( d1 .gt. PI .and. d1 .le. 2*PI ) j1 = j1 - 2.*PI
+          if ( d2 .lt. -PI .and. d2 .ge. -2*PI ) j2 = j2 + 2.*PI
+          if ( d2 .gt. PI .and. d2 .le. 2*PI ) j2 = j2 - 2.*PI
+          SumEph1_old = SumEph1
+          SumEph2_old = SumEph2
+          SumEph1 = SumEph1 + PI + j1
+          SumEph2 = SumEph2 + PI + j2
+          if ( hasref ) then
+             SumEph1 = SumEph1 - rv(2)
+             SumEph2 = SumEph1 - rv(4)
+          end if
+          write(UNITTMP,*) freq, sqrt(SumHa1)/norm/rv(1), SumHph1-PI, &
+               sqrt(SumHa2)/norm/rv(3), SumHph2-PI
        case ("S")
-          write(UNITTMP,*) freq, SumS1/norm, SumS2/norm
+          write(UNITTMP,*) freq, SumS1/(norm*rv(1)), SumS2/(norm*rv(2))
        end select
           
 
@@ -502,6 +575,55 @@ contains
 
     close(UNITTMP)
 
+    if ( hasref ) close(UNITTMP+1)
+
+  contains
+    
+    subroutine OpenRefFile(unit, hasref)
+
+      integer :: unit
+      logical :: hasref
+      character(len=STRLNG) :: fn
+      integer :: ios
+      character(LEN=1) :: mark
+      character(LEN=10) :: str
+      integer :: ns, ne, dn, fs, fe
+      real(kind=8) :: dt, df
+
+      hasref = .false.
+
+      if ( diag%refname .eq. diag%filename ) return
+
+      fn = cat2(diag%refname,sfx)
+
+      open(unit,FILE=fn,STATUS="old", IOSTAT=ios)
+
+      if ( ios .ne. 0 ) then 
+         M4_WRITE_WARN({"could not open reference spectrum: ", TRIM(fn),"!"})
+         return
+      end if
+         
+      hasref = .true.
+
+      ! compare whether header of reference file matches
+      read(unit,*) mark, str
+      read(unit,*) mark, str
+      if ( str .ne. diag%mode ) hasref = .false. 
+      read(unit,*) mark, ns, ne, dn 
+      if ( (ne-ns) .ne. (diag%ne-diag%ns) .or. dn .ne. diag%dn ) hasref = .false. 
+      read(unit,*) mark, dt
+      read(unit,*) mark, fs, fe 
+      read(unit,*) mark, df
+
+      if ( .not. hasref ) then 
+         M4_WRITE_WARN({"incompatible reference spectrum: ", TRIM(fn),"!"})
+         close(unit)
+         return
+      end if
+
+      M4_WRITE_INFO({"using reference spectrum: ", TRIM(fn)})
+     
+    end subroutine OpenRefFile
 
   end subroutine WriteSpectrum
 

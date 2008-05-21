@@ -1,0 +1,64 @@
+SGEP ------- Subgridding for every point
+Subgridded Cells: 8000
+Subgridded filled Cells: 1634
+Subgridded empty Cells: 5508
+Subgridded partly filled Cells: 858
+Filled Cells: 1634
+Empty Cells: 5508
+
+PFSS14 ------- Pointframe single-sized (like cell) with 14 points
+Subgridded Cells: 916
+Subgridded filled Cells: 47
+Subgridded empty Cells: 40
+Subgridded partly filled Cells: 829
+Filled Cells: 1634
+Empty Cells: 5537
+
+PFSS50 ------- Pointframe single-sized (like cell) with 50 points
+Subgridded Cells: 947
+Subgridded filled Cells: 47
+Subgridded empty Cells: 43
+Subgridded partly filled Cells: 857
+Filled Cells: 1634
+Empty Cells: 5509
+
+PFDS14 ------- Pointframe double-sized with 14 points
+Subgridded Cells: 1753
+Subgridded filled Cells: 473
+Subgridded empty Cells: 422
+Subgridded partly filled Cells: 858
+Filled Cells: 1634
+Empty Cells: 5508
+
+PFDS50 -------- Pointframe double-sized with 50 points
+Subgridded Cells: 1837
+Subgridded filled Cells: 473
+Subgridded empty Cells: 506
+Subgridded partly filled Cells: 858
+Filled Cells: 1634
+Empty Cells: 5508
+
+PFTS14 ------- Pointframe triple-sized with 14 points
+Subgridded Cells: 2512
+Subgridded filled Cells: 842
+Subgridded empty Cells: 812
+Subgridded partly filled Cells: 858
+Filled Cells: 1634
+Empty Cells: 5508
+
+PFTS50 -------- Pointframe triple-sized with 50 points
+Subgridded Cells: 2640
+Subgridded filled Cells: 842
+Subgridded empty Cells: 940
+Subgridded partly filled Cells: 858
+Filled Cells: 1634
+Empty Cells: 5508
+
+SGEP	8000	1634	5508	858	1634	5508
+PFSS14	916	47	40	829	1634	5537
+PFSS50	947	47	43	857	1634	5509
+PFDS14	1753	473	422	858	1634	5508
+PFDS50	1837	473	506	858	1634	5508
+PFTS14	2512	842	812	858	1634	5508
+PFTS50	2640	842	940	858	1634	5508
+

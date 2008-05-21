@@ -1,0 +1,45 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: expatpp - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\Owner\LOCALS~1\Temp\RSP229.tmp" with contents
+[
+/nologo /MLd /W3 /GX /Z7 /Od /I "\oofile\expatpp\expat\xmlparse" /I "\oofile\expatpp\expat\xmltok" /I "\oofile\expatpp\src_pp" /D "XML_MIN_SIZE" /D "XML_WINLIB" /D XMLTOKAPI="" /D XMLPARSEAPI="" /D "WIN32" /D "_WINDOWS" /D "_DEBUG" /Fo"Debug/" /Fd"Debug/" /FD /c 
+"C:\oofile\expatpp\expat\xmlparse\xmlparse.c"
+"C:\oofile\expatpp\expat\xmltok\xmlrole.c"
+"C:\oofile\expatpp\expat\xmltok\xmltok.c"
+"C:\oofile\expatpp\src_pp\expatpp.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\Owner\LOCALS~1\Temp\RSP229.tmp" 
+Creating command line "link.exe -lib /nologo /out:"Debug\expatpp.lib"  .\Debug\xmlparse.obj .\Debug\xmlrole.obj .\Debug\xmltok.obj .\Debug\expatpp.obj "
+<h3>Output Window</h3>
+Compiling...
+xmlparse.c
+xmlrole.c
+xmltok.c
+Generating Code...
+Compiling...
+expatpp.cpp
+Generating Code...
+Creating library...
+
+
+
+<h3>Results</h3>
+expatpp.lib - 0 error(s), 0 warning(s)
+<h3>
+--------------------Configuration: expatpp - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+
+
+
+<h3>Results</h3>
+expatpp.lib - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

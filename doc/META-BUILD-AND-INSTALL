@@ -1,0 +1,109 @@
+
+-----------------------
+META: BUILD AND INSTALL
+----------------------- 
+
+J. Hamm 8/12/2007
+
+
+1. PREREQUISITES
+
+
+A complete build requires the following packages:
+
+* m4 preprocessor
+* a c++ and fortran-90 compiler 
+* perl
+
+To build the OpenMP version the c++ and fortran-90 compiler must support 
+openmp compilation.
+
+The Meta code can also compile as a parallel MPI version, which requires a 
+complete mpi installation. In particular mpif90 and mpicxx must be available
+on the build system.
+
+
+2. BUILDING THE CODE
+
+
+The Meta code consists of the meta-config preprocessor (in src/config), 
+the meta-engine (in src/engine) and postprocessing scripts (in src/post). In 
+addition there are some mpi startup and queue scripts (in src/run). A full 
+build will compile the parts and then install everything that is required to 
+run the code into a src/meta**** directory. Building the full meta code is 
+done by running "make" with options from the src-directory:
+
+> make [.. OPTIONS ..]
+
+To cleanup 'make clean' or 'make proper' can be run. In order to remove all 
+the builds, a 'make distclean' is implemented.   
+
+Per default make will use the 'Make.default' file, which contains all the 
+compiler definitions and flags. This can be overridden, by creating a own 
+'Make.<MYCOMP>' file and running make with
+
+> make ARCH=<MYCOMP>
+
+E.g. the 'Make.intel' file would be used by running
+
+> make ARCH=intel 
+
+
+3. ENGINE BUILD QUALIFIERS
+
+
+The engine code utilizes the M4 preprocessor to substitute core behaviour. This 
+allows fundametally different engine builds each running with an optimum 
+performance. A specific engine build is qualified by giving or omitting options 
+from the following set:
+
+> make [DBG=1] [MPI=1] [OMP=1] [DIM=1|2|3] [CF=1] [TE=1] [NG=1]
+
+where any combination is allowed. The meaning of the options follows:  
+
+* DBG=1 
+
+compile with debug optiosn and include debug code. Activates MPE logging if 
+used in combination with MPI.
+
+* MPI=1
+
+build the parallel MPI version of the code. 
+
+* OMP=1
+
+build the multi-threaded OpenMP version of the code. OMP=1 and MPI=1 can be 
+combined to create a multihreaded/parallel engine.
+
+* DIM=1|2|3
+
+build the one, two or three dimensional version. Default is to build the three
+dimensional version.
+
+* CF=1
+
+build the complex-fields engine. In this case the electromagnetic fields will 
+be calculated as complex entities rather than real valued fields. Note that 
+other modules must be either qualified as real-only be able to handle both 
+the real and complex fields depending on the CF option. 
+
+* TE=1
+
+build the engine with a tensorial epsilon field.
+
+* NG=1
+
+build the engine using a non-uniform grid. 
+
+
+4. EXAMPLE(S)
+
+
+Running
+
+> make ARCH=intel DBG=1 MPI=1 CF=1
+
+would use the intel compilers as specified in Make.intel to build a parallel 
+debug version of the engine with complex electromagnetic fields. The build 
+would be installed in 'src/meta3-build-cf-mpi-dbg'.
+   

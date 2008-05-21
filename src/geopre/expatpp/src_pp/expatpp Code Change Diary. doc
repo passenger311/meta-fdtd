@@ -1,0 +1,93 @@
+98/09/02
+
+FILE xpatpp.h
+CLASS xpatt
+- added overrideable callbacks:
+	 processingInstruction
+	 defaultHandler
+	 unparsedEntityDecl
+	 notationDecl
+
+-added interface functions for callbacks:
+	 processingInstructionCallback
+	 defaultHandlerCallback
+	 unparsedEntityDeclCallback
+	 notationDeclCallback
+	 
+- added inlines for these interface functions
+
+FILE xpatpp.cpp
+CLASS xpattp
+Method xpattp
+- added calls to 
+  XML_SetProcessingInstructionHandler
+  XML_SetDefaultHandler
+  XML_SetUnparsedEntityDeclHandler
+  XML_SetNotationDeclHandler
+  
+  
+- added empty implementations of the overrideable callbacks
+
+
+99/03/10 AD
+renamed xpatpp to expatpp in filenames and classes.
+updated xpcw project to compile with CodeWarrior Pro4
+and add PPC target to 68K.
+
+
+99/05/03 AD
+UPDATE FOR LATEST EXPAT RELEASE
+
+FILE expatpp.cpp
+CLASS expattp
+Method expattp
+- added call to XML_SetNotStandaloneHandler
+- added call to XML_SetNamespaceDeclHandler
+
+Methods added
+		- virtual notStandaloneHandler returning 0
+		- Empty virtuals startNamespace & endNamespace
+
+
+FILE expatpp.h
+CLASS	expatpp
+- added inline notStandaloneHandlerCallback
+- added inline 
+
+
+
+99/05/05-09 AD
+ADD NESTED PARSER SUBCLASS
+
+CLASS	expatppNesting
+- added subclass of expatpp
+- mDepth, mParent members added
+
+Method	ctor
+		- init mDepth(0)
+		
+Method	ctor(expatppNesting*)
+		- added to nest a parser (pointer to parent)		
+		
+Method	nestedStartElement, nestedEndElement
+		- added callbacks to inc/dec mDepth		
+		
+		
+CLASS	expatpp
+Method	dtor
+		- made virtual
+		
+Method	ctor
+		- add optional param to control creation of parser
+		  so can nest parsers and continue to use existing
+		  XML parser
+		  		  			
+Method	emptyCharData
+		- added to contain common logic I keep putting at top
+		  of overridden charData methods
+
+Method	all callbacks
+		- made non-inline as I realised they will NOT be used
+		  inline, being supplied as function addresses, so no
+		  point having them declared as inline
+		  
