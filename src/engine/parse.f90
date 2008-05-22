@@ -465,6 +465,52 @@ contains
 
 ! ---------------------------------------------------------------------
 
+ subroutine getcomplexs(line, val, num, err)
+
+   character(len=*) :: line
+   integer :: num
+   complex(kind=8) :: val(num)
+   logical :: err
+
+   character(len=LINELNG) :: line2
+
+   integer :: i ,s, e, c, ios
+
+   s = -1
+   e = -1
+   c = 0
+
+   if ( err ) return
+
+   line2 = line
+
+   do i = 1, LINELNG
+      
+      if ( line(i:i) .ne. ' ' .and. s .eq. -1 ) s = i      
+      if ( line(i:i) .eq. ' ' .and. s .ne. -1 ) then 
+         e = i-1
+         c = c + 1
+         read( line(s:e),*, iostat=ios ) val(c)
+         if ( ios .ne. 0 ) then 
+            err =.true.
+            line = line2
+            return
+         else
+            line(s:e) = "" ! wipe
+            s = -1
+            e = -1
+         end if
+         if ( c .eq. num ) return
+      end if
+   end do
+   
+   line = line2
+   err = .true.
+
+ end subroutine getcomplexs
+
+! ---------------------------------------------------------------------
+
  subroutine gettoken(line, token, err)
 
    character(len=*) :: token
@@ -636,6 +682,27 @@ contains
     M4_SYNTAX_ERROR(err,lcount,"[FLOATS]")
 
   end subroutine readfloats
+
+
+! ---------------------------------------------------------------------
+
+  subroutine readcomplexs(unit, lcount, val, num)
+    
+    integer :: unit, lcount
+    integer :: num
+    complex(kind=8) :: val(num)
+    logical :: err = .false.
+
+    character(len=LINELNG) :: line
+    logical :: eof
+
+    call readline(unit, lcount, eof, line)
+    if ( eof ) err = .true.
+    call getcomplexs(line, val, num, err)
+    if ( line .ne. "" ) err = .true.
+    M4_SYNTAX_ERROR(err,lcount,"[COMPLEXS]")
+
+  end subroutine readcomplexs
 
 
 ! ---------------------------------------------------------------------

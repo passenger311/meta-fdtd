@@ -21,7 +21,7 @@
 ! The MatBloch module calculates the reponse of an effective  2 level 
 ! bloch system
 !
-! d/dt d/dt P + 2 * gammal * d/dt P + omegal**2 P =  - 4 omegar * 1/hbar * M (M * E) f(N,Ntr)
+! d/dt d/dt P + 2 * gammal * d/dt P + omegal**2 P =  - 4 * omegar * 1/hbar * M (M * E) f(N,Ntr)
 ! d/dt N = E/(hbar * omegar ) * ( d/dt P + gammal * P ) - gammanr * N 
 ! d/dt E = d/dt E* - epsinv * d/dt P 
 !
@@ -32,13 +32,24 @@
 !
 ! e = sqrt ( 4 PI alpha ) with alpha = 1/137.0360
 !
-!
-! 2. order method
-!
-! StepHMatPbloch: update eq. P(n+1) = c1 * P(n) + c2 * P(n-1) + c3 * E(n)
-! StepEMatPbloch: update eq. E(n+1) = E(n+1)* - epsinv * (P(n+1) - P(n))
-!
 ! 
+!
+! StepHMatBloch: update eq. P(n+1) = c1 * P(n) + c2 * P(n-1) + c3 * E(n)
+!                and update N (see below)
+! StepEMatBloch: update eq. E(n+1) = E(n+1)* - epsinv * (P(n+1) - P(n))
+!
+! N update eq:
+! N(n+1) = c4 * N(n) + c5 * ( P(n+1) - P(n) )*( E(n+1) + E(n) ) + c6 * ( P(n+1) + P(n) )*( E(n+1) + E(n) )
+!
+! is calculated in StepHMatBloch in two steps. The first bit depends on E(n+1) and must be 
+! calculated *after* StepEMat updated E to the proper E(n+1). However,
+! n+1 -> n, so that
+!
+! N(n) = N(n)_p1 + c5 * ( P(n) - P(n-1) )*( E(n) ) + c6 * ( P(n) + P(n-1) )*( E(n) )
+!
+! The second bit (after calculating P) is actually the first part of the N calculation:
+!
+! N(n+1)_p1 = c4 * N(n) + c5 * ( P(n+1) - P(n) )*( E(n) ) + c6 * ( P(n+1) + P(n) )*( E(n) )
 !
 
 module matbloch
@@ -54,22 +65,24 @@ module matbloch
   private
   save
 
+  real(kind=8), parameter :: hbar = 1. ! planck constant
+
+
   M4_MATHEAD_DECL({MATBLOCH},MAXMATOBJ,{
 
   ! input parameters
   real(kind=8) :: lambdarinv    ! inv. vac. plasma wavelength
   real(kind=8) :: gammal        ! resonance width
 
-  real(kind=8) :: M(3)          ! dipole matrix vector [1/dt]
+  complex(kind=8) :: M(3)          ! dipole matrix vector [1/dt]
   real(kind=8) :: N0, Ntr       ! transparency density
   real(kind=8) :: gammanr, pump
+  integer :: napprox
   
   ! calculated
 
   real(kind=8) :: omegar        ! resonance frequency
   real(kind=8) :: omegal        ! lorentz frequency
-
-  real(kind=8), parameter :: hbar = 1. ! planck constant
 
   ! coefficients
   real(kind=8) :: c1, c2, c3, c4, c5, c6
@@ -78,7 +91,7 @@ module matbloch
   M4_FTYPE, dimension(:,:), pointer :: Px, Py, Pz
 
   ! number density 
-  real(kind=8), dimension(:) :: N
+  real(kind=8), dimension(:), pointer :: N
   
 
   })
@@ -91,7 +104,8 @@ contains
 
     M4_MODREAD_DECL({MATBLOCH}, funit,lcount,mat,reg,out)
     real(kind=8) :: v(2)
-    logical :: eof
+    logical :: eof,err
+    character(len=LINELNG) :: line
 
     M4_WRITE_DBG(". enter ReadMatBlochObj")
     
@@ -100,7 +114,7 @@ contains
     ! read mat parameters here, as defined in mat data structure
     call readfloat(funit,lcount, mat%lambdarinv)
     call readfloat(funit,lcount, mat%gammal)
-    call readfloats(funit,lcount, mat%M, 3)
+    call readcomplexs(funit,lcount, mat%M, 3)
     call readline(funit, lcount, eof, line)
     M4_EOF_ERROR(eof, lcount)
     call getfloats(line, v, 2, err)
@@ -110,6 +124,11 @@ contains
     if ( err ) mat%N0 = mat%Ntr
     call readfloat(funit,lcount, mat%gammanr)
     call readfloat(funit,lcount, mat%pump)
+
+    call readint(funit,lcount, mat%napprox) 
+    ! napprox = 0 -> N - Ntr
+    ! napprox = 1 -> Ntr * ln(N/Ntr)
+    
 
     })
 
@@ -151,11 +170,11 @@ contains
 ! for polarisation integration
        mat%c1 = ( 2. - mat%omegal**2 * DT**2 ) / ( 1. + DT * mat%gammal )
        mat%c2 = ( -1. + DT * mat%gammal ) / ( 1. + DT * mat%gammal )
-       mat%c3 = - 4./mat%hbar * DT**2 * mat%omegar  / ( 1. + DT * mat%gammal )
+       mat%c3 = - 4./hbar * DT**2 * mat%omegar  / ( 1. + DT * mat%gammal )
 
 ! for density integration
        mat%c4 = ( 2. - mat%gammanr * DT ) / ( 2. + mat%gammanr * DT )
-       mat%c5 = 1. / ( 2. + mat%gammanr * DT ) * 1./(mat%hbar * mat%omegar ) 
+       mat%c5 = 1. / ( 2. + mat%gammanr * DT ) * 1./(hbar * mat%omegar ) 
        mat%c6 = mat%c5  * DT * mat%gammal / 2.
 
 
@@ -190,6 +209,7 @@ contains
     M4_MODLOOP_DECL({MATBLOCH},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
     M4_FTYPE :: me
+    real(kind=8) :: pem, pen, ninv
 
     M4_MODLOOP_EXPR({MATBLOCH},mat,{
 
@@ -207,14 +227,22 @@ contains
       pem =  mat%Px(p,m) * Ex(i,j,k) + mat%Py(p,m) * Ey(i,j,k) + mat%Pz(p,m) * Ez(i,j,k)
       pen =  mat%Px(p,n) * Ex(i,j,k) + mat%Py(p,n) * Ey(i,j,k) + mat%Pz(p,n) * Ez(i,j,k)
 
-      mat%N(p) = mat%N(p) + c5 * ( pen - pem ) + c6 * ( pen + pem )
+      mat%N(p) = mat%N(p) + mat%c5 * ( pen - pem ) + mat%c6 * ( pen + pem )
 
       ! calculate P(n+1) from P(n),P(n-1),E(n) and N(n)
 
       ! before: P(*,m) is P(n-1), P(*,n) is P(n)
 
       me = mat%M(1) * Ex(i,j,k) + mat%M(2) * Ey(i,j,k) + mat%M(3) * Ez(i,j,k)
-      me = me * ( mat%N(p) - mat%Ntr )
+
+      select case ( mat%napprox )
+      case ( 1 )
+         ninv = mat%Ntr * log( mat%N(p)/mat%Ntr )
+      case default
+         ninv = ( mat%N(p) - mat%Ntr )
+      end select
+
+      me = me * ninv
 
 M4_IFELSE_TM({
       mat%Px(p,m) = mat%c1 * mat%Px(p,n) + mat%c2 * mat%Px(p,m) + mat%c3 * mat%M(1) * me 
@@ -229,7 +257,7 @@ M4_IFELSE_TE({
 !     pen =  mat%Px(p,n) * Ex(i,j,k) + mat%Py(p,n) * Ey(i,j,k) + mat%Pz(p,n) * Ez(i,j,k)
       pem =  mat%Px(p,m) * Ex(i,j,k) + mat%Py(p,m) * Ey(i,j,k) + mat%Pz(p,m) * Ez(i,j,k)
 
-      mat%N(p) = c4 * mat%N(p) + c5 * ( pem - pen ) + c6 * ( pem + pen )
+      mat%N(p) = mat%c4 * mat%N(p) + mat%c5 * ( pem - pen ) + mat%c6 * ( pem + pen )
 
 
       ! after: J(*,m) is now P(n+1)
@@ -344,8 +372,7 @@ M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * real(Ez(i,j,k)) * real( mat%Pz(p,m) - ma
  
     M4_WRITE_INFO({"#",TRIM(i2str(mat%idx)),&
     	" omegal=",TRIM(f2str(mat%omegal,5)),&
-    	" gammal=",TRIM(f2str(mat%gammal,5)),&
-    	" deltaepsl=",TRIM(f2str(mat%deltaepsl,5))
+    	" gammal=",TRIM(f2str(mat%gammal,5))
     })
     call DisplayRegObj(regobj(mat%regidx))
     	
@@ -361,13 +388,16 @@ M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * real(Ez(i,j,k)) * real( mat%Pz(p,m) - ma
          TRIM(i2str(mat%idx))," ", TRIM(mat%type)})
 
     ! -- write parameters to console 
-    M4_WRITE_INFO({"lambdalinv = ",mat%lambdalinv })
+    M4_WRITE_INFO({"lambdarinv = ",mat%lambdarinv })
+    M4_WRITE_INFO({"omegar = ",mat%omegar })
     M4_WRITE_INFO({"omegal = ",mat%omegal })
-    M4_WRITE_INFO({"deltaepsl = ",mat%deltaepsl })
     M4_WRITE_INFO({"gammal = ",mat%gammal })
     M4_WRITE_INFO({"c1 = ",mat%c1 })
     M4_WRITE_INFO({"c2 = ",mat%c2 })
     M4_WRITE_INFO({"c3 = ",mat%c3 })
+    M4_WRITE_INFO({"c4 = ",mat%c4 })
+    M4_WRITE_INFO({"c5 = ",mat%c5 })
+    M4_WRITE_INFO({"c6 = ",mat%c6 })
 
     M4_WRITE_INFO({"defined over:"})
     call EchoRegObj(regobj(mat%regidx))

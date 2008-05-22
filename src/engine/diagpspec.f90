@@ -603,7 +603,7 @@ contains
       integer :: ios
       character(LEN=1) :: mark
       character(LEN=10) :: str
-      integer :: ns, ne, dn, fs, fe
+      integer :: ns, ne, dn, fs, fe, phfw, phbw
       real(kind=8) :: dt1, df
 
       hasref = .false.
@@ -625,6 +625,7 @@ contains
       read(unit,*) mark, str
       read(unit,*) mark, str
       if ( str .ne. diag%mode ) hasref = .false. 
+      read(unit,*) mark, phfw, phbw 
       read(unit,*) mark, ns, ne, dn 
       if ( (ne-ns) .ne. (diag%ne-diag%ns) .or. dn .ne. diag%dn ) hasref = .false. 
       read(unit,*) mark, dt1
