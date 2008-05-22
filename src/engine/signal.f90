@@ -80,7 +80,7 @@ contains
           amp =  exp ( - gamma**2 * ( ( ncyc0 - natt - nsus ) * DT )**2 )
        end if
        
-       GaussianWave = amp * sin(omega*ncyc0*DT)
+       GaussianWave = amp * cos(omega*(ncyc0 - natt)*DT) ! cos will peak at noffs+natt
 
     end if
 

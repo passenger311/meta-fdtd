@@ -41,6 +41,8 @@ module diagpspec
      
   character(len=80) :: mode, filename, refname
 
+  integer :: phasefw, phasebw
+
   integer :: numsteps, numfield, lot, numcomp
 
   logical :: done
@@ -111,8 +113,13 @@ contains
 
     M4_SYNTAX_ERROR({line .ne. ""},lcount,"MODE [REF.FILENAME]")
 
-
     M4_WRITE_DBG({"ref. filename: ", TRIM(diag%refname)})
+
+    call readints(funit,lcount,v,2)
+    diag%phasefw = v(1)
+    diag%phasebw = v(2)
+    if ( diag%phasefw  .ne. 0 ) diag%phasefw = 1
+    if ( diag%phasebw  .ne. 0 ) diag%phasebw = 1
 
     call readints(funit,lcount,v,3) 
     diag%ns = v(1)
@@ -394,10 +401,17 @@ contains
     real(kind=8) :: SumEa1,SumEa2,SumHa1,SumHa2,SumEph1,SumEph2,SumHph1,SumHph2
     real(kind=8) :: SumEph1_old,SumEph2_old,SumHph1_old,SumHph2_old
     real(kind=8) :: norm, freq, j1, j2, ph1, ph2, ph1o, ph2o
-    real(kind=8) :: rfreq, rv(6), d1, d2
+    real(kind=8) :: rfreq, rv(6), d1, d2, phaseoffs
     logical :: hasref
 
     integer :: nh
+
+    ! increase phase unwrap sensitivity by factor 2 if either phasefw or phasebw is set (but not both)
+    if ( diag%phasefw + diag%phasebw .eq. 1 ) then 
+       phaseoffs = 0.
+    else
+       phaseoffs = PI
+    end if
 
     fn = cat2(diag%filename,sfx)
     
@@ -412,6 +426,7 @@ contains
 
     write(UNITTMP,*) "# GPL: PSPEC"
     write(UNITTMP,*) "# ",TRIM(diag%mode)," ! mode"
+    write(UNITTMP,*) "# ",TRIM(i2str(diag%phasefw))," ",TRIM(i2str(diag%phasefw))," ! phase unwrap fw/bw"
     write(UNITTMP,*) "# ",TRIM(i2str(diag%ns))," ",TRIM(i2str(diag%ne))," ",TRIM(i2str(diag%dn)), " ! tframe"
     write(UNITTMP,*) "# ", DT, " ! dt"
     write(UNITTMP,*) "# 1 ",TRIM(i2str(diag%nh))," ! fframe"
@@ -533,10 +548,11 @@ contains
           SumEph2 = SumEph2/norm
           d1 = SumEph1 - SumEph1_old
           d2 = SumEph2 - SumEph2_old
-          if ( d1 .lt. -PI .and. d1 .ge. -2*PI ) j1 = j1 + 2.*PI
-          if ( d1 .gt. PI .and. d1 .le. 2*PI ) j1 = j1 - 2.*PI
-          if ( d2 .lt. -PI .and. d2 .ge. -2*PI ) j2 = j2 + 2.*PI
-          if ( d2 .gt. PI .and. d2 .le. 2*PI ) j2 = j2 - 2.*PI
+
+          if ( diag%phasefw .ne. 0 .and. d1 .lt. -phaseoffs .and. d1 .ge. -2*PI ) j1 = j1 + 2.*PI
+          if ( diag%phasebw .ne. 0 .and. d1 .gt. phaseoffs .and. d1 .le. 2*PI ) j1 = j1 - 2.*PI
+          if ( diag%phasefw .ne. 0 .and. d2 .lt. -phaseoffs .and. d2 .ge. -2*PI ) j2 = j2 + 2.*PI
+          if ( diag%phasebw .ne. 0 .and. d2 .gt. phaseoffs .and. d2 .le. 2*PI ) j2 = j2 - 2.*PI
           SumEph1_old = SumEph1
           SumEph2_old = SumEph2
           SumEph1 = SumEph1 + PI + j1
@@ -552,10 +568,10 @@ contains
           SumEph2 = SumEph2/norm
           d1 = SumEph1 - SumEph1_old
           d2 = SumEph2 - SumEph2_old
-          if ( d1 .lt. -PI .and. d1 .ge. -2*PI ) j1 = j1 + 2.*PI
-          if ( d1 .gt. PI .and. d1 .le. 2*PI ) j1 = j1 - 2.*PI
-          if ( d2 .lt. -PI .and. d2 .ge. -2*PI ) j2 = j2 + 2.*PI
-          if ( d2 .gt. PI .and. d2 .le. 2*PI ) j2 = j2 - 2.*PI
+          if ( diag%phasefw .ne. 0 .and. d1 .lt. -PI .and. d1 .ge. -2*PI ) j1 = j1 + 2.*PI
+          if ( diag%phasebw .ne. 0 .and. d1 .gt. PI .and. d1 .le. 2*PI ) j1 = j1 - 2.*PI
+          if ( diag%phasefw .ne. 0 .and. d2 .lt. -PI .and. d2 .ge. -2*PI ) j2 = j2 + 2.*PI
+          if ( diag%phasebw .ne. 0 .and. d2 .gt. PI .and. d2 .le. 2*PI ) j2 = j2 - 2.*PI
           SumEph1_old = SumEph1
           SumEph2_old = SumEph2
           SumEph1 = SumEph1 + PI + j1
@@ -588,7 +604,7 @@ contains
       character(LEN=1) :: mark
       character(LEN=10) :: str
       integer :: ns, ne, dn, fs, fe
-      real(kind=8) :: dt, df
+      real(kind=8) :: dt1, df
 
       hasref = .false.
 
@@ -611,7 +627,8 @@ contains
       if ( str .ne. diag%mode ) hasref = .false. 
       read(unit,*) mark, ns, ne, dn 
       if ( (ne-ns) .ne. (diag%ne-diag%ns) .or. dn .ne. diag%dn ) hasref = .false. 
-      read(unit,*) mark, dt
+      read(unit,*) mark, dt1
+      if ( abs(dt1-dt)/dt .gt. 1.e-5 ) hasref = .false.  
       read(unit,*) mark, fs, fe 
       read(unit,*) mark, df
 
