@@ -566,6 +566,25 @@ contains
 
 ! ---------------------------------------------------------------------
 
+  subroutine readstring(unit, lcount, string)
+    
+    integer :: unit, lcount
+    character(len=*) :: string
+    logical :: err = .false.
+
+    character(len=LINELNG) :: line
+    logical :: eof
+
+    call readline(unit, lcount, eof, line)
+    if ( eof ) err = .true.
+    call getstring(line, string, err)
+    if ( line .ne. "" ) err = .true.
+    M4_SYNTAX_ERROR(err,lcount,"[STRING]")
+
+  end subroutine readstring
+
+! ---------------------------------------------------------------------
+
   subroutine readint(unit, lcount, val)
     
     integer :: unit, lcount

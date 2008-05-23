@@ -43,7 +43,11 @@ module matjsource
   M4_MATHEAD_DECL({MATJSOURCE},MAXMATOBJ,{
 
      real(kind=8) :: lambdainv0                ! inverse vacuum wavelength in units of [2 pi c]
-     real(kind=8) :: dn                        ! time width of gaussian [dt]
+     real(kind=8) :: amp                       ! amplitude
+
+     character(len=20) :: sigshape             ! signal shape
+
+     real(kind=8) :: nhwhm                     ! time width of gaussian [dt]
 
      real(kind=8) :: gamma                      
      real(kind=8) :: omega0, domega 
@@ -106,8 +110,9 @@ contains
     ! read parameters here, as defined in mat data structure
 
     call readfloat(funit, lcount, mat%lambdainv0)   ! inv. vacuum wavelength in units of [2 pi c]
-    call readfloat(funit,lcount,mat%dn)             ! half width of gaussian in time domain [dt]
-
+    call readfloat(funit, lcount, mat%amp)          ! amplitude 
+    call readstring(funit, lcount, mat%sigshape)     ! signal shape
+    call readfloat(funit,lcount,mat%nhwhm)          ! half width half max in time domain [dt]
     call readfloats(funit,lcount,v,4)               ! generic signal parameters [dt] 
     mat%noffs = v(1)
     mat%natt =  v(2)
@@ -157,10 +162,6 @@ contains
  
     ! center frequency
     mat%omega0 = 2. * PI * mat%lambdainv0
-
-    ! derived gaussian parameters
-    mat%gamma = sqrt( log(2.) ) / ( mat%dn * DT )   
-    mat%domega = log(2.) * mat%gamma
 
     mat%maxdelay = 0
     
@@ -392,8 +393,8 @@ M4_IFELSE_TE({
 
          ncyc1 = 1.0*ncyc
          
-         mat%wavefct = GaussianWave(ncyc1, mat%noffs, mat%natt, mat%nsus, mat%ndcy, &
-              mat%gamma, mat%omega0)
+         mat%wavefct = mat%amp * GenericWave(mat%sigshape, ncyc1, mat%noffs, mat%natt, mat%nsus, mat%ndcy, &
+              mat%nhwhm, mat%omega0)
          
       else
 
@@ -403,8 +404,8 @@ M4_IFELSE_TE({
 
             ncyc1 = 1.0*ncyc  + l * ddt 
           
-            mat%wavefct = GaussianWave(ncyc1, mat%noffs, mat%natt, mat%nsus, mat%ndcy, & 
-                 mat%gamma, mat%omega0)
+            mat%wavefct =  mat%amp * GenericWave(mat%sigshape, ncyc1, mat%noffs, mat%natt, mat%nsus, mat%ndcy, & 
+                 mat%nhwhm, mat%omega0)
 
             ! store time signal for delayed e-field modulation
 
@@ -551,8 +552,7 @@ M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * real(Ez(i,j,k)) * Jz   },{0.  }) &
     M4_WRITE_INFO({"--- mat # ",TRIM(i2str(mat%idx))})
     M4_WRITE_INFO({"lambdainv0 = ",mat%lambdainv0   })
     M4_WRITE_INFO({"omega0  = ",mat%omega0 })
-    M4_WRITE_INFO({"dn = ",mat%dn })
-    M4_WRITE_INFO({"gamma = ",mat%gamma})
+    M4_WRITE_INFO({"hwhm = ",mat%nhwhm })
     M4_WRITE_INFO({"noffs/natt/nsus/ndcy  = ",mat%noffs,mat%natt,mat%nsus,mat%ndcy   })
     
     M4_WRITE_INFO({"defined over:"})

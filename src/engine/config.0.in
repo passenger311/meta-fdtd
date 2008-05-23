@@ -169,8 +169,10 @@
     
 (MATJSOURCE
 0.0133333333		! inv vacuum wavelength in units of [2 pi c]
-1000            		! half width in timedomain (dn)
-0000 3000 4000 2000        	! offset, attack, sustain, decay periods [dt]
+1.			! amplitude
+Gaussian		! pulse shape
+1000            	! half width half maximum in timedomain [dt]
+0000 3000 4000 2000     ! offset, attack, sustain, decay periods [dt]
 .T.			! planewave mode?
 -45.0 90.0 0.0 2.0	! planewave: phi, theta, psi, nrefr  
 (REG
@@ -200,7 +202,9 @@
  
 (!MATJSOURCE
 0.0133333333		! inv vacuum wavelength in units of [2 pi c]
-700             	! half width in timedomain (dn)
+1.			! amplitude
+Gaussian		! pulse shape
+700             	! half width half maximum in timedomain [dt]
 0 1200 800 1200         ! offset, attack, sustain, decay periods [dt]
 .T.			! planewave mode?
 -45.0 90.0 0.0 2.0	! planewave: phi, theta, psi, nrefr  
@@ -237,7 +241,8 @@
 (!MATTFSOURCE
 0.01333333333		! inv vacuum wavelength in units of [2 pi c]
 1.			! amplitude
-600           		! half width in timedomain (dn)
+Gaussian		! pulse shape
+600           		! half width half maximum in timedomain [dt]
 0 1000 1000 0         	! offset, attack, sustain, decay periods [dt]
 90. 90.0 0.0 2.		! planewave: phi, theta, psi, nrefr  
 (REG
@@ -257,7 +262,8 @@
 0.0133333333		! inv vacuum wavelength in units of [2 pi c]
 !0.01333333333		! inv vacuum wavelength in units of [2 pi c]
 2.			! amplitude
-600           		! half width in timedomain (dn)
+Gaussian		! pulse shape
+600           		! half width half maximum in timedomain [dt]
 0 1000 1000 0         	! offset, attack, sustain, decay periods [dt]
 65. 90.0 0.0 2.		! planewave: phi, theta, psi, nrefr 
 1 1 1 1 0 0		! active planes
@@ -270,7 +276,9 @@
 
 (!MATTFSF
 0.0333333333		! inv vacuum wavelength in units of [2 pi c]
-6             		! half width in timedomain (dn)
+2.			! amplitude
+Gaussian		! pulse shape
+6             		! half width half maximum in timedomain [dt]
 600 14 0 14         	! offset, attack, sustain, decay periods [dt]
 135.0 90.0 0.0 		! planewave: phi, theta, psi, nrefr 
 1 1 1 1 0 0		! active planes
@@ -281,33 +289,6 @@
 )REG
 )MATTFSF
 
-    
-(!MATTFSF
-0.0333333333		! inv vacuum wavelength in units of [2 pi c]
-6             		! half width in timedomain (dn)
-600 14 0 14         	! offset, attack, sustain, decay periods [dt]
--45.0 90.0 0.0 		! planewave: phi, theta, psi, nrefr
-1 1 1 1 0 0		! active planes
-(REG	
-  (BOX
-      -150 150 1 -150 150 1 
-  )BOX		
-)REG
-)MATTFSF
-
-    
-(!MATTFSF
-0.0333333333		! inv vacuum wavelength in units of [2 pi c]
-6             		! half width in timedomain (dn)
-600 14 0 14         	! offset, attack, sustain, decay periods [dt]
--135.0 90.0 0.0 	! planewave: phi, theta, psi, nrefr
-1 1 1 1 0 0		! active planes
-(REG
-  (BOX
-      -150 150 1 -150 150 1 
-  )BOX		
-)REG
-)MATTFSF
 
  
 ! -----------------------------------------------------------------------
@@ -381,23 +362,36 @@
 ! -----------------------------------------------------------------------
  
 
-(DIAGPSPEC
-test		! filename ( .pspec )
-0 8191 10	! time window
--45. 90. 0. 	! polarizer:  phi, theta, psi
+! -----------------------------------------------------------------------
+! (DIAGPSPEC-): power flux spectrum 
+! -----------------------------------------------------------------------
+ 
+
+(!DIAGPSPEC
+point1		! filename ( .pspec )
+Eap		! mode: S, Ecs, Hcs, Eap, or Hap [reference file]
+1 1	 	! unwrap phase forward / backward
+0 265000 1	! time window
+0. 90. 0. 	! polarizer:  phi, theta, psi
 (REG
-   (!POINT 
-	175 -175 
+   (POINT 
+	-149	
    )POINT
-   (BOX
-  !    -175 175 1 175 175 1 
-     -175 175 1 -175 -175 1 
-  !   175 175 1 -175 175 1 
-  !   -175 -175 1 -175 175 1 
-   )BOX
 )REG
 )DIAGPSPEC
 
+(!DIAGPSPEC
+point2		! filename ( .pspec )
+Eap point1	! mode: S, Ecs, Hcs, Eap, or Hap [reference file]
+1 1	 	! unwrap phase forward / backward
+1 265001 1	! time window
+0. 90. 0. 	! polarizer:  phi, theta, psi
+(REG
+   (POINT 
+	149
+   )POINT
+)REG
+)DIAGPSPEC
 
 
 ! -----------------------------------------------------------------------
