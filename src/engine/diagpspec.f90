@@ -79,13 +79,8 @@ contains
 
     err = .false.
 
-    call readline(funit,lcount,eof,line)
-    M4_EOF_ERROR(eof,lcount)
-    call getstring(line,diag%filename,err)
-    M4_SYNTAX_ERROR({line .ne. ""},lcount,"FILENAME")
-
+    call readstring(funit,lcount,diag%filename)
     M4_WRITE_DBG({"filename: ", TRIM(diag%filename)})
-
 
     call readline(funit,lcount,eof,line)
     M4_EOF_ERROR(eof,lcount)
@@ -437,10 +432,10 @@ contains
     j1 = 0.
     j2 = 0.
 
-    SumHph1_old = -4.
-    SumHph2_old = -4.
-    SumEph1_old = -4.
-    SumEph2_old = -4.
+    SumHph1_old = 0.
+    SumHph2_old = 0.
+    SumEph1_old = 0.
+    SumEph2_old = 0.
 
     select case ( diag%mode ) 
     case( "Ecs" )
@@ -548,11 +543,10 @@ contains
           SumEph2 = SumEph2/norm
           d1 = SumEph1 - SumEph1_old
           d2 = SumEph2 - SumEph2_old
-
-          if ( diag%phasefw .ne. 0 .and. d1 .lt. -phaseoffs .and. d1 .ge. -2*PI ) j1 = j1 + 2.*PI
-          if ( diag%phasebw .ne. 0 .and. d1 .gt. phaseoffs .and. d1 .le. 2*PI ) j1 = j1 - 2.*PI
-          if ( diag%phasefw .ne. 0 .and. d2 .lt. -phaseoffs .and. d2 .ge. -2*PI ) j2 = j2 + 2.*PI
-          if ( diag%phasebw .ne. 0 .and. d2 .gt. phaseoffs .and. d2 .le. 2*PI ) j2 = j2 - 2.*PI
+          if ( diag%phasefw .ne. 0 .and. d1 .lt. -phaseoffs ) j1 = j1 + 2.*PI
+          if ( diag%phasebw .ne. 0 .and. d1 .gt. phaseoffs ) j1 = j1 - 2.*PI
+          if ( diag%phasefw .ne. 0 .and. d2 .lt. -phaseoffs ) j2 = j2 + 2.*PI
+          if ( diag%phasebw .ne. 0 .and. d2 .gt. phaseoffs ) j2 = j2 - 2.*PI
           SumEph1_old = SumEph1
           SumEph2_old = SumEph2
           SumEph1 = SumEph1 + PI + j1
@@ -564,21 +558,21 @@ contains
           write(UNITTMP,*) freq, sqrt(SumEa1)/norm/rv(1), SumEph1-PI,  &
                sqrt(SumEa2)/norm/rv(3),SumEph2-PI
        case( "Hap" ) 
-          SumEph1 = SumEph1/norm
-          SumEph2 = SumEph2/norm
-          d1 = SumEph1 - SumEph1_old
-          d2 = SumEph2 - SumEph2_old
-          if ( diag%phasefw .ne. 0 .and. d1 .lt. -PI .and. d1 .ge. -2*PI ) j1 = j1 + 2.*PI
-          if ( diag%phasebw .ne. 0 .and. d1 .gt. PI .and. d1 .le. 2*PI ) j1 = j1 - 2.*PI
-          if ( diag%phasefw .ne. 0 .and. d2 .lt. -PI .and. d2 .ge. -2*PI ) j2 = j2 + 2.*PI
-          if ( diag%phasebw .ne. 0 .and. d2 .gt. PI .and. d2 .le. 2*PI ) j2 = j2 - 2.*PI
-          SumEph1_old = SumEph1
-          SumEph2_old = SumEph2
-          SumEph1 = SumEph1 + PI + j1
-          SumEph2 = SumEph2 + PI + j2
+          SumHph1 = SumHph1/norm
+          SumHph2 = SumHph2/norm
+          d1 = SumHph1 - SumHph1_old
+          d2 = SumHph2 - SumHph2_old
+          if ( diag%phasefw .ne. 0 .and. d1 .lt. -phaseoffs ) j1 = j1 + 2.*PI
+          if ( diag%phasebw .ne. 0 .and. d1 .gt. phaseoffs ) j1 = j1 - 2.*PI
+          if ( diag%phasefw .ne. 0 .and. d2 .lt. -phaseoffs ) j2 = j2 + 2.*PI
+          if ( diag%phasebw .ne. 0 .and. d2 .gt. phaseoffs ) j2 = j2 - 2.*PI
+          SumHph1_old = SumHph1
+          SumHph2_old = SumHph2
+          SumHph1 = SumHph1 + PI + j1
+          SumHph2 = SumHph2 + PI + j2
           if ( hasref ) then
-             SumEph1 = SumEph1 - rv(2)
-             SumEph2 = SumEph1 - rv(4)
+             SumHph1 = SumHph1 - rv(2)
+             SumHph2 = SumHph1 - rv(4)
           end if
           write(UNITTMP,*) freq, sqrt(SumHa1)/norm/rv(1), SumHph1-PI, &
                sqrt(SumHa2)/norm/rv(3), SumHph2-PI

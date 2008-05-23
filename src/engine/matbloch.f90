@@ -111,16 +111,18 @@ contains
     
     M4_MODREAD_EXPR({MATBLOCH},funit,lcount,mat,reg,3,out,{ 
 
+
     ! read mat parameters here, as defined in mat data structure
     call readfloat(funit,lcount, mat%lambdarinv)
     call readfloat(funit,lcount, mat%gammal)
     call readcomplexs(funit,lcount, mat%M, 3)
     call readline(funit, lcount, eof, line)
     M4_EOF_ERROR(eof, lcount)
-    call getfloats(line, v, 2, err)
-    M4_SYNTAX_ERROR({line .ne. ""},lcount,"Ntr [ N0 ]")
-    mat%Ntr = v(1)
-    mat%N0 = v(2)
+    err = .false.
+    call getfloat(line, mat%Ntr, err)
+    M4_SYNTAX_ERROR({err},lcount,"Ntr [ N0 ]")
+    err = .false.
+    call getfloat(line, mat%N0, err)
     if ( err ) mat%N0 = mat%Ntr
     call readfloat(funit,lcount, mat%gammanr)
     call readfloat(funit,lcount, mat%pump)

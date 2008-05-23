@@ -330,12 +330,11 @@ Gaussian		! pulse shape
 )MATLHM
 
 
-
 ! -----------------------------------------------------------------------
 ! (MATDRUDE-): drude materials pole equation <Ex,Ey,Ez>
 ! -----------------------------------------------------------------------
     
-(MATDRUDE
+(!MATDRUDE
 0.0471404520791	   	! lambdaplinv : inv plasma freq wavelength [2 pi c]
 1.e-10 	    		! gammapl: damping constant [1/dt] 
 1		    	! order: 1 (=J) or 2 (=P)
@@ -357,9 +356,38 @@ Gaussian		! pulse shape
 )REG
 )MATDRUDE
 
+
+
 ! -----------------------------------------------------------------------
-! (DIAGPSPEC-): power flux spectrum 
+! (MATBLOCH-): bloch material model <Ex,Ey,Ez>
 ! -----------------------------------------------------------------------
+    
+(MATBLOCH
+0.0471404520791	   	! lambdaprinv : inv resonance freq wavelength [2 pi c]
+1.e-10 	    		! gammapl: lorentzian damping rate 
+(1.,0.) (1.,0.) (1.,0.)	! M: dipole matrix element vector
+1. 0.5			! N_tr [N_0]: transparency density and initial density
+1.e-9			! gammanr: non-radiative recomb rate
+1.			! pump: carrier pump rate
+0			! carrier saturation (0=>(N-Ntr), 1=>Ntr*log(N/Ntr))
+(REG
+  (POINT 
+	0 0 0
+  )POINT
+  (!BOX
+	-30 30 1 -30 30 1 : 1. 1. 1. 
+	-30 -30 1 -30 30 1 : 1. .5 .5 
+	30 30 1 -30 30 1 : 0. .5 .5 
+	-30 30 1 -30 -30 1 	: .5 1. .5  
+	-30 30 1 30 30 1 : .5 0. .5 0. .5
+	-30 -30 1 -30 -30 1 : .5 .5 .25
+	-30 -30 1 30 30 1 : .5 0. .25
+	30 30 1 -30 -30 1 : 0. .5 .25   
+	30 30 1 30 30 1 : 0. 0. .25 
+  )BOX
+)REG
+)MATBLOCH
+
  
 
 ! -----------------------------------------------------------------------
