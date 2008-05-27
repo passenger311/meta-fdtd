@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# execution wrapper for meta program
+
+F=$1
+if [ "$1" == "" ]; then
+F=.
+fi
+
+if [ -f $F ]; then
+$F >log 2>log.err
+else
+exit 2  # skip this test!
+fi
+
+ENDS="`grep '(META) END' log`"
+
+if [ "x$ENDS" == "x" ]; then
+exit 1 # failed!
+fi
+exit 0 # ok!
