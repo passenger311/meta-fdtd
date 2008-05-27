@@ -115,13 +115,9 @@ check:
 install: build-dir
 	@echo [INSTALL] $(ENGINE)
 	@cp -a $(ENGINE) ../$(BUILDDIR)
-
-
-install-tests: build-dir
-	@echo [INSTALL] engine tests
+	@echo [INSTALL] engine-tests
 	@rm -rf ../$(BUILDDIR)/engine-tests
-	@cp -a tests ../$(BUILDDIR)/engine-tests
-
+	@cp -a engine-tests ../$(BUILDDIR)/engine-tests
 
 $(ENGINE):
 	@mkdir $(ENGINE)
