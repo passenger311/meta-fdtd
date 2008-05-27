@@ -6,7 +6,6 @@
 
 # ---------------------------------------------------------------------
 
-
 ifeq ($(ARCH),)
 include ../Make.default
 else 
@@ -34,7 +33,7 @@ all: info geopre install
 
 
 geopre:
-	@cd $(GBUILDDIR); $(MAKE) -s clean all
+	@cd $(GBUILDDIR); $(MAKE) MPI= -s clean all
 	@cp $(GBUILDDIR)/geopre .
 
 install: build-dir
