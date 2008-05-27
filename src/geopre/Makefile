@@ -45,7 +45,6 @@ install: build-dir
 clean:
 	@rm -f geopre
 	@cd src/Release; $(MAKE) -s clean
-	@cd src/Debug; $(MAKE) -s clean
 
 proper: clean
 
