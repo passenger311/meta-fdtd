@@ -18,12 +18,7 @@ include ../define.mk
 
 .PHONY: clean proper default install all info
 
-ifeq ($(DBG),1)
 GBUILDDIR=src/Release
-else
-GBUILDDIR= src/Debug
-endif
-
 
 BUILDFILES=\
 geopre
@@ -39,8 +34,8 @@ all: info geopre install
 
 
 geopre:
-	cd $(GBUILDDIR); $(MAKE) -s clean all
-	cp $(GBUILDDIR)/geopre .
+	@cd $(GBUILDDIR); $(MAKE) -s clean all
+	@cp $(GBUILDDIR)/geopre .
 
 install: build-dir
 	@echo [INSTALL] $(BUILDFILES)
@@ -49,8 +44,8 @@ install: build-dir
 
 clean:
 	@rm -f geopre
-	@cd src/Release; make clean
-	@cd src/Debug; make clean
+	@cd src/Release; $(MAKE) -s clean
+	@cd src/Debug; $(MAKE) -s clean
 
 proper: clean
 

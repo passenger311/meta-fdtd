@@ -65,6 +65,7 @@ real(kind=8) function GenericWave(sigshape ,ncyc, noffs, natt, nsus, ndcy, nhwhm
 
   case default
      GenericWave = GaussianWave(ncyc, noffs, natt, nsus, ndcy, nhwhm, omega)
+
   end select
 
 end function GenericWave

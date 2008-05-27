@@ -21,22 +21,10 @@ OBJS += \
 ./errorclasses.o \
 ./main.o 
 
-CPP_DEPS += \
-./ArgumentReader.d \
-./GridBox.d \
-./OutputFile.d \
-./OutputList.d \
-./Scene.d \
-./errorclasses.d \
-./main.d 
-
 
 # Each subdirectory must supply rules for building sources it contributes
 %.o: ../%.cpp
-	@echo 'Building file: $<'
-	@echo 'Invoking: GCC C++ Compiler'
-	g++ -I../../expat/xmlparse -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o"$@" "$<"
-	@echo 'Finished building: $<'
-	@echo ' '
+	@echo "[CXX] $@"
+	@$(CXX) $(CXXFLAGS_OPT) -I../../expat/xmlparse -c -o"$@" "$<"
 
 

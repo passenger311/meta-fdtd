@@ -16,34 +16,43 @@ include ../define.mk
 
 # ---------------------------------------------------------------------
 
-.PHONY: clean proper default install info
+.PHONY: clean proper default install all info
 
 BUILDFILES=\
-qscript.mpi\
-mpiwrap.sh
-
-
-.PHONY: clean proper default install
+stitch-outgpl
 
 default: all
 
-info: 
+info:
 	@echo "."
-	@echo ". RUN SCRIPTS"
+	@echo ". POSTPS"
 	@echo "."
 
 all: info install
-
+ 
 install: build-dir
 	@echo [INSTALL] $(BUILDFILES)
 	@ cp $(BUILDFILES) ../$(BUILDDIR)
 
-.PHONY: clean proper
+%.o : %.f90
+	@echo [F90] $*
+	@$(M4) $< >$*_m4.f90 
+	@$(F90) $(F90FLAGS) $(INCLUDE) -c $*_m4.f90 -o $*.o
+
+%.o : %.F90
+	@echo [F90] $*
+	@$(M4) $< >$*_m4.F90 
+	@$(F90) $(F90FLAGS) $(INCLUDE) -c $*_m4.F90 -o $*.o
+
+%.o : %.c
+	@echo [CC ] $*
+	@$(CC) $(CCFLAGS) $(INCLUDE) -c $<
 
 clean:
+	@rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod *_m4.f90 *_m4.F90
 
 proper: clean
-	@rm -f *~
+	@rm -f $(EXE) $(PREEXE) *.o *.in *.out *~
 
 
 # ---------------------------------------------------------------------

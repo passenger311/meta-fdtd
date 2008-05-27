@@ -13,18 +13,9 @@ OBJS += \
 ./filehandler/FileHandlerFortranIN.o \
 ./filehandler/FileHandlerVTK.o 
 
-CPP_DEPS += \
-./filehandler/FileHandler.d \
-./filehandler/FileHandlerFortranIN.d \
-./filehandler/FileHandlerVTK.d 
-
-
 # Each subdirectory must supply rules for building sources it contributes
 filehandler/%.o: ../filehandler/%.cpp
-	@echo 'Building file: $<'
-	@echo 'Invoking: GCC C++ Compiler'
-	g++ -I../../expat/xmlparse -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o"$@" "$<"
-	@echo 'Finished building: $<'
-	@echo ' '
+	@echo "[CXX] $@"
+	@$(CXX) $(CXXFLAGS_NOOPT) -I../../expat/xmlparse -c -o"$@" "$<"
 
 

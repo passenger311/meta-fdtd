@@ -109,7 +109,7 @@ contains
        mat%Px = 0.
        mat%Py = 0.
        mat%Pz = 0.
-
+       
        mat%c1 = ( 2. - mat%omegal**2 * DT**2 ) / ( 1. + DT * mat%gammal )
        mat%c2 = ( -1. + DT * mat%gammal ) / ( 1. + DT * mat%gammal )
        mat%c3 = DT**2 * mat%omegal**2 * mat%deltaepsl / ( 1. + DT * mat%gammal )

@@ -6,9 +6,7 @@
 
 # ---------------------------------------------------------------------
 
-M4_ARCH=SX6
-
-include ../Make.sx
+M4_ARCH=SX
 
 # --- compiler set
 
@@ -25,6 +23,54 @@ CXX=sxmpic++
 CC=sxmpicc
 
 endif
+
+# --- openmp flags
+
+ifneq ($(OMP),)
+
+OMPFLAGS=-P openmp -pi
+
+endif 
+
+# --- debug flags
+
+ifneq ($(DBG),)
+
+DBGFLAGS= -g
+F90DBGFLAGS= -Cdebug -Pstack -Wf"-init stack=nan heap=nan"
+
+endif 
+
+# --- optimization flags
+
+ifeq ($(DBG),)
+
+OPTFLAGS=-C hopt
+NOOPTFLAGS=-C vsafe
+
+endif
+
+
+# --- release flags
+
+RELFLAGS=
+F90RELFLAGS= -Wf,'-Nesc'
+
+# --- flags
+
+FLAGS=$(DBGFLAGS) $(RELFLAGS) $(OMPFLAGS)
+
+F90FLAGS+= $(FLAGS) $(F90RELFLAGS) $(F90DBGFLAGS)
+CXXFLAGS+= $(FLAGS)
+CFLAGS+= $(FLAGS)
+LDFLAGS+= $(FLAGS) $(LDOPTFLAGS)
+
+F90FLAGS_NOOPT=$(NOOPTFLAGS) $(F90FLAGS)
+F90FLAGS_OPT=$(OPTFLAGS) $(F90FLAGS)
+CXXFLAGS_NOOPT=$(NOOPTFLAGS) $(CXXFLAGS)
+CXXFLAGS_OPT=$(OPTFLAGS) $(CXXFLAGS)
+CFLAGS_NOOPT=$(NOOPTFLAGS) $(CFLAGS)
+CFLAGS_OPT=$(OPTFLAGS) $(CFLAGS)
 
 
 # ---------------------------------------------------------------------

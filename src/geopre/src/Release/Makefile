@@ -2,6 +2,13 @@
 # Automatically-generated file. Do not edit!
 ################################################################################
 
+ifeq ($(ARCH),)
+include ../../../Make.default
+else 
+include ../../../Make.$(ARCH)
+endif 
+
+
 -include ../makefile.init
 
 RM := rm -rf
@@ -42,18 +49,13 @@ endif
 # All Target
 all: geopre
 
-# Tool invocations
 geopre: $(OBJS) $(USER_OBJS)
-	@echo 'Building target: $@'
-	@echo 'Invoking: GCC C++ Linker'
-	g++ -L../../expat/xmlparse -o "geopre" $(OBJS) $(USER_OBJS) $(LIBS)
-	@echo 'Finished building target: $@'
-	@echo ' '
+	@echo "[LD] $@"
+	@$(CXX) -L../../expat/xmlparse -o "geopre" $(OBJS) $(USER_OBJS) $(LIBS)
 
 # Other Targets
 clean:
-	-$(RM) $(OBJS)$(C++_DEPS)$(EXECUTABLES)$(CC_DEPS)$(C_DEPS)$(CPP_DEPS)$(CXX_DEPS)$(C_UPPER_DEPS) geopre
-	-@echo ' '
+	@$(RM) $(OBJS)$(C++_DEPS)$(EXECUTABLES)$(CC_DEPS)$(C_DEPS)$(CPP_DEPS)$(CXX_DEPS)$(C_UPPER_DEPS) geopre
 
 .PHONY: all clean dependents
 .SECONDARY:

@@ -17,8 +17,8 @@ build:
 	@echo 
 	@echo "+ CREATE BUILD [$(BUILDDIR)]"
 	-@$(MAKE) -s config
-	-@$(MAKE) -s post
-	-@$(MAKE) -s run
+	-@$(MAKE) -s geopre
+	-@$(MAKE) -s postps
 	-@$(MAKE) -s engine DIM=1 
 	-@$(MAKE) -s engine DIM=2 
 	-@$(MAKE) -s engine DIM=3

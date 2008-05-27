@@ -6,6 +6,8 @@
 
 # ---------------------------------------------------------------------
 
+ARCH=gnu
+
 M4_ARCH=GNU
 
 # --- compiler set
@@ -40,8 +42,8 @@ endif
 
 ifneq ($(DBG),)
 
-DBGFLAGS=-g -O0 -ffpe-trap="overflow,invalid,zero"
-F90DBGFLAGS= -fbounds-check 
+DBGFLAGS=-g -O0
+F90DBGFLAGS= -fbounds-check  -ffpe-trap="overflow,invalid,zero"
 
 endif 
 

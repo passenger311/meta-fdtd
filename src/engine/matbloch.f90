@@ -74,7 +74,7 @@ module matbloch
   real(kind=8) :: lambdarinv    ! inv. vac. plasma wavelength
   real(kind=8) :: gammal        ! resonance width
 
-  complex(kind=8) :: M(3)          ! dipole matrix vector [1/dt]
+  M4_FTYPE :: M(3)          ! dipole matrix vector [1/dt]
   real(kind=8) :: N0, Ntr       ! transparency density
   real(kind=8) :: gammanr, pump
   integer :: napprox
@@ -104,6 +104,7 @@ contains
 
     M4_MODREAD_DECL({MATBLOCH}, funit,lcount,mat,reg,out)
     real(kind=8) :: v(2)
+    complex(kind=8) :: c(3)
     logical :: eof,err
     character(len=LINELNG) :: line
 
@@ -115,7 +116,16 @@ contains
     ! read mat parameters here, as defined in mat data structure
     call readfloat(funit,lcount, mat%lambdarinv)
     call readfloat(funit,lcount, mat%gammal)
-    call readcomplexs(funit,lcount, mat%M, 3)
+    call readcomplexs(funit,lcount, c, 3)
+M4_IFELSE_CF({
+    mat%M(1) = c(1)
+    mat%M(2) = c(2)
+    mat%M(3) = c(3)
+},{
+    mat%M(1) = real(c(1))
+    mat%M(2) = real(c(2))
+    mat%M(3) = real(c(3))
+})
     call readline(funit, lcount, eof, line)
     M4_EOF_ERROR(eof, lcount)
     err = .false.
@@ -179,6 +189,8 @@ contains
        mat%c5 = 1. / ( 2. + mat%gammanr * DT ) * 1./(hbar * mat%omegar ) 
        mat%c6 = mat%c5  * DT * mat%gammal / 2.
 
+       
+
 
        M4_IFELSE_DBG({call EchoMatBlochObj(mat)},{call DisplayMatBlochObj(mat)})
 
@@ -229,7 +241,7 @@ contains
       pem =  mat%Px(p,m) * Ex(i,j,k) + mat%Py(p,m) * Ey(i,j,k) + mat%Pz(p,m) * Ez(i,j,k)
       pen =  mat%Px(p,n) * Ex(i,j,k) + mat%Py(p,n) * Ey(i,j,k) + mat%Pz(p,n) * Ez(i,j,k)
 
-      mat%N(p) = mat%N(p) + mat%c5 * ( pen - pem ) + mat%c6 * ( pen + pem )
+!      mat%N(p) = mat%N(p) + mat%c5 * ( pen - pem ) + mat%c6 * ( pen + pem )
 
       ! calculate P(n+1) from P(n),P(n-1),E(n) and N(n)
 
@@ -259,7 +271,7 @@ M4_IFELSE_TE({
 !     pen =  mat%Px(p,n) * Ex(i,j,k) + mat%Py(p,n) * Ey(i,j,k) + mat%Pz(p,n) * Ez(i,j,k)
       pem =  mat%Px(p,m) * Ex(i,j,k) + mat%Py(p,m) * Ey(i,j,k) + mat%Pz(p,m) * Ez(i,j,k)
 
-      mat%N(p) = mat%c4 * mat%N(p) + mat%c5 * ( pem - pen ) + mat%c6 * ( pem + pen )
+!      mat%N(p) = mat%c4 * mat%N(p) + mat%c5 * ( pem - pen ) + mat%c6 * ( pem + pen )
 
 
       ! after: J(*,m) is now P(n+1)

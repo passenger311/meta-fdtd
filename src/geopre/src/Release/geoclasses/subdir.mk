@@ -19,21 +19,10 @@ OBJS += \
 ./geoclasses/CObject.o \
 ./geoclasses/CSimpleTransform.o 
 
-CPP_DEPS += \
-./geoclasses/CBinaryObject.d \
-./geoclasses/CBox.d \
-./geoclasses/CCylinder.d \
-./geoclasses/CLogicOrObject.d \
-./geoclasses/CObject.d \
-./geoclasses/CSimpleTransform.d 
-
 
 # Each subdirectory must supply rules for building sources it contributes
 geoclasses/%.o: ../geoclasses/%.cpp
-	@echo 'Building file: $<'
-	@echo 'Invoking: GCC C++ Compiler'
-	g++ -I../../expat/xmlparse -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o"$@" "$<"
-	@echo 'Finished building: $<'
-	@echo ' '
+	@echo "[CXX] $@"
+	@$(CXX)  $(CXXFLAGS_OPT) -I../../expat/xmlparse -c -o"$@" "$<"
 
 

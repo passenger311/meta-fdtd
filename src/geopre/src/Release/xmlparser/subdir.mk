@@ -23,23 +23,9 @@ OBJS += \
 ./xmlparser/UnitParser.o \
 ./xmlparser/expatpp.o 
 
-CPP_DEPS += \
-./xmlparser/ClusterParser.d \
-./xmlparser/GeometryParser.d \
-./xmlparser/GridBoxParser.d \
-./xmlparser/OutputParser.d \
-./xmlparser/ParameterParser.d \
-./xmlparser/SetupFileParser.d \
-./xmlparser/UnitParser.d \
-./xmlparser/expatpp.d 
-
-
 # Each subdirectory must supply rules for building sources it contributes
 xmlparser/%.o: ../xmlparser/%.cpp
-	@echo 'Building file: $<'
-	@echo 'Invoking: GCC C++ Compiler'
-	g++ -I../../expat/xmlparse -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o"$@" "$<"
-	@echo 'Finished building: $<'
-	@echo ' '
+	@echo "[CXX] $@"
+	@$(CXX) $(CXXFLAGS_NOOPT) -I../../expat/xmlparse -c -o"$@" "$<"
 
 
