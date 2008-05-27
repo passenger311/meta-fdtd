@@ -10,7 +10,7 @@ ARCH=gnu
 endif
 include ./define.mk
 
-.PHONY: default clean proper distclean fftpack5 engine config post run  build tests
+.PHONY: default clean proper distclean fftpack5 engine config geopre postps  build tests
 
 build: 
 	-@$(MAKE) -s proper
@@ -25,7 +25,6 @@ build:
 	-@$(MAKE) -s engine DIM=1 CF=1
 	-@$(MAKE) -s engine DIM=2 CF=1
 	-@$(MAKE) -s engine DIM=3 CF=1
-	-@$(MAKE) -s engine-tests
 	@cd $(BUILDDIR)/engine-tests; $(MAKE) -s info all; cd .. 
 	@echo "."
 	@echo "+ BUILD COMPLETED [$(BUILDDIR)]"
@@ -33,12 +32,7 @@ build:
 
 default: all
 
-all: fftpack5 config post run engine 
-
-fftpack5: 
-ifneq ($(FFT),)
-	@cd $@ && $(MAKE) -s all
-endif 
+all: config postps geopre engine 
 
 engine-tests:
 	@echo "."
@@ -49,17 +43,14 @@ engine-tests:
 engine:
 	@cd $@ && $(MAKE) -s info all install
 
-config post run:
+config postps geopre:
 	@cd $@ && $(MAKE) -s info all install
 
 clean proper: 
 	@cd engine; $(MAKE) -s $@; cd ..
 	@cd config; $(MAKE) -s $@; cd ..
-	@cd post; $(MAKE) -s $@; cd ..
-	@cd run; $(MAKE) -s $@; cd ..
-ifneq ($(FFT),)
-	@cd fftpack5; $(MAKE) -s $@; cd ..
-endif 
+	@cd postps; $(MAKE) -s $@; cd ..
+	@cd geopre; $(MAKE) -s $@; cd ..
 
 distclean: proper
 	@rm -rf build-* build
