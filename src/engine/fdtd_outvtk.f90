@@ -43,7 +43,7 @@ contains
     type (T_OUT) :: out
     type (T_BUF) :: buf
 
-    if ( out%fn .eq. 'Px' .or. out%fn .eq. 'Py' .or. out%fn .eq. 'Pz' .or. &
+    if ( out%fn .eq. 'Sx' .or. out%fn .eq. 'Sy' .or. out%fn .eq. 'Sz' .or. &
          out%fn .eq. 'En' ) then
 
        ! allocate buffer for calculated data
@@ -58,7 +58,7 @@ contains
 
     endif
 
-    if ( out%fn .eq. 'P' ) then
+    if ( out%fn .eq. 'S' ) then
        
        buf = CreateBufObj(regobj(out%regidx),M4_ISCF,3)
        out%bufidx = buf%idx
@@ -104,18 +104,18 @@ contains
        call FdtdCalcEn(buf, 1, mode)
        call WriteBuffer(out, buf, 0, mode)
     case('P')
-       call FdtdCalcPx(buf, 1, mode)
-       call FdtdCalcPy(buf, 2, mode)
-       call FdtdCalcPz(buf, 3, mode)
+       call FdtdCalcSx(buf, 1, mode)
+       call FdtdCalcSy(buf, 2, mode)
+       call FdtdCalcSz(buf, 3, mode)
        call WriteBuffer(out, buf, 0, mode)
     case('Px')
-       call FdtdCalcPx(buf, 1, mode)
+       call FdtdCalcSx(buf, 1, mode)
        call WriteBuffer(out, buf, 0, mode)
     case('Py')
-       call FdtdCalcPy(buf, 1, mode)
+       call FdtdCalcSy(buf, 1, mode)
        call WriteBuffer(out, buf, 0, mode)
     case('Pz')
-       call FdtdCalcPz(buf, 1, mode)
+       call FdtdCalcSz(buf, 1, mode)
        call WriteBuffer(out, buf, 0, mode)
     case('E')
        call WriteVector(out, Ex,Ey,Ez, 0, mode)

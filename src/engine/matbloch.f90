@@ -88,7 +88,7 @@ module matbloch
   real(kind=8) :: c1, c2, c3, c4, c5, c6
   
   ! polarisation field 
-  M4_FTYPE, dimension(:,:), pointer :: Px, Py, Pz
+  M4_FTYPE, dimension(:,:), pointer :: P
 
   ! number density 
   real(kind=8), dimension(:), pointer :: N
@@ -168,14 +168,11 @@ M4_IFELSE_CF({
 
        reg = regobj(mat%regidx)
 
-       allocate(mat%Px(reg%numnodes,2),mat%Py(reg%numnodes,2),mat%Pz(reg%numnodes,2), &
-            mat%N(reg%numnodes), stat = err)
+       allocate(mat%P(reg%numnodes,2), mat%N(reg%numnodes), stat = err)
 
        M4_ALLOC_ERROR(err,"InitializeMatBloch")
 
-       mat%Px = 0.
-       mat%Py = 0.
-       mat%Pz = 0.
+       mat%P = 0.
 
        mat%N = mat%N0
 
@@ -188,10 +185,11 @@ M4_IFELSE_CF({
        mat%c4 = ( 2. - mat%gammanr * DT ) / ( 2. + mat%gammanr * DT )
        mat%c5 = 1. / ( 2. + mat%gammanr * DT ) * 1./(hbar * mat%omegar ) 
        mat%c6 = mat%c5  * DT * mat%gammal / 2.
-
        
-
-
+!       write(6,*) "c1 = ", mat%c1
+!       write(6,*) "c2 = ", mat%c2
+!       write(6,*) "c3 = ", mat%c3 * mat%M(2) * mat%M(2) * ( mat%N0 - mat%Ntr )
+       
        M4_IFELSE_DBG({call EchoMatBlochObj(mat)},{call DisplayMatBlochObj(mat)})
 
     })
@@ -208,7 +206,7 @@ M4_IFELSE_CF({
     M4_MODLOOP_EXPR({MATBLOCH},mat,{
 
     ! finalize mat object here
-    deallocate(mat%Px,mat%Py,mat%Pz,mat%N )
+    deallocate(mat%P,mat%N)
 
     })
     M4_WRITE_DBG(". exit FinalizeMatBloch")
@@ -234,51 +232,75 @@ M4_IFELSE_CF({
       n = mod(ncyc-1+2,2) + 1
       m = mod(ncyc+2,2) + 1
     
-      M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-
-      ! calculate second part of the density response (after the new E field got calculated)
-
-      pem =  mat%Px(p,m) * Ex(i,j,k) + mat%Py(p,m) * Ey(i,j,k) + mat%Pz(p,m) * Ez(i,j,k)
-      pen =  mat%Px(p,n) * Ex(i,j,k) + mat%Py(p,n) * Ey(i,j,k) + mat%Pz(p,n) * Ez(i,j,k)
-
-!      mat%N(p) = mat%N(p) + mat%c5 * ( pen - pem ) + mat%c6 * ( pen + pem )
-
-      ! calculate P(n+1) from P(n),P(n-1),E(n) and N(n)
-
-      ! before: P(*,m) is P(n-1), P(*,n) is P(n)
-
-      me = mat%M(1) * Ex(i,j,k) + mat%M(2) * Ey(i,j,k) + mat%M(3) * Ez(i,j,k)
-
       select case ( mat%napprox )
       case ( 1 )
-         ninv = mat%Ntr * log( mat%N(p)/mat%Ntr )
-      case default
-         ninv = ( mat%N(p) - mat%Ntr )
-      end select
+      ! ---- logarithmic density dependency
 
-      me = me * ninv
+        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-M4_IFELSE_TM({
-      mat%Px(p,m) = mat%c1 * mat%Px(p,n) + mat%c2 * mat%Px(p,m) + mat%c3 * mat%M(1) * me 
-      mat%Py(p,m) = mat%c1 * mat%Py(p,n) + mat%c2 * mat%Py(p,m) + mat%c3 * mat%M(2) * me 
-})
-M4_IFELSE_TE({
-      mat%Pz(p,m) = mat%c1 * mat%Pz(p,n) + mat%c2 * mat%Pz(p,m) + mat%c3 * mat%M(3) * me
-})      
+        me = mat%M(1) * Ex(i,j,k) + mat%M(2) * Ey(i,j,k) + mat%M(3) * Ez(i,j,k)
 
-      ! calculate first part of the density response
-
-!     pen =  mat%Px(p,n) * Ex(i,j,k) + mat%Py(p,n) * Ey(i,j,k) + mat%Pz(p,n) * Ez(i,j,k)
-      pem =  mat%Px(p,m) * Ex(i,j,k) + mat%Py(p,m) * Ey(i,j,k) + mat%Pz(p,m) * Ez(i,j,k)
-
-!      mat%N(p) = mat%c4 * mat%N(p) + mat%c5 * ( pem - pen ) + mat%c6 * ( pem + pen )
-
-
-      ! after: J(*,m) is now P(n+1)
+        ! calculate second part of the density response (after the new E field got calculated)
+        
+        pem =  mat%P(p,m) * me
+        pen =  mat%P(p,n) * me
+        
+        mat%N(p) = mat%N(p) + mat%c5 * ( pen - pem ) + mat%c6 * ( pen + pem )
+        
+        ! calculate P(n+1) from P(n),P(n-1),E(n) and N(n)
+        
+        ! before: P(*,m) is P(n-1), P(*,n) is P(n)
+        
+        ninv = mat%Ntr * log( mat%N(p)/mat%Ntr )
        
-      ! m and n will be flipped in the next timestep!
+        mat%P(p,m) = mat%c1 * mat%P(p,n) + mat%c2 * mat%P(p,m) + mat%c3 * me * ninv 
 
-      })      
+        ! calculate first part of the density response
+        
+        pem =  mat%P(p,m) * me
+
+        mat%N(p) = mat%c4 * mat%N(p) + mat%c5 * ( pem - pen ) + mat%c6 * ( pem + pen )
+
+        ! after: J(*,m) is now P(n+1)
+        ! m and n will be flipped in the next timestep!
+
+        })      
+   
+     case default
+     ! ---- linear density dependency
+        
+        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+
+        me = mat%M(1) * Ex(i,j,k) + mat%M(2) * Ey(i,j,k) + mat%M(3) * Ez(i,j,k)
+
+        ! calculate second part of the density response (after the new E field got calculated)
+        
+        pem =  mat%P(p,m) * me
+        pen =  mat%P(p,n) * me
+        
+        mat%N(p) = mat%N(p) + mat%c5 * ( pen - pem ) + mat%c6 * ( pen + pem )
+        
+        ! calculate P(n+1) from P(n),P(n-1),E(n) and N(n)
+        
+        ! before: P(*,m) is P(n-1), P(*,n) is P(n)
+        
+        ninv = ( mat%N(p) - mat%Ntr )
+
+        mat%P(p,m) = mat%c1 * mat%P(p,n) + mat%c2 * mat%P(p,m) + mat%c3 * me * ninv 
+
+        ! calculate first part of the density response
+        
+        pem =  mat%P(p,m) * me
+
+        mat%N(p) = mat%c4 * mat%N(p) + mat%c5 * ( pem - pen ) + mat%c6 * ( pem + pen )
+
+        ! after: J(*,m) is now P(n+1)
+        ! m and n will be flipped in the next timestep!
+
+        })      
+
+     end select
+
 
     })
   
@@ -309,11 +331,11 @@ M4_IFELSE_TE({
        ! J(*,m) is P(n+1) and J(*,n) is P(n)      
 
 M4_IFELSE_TM({
-       Ex(i,j,k) = Ex(i,j,k) - w(1) * epsinvx(i,j,k) * ( mat%Px(p,m) - mat%Px(p,n) )
-       Ey(i,j,k) = Ey(i,j,k) - w(2) * epsinvy(i,j,k) * ( mat%Py(p,m) - mat%Py(p,n) )
+       Ex(i,j,k) = Ex(i,j,k) - w(1) * epsinvx(i,j,k) * mat%M(1) * ( mat%P(p,m) - mat%P(p,n) )
+       Ey(i,j,k) = Ey(i,j,k) - w(2) * epsinvy(i,j,k) * mat%M(2) * ( mat%P(p,m) - mat%P(p,n) )
 })
 M4_IFELSE_TE({
-       Ez(i,j,k) = Ez(i,j,k) - w(3) * epsinvz(i,j,k) * ( mat%Pz(p,m) - mat%Pz(p,n) )
+       Ez(i,j,k) = Ez(i,j,k) - w(3) * epsinvz(i,j,k) * mat%M(3) * ( mat%P(p,m) - mat%P(p,n) )
 })
        })      
 
@@ -352,9 +374,9 @@ M4_IFELSE_TE({
        if ( mask(i,j,k) ) then
 
           sum = sum + ( &
-M4_IFELSE_TM({ M4_VOLEX(i,j,k) * w(1) * real(Ex(i,j,k)) * real( mat%Px(p,m) - mat%Px(p,n) ) / DT +},{0. +}) &
-M4_IFELSE_TM({ M4_VOLEY(i,j,k) * w(2) * real(Ey(i,j,k)) * real( mat%Py(p,m) - mat%Py(p,n) ) / DT +},{0. +}) &
-M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * real(Ez(i,j,k)) * real( mat%Pz(p,m) - mat%Pz(p,n) ) / DT  },{0.  }) &
+M4_IFELSE_TM({ M4_VOLEX(i,j,k) * w(1) * real(Ex(i,j,k)) * real( mat%M(1) * ( mat%P(p,m) - mat%P(p,n) ) ) / DT +},{0. +}) &
+M4_IFELSE_TM({ M4_VOLEY(i,j,k) * w(2) * real(Ey(i,j,k)) * real( mat%M(2) * ( mat%P(p,m) - mat%P(p,n) ) ) / DT +},{0. +}) &
+M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * real(Ez(i,j,k)) * real( mat%M(3) * ( mat%P(p,m) - mat%P(p,n) ) ) / DT  },{0.  }) &
                )
 
        endif

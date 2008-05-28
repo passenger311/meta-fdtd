@@ -34,7 +34,7 @@ module fdtd_calc
 
   public :: InitializeFdtdCalc
   public :: FinalizeFdtdCalc
-  public :: FdtdCalcEn, FdtdCalcPx, FdtdCalcPy, FdtdCalcPz
+  public :: FdtdCalcEn, FdtdCalcSx, FdtdCalcSy, FdtdCalcSz
   public :: NumericalPhaseVelocity
 
 contains
@@ -144,9 +144,9 @@ contains
 
 !----------------------------------------------------------------------
 
-! Localization: Px[i,j,k] = Px(i+1/2,j,k)
+! Localization: Sx[i,j,k] = Sx(i+1/2,j,k)
 
-  subroutine FdtdCalcPx(buf, slot, mode)
+  subroutine FdtdCalcSx(buf, slot, mode)
 
     type (T_BUF) :: buf
     integer :: slot
@@ -178,13 +178,13 @@ contains
     } )
   
     
-  end subroutine FdtdCalcPx
+  end subroutine FdtdCalcSx
 
 !----------------------------------------------------------------------
 
-! Localization: Py[i,j,k] = Py(i-1/2,j+1,k+1/2) where Ey sits at n = n + 1/2
+! Localization: Sy[i,j,k] = Sy(i-1/2,j+1,k+1/2) where Ey sits at n = n + 1/2
 
-  subroutine FdtdCalcPy(buf, slot, mode)
+  subroutine FdtdCalcSy(buf, slot, mode)
 
     type (T_BUF) :: buf
     integer :: slot
@@ -216,13 +216,13 @@ contains
     } )
   
     
-  end subroutine FdtdCalcPy
+  end subroutine FdtdCalcSy
 
 !----------------------------------------------------------------------
 
-! Localization: Pz[i,j,k] = Pz(i-1/2,j+1/2,k+1).where Ez sits at n = n + 1/2
+! Localization: Sz[i,j,k] = Sz(i-1/2,j+1/2,k+1).where Ez sits at n = n + 1/2
  
-  subroutine FdtdCalcPz(buf, slot, mode)
+  subroutine FdtdCalcSz(buf, slot, mode)
 
     type (T_BUF) :: buf
     integer :: slot
@@ -255,7 +255,7 @@ contains
     } )
   
     
-  end subroutine FdtdCalcPz
+  end subroutine FdtdCalcSz
 
 !----------------------------------------------------------------------
 
