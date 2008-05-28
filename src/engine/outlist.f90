@@ -170,7 +170,7 @@ contains
        call readtoken(funit, lcount, ")OUT")
        call SetOutObj(out, fmt, snap, modl, filename, fn, mode, ns, ne, dn, reg)
     else
-       M4_SYNTAX_ERROR({line .ne. ")OUT"},lcount,{")OUT"})
+       M4_SYNTAX_ERROR({string .ne. ")OUT"},lcount,{")OUT"})
        M4_WRITE_DBG({"using default region!"})
        call SetOutObj(out, fmt, snap, modl, filename, fn, mode, ns, ne, dn, regdef)  
     end if
