@@ -77,7 +77,7 @@ module matbloch
   M4_FTYPE :: M(3)          ! dipole matrix vector [1/dt]
   real(kind=8) :: N0, Ntr       ! transparency density
   real(kind=8) :: gammanr, pump
-  integer :: napprox
+  integer :: napprox, cyc
   
   ! calculated
 
@@ -186,10 +186,9 @@ M4_IFELSE_CF({
        mat%c5 = 1. / ( 2. + mat%gammanr * DT ) * 1./(hbar * mat%omegar ) 
        mat%c6 = mat%c5  * DT * mat%gammal / 2.
        
-!       write(6,*) "c1 = ", mat%c1
-!       write(6,*) "c2 = ", mat%c2
-!       write(6,*) "c3 = ", mat%c3 * mat%M(2) * mat%M(2) * ( mat%N0 - mat%Ntr )
        
+       mat%cyc = 1 
+
        M4_IFELSE_DBG({call EchoMatBlochObj(mat)},{call DisplayMatBlochObj(mat)})
 
     })
@@ -231,6 +230,8 @@ M4_IFELSE_CF({
 
       n = mod(ncyc-1+2,2) + 1
       m = mod(ncyc+2,2) + 1
+
+      mat%cyc = m
     
       select case ( mat%napprox )
       case ( 1 )

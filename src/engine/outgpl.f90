@@ -27,6 +27,7 @@ module outgpl
   use mpiworld
   use reglist
   use outlist
+  use out_calc
 
 ! outgpl modules 
   use fdtd_outgpl
@@ -228,11 +229,11 @@ contains
 
     end select
 
-
-
   end subroutine WriteDataOutgplObj
-  
+
+
 !----------------------------------------------------------------------
+
 
 end module outgpl
 
