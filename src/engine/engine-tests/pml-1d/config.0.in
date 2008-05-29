@@ -36,7 +36,7 @@
 )BOUND
 
     
-(MATJSOURCE
+(SRCHARDJ
 0.0166666666   		! inv vacuum wavelength in units of [2 pi c]
 1.                      ! amplitude
 Gaussian                ! pulse shape
@@ -49,7 +49,7 @@ Gaussian                ! pulse shape
      25 : 0.0 0.0 1.0
   )POINT
 )REG
-)MATJSOURCE
+)SRCHARDJ
 
 
 

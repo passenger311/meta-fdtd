@@ -21,9 +21,11 @@ M4= m4 $(M4DEFINE)
 M4= m4 $(M4DEFINE)
 
 
+SRCLIST=$(shell ./scripts/mlist.pl -s src.def 2>/dev/null)
 MATLIST=$(shell ./scripts/mlist.pl -s mat.def 2>/dev/null)
 DIAGLIST=$(shell ./scripts/mlist.pl -s diag.def 2>/dev/null)
 OUTGPLLIST=$(shell ./scripts/mlist.pl -s outgpl.def 2>/dev/null)
+SRCOBJ= $(patsubst %,%.o,$(SRCLIST))
 MATOBJ= $(patsubst %,%.o,$(MATLIST))
 DIAGOBJ= $(patsubst %,%.o,$(DIAGLIST))
 OUTGPLOBJ= $(patsubst %,%_outgpl.o,$(OUTGPLLIST))
@@ -69,6 +71,8 @@ fdtd_outset.o\
 fdtd_outgpl.o\
 fdtd_outvtk.o\
 $(FDTD_OUTHD5)\
+$(SRCOBJ)\
+src.o\
 $(MATOBJ)\
 mat.o\
 $(DIAGOBJ)\

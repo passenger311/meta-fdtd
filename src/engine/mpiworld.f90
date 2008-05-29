@@ -78,17 +78,17 @@ M4_IFELSE_MPI({
 
      call MPE_INIT_LOG 
 
-     call RegMPEState(1,"ISEND","red:gray0")
-     call RegMPEState(2,"IRECV","blue:gray1")
-     call RegMPEState(3,"WAIT","green:gray2")
-     call RegMPEState(4,"StepH","yellow:gray3")
-     call RegMPEState(5,"StepHBound","violet:gray4")
-     call RegMPEState(6,"StepE","orange1:gray5")
-     call RegMPEState(7,"StepEBound","snow:gray6")
-     call RegMPEState(8,"StepHMat","pink1:gray7")
-     call RegMPEState(9,"StepEMat","chocolate:gray8")
-     call RegMPEState(10,"StepHDiag","pink1:gray7")
-     call RegMPEState(11,"StepEDiag","chocolate:gray8")
+     call RegMPEState(1,"Section 1","red:gray0")
+     call RegMPEState(2,"Section 2","blue:gray1")
+     call RegMPEState(3,"Section 3","green:gray2")
+     call RegMPEState(4,"Section 4","yellow:gray3")
+     call RegMPEState(5,"Section 5","violet:gray4")
+     call RegMPEState(6,"Section 6","orange1:gray5")
+     call RegMPEState(7,"Section 7","snow:gray6")
+     call RegMPEState(8,"Section 8","pink1:gray7")
+     call RegMPEState(9,"Section 9","chocolate:gray8")
+     call RegMPEState(10,"Section 10","pink1:gray7")
+     call RegMPEState(11,"Section 11","chocolate:gray8")
 
   end if
   })

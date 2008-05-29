@@ -1,2 +1,2 @@
-M4_RUN_ENGINE(meta1)
+M4_RUN_ENGINE(meta1-cf)
 M4_EXIT_OK

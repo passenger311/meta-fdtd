@@ -46,6 +46,15 @@ public :: SumJE$1
 public :: SumKH$1
 M4_MODHEAD_DECL({$1},{$2},{$3})})
 
+define({M4_SRCHEAD_DECL},{
+public :: SumJE$1
+public :: SumKH$1
+M4_MODHEAD_DECL({$1},{$2},{$3})})
+
+define({M4_DIAGHEAD_DECL},{
+M4_MODHEAD_DECL({$1},{$2},{$3})})
+
+
 define({M4_MODLOOP_DECL},{
     integer :: m4_n
     type(T_$1) :: $2   

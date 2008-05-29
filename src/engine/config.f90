@@ -21,6 +21,7 @@ module config
   use grid
   use fdtd
   use bound
+  use src
   use mat 
   use diag
 
@@ -93,6 +94,12 @@ contains
             M4_WRITE_INFO({"-> ReadConfigBound"})
             call ReadConfigBound(UNITTMP,lcount,string)    
          case default
+            if ( string(1:4) .eq. "(SRC" ) then
+               M4_WRITE_INFO({"-> ReadConfigSrc: ",TRIM(string(5:))})
+               call ReadConfigSrc(UNITTMP,lcount,string)
+               cycle
+            endif
+               
             if ( string(1:4) .eq. "(MAT" ) then
                M4_WRITE_INFO({"-> ReadConfigMat: ",TRIM(string(5:))})
                call ReadConfigMat(UNITTMP,lcount,string)

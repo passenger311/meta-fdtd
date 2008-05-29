@@ -185,8 +185,7 @@ M4_IFELSE_CF({
        mat%c4 = ( 2. - mat%gammanr * DT ) / ( 2. + mat%gammanr * DT )
        mat%c5 = 1. / ( 2. + mat%gammanr * DT ) * 1./(hbar * mat%omegar ) 
        mat%c6 = mat%c5  * DT * mat%gammal / 2.
-       
-       
+
        mat%cyc = 1 
 
        M4_IFELSE_DBG({call EchoMatBlochObj(mat)},{call DisplayMatBlochObj(mat)})

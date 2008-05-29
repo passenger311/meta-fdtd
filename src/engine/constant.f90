@@ -23,6 +23,7 @@ module constant
   integer, parameter :: MAXVALOBJ  = 100
   integer, parameter :: MAXBUFOBJ  = 100
   integer, parameter :: MAXVALUES  = 10
+  integer, parameter :: MAXSRCOBJ  = 50
   integer, parameter :: MAXMATOBJ  = 50
   integer, parameter :: MAXDIAGOBJ = 50
   integer, parameter :: MAXTIMER   = 10

@@ -19,8 +19,9 @@ program meta
   use fdtd
   use fdtd_calc
   use bound
-  use mat
   use out
+  use src
+  use mat
   use diag
   use config
   use mpicomms
@@ -73,6 +74,8 @@ M4_IFELSE_MPI(call SynchronizeMPIWorld)
         call InitializeFdtdCalc
         write(6,*) "* -> InitializeBound"
         call InitializeBound
+        write(6,*) "* -> InitializeSrc"
+        call InitializeSrc
         write(6,*) "* -> InitializeMat"
         call InitializeMat
         write(6,*) "* -> InitializeDiag"
@@ -154,27 +157,34 @@ M4_IFELSE_ARCH({PGI}, {
 ! ------------------------------ StepH --------------------------------
 
 call StartTimer(2)
-M4_MPE_SECTION(4,{
+M4_MPE_SECTION(2,{
 	if ( ncyc .gt. 0 ) call StepH
 })
 call StopTimer(2)
 
-
-! -------------------------- StepHMat ---------------------------------
+! -------------------------- StepHSrc ---------------------------------
 
 call StartTimer(3)
-M4_MPE_SECTION(8,{
-	if ( ncyc .gt. 0 ) call StepHMat(ncyc)
+M4_MPE_SECTION(3,{
+	if ( ncyc .gt. 0 ) call StepHSrc(ncyc)
 })
 call StopTimer(3)
 
-! -------------------------- StepHBound -------------------------------
+! -------------------------- StepHMat ---------------------------------
 
 call StartTimer(4)
-M4_MPE_SECTION(7,{
-	if ( ncyc .gt. 0 )  call StepHBound
+M4_MPE_SECTION(4,{
+	if ( ncyc .gt. 0 ) call StepHMat(ncyc)
 })
 call StopTimer(4)
+
+! -------------------------- StepHBound -------------------------------
+
+call StartTimer(5)
+M4_MPE_SECTION(5,{
+	if ( ncyc .gt. 0 )  call StepHBound
+})
+call StopTimer(5)
 
 ! ---------------------------- COMMS H --------------------------------
 
@@ -182,7 +192,9 @@ call StopTimer(4)
 
 call StartTimer(10)
 M4_IFELSE_MPI({
+M4_MPE_SECTION(10,{
 	call InitiateHMPIComms
+})
 })
 call StartTimer(10)
 
@@ -190,18 +202,20 @@ call StartTimer(10)
 
 ! use the time while comms are pending to do some useful stuff
 
-call StartTimer(5)
-M4_MPE_SECTION(10,{
+call StartTimer(6)
+M4_MPE_SECTION(6,{
 	call StepHDiag(ncyc)
 })
-call StopTimer(5)
+call StopTimer(6)
 
 ! ------------------------ LoadDataOut --------------------------------
 
 ! use the time while comms are pending to do some useful stuff
 
 call StartTimer(9)
+M4_MPE_SECTION(9,{
      call WriteDataOut(ncyc,.false.) 
+})
 call StopTimer(9)
 
 ! ---------------------------- WAIT H ---------------------------------
@@ -210,7 +224,9 @@ call StopTimer(9)
 
 call StartTimer(10)
 M4_IFELSE_MPI({
+M4_MPE_SECTION(10,{
 	call CompleteHMPIComms
+})
 })
 call StopTimer(10)
 
@@ -222,21 +238,30 @@ M4_MPE_SECTION(6,{
 })
 call StopTimer(2)
 
-! -------------------------- StepEMat ---------------------------------
+
+! -------------------------- StepHSrc ---------------------------------
 
 call StartTimer(3)
-M4_MPE_SECTION(9,{
-	if ( ncyc .gt. 0 ) call StepEMat(ncyc)
+M4_MPE_SECTION(3,{
+	if ( ncyc .gt. 0 ) call StepESrc(ncyc)
 })
 call StopTimer(3)
 
-! -------------------------- StepEBound -------------------------------
+! -------------------------- StepEMat ---------------------------------
 
 call StartTimer(4)
-M4_MPE_SECTION(7,{
-	if ( ncyc .gt. 0 ) call StepEBound
+M4_MPE_SECTION(4,{
+	if ( ncyc .gt. 0 ) call StepEMat(ncyc)
 })
 call StopTimer(4)
+
+! -------------------------- StepEBound -------------------------------
+
+call StartTimer(5)
+M4_MPE_SECTION(5,{
+	if ( ncyc .gt. 0 ) call StepEBound
+})
+call StopTimer(5)
 
 
 ! -------------------------- COMMS E ----------------------------------
@@ -245,7 +270,9 @@ call StopTimer(4)
 
 call StartTimer(10)
 M4_IFELSE_MPI({
+M4_MPE_SECTION(10,{
 	call InitiateEMPIComms
+})
 })
 call StopTimer(10)
 	
@@ -253,18 +280,20 @@ call StopTimer(10)
 
 ! use the time while comms are pending to do some useful stuff
 
-call StartTimer(5)
-M4_MPE_SECTION(11,{
+call StartTimer(6)
+M4_MPE_SECTION(6,{
 	call StepEDiag(ncyc)
 })
-call StopTimer(5)
+call StopTimer(6)
 
 ! ------------------------ WriteDataOut -------------------------------
 
 ! use the time while comms are pending to do some useful stuff
 
 call StartTimer(9)
+M4_MPE_SECTION(9,{
      call WriteDataOut(ncyc, .true.) 
+})
 call StopTimer(9)
 
 ! --------------------------- WAIT E ----------------------------------
@@ -273,7 +302,9 @@ call StopTimer(9)
 
 call StartTimer(10)
 M4_IFELSE_MPI({
+M4_MPE_SECTION(10,{
 	call CompleteEMPIComms
+})
 })
 call StopTimer(10)
 
@@ -301,9 +332,10 @@ M4_IFELSE_MPI(call FinalizeMPIComms)
      M4_WRITE_INFO("TIMING")
      write(6,*) "*"
      call DisplayTotalTimer("Fdtd   : ",2)
-     call DisplayTotalTimer("Mat    : ",3)
-     call DisplayTotalTimer("Bound  : ",4)
-     call DisplayTotalTimer("Diag   : ",5)
+     call DisplayTotalTimer("Src    : ",3)
+     call DisplayTotalTimer("Mat    : ",4)
+     call DisplayTotalTimer("Bound  : ",5)
+     call DisplayTotalTimer("Diag   : ",6)
      call DisplayTotalTimer("Output : ",9)
      call DisplayTotalTimer("Comms  : ",10)
      call DisplayTotalTimer("Total  : ",1)
@@ -332,6 +364,8 @@ M4_IFELSE_MPI(call SynchronizeMPIWorld)
 
         write(6,*) "* -> FinalizeOut"
         call FinalizeOut
+        write(6,*) "* -> FinalizeSrc"
+        call FinalizeSrc
         write(6,*) "* -> FinalizeMat"
         call FinalizeMat
         write(6,*) "* -> FinalizeDiag"
