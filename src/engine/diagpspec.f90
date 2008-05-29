@@ -333,7 +333,7 @@ contains
 
     integer :: ier = 0
 
-    diag%lensav = 2 * diag%numsteps + int(log(real(diag%numsteps))) + 4 
+    diag%lensav = 2 * diag%numsteps + int(log(real(diag%numsteps))) + 4
 
     ! allocate and initialize wsave array for fft
 

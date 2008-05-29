@@ -126,6 +126,7 @@ M4_IFELSE_CF({
     mat%M(2) = real(c(2))
     mat%M(3) = real(c(3))
 })
+
     call readline(funit, lcount, eof, line)
     M4_EOF_ERROR(eof, lcount)
     err = .false.
@@ -187,6 +188,26 @@ M4_IFELSE_CF({
        mat%c6 = mat%c5  * DT * mat%gammal / 2.
 
        mat%cyc = 1 
+
+
+M4_IFELSE_1D({
+       M4_WRITE_INFO({"1D -> forcing M(1)=0!"})
+       mat%M(1) = 0.
+})
+
+! not TE -> no Ex/Ey coupling
+M4_IFELSE_TM({},{
+       M4_WRITE_INFO({"Not TM -> forcing M(3)=0!"})
+       mat%M(3) = 0.  
+})
+
+! not TM -> no Ex/Ey coupling
+M4_IFELSE_TM({},{
+       M4_WRITE_INFO({"Not TE -> forcing M(1)=M(2)=0!"})
+       mat%M(1) = 0.  
+       mat%M(2) = 0.  
+})
+
 
        M4_IFELSE_DBG({call EchoMatBlochObj(mat)},{call DisplayMatBlochObj(mat)})
 

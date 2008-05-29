@@ -1,7 +1,7 @@
 ! list all mat* modules here
+matpec
 matdrude
 matdebye
 matlorentz
 matlhm
-matpec
 matbloch
