@@ -299,7 +299,7 @@ M4_IFELSE_CF({
         me = conjg(mat%M(1)) * Ex(i,j,k) + conjg(mat%M(2)) * Ey(i,j,k) + conjg(mat%M(3)) * Ez(i,j,k)
 },{
         me = mat%M(1) * Ex(i,j,k) + mat%M(2) * Ey(i,j,k) + mat%M(3) * Ez(i,j,k)
-}
+})
         ! calculate second part of the density response (after the new E field got calculated)
         
         pem =  real( mat%P(p,m) * me )
