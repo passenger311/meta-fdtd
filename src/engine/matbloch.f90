@@ -254,17 +254,21 @@ M4_IFELSE_TE({},{
       mat%cyc = m
     
       select case ( mat%napprox )
-      case ( 1 )
-      ! ---- logarithmic density dependency
+      
+      case ( 1 ) ! ---- LOGARITHMIC DENSITY DEPENDENCY
 
         M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
+M4_IFELSE_CF({
+        me = conjg(mat%M(1)) * Ex(i,j,k) + conjg(mat%M(2)) * Ey(i,j,k) + conjg(mat%M(3)) * Ez(i,j,k)
+},{
         me = mat%M(1) * Ex(i,j,k) + mat%M(2) * Ey(i,j,k) + mat%M(3) * Ez(i,j,k)
+})
 
         ! calculate second part of the density response (after the new E field got calculated)
         
-        pem =  mat%P(p,m) * me
-        pen =  mat%P(p,n) * me
+        pem =  real( mat%P(p,m) * me )
+        pen =  real( mat%P(p,n) * me )
         
         mat%N(p) = mat%N(p) + mat%c5 * ( pen - pem ) + mat%c6 * ( pen + pem )
         
@@ -278,7 +282,7 @@ M4_IFELSE_TE({},{
 
         ! calculate first part of the density response
         
-        pem =  mat%P(p,m) * me
+        pem =  real( mat%P(p,m) * me )
 
         mat%N(p) = mat%c4 * mat%N(p) + mat%c5 * ( pem - pen ) + mat%c6 * ( pem + pen )
 
@@ -287,17 +291,19 @@ M4_IFELSE_TE({},{
 
         })      
    
-     case default
-     ! ---- linear density dependency
+     case default ! ---- LINEAR DENSITY DEPENDENCY
         
         M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
+M4_IFELSE_CF({
+        me = conjg(mat%M(1)) * Ex(i,j,k) + conjg(mat%M(2)) * Ey(i,j,k) + conjg(mat%M(3)) * Ez(i,j,k)
+},{
         me = mat%M(1) * Ex(i,j,k) + mat%M(2) * Ey(i,j,k) + mat%M(3) * Ez(i,j,k)
-
+}
         ! calculate second part of the density response (after the new E field got calculated)
         
-        pem =  mat%P(p,m) * me
-        pen =  mat%P(p,n) * me
+        pem =  real( mat%P(p,m) * me )
+        pen =  real( mat%P(p,n) * me )
         
         mat%N(p) = mat%N(p) + mat%c5 * ( pen - pem ) + mat%c6 * ( pen + pem )
         
@@ -311,7 +317,7 @@ M4_IFELSE_TE({},{
 
         ! calculate first part of the density response
         
-        pem =  mat%P(p,m) * me
+        pem =  real( mat%P(p,m) * me )
 
         mat%N(p) = mat%c4 * mat%N(p) + mat%c5 * ( pem - pen ) + mat%c6 * ( pem + pen )
 
