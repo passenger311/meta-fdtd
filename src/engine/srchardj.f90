@@ -323,11 +323,11 @@ contains
 
         M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-M4_IFELSE_TM({
+M4_IFELSE_TE({
            Ex(i,j,k) = Ex(i,j,k) + DT * w(1) * epsinvx(i,j,k) * src%wavefct
            Ey(i,j,k) = Ey(i,j,k) + DT * w(2) * epsinvy(i,j,k) * src%wavefct
 })
-M4_IFELSE_TE({
+M4_IFELSE_TM({
            Ez(i,j,k) = Ez(i,j,k) + DT * w(3) * epsinvz(i,j,k) * src%wavefct
 })
 
@@ -351,11 +351,11 @@ M4_IFELSE_TE({
 
          end do
 
-M4_IFELSE_TM({
+M4_IFELSE_TE({
            Ex(i,j,k) = Ex(i,j,k) + DT * w(1) * epsinvx(i,j,k) * wavefct(1) 
            Ey(i,j,k) = Ey(i,j,k) + DT * w(2) * epsinvy(i,j,k) * wavefct(2)
 })
-M4_IFELSE_TE({
+M4_IFELSE_TM({
            Ez(i,j,k) = Ez(i,j,k) + DT * w(3) * epsinvz(i,j,k) * wavefct(3)
 })
 
@@ -462,9 +462,9 @@ M4_IFELSE_TE({
              Jz = - w(3) * src%wavefct
           
              sum = sum + ( &
-M4_IFELSE_TM({ M4_VOLEX(i,j,k) * real(Ex(i,j,k)) * Jx + },{0. +}) &
-M4_IFELSE_TM({ M4_VOLEY(i,j,k) * real(Ey(i,j,k)) * Jy + },{0. +}) &
-M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * real(Ez(i,j,k)) * Jz   },{0.  }) &
+M4_IFELSE_TE({ M4_VOLEX(i,j,k) * real(Ex(i,j,k)) * Jx + },{0. +}) &
+M4_IFELSE_TE({ M4_VOLEY(i,j,k) * real(Ey(i,j,k)) * Jy + },{0. +}) &
+M4_IFELSE_TM({ M4_VOLEZ(i,j,k) * real(Ez(i,j,k)) * Jz   },{0.  }) &
                  )
              
           endif
@@ -489,17 +489,17 @@ M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * real(Ez(i,j,k)) * Jz   },{0.  }) &
                 
              end do
 
-M4_IFELSE_TM({
+M4_IFELSE_TE({
              Jx = - w(1) * epsinvx(i,j,k) * wavefct(1) 
              Jy = - w(2) * epsinvy(i,j,k) * wavefct(2)
 })
-M4_IFELSE_TE({
+M4_IFELSE_TM({
              Jz = - w(3) * epsinvz(i,j,k) * wavefct(3)
 })
              sum = sum + ( &
-M4_IFELSE_TM({ M4_VOLEX(i,j,k) * real(Ex(i,j,k)) * Jx + },{0. +}) &
-M4_IFELSE_TM({ M4_VOLEY(i,j,k) * real(Ey(i,j,k)) * Jy + },{0. +}) &
-M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * real(Ez(i,j,k)) * Jz   },{0.  }) &
+M4_IFELSE_TE({ M4_VOLEX(i,j,k) * real(Ex(i,j,k)) * Jx + },{0. +}) &
+M4_IFELSE_TE({ M4_VOLEY(i,j,k) * real(Ey(i,j,k)) * Jy + },{0. +}) &
+M4_IFELSE_TM({ M4_VOLEZ(i,j,k) * real(Ez(i,j,k)) * Jz   },{0.  }) &
                 )
 
           end if

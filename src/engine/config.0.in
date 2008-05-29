@@ -90,8 +90,8 @@
   )OUT	
 
   (OUT
-    VTK test1_xy_p
-    P N
+    VTK test1_xy_s
+    S N
     2000 3000 200
     (REG
       (BOX

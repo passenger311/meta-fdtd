@@ -196,13 +196,13 @@ M4_IFELSE_1D({
 })
 
 ! not TE -> no Ex/Ey coupling
-M4_IFELSE_TM({},{
+M4_IFELSE_TE({},{
        M4_WRITE_INFO({"Not TM -> forcing M(3)=0!"})
        mat%M(3) = 0.  
 })
 
 ! not TM -> no Ex/Ey coupling
-M4_IFELSE_TM({},{
+M4_IFELSE_TE({},{
        M4_WRITE_INFO({"Not TE -> forcing M(1)=M(2)=0!"})
        mat%M(1) = 0.  
        mat%M(2) = 0.  
@@ -351,11 +351,11 @@ M4_IFELSE_TM({},{
 
        ! J(*,m) is P(n+1) and J(*,n) is P(n)      
 
-M4_IFELSE_TM({
+M4_IFELSE_TE({
        Ex(i,j,k) = Ex(i,j,k) - w(1) * epsinvx(i,j,k) * mat%M(1) * ( mat%P(p,m) - mat%P(p,n) )
        Ey(i,j,k) = Ey(i,j,k) - w(2) * epsinvy(i,j,k) * mat%M(2) * ( mat%P(p,m) - mat%P(p,n) )
 })
-M4_IFELSE_TE({
+M4_IFELSE_TM({
        Ez(i,j,k) = Ez(i,j,k) - w(3) * epsinvz(i,j,k) * mat%M(3) * ( mat%P(p,m) - mat%P(p,n) )
 })
        })      
@@ -395,9 +395,9 @@ M4_IFELSE_TE({
        if ( mask(i,j,k) ) then
 
           sum = sum + ( &
-M4_IFELSE_TM({ M4_VOLEX(i,j,k) * w(1) * real(Ex(i,j,k)) * real( mat%M(1) * ( mat%P(p,m) - mat%P(p,n) ) ) / DT +},{0. +}) &
-M4_IFELSE_TM({ M4_VOLEY(i,j,k) * w(2) * real(Ey(i,j,k)) * real( mat%M(2) * ( mat%P(p,m) - mat%P(p,n) ) ) / DT +},{0. +}) &
-M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * real(Ez(i,j,k)) * real( mat%M(3) * ( mat%P(p,m) - mat%P(p,n) ) ) / DT  },{0.  }) &
+M4_IFELSE_TE({ M4_VOLEX(i,j,k) * w(1) * real(Ex(i,j,k)) * real( mat%M(1) * ( mat%P(p,m) - mat%P(p,n) ) ) / DT +},{0. +}) &
+M4_IFELSE_TE({ M4_VOLEY(i,j,k) * w(2) * real(Ey(i,j,k)) * real( mat%M(2) * ( mat%P(p,m) - mat%P(p,n) ) ) / DT +},{0. +}) &
+M4_IFELSE_TM({ M4_VOLEZ(i,j,k) * w(3) * real(Ez(i,j,k)) * real( mat%M(3) * ( mat%P(p,m) - mat%P(p,n) ) ) / DT  },{0.  }) &
                )
 
        endif

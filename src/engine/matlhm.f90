@@ -186,21 +186,21 @@ contains
        
        ! correct H(n+1/2)
 
-M4_IFELSE_TE({
+M4_IFELSE_TM({
        Hx(i,j,k) = Hx(i,j,k) -  w(4) * M4_MUINVX(i,j,k) * DT * mat%Kx(p,1)
        Hy(i,j,k) = Hy(i,j,k) -  w(5) * M4_MUINVY(i,j,k) * DT * mat%Ky(p,1)
 })
-M4_IFELSE_TM({
+M4_IFELSE_TE({
        Hz(i,j,k) = Hz(i,j,k) -  w(6) * M4_MUINVZ(i,j,k) * DT * mat%Kz(p,1)
 })
 
        ! calculate J(n+1/2) from J(n-1/2) and E(n)
 
-M4_IFELSE_TM({
+M4_IFELSE_TE({
        mat%Jx(p,1) = mat%c1 * mat%Jx(p,1) + mat%c2 * Ex(i,j,k)
        mat%Jy(p,1) = mat%c1 * mat%Jy(p,1) + mat%c2 * Ey(i,j,k)
 })
-M4_IFELSE_TE({
+M4_IFELSE_TM({
        mat%Jz(p,1) = mat%c1 * mat%Jz(p,1) + mat%c2 * Ez(i,j,k)
 })
        })      
@@ -214,20 +214,20 @@ M4_IFELSE_TE({
 
        ! correct H(n+1/2)
 
-M4_IFELSE_TE({
+M4_IFELSE_TM({
        Hx(i,j,k) = Hx(i,j,k) - w(4) * M4_MUINVX(i,j,k) * ( mat%Kx(p,m) - mat%Kx(p,n) )
        Hy(i,j,k) = Hy(i,j,k) - w(5) * M4_MUINVY(i,j,k) * ( mat%Ky(p,m) - mat%Ky(p,n) )
 })
-M4_IFELSE_TM({
+M4_IFELSE_TE({
        Hz(i,j,k) = Hz(i,j,k) - w(6) * M4_MUINVZ(i,j,k) * ( mat%Kz(p,m) - mat%Kz(p,n) )
 })
        ! calculate J(n+1) from J(n),J(n-1) and E(n)
 
-M4_IFELSE_TM({
+M4_IFELSE_TE({
        mat%Jx(p,m) = mat%c1 * mat%Jx(p,n) + mat%c2 * mat%Jx(p,m) + mat%c3 * Ex(i,j,k)
        mat%Jy(p,m) = mat%c1 * mat%Jy(p,n) + mat%c2 * mat%Jy(p,m) + mat%c3 * Ey(i,j,k)
 })
-M4_IFELSE_TE({
+M4_IFELSE_TM({
        mat%Jz(p,m) = mat%c1 * mat%Jz(p,n) + mat%c2 * mat%Jz(p,m) + mat%c3 * Ez(i,j,k)
 })
 
@@ -262,21 +262,21 @@ M4_IFELSE_TE({
        
        ! correct E(n+1)
 
-M4_IFELSE_TM({
+M4_IFELSE_TE({
        Ex(i,j,k) = Ex(i,j,k) -  w(1) * epsinvx(i,j,k) * DT * mat%Jx(p,1)
        Ey(i,j,k) = Ey(i,j,k) -  w(2) * epsinvy(i,j,k) * DT * mat%Jy(p,1)
 })
-M4_IFELSE_TE({
+M4_IFELSE_TM({
        Ez(i,j,k) = Ez(i,j,k) -  w(3) * epsinvz(i,j,k) * DT * mat%Jz(p,1)
 })
 
        ! calculate K(n+1) from K(n) and H(n+1/2)
 
-M4_IFELSE_TE({
+M4_IFELSE_TM({
        mat%Kx(p,1) = mat%c1 * mat%Kx(p,1) + mat%c2 * Hx(i,j,k)
        mat%Ky(p,1) = mat%c1 * mat%Ky(p,1) + mat%c2 * Hy(i,j,k)
 })
-M4_IFELSE_TM({
+M4_IFELSE_TE({
        mat%Kz(p,1) = mat%c1 * mat%Kz(p,1) + mat%c2 * Hz(i,j,k)
 })
 
@@ -291,21 +291,21 @@ M4_IFELSE_TM({
        
        ! correct E(n+1)
 
-M4_IFELSE_TM({
+M4_IFELSE_TE({
        Ex(i,j,k) = Ex(i,j,k) - w(1) * epsinvx(i,j,k) * ( mat%Jx(p,m) - mat%Jx(p,n) )
        Ey(i,j,k) = Ey(i,j,k) - w(2) * epsinvy(i,j,k) * ( mat%Jy(p,m) - mat%Jy(p,n) )
 })
-M4_IFELSE_TE({
+M4_IFELSE_TM({
        Ez(i,j,k) = Ez(i,j,k) - w(3) * epsinvz(i,j,k) * ( mat%Jz(p,m) - mat%Jz(p,n) )
 })
 
       ! calculate K(n+3/2) from K(n+1/2),K(n-1/2) and H(n+1/2)
 
-M4_IFELSE_TE({
+M4_IFELSE_TM({
        mat%Kx(p,m) = mat%c1 * mat%Kx(p,n) + mat%c2 * mat%Kx(p,m) + mat%c3 * Hx(i,j,k)
        mat%Ky(p,m) = mat%c1 * mat%Ky(p,n) + mat%c2 * mat%Ky(p,m) + mat%c3 * Hy(i,j,k)
 })
-M4_IFELSE_TM({
+M4_IFELSE_TE({
        mat%Kz(p,m) = mat%c1 * mat%Kz(p,n) + mat%c2 * mat%Kz(p,m) + mat%c3 * Hz(i,j,k)
 })
        })      
@@ -350,17 +350,17 @@ M4_IFELSE_TM({
           if ( mat%order .eq. 1 ) then ! 1. order equation
 
              sum = sum + ( &
-M4_IFELSE_TM({    M4_VOLEX(i,j,k) * w(1) * real(Ex(i,j,k)) * real(mat%Jx(p,1)) + },{0. +}) &
-M4_IFELSE_TM({    M4_VOLEY(i,j,k) * w(2) * real(Ey(i,j,k)) * real(mat%Jy(p,1)) + },{0. +}) &
-M4_IFELSE_TE({    M4_VOLEZ(i,j,k) * w(3) * real(Ez(i,j,k)) * real(mat%Jz(p,1))   },{0.  }) &
+M4_IFELSE_TE({    M4_VOLEX(i,j,k) * w(1) * real(Ex(i,j,k)) * real(mat%Jx(p,1)) + },{0. +}) &
+M4_IFELSE_TE({    M4_VOLEY(i,j,k) * w(2) * real(Ey(i,j,k)) * real(mat%Jy(p,1)) + },{0. +}) &
+M4_IFELSE_TM({    M4_VOLEZ(i,j,k) * w(3) * real(Ez(i,j,k)) * real(mat%Jz(p,1))   },{0.  }) &
                   )
 
           else
 
              sum = sum + ( &
-M4_IFELSE_TM({    M4_VOLEX(i,j,k) * w(1) * real(Ex(i,j,k)) * real( mat%Jx(p,m) - mat%Jx(p,n) ) / DT +},{0. +}) &
-M4_IFELSE_TM({    M4_VOLEY(i,j,k) * w(2) * real(Ey(i,j,k)) * real( mat%Jy(p,m) - mat%Jy(p,n) ) / DT +},{0. +}) &
-M4_IFELSE_TE({    M4_VOLEZ(i,j,k) * w(3) * real(Ez(i,j,k)) * real( mat%Jz(p,m) - mat%Jz(p,n) ) / DT  },{0.  }) &
+M4_IFELSE_TE({    M4_VOLEX(i,j,k) * w(1) * real(Ex(i,j,k)) * real( mat%Jx(p,m) - mat%Jx(p,n) ) / DT +},{0. +}) &
+M4_IFELSE_TE({    M4_VOLEY(i,j,k) * w(2) * real(Ey(i,j,k)) * real( mat%Jy(p,m) - mat%Jy(p,n) ) / DT +},{0. +}) &
+M4_IFELSE_TM({    M4_VOLEZ(i,j,k) * w(3) * real(Ez(i,j,k)) * real( mat%Jz(p,m) - mat%Jz(p,n) ) / DT  },{0.  }) &
                   )
             
           end if
@@ -408,17 +408,17 @@ M4_IFELSE_TE({    M4_VOLEZ(i,j,k) * w(3) * real(Ez(i,j,k)) * real( mat%Jz(p,m) -
           if ( mat%order .eq. 1 ) then ! 1. order equation
 
              sum = sum + ( &
-M4_IFELSE_TE({    M4_VOLHX(i,j,k) * w(4) * real(Hx(i,j,k)) * real(mat%Kx(p,1)) +},{0. +}) &
-M4_IFELSE_TE({    M4_VOLHY(i,j,k) * w(5) * real(Hy(i,j,k)) * real(mat%Ky(p,1)) +},{0. +}) &
-M4_IFELSE_TM({    M4_VOLHZ(i,j,k) * w(6) * real(Hz(i,j,k)) * real(mat%Kz(p,1))  },{0.  }) &
+M4_IFELSE_TM({    M4_VOLHX(i,j,k) * w(4) * real(Hx(i,j,k)) * real(mat%Kx(p,1)) +},{0. +}) &
+M4_IFELSE_TM({    M4_VOLHY(i,j,k) * w(5) * real(Hy(i,j,k)) * real(mat%Ky(p,1)) +},{0. +}) &
+M4_IFELSE_TE({    M4_VOLHZ(i,j,k) * w(6) * real(Hz(i,j,k)) * real(mat%Kz(p,1))  },{0.  }) &
                   )
 
           else
 
               sum = sum + ( & 
-M4_IFELSE_TE({    M4_VOLHX(i,j,k) * w(4) * real(Hx(i,j,k)) * real( mat%Kx(p,m) - mat%Kx(p,n) ) / DT +},{0. +}) &
-M4_IFELSE_TE({    M4_VOLHY(i,j,k) * w(5) * real(Hy(i,j,k)) * real( mat%Ky(p,m) - mat%Ky(p,n) ) / DT +},{0. +}) &
-M4_IFELSE_TM({    M4_VOLHZ(i,j,k) * w(6) * real(Hz(i,j,k)) * real( mat%Kz(p,m) - mat%Kz(p,n) ) / DT  },{0.  }) &
+M4_IFELSE_TM({    M4_VOLHX(i,j,k) * w(4) * real(Hx(i,j,k)) * real( mat%Kx(p,m) - mat%Kx(p,n) ) / DT +},{0. +}) &
+M4_IFELSE_TM({    M4_VOLHY(i,j,k) * w(5) * real(Hy(i,j,k)) * real( mat%Ky(p,m) - mat%Ky(p,n) ) / DT +},{0. +}) &
+M4_IFELSE_TE({    M4_VOLHZ(i,j,k) * w(6) * real(Hz(i,j,k)) * real( mat%Kz(p,m) - mat%Kz(p,n) ) / DT  },{0.  }) &
                    )
             
           end if

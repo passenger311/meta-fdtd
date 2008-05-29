@@ -148,11 +148,11 @@ contains
 
       ! calculate P(n+1/2) from P(n-1/2) and E(n)
 
-M4_IFELSE_TM({
+M4_IFELSE_TE({
       mat%Px(p,m) = mat%c1 * mat%Px(p,n) + mat%c2 * Ex(i,j,k)
       mat%Py(p,m) = mat%c1 * mat%Py(p,n) + mat%c2 * Ey(i,j,k)
 })
-M4_IFELSE_TE({
+M4_IFELSE_TM({
       mat%Pz(p,m) = mat%c1 * mat%Pz(p,n) + mat%c2 * Ez(i,j,k)
 })      
 
@@ -190,13 +190,13 @@ M4_IFELSE_TE({
        dy = 2. + w(2) * epsinvy(i,j,k) * mat%c2
        dz = 2. + w(3) * epsinvz(i,j,k) * mat%c2
 
-M4_IFELSE_TM({
+M4_IFELSE_TE({
        Ex(i,j,k) = 1./dx * ( 2. * Ex(i,j,k) - &
             w(1) * epsinvx(i,j,k) * ( ( mat%c1 - 2.) * mat%Px(p,m) + mat%Px(p,n) ) )
        Ey(i,j,k) = 1./dy * ( 2. * Ey(i,j,k) - &
             w(2) * epsinvy(i,j,k) * ( ( mat%c1 - 2.) * mat%Py(p,m) + mat%Py(p,n) ) )
 })
-M4_IFELSE_TE({
+M4_IFELSE_TM({
        Ez(i,j,k) = 1./dz * ( 2. * Ez(i,j,k) - &
             w(3) * epsinvz(i,j,k) * ( ( mat%c1 - 2.) * mat%Pz(p,m) + mat%Pz(p,n) ) )
 })
@@ -238,9 +238,9 @@ M4_IFELSE_TE({
        if ( mask(i,j,k) ) then
 
           sum = sum + ( &
-M4_IFELSE_TM({ M4_VOLEX(i,j,k) * w(1) * real(Ex(i,j,k)) * real( mat%Px(p,m) - mat%Px(p,n) ) / DT +},{0. +}) &
-M4_IFELSE_TM({ M4_VOLEY(i,j,k) * w(2) * real(Ey(i,j,k)) * real( mat%Py(p,m) - mat%Py(p,n) ) / DT +},{0. +}) &
-M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * real(Ez(i,j,k)) * real( mat%Pz(p,m) - mat%Pz(p,n) ) / DT  },{0.  }) &
+M4_IFELSE_TE({ M4_VOLEX(i,j,k) * w(1) * real(Ex(i,j,k)) * real( mat%Px(p,m) - mat%Px(p,n) ) / DT +},{0. +}) &
+M4_IFELSE_TE({ M4_VOLEY(i,j,k) * w(2) * real(Ey(i,j,k)) * real( mat%Py(p,m) - mat%Py(p,n) ) / DT +},{0. +}) &
+M4_IFELSE_TM({ M4_VOLEZ(i,j,k) * w(3) * real(Ez(i,j,k)) * real( mat%Pz(p,m) - mat%Pz(p,n) ) / DT  },{0.  }) &
                )
 
        endif

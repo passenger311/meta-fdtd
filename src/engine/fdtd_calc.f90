@@ -119,7 +119,7 @@ contains
 
     if ( slot .gt. buf%numslot ) then
        M4_FATAL_ERROR({"NOT ENOUGH BUFFER SLOTS ", &
-            TRIM(i2str(slot))," > ", TRIM(i2str(buf%numslot)), " (FdtdCalcEnergy)"})
+            TRIM(i2str(slot))," > ", TRIM(i2str(buf%numslot)), " (FdtdCalcEn)"})
     endif
 
     reg = regobj(buf%regidx)
@@ -157,7 +157,7 @@ contains
    
     if ( slot .gt. buf%numslot ) then
        M4_FATAL_ERROR({"NOT ENOUGH BUFFER SLOTS ", TRIM(i2str(slot)), &
-            " > ", TRIM(i2str(buf%numslot)), " (FdtdCalcPx)"})
+            " > ", TRIM(i2str(buf%numslot)), " (FdtdCalcSx)"})
     endif
  
     if ( .not. mode ) then
@@ -195,7 +195,7 @@ contains
    
     if ( slot .gt. buf%numslot ) then
        M4_FATAL_ERROR({"NOT ENOUGH BUFFER SLOTS ", TRIM(i2str(slot)), &
-            " > ", TRIM(i2str(buf%numslot)), " (FdtdCalcPy)"})
+            " > ", TRIM(i2str(buf%numslot)), " (FdtdCalcSy)"})
     endif
  
     if ( .not. mode ) then
@@ -233,7 +233,7 @@ contains
    
     if ( slot .gt. buf%numslot ) then
        M4_FATAL_ERROR({"NOT ENOUGH BUFFER SLOTS ", TRIM(i2str(slot)), &
-            " > ", TRIM(i2str(buf%numslot)), " (FdtdCalcPz)"})
+            " > ", TRIM(i2str(buf%numslot)), " (FdtdCalcSz)"})
     endif
  
     if ( .not. mode ) then
