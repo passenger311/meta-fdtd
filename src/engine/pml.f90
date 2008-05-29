@@ -426,24 +426,24 @@ M4_IFELSE_2D({!$OMP PARALLEL DO PRIVATE(Exh,Eyh,Ezh,Bxo,Byo,Bzo)})
 M4_IFELSE_1D({!$OMP PARALLEL DO PRIVATE(Exh,Eyh,Ezh,Bxo,Byo,Bzo)})
             do i=is, ie
   
-M4_IFELSE_TE({
+M4_IFELSE_TM({
                Exh = Ex(i,j,k)
                Eyh = Ey(i,j,k)
 })
-M4_IFELSE_TM({             
+M4_IFELSE_TE({             
                Ezh = Ez(i,j,k)
 })              
  
-M4_IFELSE_TM({
+M4_IFELSE_TE({
                Bxo = B(1,i,j,k)
                Byo = B(2,i,j,k) 
 })
-M4_IFELSE_TE({
+M4_IFELSE_TM({
                Bzo = B(3,i,j,k)
 })               
                ! Update B
                
-M4_IFELSE_TM({
+M4_IFELSE_TE({
                B(1,i,j,k) = cmypml(4,j)*B(1,i,j,k) + cmypml(2,j) * ( &
 M4_IFELSE_1D({0.&},{ - DT/M4_HSY(i,j,k)*( Ez(i,j+1,k) - Ezh )           &     })
 M4_IFELSE_3D({       + DT/M4_HSZ(i,j,k)*( Ey(i,j,k+1) - Eyh )           &     })
@@ -454,7 +454,7 @@ M4_IFELSE_3D({       - DT/M4_HSZ(i,j,k)*( Ex(i,j,k+1) - Exh )           &     })
                      )
 })
 
-M4_IFELSE_TE({
+M4_IFELSE_TM({
                B(3,i,j,k) = cmxpml(4,i)*B(3,i,j,k) + cmxpml(2,i) * ( &
                      - DT/M4_HSX(i,j,k)*( Ey(i+1,j,k) - Eyh )           &
 M4_IFELSE_1D({},{    + DT/M4_HSY(i,j,k)*( Ex(i,j+1,k) - Exh )           &     })
@@ -463,13 +463,13 @@ M4_IFELSE_1D({},{    + DT/M4_HSY(i,j,k)*( Ex(i,j+1,k) - Exh )           &     })
 })  
                ! Calc H
                
-M4_IFELSE_TM({
+M4_IFELSE_TE({
                Hx(i,j,k) = cmzpml(4,k)*Hx(i,j,k) + cmzpml(2,k) * &
                     M4_MUINVX(i,j,k)*(cmxpml(1,i)*B(1,i,j,k) - cmxpml(3,i)*Bxo)
                Hy(i,j,k) = cmxpml(4,i)*Hy(i,j,k) + cmxpml(2,i) * &
                     M4_MUINVY(i,j,k)*(cmypml(1,j)*B(2,i,j,k) - cmypml(3,j)*Byo)
 })
-M4_IFELSE_TE({
+M4_IFELSE_TM({
                Hz(i,j,k) = cmypml(4,j)*Hz(i,j,k) + cmypml(2,j) * &
                     M4_MUINVZ(i,j,k)*(cmzpml(1,k)*B(3,i,j,k) - cmzpml(3,k)*Bzo)           
 })               
@@ -530,25 +530,25 @@ M4_IFELSE_2D({!$OMP PARALLEL DO PRIVATE(Hxh,Hyh,Hzh,Dxo,Dyo,Dzo,epsinvx,epsinvy,
 M4_IFELSE_1D({!$OMP PARALLEL DO PRIVATE(Hxh,Hyh,Hzh,Dxo,Dyo,Dzo,epsinvx,epsinvy,epsinvz)}) 
             do i=is, ie
 
-M4_IFELSE_TM({
+M4_IFELSE_TE({
                Hxh = Hx(i,j,k)
                Hyh = Hy(i,j,k)
 })
-M4_IFELSE_TE({
+M4_IFELSE_TM({
                Hzh = Hz(i,j,k)
 })          
  
-M4_IFELSE_TE({
+M4_IFELSE_TM({
                Dxo = D(1,i,j,k)
                Dyo = D(2,i,j,k)
 })
-M4_IFELSE_TM({
+M4_IFELSE_TE({
                Dzo = D(3,i,j,k)
 })           
                ! Update D
 
  
-M4_IFELSE_TE({
+M4_IFELSE_TM({
 
                D(1,i,j,k) =  ceypml(4,j)*D(1,i,j,k) + ceypml(2,j) * ( &
 M4_IFELSE_1D({0.&},{ + DT/M4_SY(i,j,k) * ( Hzh - Hz(i,j-1,k) )           &    })
@@ -560,7 +560,7 @@ M4_IFELSE_3D({       + DT/M4_SZ(i,j,k) * ( Hxh - Hx(i,j,k-1) )           &    })
                     )
 })
 
-M4_IFELSE_TM({
+M4_IFELSE_TE({
                D(3,i,j,k) =  cexpml(4,i)*D(3,i,j,k) + cexpml(2,i) * ( &
                     + DT/M4_SX(i,j,k) * ( Hyh - Hy(i-1,j,k) )           &
 M4_IFELSE_1D({},{   - DT/M4_SY(i,j,k) * ( Hxh - Hx(i,j-1,k) )           &    })
@@ -568,13 +568,13 @@ M4_IFELSE_1D({},{   - DT/M4_SY(i,j,k) * ( Hxh - Hx(i,j-1,k) )           &    })
 })
                ! Calc E
 
-M4_IFELSE_TE({
+M4_IFELSE_TM({
                Ex(i,j,k) = cezpml(4,k)*Ex(i,j,k) + cezpml(2,k) * &
                     epsinvx(i,j,k)*(cexpml(1,i)*D(1,i,j,k) - cexpml(3,i)*Dxo)
                Ey(i,j,k) = cexpml(4,i)*Ey(i,j,k) + cexpml(2,i) * &
                     epsinvy(i,j,k)*(ceypml(1,j)*D(2,i,j,k) - ceypml(3,j)*Dyo)
 })
-M4_IFELSE_TM({
+M4_IFELSE_TE({
                Ez(i,j,k) = ceypml(4,j)*Ez(i,j,k) + ceypml(2,j) * &
                     epsinvz(i,j,k)*(cezpml(1,k)*D(3,i,j,k) - cezpml(3,k)*Dzo)
 })

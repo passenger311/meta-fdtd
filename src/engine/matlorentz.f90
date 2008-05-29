@@ -160,11 +160,11 @@ contains
 
       ! before: J(*,m) is P(n-1), J(*,n) is P(n)
 
-M4_IFELSE_TE({
+M4_IFELSE_TM({
       mat%Px(p,m) = mat%c1 * mat%Px(p,n) + mat%c2 * mat%Px(p,m) + mat%c3 * Ex(i,j,k)
       mat%Py(p,m) = mat%c1 * mat%Py(p,n) + mat%c2 * mat%Py(p,m) + mat%c3 * Ey(i,j,k)
 })
-M4_IFELSE_TM({
+M4_IFELSE_TE({
       mat%Pz(p,m) = mat%c1 * mat%Pz(p,n) + mat%c2 * mat%Pz(p,m) + mat%c3 * Ez(i,j,k)
 })      
 
@@ -202,11 +202,11 @@ M4_IFELSE_TM({
 
        ! J(*,m) is P(n+1) and J(*,n) is P(n)      
 
-M4_IFELSE_TE({
+M4_IFELSE_TM({
        Ex(i,j,k) = Ex(i,j,k) - w(1) * epsinvx(i,j,k) * ( mat%Px(p,m) - mat%Px(p,n) )
        Ey(i,j,k) = Ey(i,j,k) - w(2) * epsinvy(i,j,k) * ( mat%Py(p,m) - mat%Py(p,n) )
 })
-M4_IFELSE_TM({
+M4_IFELSE_TE({
        Ez(i,j,k) = Ez(i,j,k) - w(3) * epsinvz(i,j,k) * ( mat%Pz(p,m) - mat%Pz(p,n) )
 })
        })      
@@ -246,9 +246,9 @@ M4_IFELSE_TM({
        if ( mask(i,j,k) ) then
 
           sum = sum + ( &
-M4_IFELSE_TE({ M4_VOLEX(i,j,k) * w(1) * real(Ex(i,j,k)) * real( mat%Px(p,m) - mat%Px(p,n) ) / DT +},{0. +}) &
-M4_IFELSE_TE({ M4_VOLEY(i,j,k) * w(2) * real(Ey(i,j,k)) * real( mat%Py(p,m) - mat%Py(p,n) ) / DT +},{0. +}) &
-M4_IFELSE_TM({ M4_VOLEZ(i,j,k) * w(3) * real(Ez(i,j,k)) * real( mat%Pz(p,m) - mat%Pz(p,n) ) / DT  },{0.  }) &
+M4_IFELSE_TM({ M4_VOLEX(i,j,k) * w(1) * real(Ex(i,j,k)) * real( mat%Px(p,m) - mat%Px(p,n) ) / DT +},{0. +}) &
+M4_IFELSE_TM({ M4_VOLEY(i,j,k) * w(2) * real(Ey(i,j,k)) * real( mat%Py(p,m) - mat%Py(p,n) ) / DT +},{0. +}) &
+M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * real(Ez(i,j,k)) * real( mat%Pz(p,m) - mat%Pz(p,n) ) / DT  },{0.  }) &
                )
 
        endif
