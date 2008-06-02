@@ -267,8 +267,13 @@ M4_IFELSE_CF({
 
         ! calculate second part of the density response (after the new E field got calculated)
         
-        pem =  real( mat%P(p,m) * me )
-        pen =  real( mat%P(p,n) * me )
+M4_IFELSE_CF({
+        pem =  real( mat%P(p,m) * conjg(me) )
+        pen =  real( mat%P(p,n) * conjg(me) )
+},{
+        pem =  mat%P(p,m) * me
+        pen =  mat%P(p,n) * me
+})
         
         mat%N(p) = mat%N(p) + mat%c5 * ( pen - pem ) + mat%c6 * ( pen + pem )
         
@@ -282,8 +287,11 @@ M4_IFELSE_CF({
 
         ! calculate first part of the density response
         
-        pem =  real( mat%P(p,m) * me )
-
+M4_IFELSE_CF({
+       pem =  real( mat%P(p,m) * conjg(me) )
+},{
+       pem =  mat%P(p,m) * me
+})
         mat%N(p) = mat%c4 * mat%N(p) + mat%c5 * ( pem - pen ) + mat%c6 * ( pem + pen )
 
         ! after: J(*,m) is now P(n+1)
@@ -302,9 +310,14 @@ M4_IFELSE_CF({
 })
         ! calculate second part of the density response (after the new E field got calculated)
         
-        pem =  real( mat%P(p,m) * me )
-        pen =  real( mat%P(p,n) * me )
-        
+M4_IFELSE_CF({
+        pem =  real( mat%P(p,m) * conjg(me) )
+        pen =  real( mat%P(p,n) * conjg(me) )
+},{
+        pem =  mat%P(p,m) * me
+        pen =  mat%P(p,n) * me
+})
+      
         mat%N(p) = mat%N(p) + mat%c5 * ( pen - pem ) + mat%c6 * ( pen + pem )
         
         ! calculate P(n+1) from P(n),P(n-1),E(n) and N(n)
@@ -317,7 +330,11 @@ M4_IFELSE_CF({
 
         ! calculate first part of the density response
         
-        pem =  real( mat%P(p,m) * me )
+M4_IFELSE_CF({
+        pem =  real( mat%P(p,m) * conjg(me) )
+},{
+        pem =  mat%P(p,m) * me
+})
 
         mat%N(p) = mat%c4 * mat%N(p) + mat%c5 * ( pem - pen ) + mat%c6 * ( pem + pen )
 
