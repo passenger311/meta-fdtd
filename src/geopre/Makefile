@@ -15,11 +15,10 @@ include ../define.mk
 
 # ---------------------------------------------------------------------
 
-.PHONY: clean proper default install all info libexpat lua
+.PHONY: clean proper default install all info libexpat
 
 GBUILDDIR=src/Release
 EXPATDIR=expat
-LUADIR=lua-5.1.3
 
 BUILDFILES=\
 geopre
@@ -33,19 +32,13 @@ info:
 
 all: info geopre install
 
-lua:
-	@echo .
-	@echo . LUA INTERPRETER
-	@echo .
-	@cd $(LUADIR); $(MAKE) -s clean ansi
-
 libexpat:
 	@echo .
 	@echo . EXPAT LIBRARY
 	@echo .
 	@cd $(EXPATDIR); $(MAKE) -s clean all
 
-geopre: libexpat lua
+geopre: libexpat
 	@echo "."
 	@echo ". GEOPRE EXECUTABLE"
 	@echo "."

@@ -4,12 +4,17 @@
 
 # == CHANGE THE SETTINGS BELOW TO SUIT YOUR ENVIRONMENT =======================
 
-# Your platform. See PLATS for possible values.
-PLAT= none
+ifeq ($(ARCH),)
+include ../../Make.default
+else 
+include ../../Make.$(ARCH)
+endif 
 
-CC= gcc
-CFLAGS= -O2 -Wall $(MYCFLAGS)
-AR= ar rcu
+PLAT= ansi
+
+#CC= sxcc
+#CFLAGS= -O2 -Wall $(MYCFLAGS)
+#AR= sxar 
 RANLIB= ranlib
 RM= rm -f
 LIBS= -lm $(MYLIBS)
@@ -48,8 +53,8 @@ o:	$(ALL_O)
 a:	$(ALL_A)
 
 $(LUA_A): $(CORE_O) $(LIB_O)
-	$(AR) $@ $?
-	$(RANLIB) $@
+	$(AR) rcu $@ $?
+#	$(RANLIB) $@
 
 $(LUA_T): $(LUA_O) $(LUA_A)
 	$(CC) -o $@ $(MYLDFLAGS) $(LUA_O) $(LUA_A) $(LIBS)

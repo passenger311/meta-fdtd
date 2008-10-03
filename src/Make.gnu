@@ -10,6 +10,8 @@ M4_ARCH=GNU
 
 # --- compiler set
 
+AR=ar
+
 ifeq ($(MPI),)
 
 F90=gfortran

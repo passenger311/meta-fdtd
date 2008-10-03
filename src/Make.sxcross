@@ -10,6 +10,8 @@ M4_ARCH=SX
 
 # --- compiler set
 
+AR=sxar
+
 ifeq ($(MPI),)
 
 F90=sxf90

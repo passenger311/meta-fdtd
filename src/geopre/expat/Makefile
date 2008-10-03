@@ -4,8 +4,6 @@ else
 include ../../Make.$(ARCH)
 endif 
 
-
-CC=gcc
 # If you know what your system's byte order is, define XML_BYTE_ORDER:
 # use -DXML_BYTE_ORDER=12 for little-endian byte order;
 # use -DXML_BYTE_ORDER=21 for big-endian (network) byte order.
@@ -34,7 +32,7 @@ all: $(XMLWF)
 
 $(XMLWF): $(OBJS) $(LIB)
 	@echo [LD] $@
-	@$(CC) -O2 $(CFLAGS) $(INC) -o $@ $(OBJS) $(LIB)
+	@$(CC) $(CFLAGS) $(INC) -o $@ $(OBJS) $(LIB)
 
 $(LIB): $(LIBOBJS)
 	@echo [AR] $@
@@ -49,10 +47,10 @@ xmltok/nametab.h: gennmtab/gennmtab$(EXE)
 
 gennmtab/gennmtab$(EXE): gennmtab/gennmtab.c
 	@echo [CC] $@
-	@$(CC) -O2 $(CFLAGS) $(INC)  -o $@ gennmtab/gennmtab.c
+	@$(CC) $(CFLAGS) $(INC)  -o $@ gennmtab/gennmtab.c
 
 xmltok/xmltok.o: xmltok/nametab.h
 
 .c.o:
 	@echo [CC] $@
-	@$(CC) -O2 $(CFLAGS) $(INC)  -c -o $@ $<
+	@$(CC) $(CFLAGS) $(INC)  -c -o $@ $<
