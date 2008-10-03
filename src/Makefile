@@ -44,7 +44,7 @@ engine:
 	@cd $@ && $(MAKE) -s info all install
 
 config postps geopre:
-	@cd $@ && $(MAKE) -s info all install
+	@cd $@ && $(MAKE) -s MPI= info all install
 
 clean proper: 
 	@cd engine; $(MAKE) -s $@; cd ..
