@@ -1,3 +1,10 @@
+ifeq ($(ARCH),)
+include ../../Make.default
+else 
+include ../../Make.$(ARCH)
+endif 
+
+
 CC=gcc
 # If you know what your system's byte order is, define XML_BYTE_ORDER:
 # use -DXML_BYTE_ORDER=12 for little-endian byte order;
@@ -5,7 +12,8 @@ CC=gcc
 # -DXML_NS adds support for checking of lexical aspects of XML namespaces spec
 # -DXML_MIN_SIZE makes a smaller but slower parser
 # -DXML_DTD adds full support for parsing DTDs
-CFLAGS=-Wall -O2 -Ixmltok -Ixmlparse -DXML_NS -DXML_DTD
+
+INC=-Ixmltok -Ixmlparse -DXML_NS -DXML_DTD
 AR=ar
 # Use one of the next two lines; unixfilemap is better if it works.
 FILEMAP_OBJ=xmlwf/unixfilemap.o
@@ -25,22 +33,26 @@ XMLWF=xmlwf/xmlwf$(EXE)
 all: $(XMLWF)
 
 $(XMLWF): $(OBJS) $(LIB)
-	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LIB)
+	@echo [LD] $@
+	@$(CC) -O2 $(CFLAGS) $(INC) -o $@ $(OBJS) $(LIB)
 
 $(LIB): $(LIBOBJS)
-	$(AR) rc $(LIB) $(LIBOBJS)
+	@echo [AR] $@
+	@$(AR) rc $(LIB) $(LIBOBJS)
 
 clean:
-	rm -f $(OBJS) $(LIBOBJS) $(LIB) $(XMLWF)
+	@rm -f $(OBJS) $(LIBOBJS) $(LIB) $(XMLWF)
 
 xmltok/nametab.h: gennmtab/gennmtab$(EXE)
-	rm -f $@
-	gennmtab/gennmtab$(EXE) >$@
+	@rm -f $@
+	@gennmtab/gennmtab$(EXE) >$@
 
 gennmtab/gennmtab$(EXE): gennmtab/gennmtab.c
-	$(CC) $(CFLAGS) -o $@ gennmtab/gennmtab.c
+	@echo [CC] $@
+	@$(CC) -O2 $(CFLAGS) $(INC)  -o $@ gennmtab/gennmtab.c
 
 xmltok/xmltok.o: xmltok/nametab.h
 
 .c.o:
-	$(CC) $(CFLAGS) -c -o $@ $<
+	@echo [CC] $@
+	@$(CC) -O2 $(CFLAGS) $(INC)  -c -o $@ $<

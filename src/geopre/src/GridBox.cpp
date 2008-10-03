@@ -146,6 +146,11 @@ void GridBox::generateOutput(FileHandler* fhd)
 	{
 			(*scnobj)->preProcess();
 	}
+	// --> [AH]
+	// sort the objects according to depth
+	std::reverse(objects.begin(), objects.end()); // reverse it, so that later defined objects paint over previous defined ones
+	std::sort(objects.begin(), objects.end(), PredicateCObjectDepth()); // and sort according to depth
+	// <-- [AH]
 	vector<CObject*> currentobjects;
 
 	for (int iZ = 0; iZ < cellsZ; iZ++) {
@@ -164,11 +169,13 @@ void GridBox::generateOutput(FileHandler* fhd)
 			pfrm.moveX(-dDimX);
 			for (int iX = 0; iX < cellsX; iX++) {
 				if (!bNoSubgridding) {
+				  double weight = 1.; // +[AH]
 					int insd = 0;
 					for (vector<CObject*>::iterator scnobj = currentobjects.begin(); 
 						scnobj != currentobjects.end(); scnobj++)
 					{
 							insd = MAX(insd, (*scnobj)->iLastInside = (*scnobj)->Inside(pfrm));
+							weight = (*scnobj)->fWeight; // +[AH]
 							if (insd == 2 && !bAlwaysSubgridding)
 								break;
 					}
@@ -177,6 +184,7 @@ void GridBox::generateOutput(FileHandler* fhd)
 						iSubGriddedCells++;	
 						vec3 ptSub(pfrm.movingPoint);
 						//ptSub += vec3(iX*dDX+dSubDX/2,(iY+1)*dDY+dSubDY/2,(iZ+1)*dDZ+dSubDZ/2);
+						
 						double dGridVal = 0;
 						for (int iSubX = 0; iSubX < iSubGriddingDivX; iSubX++) {
 							ptSub[VY] -= dDY; 
@@ -190,6 +198,7 @@ void GridBox::generateOutput(FileHandler* fhd)
 											if ((*scnobj)->iLastInside > 0 && (*scnobj)->PointInside(ptSub))
 											{
 												subinside = true;
+												weight = (*scnobj)->fWeight; // +[AH]
 												break;
 											}
 									}
@@ -200,14 +209,16 @@ void GridBox::generateOutput(FileHandler* fhd)
 							}
 							ptSub[VX] += dSubDX; 
 						}
-						m_dGridvalues[iGrid] = dGridVal;
+						//m_dGridvalues[iGrid] = dGridVal; // -[AH]
+						m_dGridvalues[iGrid] = dGridVal * weight; // +[AH]
 						if (dGridVal  >= 0.99999999)
 							iSubGriddedFilledCells++;	
 						if (dGridVal == 0.0)
 							iSubGriddedEmptyCells++;	
 							
 					} else
-						m_dGridvalues[iGrid] = (insd == 2) ? 1 : 0;
+					  // m_dGridvalues[iGrid] = (insd == 2) ? 1 : 0; // -[AH]
+					  m_dGridvalues[iGrid] = (insd == 2) ? 1 * weight : 0; // +[AH]
 				} else {
 					m_dGridvalues[iGrid] = 0;
 					for (vector<CObject*>::iterator scnobj = currentobjects.begin(); 
@@ -216,15 +227,29 @@ void GridBox::generateOutput(FileHandler* fhd)
 						if ((*scnobj)->InsideFrame(pfrm.movingPoint) &&  
 							(*scnobj)->PointInside(pfrm.movingPoint))
 						{
-							m_dGridvalues[iGrid] = 1;
+						        double weight = (*scnobj)->fWeight; // +[AH]
+							//m_dGridvalues[iGrid] = 1; // -[AH]
+							m_dGridvalues[iGrid] = 1*weight; //+[AH]
 							break;
 						}
 					}
 				}
-				if (m_dGridvalues[iGrid] >= 0.99999999) {
+				// ---> [AH]
+				// FIX: the gridvalues can be > 1 if the weight is > 1.
+				if (m_dGridvalues[iGrid] >= 0.99999999 && m_dGridvalues[iGrid] <= 1.0000001 ) {
 					m_dGridvalues[iGrid] = 1;
+				}
+
+				if (m_dGridvalues[iGrid] >= 0.99999999) {
 					iFilledGridCells++;	
 				}
+
+				// if (m_dGridvalues[iGrid] >= 0.99999999) {
+				//	m_dGridvalues[iGrid] = 1;
+				//	iFilledGridCells++;	
+				// }
+				// <---
+
 				if (m_dGridvalues[iGrid] == 0.0)
 					iEmptyGridCells++;
 				iGrid++;

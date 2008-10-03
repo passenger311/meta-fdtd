@@ -5,6 +5,7 @@
 #include "filehandler/FileHandler.h"
 #include "Scene.h"
 #include <vector>
+#include <algorithm>
 #include <iostream>
 #include <string>
 

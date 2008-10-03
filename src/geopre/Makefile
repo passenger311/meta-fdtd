@@ -15,9 +15,10 @@ include ../define.mk
 
 # ---------------------------------------------------------------------
 
-.PHONY: clean proper default install all info
+.PHONY: clean proper default install all info libexpat
 
 GBUILDDIR=src/Release
+EXPATDIR=expat/
 
 BUILDFILES=\
 geopre
@@ -31,8 +32,16 @@ info:
 
 all: info geopre install
 
+libexpat:
+	@echo .
+	@echo . EXPAT LIBRARY
+	@echo .
+	@cd $(EXPATDIR); $(MAKE) -s clean all
 
-geopre:
+geopre: libexpat
+	@echo "."
+	@echo ". GEOPRE EXECUTABLE"
+	@echo "."
 	@cd $(GBUILDDIR); $(MAKE) MPI= -s clean all
 	@cp $(GBUILDDIR)/geopre .
 
@@ -43,6 +52,7 @@ install: build-dir
 
 clean:
 	@rm -f geopre
+	@cd expat; $(MAKE) -s clean
 	@cd src/Release; $(MAKE) -s clean
 
 proper: clean

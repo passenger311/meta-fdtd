@@ -20,6 +20,10 @@ void GeometryParser::startElement(const char* name, const char** atts)
 		ArgumentReader* reader = sScene->ptReader;
 		vec3 defpos(0,0,0);
 		vec3 defscale(1,1,1);
+		// [AH]-->
+		double defweight = 1.;
+		int defdepth = 0.;
+		// <--
 		double defradius = 1;
 		double defheight = 1;
 		double defscalefactor = 1;
@@ -88,6 +92,14 @@ void GeometryParser::startElement(const char* name, const char** atts)
 			movCurrentObjects.push_back(NULL);
 			return;
 		}
+
+		// [AH]--->
+		double weight = reader->readDouble(attrmap["weight"],&defweight);
+		int depth = reader->readInteger(attrmap["depth"],&defdepth);
+		newobj->fWeight = weight;
+		newobj->iDepth = depth;
+		// <---
+
 		if (mDepth > 1) {
 			if (!movCurrentObjects.back()->addSubObject(newobj))
 				// TODO: error handling
