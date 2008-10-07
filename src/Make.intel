@@ -5,11 +5,13 @@
 #
 # ---------------------------------------------------------------------
 
-M4_ARCH=INTEL 
 
+ARCH=intel
+M4_ARCH=INTEL 
 
 # --- compiler set
 
+AR=ar
 
 ifeq ($(MPI),)
 
@@ -18,7 +20,7 @@ CXX=icpp
 CC=icc
 
 else
-
+ 
 F90=mpif90 
 CXX=mpicxx
 CC=mpicc
@@ -27,13 +29,20 @@ endif
 
 # --- release flags
 
-RELFLAGS= -static
+CCFLAGS+=
+CXXFLAGS+=
+F90FLAGS+=
+LDFLAGS+= -static
 
 # --- openmp flags
 
 ifneq ($(OMP),)
 
-OMPFLAGS= -openmp
+OMPFLAGS:= -openmp
+CCFLAGS+=  $(OMPFLAGS)
+CXXFLAGS+= $(OMPFLAGS)
+F90FLAGS+= $(OMPFLAGS)
+LDFLAGS+=  $(OMPFLAGS)
 
 endif 
 
@@ -41,42 +50,55 @@ endif
 
 ifneq ($(DBG),)
 
-DBGFLAGS=-g -O0 -fmath-errno
-F90DBGFLAGS=-check bounds
+DBGFLAGS:= -g -O0 -fmath-errno
+CCFLAGS+=  $(DBGFLAGS)
+CXXFLAGS+= $(DBGFLAGS)
+F90FLAGS+= $(DBGFLAGS) -check bounds
+LDFLAGS+=  -g
 
 endif 
 
-# --- optimization flags
+# --- low optimization flags
+
+CCFLAGS_LOPT:=  $(CCFLAGS)
+CXXFLAGS_LOPT:= $(CXXFLAGS)
+F90FLAGS_LOPT:= $(F90FLAGS)
 
 ifeq ($(DBG),)
 
-OPTFLAGS=-O3 -xW -fpp -ipo
-NOOPTFLAGS=-O2 -ipo
-LDOPTFLAGS= -ipo -xW 
+OPTFLAGS:= -O1 -ipo
+CCFLAGS_LOPT+=  $(OPTFLAGS)
+CXXFLAGS_LOPT+= $(OPTFLAGS)
+F90FLAGS_LOPT+= $(OPTFLAGS)
 
 endif
 
+# --- heavy optimization flags
 
-# --- release flags
+CCFLAGS_HOPT :=  $(CCFLAGS)
+CXXFLAGS_HOPT := $(CXXFLAGS)
+F90FLAGS_HOPT := $(F90FLAGS)
 
-RELFLAGS=
-F90RELFLAGS=
+ifeq ($(DBG),)
 
-# --- flags
+OPTFLAGS:= -O3 -xW -fpp -ipo
+CCFLAGS_HOPT+=  $(OPTFLAGS)
+CXXFLAGS_HOPT+= $(OPTFLAGS)
+F90FLAGS_HOPT+= $(OPTFLAGS)
 
-FLAGS=$(DBGFLAGS) $(RELFLAGS) $(OMPFLAGS)
+endif
 
-F90FLAGS+= $(FLAGS) $(F90RELFLAGS) $(F90DBGFLAGS)
-CXXFLAGS+= $(FLAGS)
-CFLAGS+= $(FLAGS)
-LDFLAGS+= $(FLAGS) $(LDOPTFLAGS)
+# --- standard optimization flags
 
-F90FLAGS_NOOPT=$(NOOPTFLAGS) $(F90FLAGS)
-F90FLAGS_OPT=$(OPTFLAGS) $(F90FLAGS)
-CXXFLAGS_NOOPT=$(NOOPTFLAGS) $(CXXFLAGS)
-CXXFLAGS_OPT=$(OPTFLAGS) $(CXXFLAGS)
-CFLAGS_NOOPT=$(NOOPTFLAGS) $(CFLAGS)
-CFLAGS_OPT=$(OPTFLAGS) $(CFLAGS)
+ifeq ($(DBG),)
+
+OPTFLAGS:= -O2 -ipo
+CCFLAGS+=  $(OPTFLAGS)
+CXXFLAGS+= $(OPTFLAGS)
+F90FLAGS+= $(OPTFLAGS)
+LDFLAGS+= -ipo
+
+endif
 
 
 

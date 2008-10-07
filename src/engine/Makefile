@@ -140,11 +140,11 @@ $(BASIC_OBJ): %.o : %.f90
 	else \
 	cp $*.f90 $*_m4.f90; \
 	fi
-	@$(strip $(F90) $(F90FLAGS_NOOPT) -c $*_m4.f90 -o $@)
+	@$(strip $(F90) $(F90FLAGS) -c $*_m4.f90 -o $@)
 
 $(THIRD_OBJ) : %.o : %.f90
 	@echo [F90] $@
-	@$(strip $(F90) $(F90FLAGS_OPT) -c $*.f90 -o $@)
+	@$(strip $(F90) $(F90FLAGS_HOPT) -c $*.f90 -o $@)
 
 $(CORE_OBJ) : %.o : %.f90 $(BASIC_OBJ) BUILD FLAVOUR
 	@echo [F90] $@
@@ -153,7 +153,7 @@ $(CORE_OBJ) : %.o : %.f90 $(BASIC_OBJ) BUILD FLAVOUR
 	else \
 	cp $*.f90 $*_m4.f90; \
 	fi
-	@$(strip $(F90) $(F90FLAGS_OPT) -c $*_m4.f90 -o $@)
+	@$(strip $(F90) $(F90FLAGS_HOPT) -c $*_m4.f90 -o $@)
 
 $(TOP_OBJ): %.o : %.f90 $(BASIC_OBJ) $(CORE_OBJ) BUILD FLAVOUR
 	@echo [F90] $@
@@ -162,7 +162,7 @@ $(TOP_OBJ): %.o : %.f90 $(BASIC_OBJ) $(CORE_OBJ) BUILD FLAVOUR
 	else \
 	cp $*.f90 $*_m4.f90; \
 	fi
-	@$(strip $(F90) $(F90FLAGS_NOOPT) -c $*_m4.f90 -o $@)
+	@$(strip $(F90) $(F90FLAGS) -c $*_m4.f90 -o $@)
 
 $(ENGINE)/$(EXE) : $(TOP_OBJ) $(CORE_OBJ) $(THIRD_OBJ) $(BASIC_OBJ) second_wall.o $(ENGINE)
 	@echo [LD] $@

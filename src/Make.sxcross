@@ -6,6 +6,7 @@
 
 # ---------------------------------------------------------------------
 
+ARCH=sx
 M4_ARCH=SX
 
 # --- compiler set
@@ -26,11 +27,22 @@ CC=sxmpicc
 
 endif
 
+# --- release flags
+
+CCFLAGS+=
+CXXFLAGS+=
+F90FLAGS+=  -Wf,'-Nesc'
+LDFLAGS+= -static
+
 # --- openmp flags
 
 ifneq ($(OMP),)
 
-OMPFLAGS=-P openmp -pi
+OMPFLAGS:= -P openmp -pi
+CCFLAGS+=  $(OMPFLAGS)
+CXXFLAGS+= $(OMPFLAGS)
+F90FLAGS+= $(OMPFLAGS)
+LDFLAGS+=  $(OMPFLAGS)
 
 endif 
 
@@ -38,41 +50,56 @@ endif
 
 ifneq ($(DBG),)
 
-DBGFLAGS= -g
-F90DBGFLAGS= -Cdebug -Pstack -Wf"-init stack=nan heap=nan"
+DBGFLAGS:= -g
+CCFLAGS+=  $(DBGFLAGS)
+CXXFLAGS+= $(DBGFLAGS)
+F90FLAGS+= $(DBGFLAGS) -Cdebug -Pstack -Wf"-init stack=nan heap=nan"
+LDFLAGS+= 
 
 endif 
 
-# --- optimization flags
+# --- low optimization flags
+
+CCFLAGS_LOPT:=  $(CCFLAGS)
+CXXFLAGS_LOPT:= $(CXXFLAGS)
+F90FLAGS_LOPT:= $(F90FLAGS)
 
 ifeq ($(DBG),)
 
-OPTFLAGS=-C hopt
-NOOPTFLAGS=-C vsafe
+OPTFLAGS:= -C vsafe
+CCFLAGS_LOPT+=  $(OPTFLAGS)
+CXXFLAGS_LOPT+= $(OPTFLAGS)
+F90FLAGS_LOPT+= $(OPTFLAGS)
 
 endif
 
+# --- heavy optimization flags
 
-# --- release flags
+CCFLAGS_HOPT :=  $(CCFLAGS)
+CXXFLAGS_HOPT := $(CXXFLAGS)
+F90FLAGS_HOPT := $(F90FLAGS)
 
-RELFLAGS=
-F90RELFLAGS= -Wf,'-Nesc'
+ifeq ($(DBG),)
 
-# --- flags
+OPTFLAGS:= -C hopt
+CCFLAGS_HOPT+=  $(OPTFLAGS)
+CXXFLAGS_HOPT+= $(OPTFLAGS)
+F90FLAGS_HOPT+= $(OPTFLAGS)
 
-FLAGS=$(DBGFLAGS) $(RELFLAGS) $(OMPFLAGS)
+endif
 
-F90FLAGS+= $(FLAGS) $(F90RELFLAGS) $(F90DBGFLAGS)
-CXXFLAGS+= $(FLAGS)
-CFLAGS+= $(FLAGS)
-LDFLAGS+= $(FLAGS) $(LDOPTFLAGS)
+# --- standard optimization flags
 
-F90FLAGS_NOOPT=$(NOOPTFLAGS) $(F90FLAGS)
-F90FLAGS_OPT=$(OPTFLAGS) $(F90FLAGS)
-CXXFLAGS_NOOPT=$(NOOPTFLAGS) $(CXXFLAGS)
-CXXFLAGS_OPT=$(OPTFLAGS) $(CXXFLAGS)
-CFLAGS_NOOPT=$(NOOPTFLAGS) $(CFLAGS)
-CFLAGS_OPT=$(OPTFLAGS) $(CFLAGS)
+ifeq ($(DBG),)
+
+OPTFLAGS:= -C hopt
+CCFLAGS+=  $(OPTFLAGS)
+CXXFLAGS+= $(OPTFLAGS)
+F90FLAGS+= $(OPTFLAGS)
+LDFLAGS+= 
+
+endif
+
 
 
 # ---------------------------------------------------------------------

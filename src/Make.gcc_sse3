@@ -1,11 +1,14 @@
 #-*- Makefile -*-======================================================
 #
-# Make.path
+# Make.default
 #
+# for gnu >= 4.1 compiler set
+
 # ---------------------------------------------------------------------
 
-M4_ARCH=PATH
+ARCH=gcc_sse3
 
+M4_ARCH=GCC_SSE3
 
 # --- compiler set
 
@@ -13,18 +16,17 @@ AR=ar
 
 ifeq ($(MPI),)
 
-F90=pathf90
-CXX=pathCC
-CC=pathcc
+F90=gfortran
+CXX=g++
+CC=gcc
 
 else
-
+ 
 F90=mpif90 
 CXX=mpicxx
 CC=mpicc
 
 endif
-
 
 # --- release flags
 
@@ -37,7 +39,7 @@ LDFLAGS+= -static
 
 ifneq ($(OMP),)
 
-OMPFLAGS:= -openmp
+OMPFLAGS:= -fopenmp
 CCFLAGS+=  $(OMPFLAGS)
 CXXFLAGS+= $(OMPFLAGS)
 F90FLAGS+= $(OMPFLAGS)
@@ -49,10 +51,10 @@ endif
 
 ifneq ($(DBG),)
 
-DBGFLAGS:= -g -O0 -fmath-errno
+DBGFLAGS:= -g -O0
 CCFLAGS+=  $(DBGFLAGS)
 CXXFLAGS+= $(DBGFLAGS)
-F90FLAGS+= $(DBGFLAGS) -ffortran-bounds-check 
+F90FLAGS+= $(DBGFLAGS) -fbounds-check -ffpe-trap="overflow,invalid,zero"
 LDFLAGS+=  -g
 
 endif 
@@ -65,7 +67,7 @@ F90FLAGS_LOPT:= $(F90FLAGS)
 
 ifeq ($(DBG),)
 
-OPTFLAGS:= -O1 -ipo
+OPTFLAGS:= -O1
 CCFLAGS_LOPT+=  $(OPTFLAGS)
 CXXFLAGS_LOPT+= $(OPTFLAGS)
 F90FLAGS_LOPT+= $(OPTFLAGS)
@@ -80,7 +82,7 @@ F90FLAGS_HOPT := $(F90FLAGS)
 
 ifeq ($(DBG),)
 
-OPTFLAGS:=  -Ofast -ipa
+OPTFLAGS:= -O3 -ffast-math -funroll-loops -ftree-vectorize -msse3
 CCFLAGS_HOPT+=  $(OPTFLAGS)
 CXXFLAGS_HOPT+= $(OPTFLAGS)
 F90FLAGS_HOPT+= $(OPTFLAGS)
@@ -91,20 +93,20 @@ endif
 
 ifeq ($(DBG),)
 
-OPTFLAGS:= -O2 -ipa
+OPTFLAGS:= -O2
 CCFLAGS+=  $(OPTFLAGS)
 CXXFLAGS+= $(OPTFLAGS)
 F90FLAGS+= $(OPTFLAGS)
-LDFLAGS+= -ipa
+LDFLAGS+=
 
 endif
-
 
 
 # ---------------------------------------------------------------------
 
 #
 # Authors:  J.Hamm 
-# Modified: 4/12/2007
+# Modified: 7/10/2008
 #
 #======================================================================
+
