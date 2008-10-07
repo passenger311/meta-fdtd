@@ -10,15 +10,13 @@ ARCH=gnu
 endif
 include ./define.mk
 
-.PHONY: default clean proper distclean fftpack5 engine config geopre postps  build tests lua
+.PHONY: default clean proper distclean fftpack5 engine config geopre postps  build tests
 
 build: 
 	-@$(MAKE) -s proper
 	@echo 
 	@echo "+ CREATE BUILD [$(BUILDDIR)]"
 	-@$(MAKE) -s config
-	-@$(MAKE) -s geopre
-	-@$(MAKE) -s lua
 	-@$(MAKE) -s postps
 	-@$(MAKE) -s engine DIM=1 
 	-@$(MAKE) -s engine DIM=2 
@@ -33,7 +31,7 @@ build:
 
 default: all
 
-all: config postps geopre engine lua
+all: config postps engine
 
 engine-tests:
 	@echo "."
@@ -44,21 +42,14 @@ engine-tests:
 engine:
 	@cd $@ && $(MAKE) -s info all install
 
-config postps geopre:
+config postps:
 	@cd $@ && $(MAKE) -s MPI= info all install
 
-lua:
-	@echo . 
-	@echo . LUA INTERPRETER
-	@echo . 
-	@cd $@ && $(MAKE) -s ansi
 
 clean proper: 
 	@cd engine; $(MAKE) -s $@; cd ..
 	@cd config; $(MAKE) -s $@; cd ..
 	@cd postps; $(MAKE) -s $@; cd ..
-	@cd geopre; $(MAKE) -s $@; cd ..
-	@cd lua; $(MAKE) -s $@; cd ..
 
 distclean: proper
 	@rm -rf build-* build

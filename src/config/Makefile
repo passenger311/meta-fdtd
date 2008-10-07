@@ -34,13 +34,13 @@ lua:
 	@echo . 
 	@echo . BUILDING LUA INTERPRETER
 	@echo . 
-	@cd lua/src; $(MAKE) $(LUAPLATFORM) 
+	@cd lua/src; $(MAKE) -s $(LUAPLATFORM) 
 
 luageo:
 	@echo . 
 	@echo . BUILDING GEOMETRY PREPROCESSOR
 	@echo . 
-	@cd luageo; $(MAKE) all
+	@cd luageo; $(MAKE) -s all
 
 install: build-dir
 	@echo [INSTALL] $(INSTALLFILES)

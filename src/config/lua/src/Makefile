@@ -53,17 +53,21 @@ o:	$(ALL_O)
 a:	$(ALL_A)
 
 $(ALL_O): %.o : %.c
-	$(CC) $(CCFLAGS) -o $@ -c $<
+	@echo [CC] $@
+	@$(CC) $(CCFLAGS) -o $@ -c $<
 
 $(LUA_A): $(CORE_O) $(LIB_O)
-	$(AR) rcu $@ $?
+	@echo [AR] $@
+	@$(AR) rcu $@ $?
 #	$(RANLIB) $@
 
 $(LUA_T): $(LUA_O) $(LUA_A)
-	$(CC) $(LDFLAGS) -o $@ $(MYLDFLAGS) $(LUA_O) $(LUA_A) $(LIBS)
+	@echo [LD] $@
+	@$(CC) $(LDFLAGS) -o $@ $(MYLDFLAGS) $(LUA_O) $(LUA_A) $(LIBS)
 
 $(LUAC_T): $(LUAC_O) $(LUA_A)
-	$(CC) $(LDFLAGS) -o $@ $(MYLDFLAGS) $(LUAC_O) $(LUA_A) $(LIBS)
+	@echo [LD] $@
+	@$(CC) $(LDFLAGS) -o $@ $(MYLDFLAGS) $(LUAC_O) $(LUA_A) $(LIBS)
 
 
 
