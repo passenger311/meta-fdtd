@@ -5,15 +5,15 @@
 # == CHANGE THE SETTINGS BELOW TO SUIT YOUR ENVIRONMENT =======================
 
 ifeq ($(ARCH),)
-include ../../Make.default
+include ../../../Make.default
 else 
-include ../../Make.$(ARCH)
+include ../../../Make.$(ARCH)
 endif 
 
 PLAT= ansi
 
 #CC= sxcc
-#CFLAGS= -O2 -Wall $(MYCFLAGS)
+CCFLAGS+= $(MYCFLAGS)
 #AR= sxar 
 RANLIB= ranlib
 RM= rm -f
@@ -52,26 +52,31 @@ o:	$(ALL_O)
 
 a:	$(ALL_A)
 
+$(ALL_O): %.o : %.c
+	$(CC) $(CCFLAGS) -o $@ -c $<
+
 $(LUA_A): $(CORE_O) $(LIB_O)
 	$(AR) rcu $@ $?
 #	$(RANLIB) $@
 
 $(LUA_T): $(LUA_O) $(LUA_A)
-	$(CC) -o $@ $(MYLDFLAGS) $(LUA_O) $(LUA_A) $(LIBS)
+	$(CC) $(LDFLAGS) -o $@ $(MYLDFLAGS) $(LUA_O) $(LUA_A) $(LIBS)
 
 $(LUAC_T): $(LUAC_O) $(LUA_A)
-	$(CC) -o $@ $(MYLDFLAGS) $(LUAC_O) $(LUA_A) $(LIBS)
+	$(CC) $(LDFLAGS) -o $@ $(MYLDFLAGS) $(LUAC_O) $(LUA_A) $(LIBS)
+
+
 
 clean:
 	$(RM) $(ALL_T) $(ALL_O)
 
 depend:
-	@$(CC) $(CFLAGS) -MM l*.c print.c
+	@$(CC) $(CCFLAGS) -MM l*.c print.c
 
 echo:
 	@echo "PLAT = $(PLAT)"
 	@echo "CC = $(CC)"
-	@echo "CFLAGS = $(CFLAGS)"
+	@echo "CFLAGS = $(CCFLAGS)"
 	@echo "AR = $(AR)"
 	@echo "RANLIB = $(RANLIB)"
 	@echo "RM = $(RM)"
@@ -86,39 +91,39 @@ none:
 	@echo "   $(PLATS)"
 
 aix:
-	$(MAKE) all CC="xlc" CFLAGS="-O2 -DLUA_USE_POSIX -DLUA_USE_DLOPEN" MYLIBS="-ldl" MYLDFLAGS="-brtl -bexpall"
+	@$(MAKE)  all CC="xlc" CFLAGS="-O2 -DLUA_USE_POSIX -DLUA_USE_DLOPEN" MYLIBS="-ldl" MYLDFLAGS="-brtl -bexpall"
 
 ansi:
-	$(MAKE) all MYCFLAGS=-DLUA_ANSI
+	@$(MAKE)   all MYCFLAGS=-DLUA_ANSI
 
 bsd:
-	$(MAKE) all MYCFLAGS="-DLUA_USE_POSIX -DLUA_USE_DLOPEN" MYLIBS="-Wl,-E"
+	@$(MAKE)   all MYCFLAGS="-DLUA_USE_POSIX -DLUA_USE_DLOPEN" MYLIBS="-Wl,-E"
 
 freebsd:
-	$(MAKE) all MYCFLAGS="-DLUA_USE_LINUX" MYLIBS="-Wl,-E -lreadline"
+	@$(MAKE)   all MYCFLAGS="-DLUA_USE_LINUX" MYLIBS="-Wl,-E -lreadline"
 
 generic:
-	$(MAKE) all MYCFLAGS=
+	@$(MAKE)   all MYCFLAGS=
 
 linux:
-	$(MAKE) all MYCFLAGS=-DLUA_USE_LINUX MYLIBS="-Wl,-E -ldl -lreadline -lhistory -lncurses"
+	@$(MAKE)   all MYCFLAGS=-DLUA_USE_LINUX MYLIBS="-Wl,-E -ldl -lreadline -lhistory -lncurses"
 
 macosx:
-	$(MAKE) all MYCFLAGS=-DLUA_USE_LINUX MYLIBS="-lreadline"
+	@$(MAKE)   all MYCFLAGS=-DLUA_USE_LINUX MYLIBS="-lreadline"
 # use this on Mac OS X 10.3-
 #	$(MAKE) all MYCFLAGS=-DLUA_USE_MACOSX
 
 mingw:
-	$(MAKE) "LUA_A=lua51.dll" "LUA_T=lua.exe" \
+	@$(MAKE) "LUA_A=lua51.dll" "LUA_T=lua.exe" \
 	"AR=$(CC) -shared -o" "RANLIB=strip --strip-unneeded" \
 	"MYCFLAGS=-DLUA_BUILD_AS_DLL" "MYLIBS=" "MYLDFLAGS=-s" lua.exe
-	$(MAKE) "LUAC_T=luac.exe" luac.exe
+	@$(MAKE) "LUAC_T=luac.exe" luac.exe
 
 posix:
-	$(MAKE) all MYCFLAGS=-DLUA_USE_POSIX
+	@$(MAKE)   all MYCFLAGS=-DLUA_USE_POSIX
 
 solaris:
-	$(MAKE) all MYCFLAGS="-DLUA_USE_POSIX -DLUA_USE_DLOPEN" MYLIBS="-ldl"
+	@$(MAKE)   all MYCFLAGS="-DLUA_USE_POSIX -DLUA_USE_DLOPEN" MYLIBS="-ldl"
 
 # list targets that do not create files (but not all makes understand .PHONY)
 .PHONY: all $(PLATS) default o a clean depend echo none

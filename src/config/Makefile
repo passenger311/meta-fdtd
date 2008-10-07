@@ -15,48 +15,47 @@ include ../define.mk
 
 # ---------------------------------------------------------------------
 
-.PHONY: clean proper default install all info
+.PHONY: clean proper default install all info lua luageo
 
-BUILDFILES=\
-meta-config\
-material.pm
+ifeq ($(LUAPLATFORM),) 
+LUAPLATFORM=ansi
+endif
+
+INSTALLFILES=\
+lua/src/lua\
+config.lua
+
 
 default: all
 
-all: install  
+all: lua luageo
 
-info: 
-	@echo "."
-	@echo ". CONFIG"
-	@echo "."
+lua: 
+	@echo . 
+	@echo . BUILDING LUA INTERPRETER
+	@echo . 
+	@cd lua/src; $(MAKE) $(LUAPLATFORM) 
+
+luageo:
+	@echo . 
+	@echo . BUILDING GEOMETRY PREPROCESSOR
+	@echo . 
+	@cd luageo; $(MAKE) all
 
 install: build-dir
-	@echo [INSTALL] $(BUILDFILES)
-	@ cp $(BUILDFILES) ../$(BUILDDIR)
+	@echo [INSTALL] $(INSTALLFILES)
+	@ cp $(INSTALLFILES) ../$(BUILDDIR)
 
-
-
-%.o : %.f90
-	@echo [F90] $*
-	@$(M4) $< >$*_m4.f90 
-	@$(F90) $(F90FLAGS) $(INCLUDE) -c $*_m4.f90 -o $*.o
-
-%.o : %.F90
-	@echo [F90] $*
-	@$(M4) $< >$*_m4.F90 
-	@$(F90) $(F90FLAGS) $(INCLUDE) -c $*_m4.F90 -o $*.o
-
-%.o : %.c
-	@echo [CC ] $*
-	@$(CC) $(CCFLAGS) $(INCLUDE) -c $<
 
 .PHONY: clean proper
 
 clean:
-	 @rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *.mod *_m4.f90 *_m4.F90
+	@cd lua; $(MAKE) -s $@
+	@cd luageo; $(MAKE) -s $@
 
 proper: clean
-	 @rm -f $(EXE) $(PREEXE) *.o *.in *.out *~
+	@cd lua; $(MAKE) -s clean
+	@cd luageo; $(MAKE) -s $@
 
 
 # ---------------------------------------------------------------------

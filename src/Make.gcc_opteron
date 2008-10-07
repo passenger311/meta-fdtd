@@ -8,6 +8,7 @@
 
 ARCH=gcc_opteron
 M4_ARCH=GCC_OPTERON
+LUAPLATFORM=linux
 
 # --- compiler set
 

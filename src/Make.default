@@ -7,8 +7,8 @@
 # ---------------------------------------------------------------------
 
 ARCH=gcc
-
 M4_ARCH=GCC
+LUAPLATFORM=linux
 
 # --- compiler set
 
