@@ -30,9 +30,9 @@ endif
 # --- release flags
 
 CCFLAGS+=
-CXXFLAGS+=
-F90FLAGS+=  -Wf,'-Nesc'
-LDFLAGS+= -static
+CXXFLAGS+= -Kexceptions
+F90FLAGS+= -Wf,'-Nesc'
+LDFLAGS+=
 
 # --- openmp flags
 
