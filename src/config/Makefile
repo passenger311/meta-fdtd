@@ -15,32 +15,27 @@ include ../define.mk
 
 # ---------------------------------------------------------------------
 
-.PHONY: clean proper default install all info lua luageo
-
-ifeq ($(LUAPLATFORM),) 
-LUAPLATFORM=ansi
-endif
+.PHONY: clean proper default install all info lua cfg
 
 INSTALLFILES=\
-lua/src/lua\
+src/lua/luacfg\
 config.lua
-
 
 default: all
 
-all: lua luageo
+all: lua cfg
 
 lua: 
 	@echo . 
-	@echo . BUILDING LUA INTERPRETER
+	@echo . BUILDING VANILLA LUA INTERPRETER
 	@echo . 
-	@cd lua/src; $(MAKE) -s $(LUAPLATFORM) 
+	@cd lua/src; $(MAKE) -s ansi
 
-luageo:
+cfg:
 	@echo . 
-	@echo . BUILDING GEOMETRY PREPROCESSOR
+	@echo . BUILDING CONFIG INTERFACE
 	@echo . 
-	@cd luageo; $(MAKE) -s all
+	@cd src; $(MAKE) -s all
 
 install: build-dir
 	@echo [INSTALL] $(INSTALLFILES)
@@ -51,11 +46,11 @@ install: build-dir
 
 clean:
 	@cd lua; $(MAKE) -s $@
-	@cd luageo; $(MAKE) -s $@
+	@cd src; $(MAKE) -s $@
 
 proper: clean
 	@cd lua; $(MAKE) -s clean
-	@cd luageo; $(MAKE) -s $@
+	@cd src; $(MAKE) -s $@
 
 
 # ---------------------------------------------------------------------
