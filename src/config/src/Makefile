@@ -52,7 +52,7 @@ luacfg:
 	@cd luacfg; $(MAKE) -s all
 
 clean:
-	@rm -f  *.o objects/*.o filehandler/*.o $(LIB)
+	@rm -f  *.o objects/*.o filehandler/*.o *.ti objects/*.ti filehandler/*.ti  $(LIB)
 	@cd luacfg; $(MAKE) -s clean
 
 
