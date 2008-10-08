@@ -35,6 +35,7 @@ CXXFLAGS+=
 F90FLAGS+=
 LDFLAGS+= -static
 
+
 # --- openmp flags
 
 ifneq ($(OMP),)

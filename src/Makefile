@@ -6,7 +6,7 @@
 # ---------------------------------------------------------------------
 
 ifeq ($(ARCH),)
-ARCH=gnu
+ARCH=gcc
 endif
 include ./define.mk
 
