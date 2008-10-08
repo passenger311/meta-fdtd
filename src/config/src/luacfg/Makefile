@@ -35,6 +35,9 @@ LDFLAGS+= -L../../lua/src
 LUAEXE= luacfg
 LIBS+= -lm
 
+LIBLUA=../../lua/src/liblua.a
+LIBGEO=../libgeo.a
+
 all: $(LUAEXE)
 
 cfg_lmod.c: cfg.lua
@@ -50,7 +53,7 @@ $(CXXOBJ): %.o: %.cpp
 
 $(LUAEXE): $(CCOBJ) $(CXXOBJ)
 	@echo [LD] $@
-	@$(strip $(CXX) $(LDFLAGS) $^ ../../lua/src/liblua.a  $(LIBS) -o $@)
+	@$(strip $(CXX) $(LDFLAGS) $^ $(LIBLUA) $(LIBGEO) $(LIBS) -o $@)
 
 clean:
 	@rm -f  *.o cfg_lmod.* luacfg

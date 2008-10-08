@@ -18,7 +18,7 @@ include ../define.mk
 .PHONY: clean proper default install all info lua cfg
 
 INSTALLFILES=\
-src/lua/luacfg\
+src/luacfg/luacfg\
 config.lua
 
 default: all
