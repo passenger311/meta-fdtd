@@ -20,10 +20,7 @@ include ../../define.mk
 # objects
 OBJ=\
 errorclasses.o\
-GridBox.o\
-OutputFile.o\
-OutputList.o\
-Scene.o\
+Grid.o\
 objects/CBinaryObject.o\
 objects/CBox.o\
 objects/CCylinder.o\

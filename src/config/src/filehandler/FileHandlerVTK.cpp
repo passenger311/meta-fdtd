@@ -10,28 +10,28 @@ FileHandlerVTK::~FileHandlerVTK()
 
 void FileHandlerVTK::writeFileHeader()
 {
-	double dimX = gbGridBox->frBBox.position_end[VX]-gbGridBox->frBBox.position_start[VX], 
-		dimY = gbGridBox->frBBox.position_end[VY]-gbGridBox->frBBox.position_start[VY], 
-		dimZ = gbGridBox->frBBox.position_end[VZ]-gbGridBox->frBBox.position_start[VZ];
-	double dDX = dimX / (gbGridBox->iCellsX-1);
-	if (gbGridBox->iCellsX <= 1)
+	double dimX = gbGrid->frBBox.position_end[VX]-gbGrid->frBBox.position_start[VX], 
+		dimY = gbGrid->frBBox.position_end[VY]-gbGrid->frBBox.position_start[VY], 
+		dimZ = gbGrid->frBBox.position_end[VZ]-gbGrid->frBBox.position_start[VZ];
+	double dDX = dimX / (gbGrid->iCellsX-1);
+	if (gbGrid->iCellsX <= 1)
 		dDX = dimX;
-	double dDY = dimY / (gbGridBox->iCellsY-1);
-	if (gbGridBox->iCellsY <= 1)
+	double dDY = dimY / (gbGrid->iCellsY-1);
+	if (gbGrid->iCellsY <= 1)
 		dDY = dimY;
-	double dDZ = dimZ / (gbGridBox->iCellsZ-1);
-	if (gbGridBox->iCellsZ <= 1)
+	double dDZ = dimZ / (gbGrid->iCellsZ-1);
+	if (gbGrid->iCellsZ <= 1)
 		dDZ = dimZ;
-	int iPointCount = gbGridBox->iCellsX * gbGridBox->iCellsY * gbGridBox->iCellsZ;
+	int iPointCount = gbGrid->iCellsX * gbGrid->iCellsY * gbGrid->iCellsZ;
 	m_fsFileStream << "# vtk DataFile Version 2.0\n";
 	m_fsFileStream << "GridSetup generated file\n";
 	m_fsFileStream << "ASCII\n";
 	m_fsFileStream << "DATASET STRUCTURED_POINTS\n";
-	m_fsFileStream << "DIMENSIONS " << gbGridBox->iCellsX << " " << gbGridBox->iCellsY << " " << gbGridBox->iCellsZ << "\n";
+	m_fsFileStream << "DIMENSIONS " << gbGrid->iCellsX << " " << gbGrid->iCellsY << " " << gbGrid->iCellsZ << "\n";
 	m_fsFileStream << "SPACING " << dDX << " " << dDY << " " << dDZ << "\n";
-	m_fsFileStream << "ORIGIN " << gbGridBox->frBBox.position_start[VX] 
-			<< " " << gbGridBox->frBBox.position_start[VY]
-			<< " " << gbGridBox->frBBox.position_start[VZ] << "\n";
+	m_fsFileStream << "ORIGIN " << gbGrid->frBBox.position_start[VX] 
+			<< " " << gbGrid->frBBox.position_start[VY]
+			<< " " << gbGrid->frBBox.position_start[VZ] << "\n";
 	m_fsFileStream << "\n";
 	m_fsFileStream << "POINT_DATA " << iPointCount << "\n";
 	if (bYeeGrid)
@@ -43,21 +43,21 @@ void FileHandlerVTK::writeFileHeader()
 
 void FileHandlerVTK::writeGridZDataSlice(int z)
 {
-	for (int y=0; y<gbGridBox->iCellsY; y++) {
-		for (int x=0; x<gbGridBox->iCellsX; x++) {
+	for (int y=0; y<gbGrid->iCellsY; y++) {
+		for (int x=0; x<gbGrid->iCellsX; x++) {
 			if (bYeeGrid)
 				m_fsFileStream
 //						 << x << ':' << y << ':' << z << ' '
-						 << gbGridBox->getDataPoint(x,y,z,EX) << ' '
-						 << gbGridBox->getDataPoint(x,y,z,EY) << ' '
-						 << gbGridBox->getDataPoint(x,y,z,EZ) << ' '
-						 << gbGridBox->getDataPoint(x,y,z,HX) << ' '
-						 << gbGridBox->getDataPoint(x,y,z,HY) << ' '
-						 << gbGridBox->getDataPoint(x,y,z,HZ) << "\n";
+						 << gbGrid->getDataPoint(x,y,z,EX) << ' '
+						 << gbGrid->getDataPoint(x,y,z,EY) << ' '
+						 << gbGrid->getDataPoint(x,y,z,EZ) << ' '
+						 << gbGrid->getDataPoint(x,y,z,HX) << ' '
+						 << gbGrid->getDataPoint(x,y,z,HY) << ' '
+						 << gbGrid->getDataPoint(x,y,z,HZ) << "\n";
 			else
 				m_fsFileStream 
 //					<< x << ':' << y << ':' << z << ' '
-					<< gbGridBox->getDataPoint(x,y,z,ZERO) << "\n";
+					<< gbGrid->getDataPoint(x,y,z,ZERO) << "\n";
 		}
 	}
 }

@@ -1,6 +1,6 @@
-#include "GridBox.h"
+#include "Grid.h"
 
-GridBox::GridBox()
+Grid::Grid()
 {
 	frBBox.position_start = vec3(0,0,0);
 	frBBox.position_end = vec3(1,1,1);
@@ -21,30 +21,30 @@ GridBox::GridBox()
 	m_iCurrentZ = -1;
 }
 
-GridBox::GridBox(GridBox* gridbox) {
-	GridBox();
-	scnScene = gridbox->scnScene;
-	frBBox = gridbox->frBBox;
-	iCellsX = gridbox->iCellsX;
-	iCellsY = gridbox->iCellsY;
-	iCellsZ = gridbox->iCellsZ;
-	dPointframeScale = gridbox->dPointframeScale;
-	iPointframeDivisionsX = gridbox->iPointframeDivisionsX;
-	iPointframeDivisionsY = gridbox->iPointframeDivisionsY;
-	iPointframeDivisionsZ = gridbox->iPointframeDivisionsZ;
-	bPointframeFacepoints = gridbox->bPointframeFacepoints;
-	iSubGriddingDivX = gridbox->iSubGriddingDivX;
-	iSubGriddingDivY = gridbox->iSubGriddingDivY;
-	iSubGriddingDivZ = gridbox->iSubGriddingDivZ;
-	bAlwaysSubgridding = gridbox->bAlwaysSubgridding;
-	bNoSubgridding = gridbox->bNoSubgridding;
-	bYeeGrid = gridbox->bYeeGrid;
+Grid::Grid(Grid* grid) {
+	Grid();
+	scnScene = grid->scnScene;
+	frBBox = grid->frBBox;
+	iCellsX = grid->iCellsX;
+	iCellsY = grid->iCellsY;
+	iCellsZ = grid->iCellsZ;
+	dPointframeScale = grid->dPointframeScale;
+	iPointframeDivisionsX = grid->iPointframeDivisionsX;
+	iPointframeDivisionsY = grid->iPointframeDivisionsY;
+	iPointframeDivisionsZ = grid->iPointframeDivisionsZ;
+	bPointframeFacepoints = grid->bPointframeFacepoints;
+	iSubGriddingDivX = grid->iSubGriddingDivX;
+	iSubGriddingDivY = grid->iSubGriddingDivY;
+	iSubGriddingDivZ = grid->iSubGriddingDivZ;
+	bAlwaysSubgridding = grid->bAlwaysSubgridding;
+	bNoSubgridding = grid->bNoSubgridding;
+	bYeeGrid = grid->bYeeGrid;
 	//m_iCurrentZ = -1;
 }
 
-GridBox::GridBox(Scene* scene, frame box, int cellsX, int cellsY, int cellsZ)
+Grid::Grid(Scene* scene, frame box, int cellsX, int cellsY, int cellsZ)
 {
-	GridBox();
+	Grid();
 	scnScene = scene;
 	frBBox = box;
 	iCellsX = cellsX; // iCellsX
@@ -63,13 +63,15 @@ GridBox::GridBox(Scene* scene, frame box, int cellsX, int cellsY, int cellsZ)
 //	m_iCurrentZ = -1;
 }
 
-GridBox::~GridBox()
+Grid::~Grid()
 {
 }
 
-void GridBox::generateOutput(FileHandler* fhd)
+void Grid::generateOutput(FileHandler* fhd)
 {
-	fhd->gbGridBox = this;
+  bool bSilentMode = true;
+
+	fhd->gbGrid = this;
 	fhd->openFile();
 	fhd->writeFileHeader();
 	
@@ -271,7 +273,7 @@ void GridBox::generateOutput(FileHandler* fhd)
 			m_iCurrentZ = iZ;
 			fhd->writeGridZDataSlice(m_iCurrentZ);
 		}
-		if (!scnScene->bSilentMode && iZ % MAX((int)cellsZ/50,1) == 0) {
+		if (!bSilentMode && iZ % MAX((int)cellsZ/50,1) == 0) {
 			cout << "." << flush;
 		}
 		pfrm.moveZ(dDZ);
@@ -284,7 +286,7 @@ void GridBox::generateOutput(FileHandler* fhd)
 	fhd->writeFileFooter();
 }
 
-double GridBox::getDataPoint(int x, int y, int z, YEEGRIDCOMPONENT cp)
+double Grid::getDataPoint(int x, int y, int z, YEEGRIDCOMPONENT cp)
 {
 	if (z != m_iCurrentZ)
 		throw int(8734); //TODO: Error Handling

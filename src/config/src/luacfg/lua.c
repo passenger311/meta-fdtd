@@ -346,6 +346,7 @@ static int pmain (lua_State *L) {
   if (argv[0] && argv[0][0]) progname = argv[0];
   lua_gc(L, LUA_GCSTOP, 0);  /* stop collector during initialization */
   luaL_openlibs(L);  /* open libraries */
+  luaopen_geo_core(L);
   luaopen_geo(L);
   luaopen_cfg(L);
   lua_gc(L, LUA_GCRESTART, 0);

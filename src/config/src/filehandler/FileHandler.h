@@ -4,11 +4,11 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "../GridBox.h"
+#include "../Grid.h"
 
 using namespace std;
 
-class GridBox;
+class Grid;
 
 class FileHandler
 {
@@ -16,7 +16,7 @@ protected:
 	ofstream m_fsFileStream;
 public:
 	string sFile;
-	GridBox* gbGridBox;
+	Grid* gbGrid;
 	bool bYeeGrid;
 	
 public:
@@ -27,7 +27,6 @@ public:
 	virtual void writeFileHeader();
 
 	virtual void writeGridZDataSlice(int z);
-//	virtual void writeGridDataSlice(double* grid);
 
 	virtual void writeFileFooter();
 

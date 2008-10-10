@@ -20,11 +20,14 @@ include ../../../define.mk
 # objects
 CCOBJ=\
 luageo.o\
-cfg_lmod.o\
+luacfg_lmod.o\
 lua.o
 
 CXXOBJ=\
-geo_core.o
+geo_core.o\
+geo_scene.o\
+geo_grid.o\
+geo_objects.o
 
 default: all
 
@@ -40,7 +43,7 @@ LIBGEO=../libgeo.a
 
 all: $(LUAEXE)
 
-cfg_lmod.c: cfg.lua
+luacfg_lmod.c: cfg.lua
 	@../../lua/src/lua forge.lua
 
 $(CCOBJ): %.o : %.c
@@ -56,7 +59,7 @@ $(LUAEXE): $(CCOBJ) $(CXXOBJ)
 	@$(strip $(CXX) $(LDFLAGS) $^ $(LIBLUA) $(LIBGEO) $(LIBS) -o $@)
 
 clean:
-	@rm -f  *.o cfg_lmod.* luacfg
+	@rm -f  *.o *_lmod.* luacfg
 
 proper: clean
 

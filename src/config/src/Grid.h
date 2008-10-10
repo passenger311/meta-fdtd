@@ -1,5 +1,5 @@
-#ifndef GRIDBOX_H_
-#define GRIDBOX_H_
+#ifndef GRID_H_
+#define GRID_H_
 
 #include "objects/algebra3extension.h"
 #include "filehandler/FileHandler.h"
@@ -16,7 +16,7 @@ enum YEEGRIDCOMPONENT {ZERO, EX, EY, EZ, HX, HY, HZ}; //YeeGrid components
 class FileHandler;
 class Scene;
 
-class GridBox
+class Grid
 {
 public:
 	frame frBBox;
@@ -43,15 +43,15 @@ protected:
 	double *m_dGridvalues_2;
 	int m_iCurrentZ;
 public:
-	GridBox();
-	GridBox(GridBox* gridbox);
-	GridBox(Scene* scene, frame box, int cellsX, int cellsY, int cellsZ);
+	Grid();
+	Grid(Grid* gridbox);
+	Grid(Scene* scene, frame box, int cellsX, int cellsY, int cellsZ);
 
-	~GridBox();
+	~Grid();
 	
 	void generateOutput(FileHandler* fhd);
 	
 	double getDataPoint(int x, int y, int z, YEEGRIDCOMPONENT cp);
 };
 
-#endif /*GRIDBOX_H_*/
+#endif /*GRID_H_*/

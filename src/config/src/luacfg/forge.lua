@@ -178,8 +178,7 @@ end
 ------------------------------------------------------------------------------
 
 
-lib = "cfg"
-list = { ["cfg.lua"] = "cfg" }
+list = { ["cfg.lua"] = "cfg", ["geo.lua"] = "geo" }
 
-precompile(list,lib,".","/")
+precompile(list,"luacfg",".","/")
 
