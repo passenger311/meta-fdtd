@@ -38,7 +38,7 @@ LUAGEO_API int luaopen_geo_core(lua_State *L)
   Grid_create_metatable(L);
   Objects_create_metatable(L);
 
-  luaL_openlib (L, "geo", reg, 0);
+  luaL_openlib (L, "geo_core", reg, 0);
   luageo_set_info (L);
   return 1;
 }

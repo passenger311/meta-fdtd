@@ -36,61 +36,100 @@ int CObject_destroy(lua_State *L)
 
 
 int CSphere_create(lua_State *L) {
-
+  CObject** objptr = (CObject **)lua_newuserdata(L, sizeof(CSphere*));
+  //  (*objptr) = new CSphere();
+  luageo_setmeta(L, LUAGEO_OBJECT);
+  return 1;
 }
 
 int CBezierPrism_create(lua_State *L) {
-
+  CObject** objptr = (CObject **)lua_newuserdata(L, sizeof(CBezierPrism*));
+  //  (*objptr) = new CSphere();
+  luageo_setmeta(L, LUAGEO_OBJECT);
+  return 1;
 }
 
-int CBinaryObject_create(lua_State *L) {
-
-}
 
 int CBox_create(lua_State *L) {
-
+  CObject** objptr = (CObject **)lua_newuserdata(L, sizeof(CBox*));
+  //  (*objptr) = new CSphere();
+  luageo_setmeta(L, LUAGEO_OBJECT);
+  return 1;
 }
 
 int CConvexPrism_create(lua_State *L) {
-
+  CObject** objptr = (CObject **)lua_newuserdata(L, sizeof(CConvexPrism*));
+  //  (*objptr) = new CSphere();
+  luageo_setmeta(L, LUAGEO_OBJECT);
+  return 1;
 }
 
 int CCylinder_create(lua_State *L) {
-
+  CObject** objptr = (CObject **)lua_newuserdata(L, sizeof(CCylinder*));
+  //  (*objptr) = new CSphere();
+  luageo_setmeta(L, LUAGEO_OBJECT);
+  return 1;
 }
 
 int CEllipsoid_create(lua_State *L) {
-
+  CObject** objptr = (CObject **)lua_newuserdata(L, sizeof(CEllipsoid*));
+  //  (*objptr) = new CSphere();
+  luageo_setmeta(L, LUAGEO_OBJECT);
+  return 1;
 }
 
 int CLogicAndNotObject_create(lua_State *L) {
-
+  CObject** objptr = (CObject **)lua_newuserdata(L, sizeof(CLogicAndNotObject*));
+  //  (*objptr) = new CSphere();
+  luageo_setmeta(L, LUAGEO_OBJECT);
+  return 1;
 }
 
 int CLogicAndObject_create(lua_State *L) {
-
+  CObject** objptr = (CObject **)lua_newuserdata(L, sizeof(CLogicAndObject*));
+  //  (*objptr) = new CSphere();
+  luageo_setmeta(L, LUAGEO_OBJECT);
+  return 1;
 }
 
 int CLogicOrContainer_create(lua_State *L) {
-
+  CObject** objptr = (CObject **)lua_newuserdata(L, sizeof(CLogicOrContainer*));
+  //  (*objptr) = new CSphere();
+  luageo_setmeta(L, LUAGEO_OBJECT);
+  return 1;
 }
 
 int CLogicOrObject_create(lua_State *L) {
-
+  CObject** objptr = (CObject **)lua_newuserdata(L, sizeof(CLogicOrObject*));
+  //  (*objptr) = new CSphere();
+  luageo_setmeta(L, LUAGEO_OBJECT);
+  return 1;
 }
 
 int CLogicXOrObject_create(lua_State *L) {
-
+  CObject** objptr = (CObject **)lua_newuserdata(L, sizeof(CLogicXOrObject*));
+  //  (*objptr) = new CSphere();
+  luageo_setmeta(L, LUAGEO_OBJECT);
+  return 1;
 }
 
 int CSimplePrism_create(lua_State *L) {
-
+  CObject** objptr = (CObject **)lua_newuserdata(L, sizeof(CSimplePrism*));
+  //  (*objptr) = new CSphere();
+  luageo_setmeta(L, LUAGEO_OBJECT);
+  return 1;
 }
 
 int CSimpleRotationZ_create(lua_State *L) {
-
+  CObject** objptr = (CObject **)lua_newuserdata(L, sizeof(CSimpleRotationZ*));
+  //  (*objptr) = new CSphere();
+  luageo_setmeta(L, LUAGEO_OBJECT);
+  return 1;
 }
 
 int CSimpleTransform_create(lua_State *L) {
-
+  CObject** objptr = (CObject **)lua_newuserdata(L, sizeof(CSimpleTransform*));
+  //  (*objptr) = new CSphere();
+  luageo_setmeta(L, LUAGEO_OBJECT);
+  return 1;
 }
