@@ -16,6 +16,7 @@ extern "C" {
 }
 
 #include "geo_scene.h"
+#include "geo_utils.h"
 
 void Scene_createmeta(lua_State *L)
 {
@@ -38,13 +39,17 @@ int Scene_create(lua_State *L)
 int Scene_destroy(lua_State *L)
 {
   Scene** sceneptr = (Scene **)luaL_checkudata(L, 1, LUAGEO_SCENE);
+  for (vector<CObject*>::iterator iter = (*sceneptr)->objects.begin(); 
+       iter != (*sceneptr)->objects.end(); iter++)
+    delete *iter;
   delete (*sceneptr);
 }
 
 int Scene_add_object(lua_State *L)
 {
   Scene** sceneptr = (Scene **)luaL_checkudata(L, 1, LUAGEO_SCENE);
-  CObject** objectptr = (CObject **)luaL_checkudata(L, 2, LUAGEO_OBJECT);
+  geo_obj* objptr = (geo_obj*)luaL_checkudata(L, 2, LUAGEO_OBJECT);
   luaL_argcheck(L, sceneptr != NULL, 1, LUAGEO_PREFIX"scene expected");
+  (*sceneptr)->objects.push_back(objptr->object->clone());
   return 1;
 }

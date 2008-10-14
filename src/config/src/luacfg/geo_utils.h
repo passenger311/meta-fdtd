@@ -33,7 +33,6 @@ typedef struct geo_obj_s {
   CObject** childs;
 } geo_obj;
 
-
 int geo_getvec3(lua_State *L, const char* name, double val[3]);
 int geo_getdouble(lua_State *L, const char* name, double* val);
 int geo_getunary(lua_State *L, CObject** obj);
