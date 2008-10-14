@@ -6,10 +6,6 @@ CBinaryObject::CBinaryObject()
 	oObject2 = NULL;
 }
 
-CBinaryObject::~CBinaryObject()
-{
-}
-
 CBinaryObject::CBinaryObject(CObject* obj1, CObject* obj2)
 {
 	oObject1 = obj1;	

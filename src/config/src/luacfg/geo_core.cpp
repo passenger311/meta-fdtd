@@ -20,25 +20,35 @@ extern "C" {
 #include "geo_grid.h"
 #include "geo_objects.h"
 
-extern "C" LUAGEO_API int luaopen_geo_core(lua_State *L);
+extern "C" LUAGEO_API int luaopen_geo(lua_State *L);
 
-LUAGEO_API int luaopen_geo_core(lua_State *L)
+LUAGEO_API int luaopen_geo(lua_State *L)
 {
   struct luaL_reg reg[] = {
-    {"Scene_create", Scene_create},
-    {"Scene_destroy", Scene_destroy},
-    {"Grid_create", Grid_create},
-    {"Grid_destroy", Grid_destroy},
-    {"Sphere_create", CSphere_create},
-    {"Object_destroy", CObject_destroy},
+    {"Scene", Scene_create},
+    {"Grid", Grid_create},
+    {"BezierPrism", CBezierPrism_create},
+    {"Box", CBox_create },
+    {"ConvexPrism", CConvexPrism_create },
+    {"Cylinder", CCylinder_create },
+    {"Ellipsoid", CEllipsoid_create },
+    {"BinaryAndNot", CLogicAndNotObject_create },
+    {"BinaryAnd", CLogicAndObject_create },
+    {"CollectionOr", CLogicOrContainer_create },
+    {"BinaryOr", CLogicOrObject_create },
+    {"BinaryXOr", CLogicXOrObject_create },
+    {"Prism", CSimplePrism_create },
+    {"RotationZ", CSimpleRotationZ_create },
+    {"Transform", CSimpleTransform_create },
+    {"Sphere", CSphere_create },
     {NULL, NULL},
   };
 
-  Scene_create_metatable(L);
-  Grid_create_metatable(L);
-  Objects_create_metatable(L);
+  Scene_createmeta(L);
+  Grid_createmeta(L);
+  Objects_createmeta(L);
 
-  luaL_openlib (L, "geo_core", reg, 0);
+  luaL_openlib (L, "geo", reg, 0);
   luageo_set_info (L);
   return 1;
 }

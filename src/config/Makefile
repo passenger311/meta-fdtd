@@ -33,7 +33,7 @@ lua:
 
 cfg:
 	@echo . 
-	@echo . BUILDING CONFIG INTERFACE
+	@echo . BUILDING LUACFG PREPROCESSOR
 	@echo . 
 	@cd src; $(MAKE) -s all
 

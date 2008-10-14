@@ -12,7 +12,6 @@ public:
 public:
 	CBinaryObject();
 	CBinaryObject(CObject* obj1, CObject* obj2);
-	virtual ~CBinaryObject();
 	virtual void preProcess()
 	{
 		oObject1->preProcess();

@@ -27,6 +27,7 @@ CXXOBJ=\
 geo_core.o\
 geo_scene.o\
 geo_grid.o\
+geo_utils.o\
 geo_objects.o
 
 default: all

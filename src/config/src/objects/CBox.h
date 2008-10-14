@@ -5,21 +5,12 @@
 
 class CBox : public CObject
 {
-public:
-//	CBox();
+ public:
 	
-	virtual ~CBox()
-	{ }
-	
-	CBox(frame& ff)
-	{
-		box = ff;
-	}
-	
-	virtual bool PointInside(vec3& point)
-	{
-		return box.pointInFrame(point);
-	}
+  CBox(vec3& pos, vec3& size);
+  CBox(frame& ff);
+  virtual CObject* clone();	
+  virtual bool PointInside(vec3& point);
 };
 
 #endif /*CBOX_H_*/

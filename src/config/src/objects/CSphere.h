@@ -5,35 +5,20 @@
 
 class CSphere : public CObject
 {
+
 protected:
-	double m_dRadiusSqr;
+    double m_dRadiusSqr;
+
 public:
-	vec3 vPosition;
-	double dRadius;
+    vec3 vPosition;
+    double dRadius;
+
 public:
-//	CBox();
 	
-	virtual ~CSphere()
-	{ }
-	
-	CSphere(vec3& pos, double radius)
-	{
-		vPosition = pos;
-		dRadius = radius;
-	}
-	
-	virtual void preProcess()
-	{
-		vec3 spos(vPosition-vec3(dRadius, dRadius, dRadius));
-		box = frame(spos, dRadius*2, dRadius*2, dRadius*2);
-		m_dRadiusSqr = dRadius*dRadius;	
-	}
-	
-	virtual bool PointInside(vec3& point)
-	{
-		vec3 dst(point[VX]-vPosition[VX],point[VY]-vPosition[VY],point[VZ]-vPosition[VZ]);
-		return (dst.length2() <= m_dRadiusSqr);
-	}
+    CSphere(vec3& pos, double radius);
+    virtual CObject* clone();
+    virtual void preProcess();
+    virtual bool PointInside(vec3& point);
 };
 
 #endif /*CSPHERE_H_*/

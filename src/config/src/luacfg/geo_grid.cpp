@@ -29,7 +29,7 @@ int Grid_write_output(lua_State *L)
 }
 
 
-void Grid_create_metatable(lua_State *L)
+void Grid_createmeta(lua_State *L)
 {
     struct luaL_reg methods[] = {
         {"write", Grid_write_output },

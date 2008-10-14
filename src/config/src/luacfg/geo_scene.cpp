@@ -17,7 +17,7 @@ extern "C" {
 
 #include "geo_scene.h"
 
-void Scene_create_metatable(lua_State *L)
+void Scene_createmeta(lua_State *L)
 {
   struct luaL_reg methods[] = {
     {"add", Scene_add_object },

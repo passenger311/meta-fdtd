@@ -11,8 +11,8 @@ class CObject
 public:
 	CObject();
 	virtual ~CObject();
+	virtual CObject* clone() { return new CObject(); }
 	
-
 public:
 	frame box;
 	int iLastInside;
@@ -27,8 +27,7 @@ public:
 	virtual bool PointInside(vec3& point);
 	virtual bool InsideFrame(vec3& point);
 	virtual bool InsideFrame(pointframe& pfrm);
-	virtual bool addSubObject(CObject* object)
-	{ return false; }
+	virtual bool addSubObject(CObject* object) { return false; }
 };
 
 
