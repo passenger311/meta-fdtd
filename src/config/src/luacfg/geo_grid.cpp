@@ -15,12 +15,22 @@ extern "C" {
 
 }
 
+#include "geo_utils.h"
 #include "geo_grid.h"
 
 
+
+int Grid_destroy(lua_State *L)
+{
+  Grid** gridptr = (Grid **)luaL_checkudata(L, 1, LUAGEO_GRID);
+  delete (*gridptr);
+}
+
 int Grid_write_output(lua_State *L)
 {
-	Grid** gridptr = (Grid **)luaL_checkudata(L, 1, LUAGEO_GRID);
+  Grid** gridptr = (Grid **)luaL_checkudata(L, 1, LUAGEO_GRID);
+  Scene** sceneptr = (Scene **)luaL_checkudata(L, 2, LUAGEO_SCENE);
+  
 	//	CObject** objectptr = (CObject **)luaL_checkudata(L, 2, LUAGEO_OBJECT);
 	//	luaL_argcheck(L, grid != NULL, 1, LUAGEO_PREFIX"grid expected");
 	
@@ -33,23 +43,28 @@ void Grid_createmeta(lua_State *L)
 {
     struct luaL_reg methods[] = {
         {"write", Grid_write_output },
+	{"__gc", Grid_destroy },
 	{NULL, NULL},
     };
-
     luageo_createmeta(L, LUAGEO_GRID, methods);
     lua_pop (L, 1);
 }
 
 int Grid_create(lua_State *L)
 {
-	Grid** gridptr = (Grid **)lua_newuserdata(L, sizeof(Grid*));
-	(*gridptr) = new Grid();
-	luageo_setmeta(L, LUAGEO_GRID);
-	return 1;
-}
-
-int Grid_destroy(lua_State *L)
-{
-  Grid** gridptr = (Grid **)luaL_checkudata(L, 1, LUAGEO_GRID);
-  delete (*gridptr);
+  double pos0[3] = { 0.,0.,0. };
+  double pos1[3] = { 1.,1.,1. };
+  double cells[3] = { 10.,10.,10. };
+  if ( lua_istable(L,1) ) {
+    geo_getvec3(L, "from", pos0);
+    geo_getvec3(L, "to", pos1);
+    geo_getvec3(L, "cells", cells );
+  }  
+  vec3 from(pos0[0],pos0[1],pos0[2]);
+  vec3 to(pos1[0],pos1[1],pos1[2]);
+  frame f(from,to);
+  Grid** gridptr = (Grid **)lua_newuserdata(L, sizeof(Grid*));
+  (*gridptr) = new Grid(f,(int)cells[0],(int)cells[1],(int)cells[2]);
+  luageo_setmeta(L, LUAGEO_GRID);
+  return 1;
 }

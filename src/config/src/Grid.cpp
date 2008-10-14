@@ -23,7 +23,6 @@ Grid::Grid()
 
 Grid::Grid(Grid* grid) {
 	Grid();
-	scnScene = grid->scnScene;
 	frBBox = grid->frBBox;
 	iCellsX = grid->iCellsX;
 	iCellsY = grid->iCellsY;
@@ -42,10 +41,9 @@ Grid::Grid(Grid* grid) {
 	//m_iCurrentZ = -1;
 }
 
-Grid::Grid(Scene* scene, frame box, int cellsX, int cellsY, int cellsZ)
+Grid::Grid(frame& box, int cellsX, int cellsY, int cellsZ)
 {
 	Grid();
-	scnScene = scene;
 	frBBox = box;
 	iCellsX = cellsX; // iCellsX
 	iCellsY = cellsY;
@@ -67,7 +65,7 @@ Grid::~Grid()
 {
 }
 
-void Grid::generateOutput(FileHandler* fhd)
+void Grid::generateOutput(Scene* scnScene, FileHandler* fhd)
 {
   bool bSilentMode = true;
 

@@ -22,6 +22,7 @@ void Scene_createmeta(lua_State *L)
 {
   struct luaL_reg methods[] = {
     {"add", Scene_add_object },
+    {"__gc",Scene_destroy },
     {NULL, NULL},
   };
   luageo_createmeta(L, LUAGEO_SCENE, methods);

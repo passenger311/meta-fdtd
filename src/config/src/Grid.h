@@ -28,7 +28,6 @@ public:
 	bool bAlwaysSubgridding;
 	bool bNoSubgridding;
 	bool bYeeGrid;
-	Scene* scnScene;
 	int iSubGriddedCells,
 		iSubGriddedFilledCells,
 		iSubGriddedEmptyCells,
@@ -45,11 +44,11 @@ protected:
 public:
 	Grid();
 	Grid(Grid* gridbox);
-	Grid(Scene* scene, frame box, int cellsX, int cellsY, int cellsZ);
+	Grid(frame& box, int cellsX, int cellsY, int cellsZ);
 
 	~Grid();
 	
-	void generateOutput(FileHandler* fhd);
+	void generateOutput(Scene* scene, FileHandler* fhd);
 	
 	double getDataPoint(int x, int y, int z, YEEGRIDCOMPONENT cp);
 };

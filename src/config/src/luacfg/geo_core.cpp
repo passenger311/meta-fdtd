@@ -27,6 +27,8 @@ LUAGEO_API int luaopen_geo(lua_State *L)
   struct luaL_reg reg[] = {
     {"Scene", Scene_create},
     {"Grid", Grid_create},
+    // {"FileVTK", FileVTK_create},
+    // {"FileIN", FileIN_create},
     {"BezierPrism", CBezierPrism_create},
     {"Box", CBox_create },
     {"ConvexPrism", CConvexPrism_create },
@@ -46,6 +48,7 @@ LUAGEO_API int luaopen_geo(lua_State *L)
 
   Scene_createmeta(L);
   Grid_createmeta(L);
+  // File_createmeta(L);
   Objects_createmeta(L);
 
   luaL_openlib (L, "geo", reg, 0);

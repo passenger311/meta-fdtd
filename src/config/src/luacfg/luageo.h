@@ -11,6 +11,8 @@
 #define LUAGEO_SCENE "Geo:Scene"
 #define LUAGEO_OBJECT "Geo:Object"
 #define LUAGEO_GRID "Geo:Grid"
+#define LUAGEO_FILEVTK "Geo:FileVTK"
+#define LUAGEO_FILEIN "Geo:FileIN"
 
 LUAGEO_API int luageo_error (lua_State *L, const char *err);
 LUAGEO_API int luageo_createmeta (lua_State *L, const char *name, const luaL_reg *methods);
