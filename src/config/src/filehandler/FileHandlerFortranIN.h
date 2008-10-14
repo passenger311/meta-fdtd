@@ -6,15 +6,12 @@
 class FileHandlerFortranIN : public FileHandler
 {
 public:
-	FileHandlerFortranIN();
-	virtual ~FileHandlerFortranIN();
-
-	virtual void writeFileHeader();
-
-	virtual void writeGridZDataSlice(int z);
-//	virtual void writeGridDataSlice(double* grid);
-
-	virtual void writeFileFooter();
+  FileHandlerFortranIN();
+  FileHandlerFortranIN(const char* fname);
+  virtual ~FileHandlerFortranIN();
+  virtual void writeFileHeader(Grid* gbGrid);
+  virtual void writeGridZDataSlice(Grid* gbGrid, int z);
+  virtual void writeFileFooter(Grid* gbGrid);
 };
 
 #endif /*FILEHANDLERFORTRANIN_H_*/

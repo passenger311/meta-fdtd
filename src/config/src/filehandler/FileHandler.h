@@ -13,23 +13,17 @@ class Grid;
 class FileHandler
 {
 protected:
-	ofstream m_fsFileStream;
+  ofstream m_fsFileStream;
 public:
-	string sFile;
-	Grid* gbGrid;
-	bool bYeeGrid;
-	
+  string sFile;
+
 public:
-	FileHandler();
-	virtual ~FileHandler();
-	virtual void openFile(string file = "");
-
-	virtual void writeFileHeader();
-
-	virtual void writeGridZDataSlice(int z);
-
-	virtual void writeFileFooter();
-
+  FileHandler();
+  FileHandler(const char* fname);
+  virtual ~FileHandler();
+  virtual void writeFileHeader(Grid* gbGrid);
+  virtual void writeGridZDataSlice(Grid* gbGrid, int z);
+  virtual void writeFileFooter(Grid* gbGrid);
 };
 
 #endif /*FILEHANDLER_H_*/

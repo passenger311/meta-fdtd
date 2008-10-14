@@ -30,14 +30,10 @@ int Grid_write_output(lua_State *L)
 {
   Grid** gridptr = (Grid **)luaL_checkudata(L, 1, LUAGEO_GRID);
   Scene** sceneptr = (Scene **)luaL_checkudata(L, 2, LUAGEO_SCENE);
-  
-	//	CObject** objectptr = (CObject **)luaL_checkudata(L, 2, LUAGEO_OBJECT);
-	//	luaL_argcheck(L, grid != NULL, 1, LUAGEO_PREFIX"grid expected");
-	
-
-	return 1;
+  FileHandler** fileptr = (FileHandler**)luaL_checkudata(L, 2, LUAGEO_FILE);
+  (*gridptr)->generateOutput(*sceneptr,*fileptr);
+  return 1;
 }
-
 
 void Grid_createmeta(lua_State *L)
 {

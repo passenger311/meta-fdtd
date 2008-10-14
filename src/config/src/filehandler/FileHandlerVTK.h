@@ -6,13 +6,11 @@
 class FileHandlerVTK : public FileHandler
 {
 public:
-	FileHandlerVTK();
-	virtual ~FileHandlerVTK();
-
-	virtual void writeFileHeader();
-
-	virtual void writeGridZDataSlice(int z);
-//	virtual void writeGridDataSlice(double* grid);
+  FileHandlerVTK();
+  FileHandlerVTK(const char* fname);
+  virtual ~FileHandlerVTK();
+  virtual void writeFileHeader(Grid* gbGrid);
+  virtual void writeGridZDataSlice(Grid* gbGrid, int z);
 };
 
 #endif /*FILEHANDLERVTK_H_*/

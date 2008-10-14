@@ -2,8 +2,8 @@
 #define _GEO_FILE_
 /* ----------------------------------------------------------------------- */
 
-#include "../File.h"
-#include "../Scene.h"
+#include "../filehandler/FileHandlerVTK.h"
+#include "../filehandler/FileHandlerFortranIN.h"
 
 void File_createmeta(lua_State *L);
 

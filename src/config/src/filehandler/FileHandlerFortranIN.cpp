@@ -4,11 +4,15 @@ FileHandlerFortranIN::FileHandlerFortranIN()
 {
 }
 
+FileHandlerFortranIN::FileHandlerFortranIN(const char* fname) : FileHandler(fname)
+{
+}
+
 FileHandlerFortranIN::~FileHandlerFortranIN()
 {
 }
 
-void FileHandlerFortranIN::writeFileHeader()
+void FileHandlerFortranIN::writeFileHeader(Grid* gbGrid)
 {
 	double dimX = gbGrid->frBBox.position_end[VX]-gbGrid->frBBox.position_start[VX], 
 		dimY = gbGrid->frBBox.position_end[VY]-gbGrid->frBBox.position_start[VY], 
@@ -23,6 +27,9 @@ void FileHandlerFortranIN::writeFileHeader()
 	if (gbGrid->iCellsZ <= 1)
 		dDZ = dimZ;
 	int iPointCount = gbGrid->iCellsX * gbGrid->iCellsY * gbGrid->iCellsZ;
+
+	m_fsFileStream.open(sFile.c_str());
+
 	m_fsFileStream << " ! (SET-) FIELD DATA FILE" << endl;
 	m_fsFileStream << " ! META: xxx" << endl;
 	m_fsFileStream << " ! ISBOX: xxx" << endl;
@@ -47,11 +54,11 @@ void FileHandlerFortranIN::writeFileHeader()
 //	m_fsFileStream << "LOOKUP_TABLE default\n";
 }
 
-void FileHandlerFortranIN::writeGridZDataSlice(int z)
+void FileHandlerFortranIN::writeGridZDataSlice(Grid* gbGrid,int z)
 {
 	for (int y=0; y<gbGrid->iCellsY; y++) {
 		for (int x=0; x<gbGrid->iCellsX; x++) {
-			if (bYeeGrid)
+			if (gbGrid->bYeeGrid)
 				m_fsFileStream
 //						 << x << ':' << y << ':' << z << ' '
 						 << "  "
@@ -75,7 +82,7 @@ void FileHandlerFortranIN::writeGridZDataSlice(int z)
 	}
 }
 
-void FileHandlerFortranIN::writeFileFooter()
+void FileHandlerFortranIN::writeFileFooter(Grid* gbGrid)
 {
 	m_fsFileStream << ")SET" << endl;
 	m_fsFileStream.close();

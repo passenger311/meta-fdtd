@@ -2,31 +2,28 @@
 
 FileHandler::FileHandler()
 {
-	bYeeGrid = true;
+}
+
+FileHandler::FileHandler(const char* fname)
+{
+  sFile = fname;
 }
 
 FileHandler::~FileHandler()
 {
 }
 
-void FileHandler::openFile(string file)
+void FileHandler::writeFileHeader(Grid* gbGrid)
 {
-	if (file != "")
-			sFile = file;
-	m_fsFileStream.open(sFile.c_str());
+  m_fsFileStream.open(sFile.c_str());
 }
 
-void FileHandler::writeFileHeader()
-{
-
-}
-
-void FileHandler::writeGridZDataSlice(int z)
+void FileHandler::writeGridZDataSlice(Grid* gbGrid, int z)
 {
 
 }
 
-void FileHandler::writeFileFooter()
+void FileHandler::writeFileFooter(Grid* gbGrid)
 {
-	m_fsFileStream.close();
+  m_fsFileStream.close();
 }

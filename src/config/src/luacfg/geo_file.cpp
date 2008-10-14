@@ -31,18 +31,24 @@ void File_createmeta(lua_State *L)
 
 int FileVTK_create(lua_State *L)
 {
+  const char* name = luaL_checkstring(L, 1);
+  FileHandler** fileptr = (FileHandler**)lua_newuserdata(L, sizeof(void*));
+  (*fileptr) = new FileHandlerVTK(name);
   luageo_setmeta(L, LUAGEO_FILE);
   return 1;
 }
 
 int FileIN_create(lua_State *L)
 {
+  const char* name = luaL_checkstring(L, 1);
+  FileHandler** fileptr = (FileHandler**)lua_newuserdata(L, sizeof(void*));
+  (*fileptr) = new FileHandlerFortranIN(name);
   luageo_setmeta(L, LUAGEO_FILE);
   return 1;
 }
 
 int File_destroy(lua_State *L)
 {
-  File** fileptr = (File **)luaL_checkudata(L, 1, LUAGEO_FILE);
+  FileHandler** fileptr = (FileHandler **)luaL_checkudata(L, 1, LUAGEO_FILE);
   delete (*fileptr);
 }
