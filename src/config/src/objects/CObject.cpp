@@ -3,6 +3,8 @@
 CObject::CObject()
 {
 	name = "";
+	fWeight = 1.;
+	iDepth = 0;
 }
 
 CObject::~CObject()
