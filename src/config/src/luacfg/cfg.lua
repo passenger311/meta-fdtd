@@ -321,7 +321,9 @@ local function writeGEO(fh,GEO)
    GEO.file = "config_geo"..tostring(geonum)..".in";
    geo_fh = geo.FileIN(GEO.file);
    assert(GEO.scene and GEO.grid,"GEO{} must define <grid> and <scene>") 
+   print("processing "..GEO.file.." ... ")
    GEO.grid:write{geo_fh,GEO.scene}
+   print("DONE.\n")
    fh:write("      (LOAD\n")
    fh:write("\t",GEO.file,"\t! file to load\n")
    fh:write("      )LOAD\n")

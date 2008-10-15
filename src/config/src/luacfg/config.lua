@@ -19,8 +19,8 @@ cfg:GRID{
 --- CREATE SCENE #1
 
 scene1 = Scene()
-scene1:add{ Sphere{at={0,0,0},radius = 100.} }
-grid1 = Grid{from={-101,-101,0},to={101,101,0}}
+scene1:add{ Box{at={0,0,0}, size = {200,200,200} } }
+grid1 = Grid{from={-101,-101,0},to={101,101,0},cells={203,203,1}}
 
 --- FDTD Definition
 

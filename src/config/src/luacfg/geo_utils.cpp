@@ -112,7 +112,6 @@ int  geo_getpointlist2(lua_State *L, const char* name, vector<vec2>& points2) {
       double y = lua_tonumber(L,-1);
       lua_pop(L,1);
       vec2 point(x,y);
-      printf("point = (%f %f)\n",x,y);
       points2.push_back(point);
       lua_pop(L,1);
     }
