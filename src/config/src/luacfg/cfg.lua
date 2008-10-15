@@ -12,8 +12,9 @@
 ------------------------------------------------------------------------------
 
 
-local _G,print,pairs,ipairs,type,assert,setmetatable,table,string = 
-   _G,print,pairs,ipairs,type,assert,setmetatable,table,string
+local _G,print,pairs,ipairs,type,assert,setmetatable,table,string,io,tostring
+   = 
+   _G,print,pairs,ipairs,type,assert,setmetatable,table,string,io,tostring
 local geo = require "geo"
 
 module("cfg")
@@ -35,21 +36,6 @@ function Config()
    return setmetatable(tab,ConfigMethods)
 end
 
--- Reg Table
-
-function Reg(parms)
-   local reg = {}
-
-   return reg
-end
-
--- Out Table 
-
-function Out(parms)
-   local out = {}
-
-   return out
-end
 
 -- Grid Block definition
 
@@ -59,7 +45,7 @@ function ConfigMethods:Grid(parms)
    self.GRID.jrange = parms.jrange or { 0, 0 };
    self.GRID.krange = parms.krange or { 0, 0 };
    self.GRID.dim =  parms.dim or 1;
-   self.GRID.partition = parms.partition or { 1,1 };
+   self.GRID.partition = parms.partition or { 0,1 };
    self.GRID.ncyc = parms.ncyc or 100;
    self.GRID.dt = parms.ncyc or 0.9999;
 end
@@ -84,6 +70,9 @@ end
 function ConfigMethods:Bound(parms)
    self.BOUND = { block = "BOUND" }
    self.BOUND.config = parms.config or { 0,0,0,0,0,0 }
+   for i = 1,6 do 
+      if not self.BOUND.config[i] then self.BOUND.config[i] = 0 end 
+   end
    for i,v in ipairs(parms) do self.BOUND[i] = parms[i] end
 end
 
@@ -138,8 +127,10 @@ end
 
 function Out(parms) 
    local OUT = { block = "OUT" }
-   OUT.file = parms.file or { "VTK", "undef" }
-   OUT.type = parms.type or { "undef", "undef" }
+   OUT.file = parms.file or { "VTK", "?" }
+   OUT.type = parms.type or { "?", "N", ".T." }
+   OUT.type[2] = OUT.type[2] or "N"
+   OUT.type[3] = OUT.type[3] or ".T."
    OUT.time = parms.time or { 0,-1, 1 }  
    for i,v in ipairs(parms) do OUT[i] = parms[i] end
    return OUT
@@ -178,9 +169,148 @@ end
 ----------------- end of definitions; processing follows
 
 
-function ConfigMethods:write()
+local function writeGRID(fh,GRID)
+   assert(GRID and GRID.block == "GRID", "Expected Grid{}")
+   fh:write("(GRID\n");
+   fh:write("\t",GRID.dim,"\t! dim\n");
+   fh:write("\t",GRID.partition[1], " ", GRID.partition[2],"\t! partition (i of n)\n");
+   fh:write("\t",GRID.ncyc,"\t! ncyc (# of timesteps)\n");
+   fh:write("\t",GRID.dt,"\t! dt\n");
+   fh:write("\t",GRID.irange[1], " ", GRID.irange[2],"\t! irange = (ibeg,iend)\n");
+   fh:write("\t",GRID.jrange[1], " ", GRID.jrange[2],"\t! jrange = (jbeg,jend)\n");
+   fh:write("\t",GRID.krange[1], " ", GRID.krange[2],"\t! krange = (kbeg,kend)\n");
+   fh:write(")GRID\n\n");
+end
+
+local function writeREG(fh,REG)
+   assert(REG and REG.block == "REG", "Expected Reg{}")
+   if REG.on == false then return end  
+   fh:write("(REG\n")
+   
+   fh:write(")REG\n")
+end
+
+local function writeEPSILON(fh,EPSILON)
+   assert(EPSILON and EPSILON.block == "EPSILON", "Expected Epsilon{}")
+   if EPSILON.on == false then return end  
+   fh:write("(EPSILON\n")
+   assert(EPSILON[1] and EPSILON[1].block == "REG","Epsilon{} must define Reg{}")
+   writeREG(fh, EPSILON[1])
+   fh:write(")EPSILON\n")
+end
+
+local function writeOUT(fh,OUT)
+   assert(OUT and OUT.block == "OUT", "Expected Out{}")
+   assert(OUT[1] and OUT[1].block == "REG","Out{} must define Reg{}")
+   if OUT.on == false then return end  
+   fh:write("(OUT\n")
+   fh:write("\t",OUT.file[1]," ",OUT.file[2],"\t! file type and name\n"); 
+   fh:write("\t",OUT.type[1]," ",OUT.type[2]," ",OUT.type[3],"\t! file type and name\n"); 
+   fh:write("\t",OUT.time[1]," ",OUT.time[2]," ",OUT.time[3],"\t! time\n");
+   writeREG(fh, OUT[1])
+   fh:write(")OUT\n")
+end
+
+
+local function writeFDTD(fh,FDTD)
+   assert(FDTD and FDTD.block == "FDTD", "Expected Fdtd{}")
+   fh:write("(FDTD\n");
+   for _, sub in ipairs(FDTD) do 
+      if sub.block then
+	 if sub.block == "OUT" then 
+	    writeOUT(fh,sub);
+	 end
+	 if sub.block == "EPSILON" then
+	    writeEPSILON(fh,sub);
+	 end
+      end
+   end
+   fh:write(")FDTD\n\n");
+end
+
+local function writePML(fh,PML)
+   assert(PML and PML.block == "PML", "Expected Pml{}")
+   fh:write("(PML\n")
+   fh:write("\t",PML.cells,"\t! # of cells\n");
+   fh:write("\t",PML.pot,"\t! pot parameter\n");
+   fh:write("\t",PML.sigma,"\t! sigma parameter\n");
+   fh:write("\t",PML.kappa,"\t! kappa parameter\n");
+   fh:write(")PML\n")
+end
+
+local function writeBOUND(fh,BOUND)
+   assert(BOUND and BOUND.block == "BOUND", "Expected Bound{}")
+   fh:write("(BOUND\n")
+   fh:write("\t",BOUND.config[1]," ",BOUND.config[2]," ",BOUND.config[3],
+	    " ",BOUND.config[4]," ",BOUND.config[5]," ",BOUND.config[6],
+	    "\t! boundary config\n"); 
+   for i,v in ipairs(BOUND) do
+      if v.block == "PML" then writePML(fh,v) end
+   end
+   fh:write(")BOUND\n\n")
+end
+
+local function writeSRC(fh,SRC)
+   assert(SRC and SRC.block == "SRC", "Expected Src{}")
+   if SRC.on == false then return end  
+   local type = string.upper(SRC[1].block);
+   fh:write("(SRC"..type.."\n")
+
+
+   fh:write(")SRC"..type.."\n\n")
+end
+
+local writemat = {
+   DRUDE = function(fh,DRUDE)
+	      fh:write("\t", DRUDE.invlambdapl,"\t! invlambdapl [2 pi c]\n")
+	      fh:write("\t", DRUDE.gammapl,"\t! gammapl (damping) [1/dt]\n")
+	      fh:write("\t", DRUDE.order,"\t! order: 1 (J ode) or 2 (P ode)\n")
+	   end
+}
+
+local function writeMAT(fh,MAT)
+   assert(MAT and MAT.block == "MAT", "Expected Mat{}")
+   if MAT.on == false then return end  
+   assert( MAT[1] and MAT[2] and MAT[1].block and MAT[2].block, "Bad Mat{} structure") 
+   local type = string.upper(MAT[1].block)
+   fh:write("(MAT"..type.."\n")
+   assert(writemat[type], "Mat{} type "..type.." does not exist")
+   writemat[type](fh,MAT[1])
+   writeREG(fh, MAT[2])
+   for _, sub in ipairs(MAT) do 
+      if sub.block then
+	 if sub.block == "OUT" then 
+	    writeOUT(fh,sub);
+	 end
+      end
+   end  
+   fh:write(")MAT"..type.."\n\n");
+end
+
+local function writeDIAG(fh,DIAG)
+   assert(DIAG and DIAG.block == "DIAG", "Expected Diag{}")
+   if DIAG.on == false then return end  
+   local type = string.upper(DIAG[1].block);
+   fh:write("(DIAG"..type.."\n");
    
 
+   fh:write(")DIAG"..type.."\n\n");
+end
+
+
+
+function ConfigMethods:write()
+   local part = self.GRID.partition[1];
+   local fh = io.open("config."..tostring(part)..".in","w");
+   fh:write("! ------ begin: file generated by <luacfg>\n\n");
+   writeGRID(fh,self.GRID);
+   writeFDTD(fh,self.FDTD);
+   writeBOUND(fh,self.BOUND);
+   for _, src in ipairs(self.SRC) do writeSRC(fh,src) end
+   for _, mat in ipairs(self.MAT) do writeMAT(fh,mat) end
+   for _, diag in ipairs(self.DIAG) do writeDIAG(fh,diag) end
+   fh:close();
+   fh:write("! ------ end\n\n");
 end
 
 
