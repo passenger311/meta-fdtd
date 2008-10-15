@@ -39,7 +39,7 @@ end
 
 -- Grid Block definition
 
-function ConfigMethods:Grid(parms)
+function ConfigMethods:GRID(parms)
    self.GRID = { block="GRID" }
    self.GRID.irange = parms.irange or { 0, 0 };
    self.GRID.jrange = parms.jrange or { 0, 0 };
@@ -52,14 +52,14 @@ end
 
 -- Fdtd Block definition
 
-function ConfigMethods:Fdtd(parms)
+function ConfigMethods:FDTD(parms)
    self.FDTD = { block="FDTD" }
    for i,v in ipairs(parms) do self.FDTD[i] = parms[i] end
 end
 
 -- Epsilon Sub-Block definition
 
-function Epsilon(parms)
+function EPSILON(parms)
    local EPSILON = { block="EPSILON" }
    for i,v in ipairs(parms) do EPSILON[i] = parms[i] end 
    return EPSILON
@@ -67,7 +67,7 @@ end
 
 -- Bound Block definition
 
-function ConfigMethods:Bound(parms)
+function ConfigMethods:BOUND(parms)
    self.BOUND = { block = "BOUND" }
    self.BOUND.config = parms.config or { 0,0,0,0,0,0 }
    for i = 1,6 do 
@@ -78,7 +78,7 @@ end
 
 -- Pml Sub-Block definition
 
-function Pml(parms)
+function PML(parms)
    local PML = { block = "PML" }
    PML.cells = parms.cells or 11
    PML.pot = parms.pot or 3.2
@@ -90,7 +90,7 @@ end
 
 -- Reg Sub-Block definition
 
-function Reg(parms) 
+function REG(parms) 
    local REG = { block = "REG" }
    REG.mask = parms.mask
    REG.list = parms.list
@@ -101,7 +101,7 @@ end
 
 -- Load Sub-Block definition
 
-function Load(parms) 
+function LOAD(parms) 
    local LOAD = { block = "LOAD" }
    for i,v in ipairs(parms) do LOAD[i] = parms[i] end
    return LOAD
@@ -109,7 +109,7 @@ end
 
 -- Geo Sub-Block definition
 
-function Geo(parms) 
+function GEO(parms) 
    local GEO = { block = "GEO" }
    GEO.scene = parms.scene
    GEO.grid = parms.grid
@@ -119,7 +119,7 @@ end
 
 -- Point Sub-Block definition
 
-function Point(parms) 
+function POINT(parms) 
    local POINT = { block = "POINT" }
    for i,v in ipairs(parms) do POINT[i] = parms[i] end
    return POINT
@@ -127,7 +127,7 @@ end
 
 -- Box Sub-Block definition
 
-function Box(parms) 
+function BOX(parms) 
    local BOX = { block = "BOX" }
    for i,v in ipairs(parms) do BOX[i] = parms[i] end
    return BOX
@@ -135,7 +135,7 @@ end
 
 -- Out Sub-Block definition
 
-function Out(parms) 
+function OUT(parms) 
    local OUT = { block = "OUT" }
    OUT.file = parms.file or { "VTK", "?" }
    OUT.type = parms.type or { "?", "N", ".T." }
@@ -148,7 +148,7 @@ end
 
 -- Mat Block definition
 
-function ConfigMethods:Mat(parms)
+function ConfigMethods:MAT(parms)
    local MAT = { block = "MAT" }
    for i,v in ipairs(parms) do MAT[i] = parms[i] end
    table.insert(self.MAT, MAT)   
@@ -156,7 +156,7 @@ end
 
 -- Drude Sub-Block definition
 
-function Drude(parms) 
+function DRUDE(parms) 
    local DRUDE = { block = "DRUDE" }
    DRUDE.invlambdapl = parms.invlambdapl
    DRUDE.gammapl = parms.gammapl or 0
@@ -167,7 +167,7 @@ end
 
 -- Src Block definition
 
-function ConfigMethods:Src(parms)
+function ConfigMethods:SRC(parms)
    local SRC = { block = "SRC" }
    for i,v in ipairs(parms) do SRC[i] = parms[i] end
    table.insert(self.SRC, SRC)   
@@ -182,20 +182,20 @@ end
 local function writeGRID(fh,GRID)
    assert(GRID and GRID.block == "GRID", "Expected Grid{}")
    fh:write("(GRID\n");
-   fh:write("\t",GRID.dim,"\t! dim\n");
-   fh:write("\t",GRID.partition[1], " ", GRID.partition[2],"\t! partition (i of n)\n");
-   fh:write("\t",GRID.ncyc,"\t! ncyc (# of timesteps)\n");
-   fh:write("\t",GRID.dt,"\t! dt\n");
-   fh:write("\t",GRID.irange[1], " ", GRID.irange[2],"\t! irange = (ibeg,iend)\n");
-   fh:write("\t",GRID.jrange[1], " ", GRID.jrange[2],"\t! jrange = (jbeg,jend)\n");
-   fh:write("\t",GRID.krange[1], " ", GRID.krange[2],"\t! krange = (kbeg,kend)\n");
+   fh:write("  ",GRID.dim," \t! dim\n");
+   fh:write("  ",GRID.partition[1], " ", GRID.partition[2]," \t! partition (i of n)\n");
+   fh:write("  ",GRID.ncyc," \t! ncyc (# of timesteps)\n");
+   fh:write("  ",GRID.dt," \t! dt\n");
+   fh:write("  ",GRID.irange[1], " ", GRID.irange[2]," \t! irange = (ibeg,iend)\n");
+   fh:write("  ",GRID.jrange[1], " ", GRID.jrange[2]," \t! jrange = (jbeg,jend)\n");
+   fh:write("  ",GRID.krange[1], " ", GRID.krange[2]," \t! krange = (kbeg,kend)\n");
    fh:write(")GRID\n\n");
 end
 
 local function writeBOX(fh,BOX)
    assert(BOX and BOX.block == "BOX", "Expected Box{}")
    if BOX.on == false then return end  
-   fh:write("(BOX\n")
+   fh:write("      (BOX\n")
    for b=1, #BOX, 2 do
       fh:write("\t")
       coord = BOX[b]
@@ -204,19 +204,20 @@ local function writeBOX(fh,BOX)
 	 fh:write(coord[i]," ");
       end
       if fillf and #fillf > 0 then
-	 fh:write(":");
+	 fh:write(": ");
 	 for i=1,#fillf do
 	    fh:write(fillf[i]," ");
 	 end
       end
+      fh:write("\n");
    end
-   fh:write(")BOX\n")
+   fh:write("      )BOX\n")
 end
 
 local function writePOINT(fh,POINT)
    assert(POINT and POINT.block == "POINT", "Expected Point{}")
    if POINT.on == false then return end  
-   fh:write("(POINT\n")
+   fh:write("      (POINT\n")
    for p=1, #POINT, 2 do
       fh:write("\t")
       coord = POINT[p]
@@ -225,58 +226,59 @@ local function writePOINT(fh,POINT)
 	 fh:write(coord[i]," ");
       end
       if fillf and #fillf > 0 then
-	 fh:write(":");
+	 fh:write(": ");
 	 for i=1,#fillf do
 	    fh:write(fillf[i]," ");
 	 end
       end
+      fh:write("\n");
    end
-   fh:write(")POINT\n")
+   fh:write("      )POINT\n")
 end
 
 local function writeLOAD(fh,LOAD)
    assert(LOAD and LOAD.block == "LOAD", "Expected Load{}")
    if LOAD.on == false then return end  
-   fh:write("(LOAD\n")
+   fh:write("      (LOAD\n")
    fh:write("\t",LOAD.file,"\t! file to load\n")
-   fh:write(")LOAD\n")
+   fh:write("      )LOAD\n")
 end
 
 local function writeREG(fh,REG)
    assert(REG and REG.block == "REG", "Expected Reg{}")
    if REG.on == false then return end  
-   fh:write("(REG\n")
+   fh:write("    (REG\n")
    for i,v in ipairs(REG) do
       if v.block == "BOX" then writeBOX(fh,v) end
       if v.block == "POINT" then writePOINT(fh,v) end
       if v.block == "LOAD" then writeLOAD(fh,v) end
       if v.block == "GEO" then writeGEO(fh,v) end
    end
-   if REG.auto then fh:write("\tAUTO\t! auto loop mode\n") end
-   if REG.mask then fh:write("\tMASK\t! mask loop mode\n") end
-   if REG.list then fh:write("\tLIST\t! list loop mode\n") end
-   fh:write(")REG\n")
+   if REG.auto then fh:write("      AUTO\t! auto loop mode\n") end
+   if REG.mask then fh:write("      MASK\t! mask loop mode\n") end
+   if REG.list then fh:write("      LIST\t! list loop mode\n") end
+   fh:write("    )REG\n")
 end
 
 local function writeEPSILON(fh,EPSILON)
    assert(EPSILON and EPSILON.block == "EPSILON", "Expected Epsilon{}")
    if EPSILON.on == false then return end  
-   fh:write("(EPSILON\n")
+   fh:write("  (EPSILON\n")
    assert(EPSILON[1] and EPSILON[1].block == "REG","Epsilon{} must define Reg{}")
    writeREG(fh, EPSILON[1])
-   fh:write(")EPSILON\n")
+   fh:write("  )EPSILON\n")
 end
 
 local function writeOUT(fh,OUT)
    assert(OUT and OUT.block == "OUT", "Expected Out{}")
    assert(OUT[1] and OUT[1].block == "REG","Out{} must define Reg{}")
    if OUT.on == false then return end  
-   fh:write("(OUT\n")
-   fh:write("\t",OUT.file[1]," ",OUT.file[2],"\t! file type and name\n"); 
-   fh:write("\t",OUT.type[1]," ",OUT.type[2]," ",OUT.type[3],"\t! file type and name\n"); 
-   fh:write("\t",OUT.time[1]," ",OUT.time[2]," ",OUT.time[3],"\t! time\n");
+   fh:write("  (OUT\n")
+   fh:write("    ",OUT.file[1]," ",OUT.file[2],"\t! file type and name\n"); 
+   fh:write("    ",OUT.type[1]," ",OUT.type[2]," ",OUT.type[3],"\t! file type and name\n"); 
+   fh:write("    ",OUT.time[1]," ",OUT.time[2]," ",OUT.time[3],"\t! time\n");
    writeREG(fh, OUT[1])
-   fh:write(")OUT\n")
+   fh:write("  )OUT\n")
 end
 
 
@@ -298,18 +300,18 @@ end
 
 local function writePML(fh,PML)
    assert(PML and PML.block == "PML", "Expected Pml{}")
-   fh:write("(PML\n")
-   fh:write("\t",PML.cells,"\t! # of cells\n");
-   fh:write("\t",PML.pot,"\t! pot parameter\n");
-   fh:write("\t",PML.sigma,"\t! sigma parameter\n");
-   fh:write("\t",PML.kappa,"\t! kappa parameter\n");
-   fh:write(")PML\n")
+   fh:write("  (PML\n")
+   fh:write("    ",PML.cells,"\t! # of cells\n");
+   fh:write("    ",PML.pot,"\t! pot parameter\n");
+   fh:write("    ",PML.sigma,"\t! sigma parameter\n");
+   fh:write("    ",PML.kappa,"\t! kappa parameter\n");
+   fh:write("  )PML\n")
 end
 
 local function writeBOUND(fh,BOUND)
    assert(BOUND and BOUND.block == "BOUND", "Expected Bound{}")
    fh:write("(BOUND\n")
-   fh:write("\t",BOUND.config[1]," ",BOUND.config[2]," ",BOUND.config[3],
+   fh:write("  ",BOUND.config[1]," ",BOUND.config[2]," ",BOUND.config[3],
 	    " ",BOUND.config[4]," ",BOUND.config[5]," ",BOUND.config[6],
 	    "\t! boundary config\n"); 
    for i,v in ipairs(BOUND) do
@@ -330,9 +332,9 @@ end
 
 local writemat = {
    DRUDE = function(fh,DRUDE)
-	      fh:write("\t", DRUDE.invlambdapl,"\t! invlambdapl [2 pi c]\n")
-	      fh:write("\t", DRUDE.gammapl,"\t! gammapl (damping) [1/dt]\n")
-	      fh:write("\t", DRUDE.order,"\t! order: 1 (J ode) or 2 (P ode)\n")
+	      fh:write("  ", DRUDE.invlambdapl,"\t! invlambdapl [2 pi c]\n")
+	      fh:write("  ", DRUDE.gammapl,"\t! gammapl (damping) [1/dt]\n")
+	      fh:write("  ", DRUDE.order,"\t! order: 1 (J ode) or 2 (P ode)\n")
 	   end
 }
 
@@ -367,18 +369,18 @@ end
 
 
 
-function ConfigMethods:write()
+function ConfigMethods:CREATE()
    local part = self.GRID.partition[1];
    local fh = io.open("config."..tostring(part)..".in","w");
-   fh:write("! ------ begin: file generated by <luacfg>\n\n");
+   fh:write("\n! ------ begin: file generated by <luacfg>\n\n");
    writeGRID(fh,self.GRID);
    writeFDTD(fh,self.FDTD);
    writeBOUND(fh,self.BOUND);
    for _, src in ipairs(self.SRC) do writeSRC(fh,src) end
    for _, mat in ipairs(self.MAT) do writeMAT(fh,mat) end
    for _, diag in ipairs(self.DIAG) do writeDIAG(fh,diag) end
-   fh:close();
    fh:write("! ------ end\n\n");
+   fh:close();
 end
 
 
