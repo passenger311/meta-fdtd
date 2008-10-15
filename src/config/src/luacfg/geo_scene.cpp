@@ -49,8 +49,15 @@ int Scene_destroy(lua_State *L)
 int Scene_add_object(lua_State *L)
 {
   Scene** sceneptr = (Scene **)luaL_checkudata(L, 1, LUAGEO_SCENE);
-  geo_obj* objptr = (geo_obj*)luaL_checkudata(L, 2, LUAGEO_OBJECT);
-  luaL_argcheck(L, sceneptr != NULL, 1, LUAGEO_PREFIX"scene expected");
-  (*sceneptr)->objects.push_back(objptr->object->clone());
+  luaL_checktype(L, 2, LUA_TTABLE);
+  lua_pushnumber(L,1);
+  lua_gettable(L,-2);
+  geo_obj* objptr = (geo_obj*)luaL_checkudata(L, -1, LUAGEO_OBJECT);
+  lua_pop(L,1);
+  CObject* cobj = objptr->object->clone();
+  (*sceneptr)->objects.push_back(cobj);
+  double depth = 0;
+  geo_getdouble(L, "depth", &depth );
+  cobj->dDepth = depth;
   return 1;
 }

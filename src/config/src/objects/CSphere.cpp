@@ -5,6 +5,9 @@
 CSphere::CSphere(vec3& pos, double radius) {
   vPosition = pos;
   dRadius = radius;
+#ifdef DEBUG
+  printf("Sphere: at = %f %f %f radius = %f\n",vPosition[0],vPosition[1],vPosition[2],dRadius);
+#endif
 }
 
 CObject* CSphere::clone()

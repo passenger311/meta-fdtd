@@ -35,9 +35,10 @@ typedef struct geo_obj_s {
 
 int geo_getvec3(lua_State *L, const char* name, double val[3]);
 int geo_getdouble(lua_State *L, const char* name, double* val);
+int geo_getbool(lua_State *L, const char* name, bool* val);
 int geo_getunary(lua_State *L, CObject** obj);
 int geo_getbinary(lua_State *L, CObject** obj1, CObject** obj2);
 int geo_getcollection(lua_State *L, vector<CObject*>& vec);
-int  geo_getpointlist2(lua_State *L, const char* name, vector<vec2>& points2);
+int geo_getpointlist2(lua_State *L, const char* name, vector<vec2>& points2);
 
 #endif

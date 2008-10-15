@@ -5,7 +5,7 @@
 int geo_getvec3(lua_State *L, const char* name, double val[3]) {
   int ok = 0;
   int i;
-  lua_getfield(L, 1, name);
+  lua_getfield(L, -1, name);
   if ( lua_istable(L,-1) ) { 
     ok = 1;
     for(i=0; i<3; i++) {
@@ -23,7 +23,7 @@ int geo_getvec3(lua_State *L, const char* name, double val[3]) {
 /* --- Get a double from a table */
 int geo_getdouble(lua_State *L, const char* name, double* val) {
   int ok = 0;
-  lua_getfield(L, 1, name);
+  lua_getfield(L, -1, name);
   if ( lua_isnumber(L,-1) ) { 
     ok = 1;
     *val = lua_tonumber(L,-1);
@@ -31,6 +31,20 @@ int geo_getdouble(lua_State *L, const char* name, double* val) {
   lua_pop(L,1); /* pop field */
   return ok;
 }
+
+/* --- Get a double from a table */
+int geo_getbool(lua_State *L, const char* name, bool* val) {
+  int ok = 0;
+  lua_getfield(L, -1, name);
+  if ( lua_isboolean(L,-1) ) { 
+    ok = 1;
+    *val = lua_toboolean(L,-1) == 1 ? true : false;
+  }
+  lua_pop(L,1); /* pop field */
+  return ok;
+}
+
+
 
 /* --- Get single object from table */
 int geo_getunary(lua_State *L, CObject** obj) {

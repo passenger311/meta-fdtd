@@ -90,7 +90,7 @@ int CBox_create(lua_State *L) {
   double size[3] = {1.,1.,1.};
   if ( lua_istable(L,1) ) {
     geo_getvec3(L, "at", pos);
-    geo_getvec3(L, "size", size );
+    geo_getvec3(L, "size", size);
   }  
   vec3 p(pos[0],pos[1],pos[2]);
   vec3 s(size[0],size[1],size[2]);

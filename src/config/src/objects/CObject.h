@@ -1,6 +1,8 @@
 #ifndef COBJECT_H_
 #define COBJECT_H_
 
+#define DEBUG
+
 #include "algebra3extension.h"
 #include <string>
 
@@ -19,7 +21,7 @@ public:
 	string name;
 	// [AH] --->
 	double fWeight;
-	int iDepth;
+	double dDepth;
 	// <---
 
 	virtual void preProcess();
@@ -36,7 +38,7 @@ struct PredicateCObjectDepth
 {
      bool operator()(CObject* const& one, CObject* const& two )
      {
-          return one->iDepth < two->iDepth;
+          return one->dDepth < two->dDepth;
      }
 };
 
