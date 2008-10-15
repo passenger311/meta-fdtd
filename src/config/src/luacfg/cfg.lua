@@ -108,7 +108,7 @@ function LOAD(parms)
    return LOAD
 end
 
--- GEO Sub-Block definition
+-- (NEW!) GEO Sub-Block definition
 
 function GEO(parms) 
    local GEO = { block = "GEO" }
@@ -240,7 +240,7 @@ end
 -- GRID Config-Block write
 
 local function writeGRID(fh,GRID)
-   assert(GRID and GRID.block == "GRID", "Expected Grid{}")
+   assert(GRID and GRID.block == "GRID", "Expected GRID{}")
    fh:write("(GRID\n");
    fh:write("  ",GRID.dim," \t! dim\n");
    fh:write("  ",GRID.partition[1], " ", GRID.partition[2]," \t! partition (i of n)\n");
@@ -255,7 +255,7 @@ end
 -- BOX Sub-Block write
 
 local function writeBOX(fh,BOX)
-   assert(BOX and BOX.block == "BOX", "Expected Box{}")
+   assert(BOX and BOX.block == "BOX", "Expected BOX{}")
    if BOX.on == false then return end  
    fh:write("      (BOX\n")
    for b=1, #BOX, 2 do
@@ -279,7 +279,7 @@ end
 -- POINT Sub-Block write
 
 local function writePOINT(fh,POINT)
-   assert(POINT and POINT.block == "POINT", "Expected Point{}")
+   assert(POINT and POINT.block == "POINT", "Expected POINT{}")
    if POINT.on == false then return end  
    fh:write("      (POINT\n")
    for p=1, #POINT, 2 do
@@ -303,17 +303,34 @@ end
 -- LOAD Sub-Block write
 
 local function writeLOAD(fh,LOAD)
-   assert(LOAD and LOAD.block == "LOAD", "Expected Load{}")
+   assert(LOAD and LOAD.block == "LOAD", "Expected LOAD{}")
    if LOAD.on == false then return end  
    fh:write("      (LOAD\n")
    fh:write("\t",LOAD.file,"\t! file to load\n")
    fh:write("      )LOAD\n")
 end
 
+-- GEO Sub-Block write
+
+local geonum = 0
+
+local function writeGEO(fh,GEO)
+   assert(GEO and GEO.block == "GEO", "Expected GEO{}")
+   if GEO.on == false then return end  
+   geonum = geonum + 1
+   GEO.file = "config_geo"..tostring(geonum)..".in";
+   geo_fh = geo.FileIN(GEO.file);
+   assert(GEO.scene and GEO.grid,"GEO{} must define <grid> and <scene>") 
+   GEO.grid:write{geo_fh,GEO.scene}
+   fh:write("      (LOAD\n")
+   fh:write("\t",GEO.file,"\t! file to load\n")
+   fh:write("      )LOAD\n")
+end
+
 -- REG Sub-Block write
 
 local function writeREG(fh,REG)
-   assert(REG and REG.block == "REG", "Expected Reg{}")
+   assert(REG and REG.block == "REG", "Expected REG{}")
    if REG.on == false then return end  
    fh:write("    (REG\n")
    for i,v in ipairs(REG) do
@@ -331,10 +348,10 @@ end
 -- EPSILON Sub-Block write
 
 local function writeEPSILON(fh,EPSILON)
-   assert(EPSILON and EPSILON.block == "EPSILON", "Expected Epsilon{}")
+   assert(EPSILON and EPSILON.block == "EPSILON", "Expected EPSILON{}")
    if EPSILON.on == false then return end  
    fh:write("  (EPSILON\n")
-   assert(EPSILON[1] and EPSILON[1].block == "REG","Epsilon{} must define Reg{}")
+   assert(EPSILON[1] and EPSILON[1].block == "REG","EPSILON{} must define REG{}")
    writeREG(fh, EPSILON[1])
    fh:write("  )EPSILON\n")
 end
@@ -342,8 +359,8 @@ end
 -- OUT Sub-Block write
 
 local function writeOUT(fh,OUT)
-   assert(OUT and OUT.block == "OUT", "Expected Out{}")
-   assert(OUT[1] and OUT[1].block == "REG","Out{} must define Reg{}")
+   assert(OUT and OUT.block == "OUT", "Expected OUT{}")
+   assert(OUT[1] and OUT[1].block == "REG","OUT{} must define REG{}")
    if OUT.on == false then return end  
    fh:write("  (OUT\n")
    fh:write("    ",OUT.file[1]," ",OUT.file[2],"\t! file type and name\n"); 
@@ -356,7 +373,7 @@ end
 -- FDTD Config-Block write
 
 local function writeFDTD(fh,FDTD)
-   assert(FDTD and FDTD.block == "FDTD", "Expected Fdtd{}")
+   assert(FDTD and FDTD.block == "FDTD", "Expected FDTD{}")
    fh:write("(FDTD\n");
    for _, sub in ipairs(FDTD) do 
       if sub.block then
@@ -374,7 +391,7 @@ end
 -- PML Sub-Block write
 
 local function writePML(fh,PML)
-   assert(PML and PML.block == "PML", "Expected Pml{}")
+   assert(PML and PML.block == "PML", "Expected PML{}")
    fh:write("  (PML\n")
    fh:write("    ",PML.cells,"\t! # of cells\n");
    fh:write("    ",PML.pot,"\t! pot parameter\n");
@@ -386,7 +403,7 @@ end
 -- BOUND Config-Block write
 
 local function writeBOUND(fh,BOUND)
-   assert(BOUND and BOUND.block == "BOUND", "Expected Bound{}")
+   assert(BOUND and BOUND.block == "BOUND", "Expected BOUND{}")
    fh:write("(BOUND\n")
    fh:write("  ",BOUND.config[1]," ",BOUND.config[2]," ",BOUND.config[3],
 	    " ",BOUND.config[4]," ",BOUND.config[5]," ",BOUND.config[6],
@@ -397,19 +414,35 @@ local function writeBOUND(fh,BOUND)
    fh:write(")BOUND\n\n")
 end
 
+-- (VARIOUS) SRC Sub-Block write
+
+local writesrc = {
+
+}
+
+
 -- SRC Config-Block write
 
 local function writeSRC(fh,SRC)
-   assert(SRC and SRC.block == "SRC", "Expected Src{}")
+   assert(SRC and SRC.block == "SRC", "Expected SRC{}")
    if SRC.on == false then return end  
-   local type = string.upper(SRC[1].block);
+   assert( SRC[1] and SRC[2] and SRC[1].block and SRC[2].block, "Bad SRC{} structure") 
+   local type = string.upper(SRC[1].block)
    fh:write("(SRC"..type.."\n")
-
-
-   fh:write(")SRC"..type.."\n\n")
+   assert(writesrc[type], "SRC{} type "..type.." does not exist")
+   writesrc[type](fh,SRC[1])
+   writeREG(fh, SRC[2])
+   for _, sub in ipairs(SRC) do 
+      if sub.block then
+	 if sub.block == "OUT" then 
+	    writeOUT(fh,sub);
+	 end
+      end
+   end  
+   fh:write(")SRC"..type.."\n\n");
 end
 
--- (VARIOUS)MAT Sub-Block write
+-- (VARIOUS) MAT Sub-Block write
 
 local writemat = {
    DRUDE = function(fh,DRUDE)
@@ -452,12 +485,12 @@ local writemat = {
 -- MAT Config-Block write
 
 local function writeMAT(fh,MAT)
-   assert(MAT and MAT.block == "MAT", "Expected Mat{}")
+   assert(MAT and MAT.block == "MAT", "Expected MAT{}")
    if MAT.on == false then return end  
-   assert( MAT[1] and MAT[2] and MAT[1].block and MAT[2].block, "Bad Mat{} structure") 
+   assert( MAT[1] and MAT[2] and MAT[1].block and MAT[2].block, "Bad MAT{} structure") 
    local type = string.upper(MAT[1].block)
    fh:write("(MAT"..type.."\n")
-   assert(writemat[type], "Mat{} type "..type.." does not exist")
+   assert(writemat[type], "MAT{} type "..type.." does not exist")
    writemat[type](fh,MAT[1])
    writeREG(fh, MAT[2])
    for _, sub in ipairs(MAT) do 
@@ -470,15 +503,31 @@ local function writeMAT(fh,MAT)
    fh:write(")MAT"..type.."\n\n");
 end
 
+-- (VARIOUS) DIAG Sub-Block write
+
+local writediag = {
+
+}
+
+
 -- DIAG  Config-Block write
 
 local function writeDIAG(fh,DIAG)
-   assert(DIAG and DIAG.block == "DIAG", "Expected Diag{}")
+   assert(DIAG and DIAG.block == "DIAG", "Expected DIAG{}")
    if DIAG.on == false then return end  
-   local type = string.upper(DIAG[1].block);
-   fh:write("(DIAG"..type.."\n");
-   
-
+   assert( DIAG[1] and DIAG[2] and DIAG[1].block and DIAG[2].block, "Bad DIAG{} structure") 
+   local type = string.upper(DIAG[1].block)
+   fh:write("(DIAG"..type.."\n")
+   assert(writediag[type], "DIAG{} type "..type.." does not exist")
+   writediag[type](fh,DIAG[1])
+   writeREG(fh, DIAG[2])
+   for _, sub in ipairs(DIAG) do 
+      if sub.block then
+	 if sub.block == "OUT" then 
+	    writeOUT(fh,sub);
+	 end
+      end
+   end  
    fh:write(")DIAG"..type.."\n\n");
 end
 
@@ -488,7 +537,7 @@ function ConfigMethods:CREATE()
    local part = self.GRID.partition[1];
    local filename = "config."..tostring(part)..".in"
    local fh = io.open(filename,"w");
-   fh:write("\n! ------ BEGIN [",filename,"] generated by <luacfg>\n\n");
+   fh:write("\n! ------ BEGIN [",filename,"] file generated by <luacfg>\n\n");
    writeGRID(fh,self.GRID);
    writeFDTD(fh,self.FDTD);
    writeBOUND(fh,self.BOUND);
@@ -507,3 +556,4 @@ end
 -- move things to global namespace
 
 for k,v in pairs(_M) do _G[k] = v end
+for k,v in pairs(geo) do _G[k] = v end
