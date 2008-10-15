@@ -107,6 +107,16 @@ function Load(parms)
    return LOAD
 end
 
+-- Geo Sub-Block definition
+
+function Geo(parms) 
+   local GEO = { block = "GEO" }
+   GEO.scene = parms.scene
+   GEO.grid = parms.grid
+   GEO.method = parms.method
+   return GEO
+end
+
 -- Point Sub-Block definition
 
 function Point(parms) 
@@ -182,11 +192,69 @@ local function writeGRID(fh,GRID)
    fh:write(")GRID\n\n");
 end
 
+local function writeBOX(fh,BOX)
+   assert(BOX and BOX.block == "BOX", "Expected Box{}")
+   if BOX.on == false then return end  
+   fh:write("(BOX\n")
+   for b=1, #BOX, 2 do
+      fh:write("\t")
+      coord = BOX[b]
+      fillf = BOX[b+1]
+      for i=1,#coord do
+	 fh:write(coord[i]," ");
+      end
+      if fillf and #fillf > 0 then
+	 fh:write(":");
+	 for i=1,#fillf do
+	    fh:write(fillf[i]," ");
+	 end
+      end
+   end
+   fh:write(")BOX\n")
+end
+
+local function writePOINT(fh,POINT)
+   assert(POINT and POINT.block == "POINT", "Expected Point{}")
+   if POINT.on == false then return end  
+   fh:write("(POINT\n")
+   for p=1, #POINT, 2 do
+      fh:write("\t")
+      coord = POINT[p]
+      fillf = POINT[p+1]
+      for i=1,#coord do
+	 fh:write(coord[i]," ");
+      end
+      if fillf and #fillf > 0 then
+	 fh:write(":");
+	 for i=1,#fillf do
+	    fh:write(fillf[i]," ");
+	 end
+      end
+   end
+   fh:write(")POINT\n")
+end
+
+local function writeLOAD(fh,LOAD)
+   assert(LOAD and LOAD.block == "LOAD", "Expected Load{}")
+   if LOAD.on == false then return end  
+   fh:write("(LOAD\n")
+   fh:write("\t",LOAD.file,"\t! file to load\n")
+   fh:write(")LOAD\n")
+end
+
 local function writeREG(fh,REG)
    assert(REG and REG.block == "REG", "Expected Reg{}")
    if REG.on == false then return end  
    fh:write("(REG\n")
-   
+   for i,v in ipairs(REG) do
+      if v.block == "BOX" then writeBOX(fh,v) end
+      if v.block == "POINT" then writePOINT(fh,v) end
+      if v.block == "LOAD" then writeLOAD(fh,v) end
+      if v.block == "GEO" then writeGEO(fh,v) end
+   end
+   if REG.auto then fh:write("\tAUTO\t! auto loop mode\n") end
+   if REG.mask then fh:write("\tMASK\t! mask loop mode\n") end
+   if REG.list then fh:write("\tLIST\t! list loop mode\n") end
    fh:write(")REG\n")
 end
 
