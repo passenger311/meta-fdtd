@@ -38,8 +38,11 @@ int Grid_write_output(lua_State *L)
   lua_gettable(L,-2);
   Scene** sceneptr = (Scene **)luaL_checkudata(L, -1, LUAGEO_SCENE);
   lua_pop(L,1);
-
-  (*gridptr)->generateOutput(*sceneptr,*fileptr);
+  char* method = "default";
+  geo_getstring(L, "method", &method );
+  bool silent = true;
+  geo_getbool(L, "silent", &silent );
+  (*gridptr)->generateOutput(*sceneptr,*fileptr,method,silent);
   return 1;
 }
 

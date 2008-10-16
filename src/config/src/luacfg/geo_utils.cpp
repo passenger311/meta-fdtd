@@ -23,6 +23,7 @@ int geo_getvec3(lua_State *L, const char* name, double val[3]) {
 /* --- Get a double from a table */
 int geo_getdouble(lua_State *L, const char* name, double* val) {
   int ok = 0;
+  luaL_checktype(L, -1, LUA_TTABLE);
   lua_getfield(L, -1, name);
   if ( lua_isnumber(L,-1) ) { 
     ok = 1;
@@ -32,9 +33,24 @@ int geo_getdouble(lua_State *L, const char* name, double* val) {
   return ok;
 }
 
-/* --- Get a double from a table */
+/* --- Get a string from a table */
+int geo_getstring(lua_State *L, const char* name, char** val) {
+  int ok = 0;
+  luaL_checktype(L, -1, LUA_TTABLE);
+  lua_getfield(L, -1, name);
+  if ( lua_isstring(L,-1) ) { 
+    ok = 1;
+    *val = (char*) lua_tostring(L,-1);
+  }
+  lua_pop(L,1); /* pop field */
+  return ok;
+}
+
+
+/* --- Get a bool from a table */
 int geo_getbool(lua_State *L, const char* name, bool* val) {
   int ok = 0;
+  luaL_checktype(L, -1, LUA_TTABLE);
   lua_getfield(L, -1, name);
   if ( lua_isboolean(L,-1) ) { 
     ok = 1;
@@ -48,6 +64,7 @@ int geo_getbool(lua_State *L, const char* name, bool* val) {
 
 /* --- Get single object from table */
 int geo_getunary(lua_State *L, CObject** obj) {
+  luaL_checktype(L, -1, LUA_TTABLE);
   lua_pushnumber(L,1);
   lua_gettable(L,-2);
   *obj = ((geo_obj*)luaL_checkudata(L, -1, LUAGEO_OBJECT))->object->clone();
@@ -57,6 +74,7 @@ int geo_getunary(lua_State *L, CObject** obj) {
 
 /* --- Get pair of objects from table */
 int geo_getbinary(lua_State *L, CObject** obj1, CObject** obj2) {
+  luaL_checktype(L, -1, LUA_TTABLE);
   lua_pushnumber(L,1);
   lua_gettable(L,-2);
   *obj1 = ((geo_obj*)luaL_checkudata(L, -1, LUAGEO_OBJECT))->object->clone();
@@ -82,6 +100,7 @@ int geo_getn(lua_State *L, int idx) {
 
 /* --- Get a list of objects from table */
 int geo_getcollection(lua_State *L, vector<CObject*>& vec) {
+  luaL_checktype(L, -1, LUA_TTABLE);
   int n = geo_getn(L,1);
   CObject* obj;
   for (int i = 1; i <= n; i++) {
@@ -95,6 +114,7 @@ int geo_getcollection(lua_State *L, vector<CObject*>& vec) {
 
 /* --- Read a list of 2d points from field */
 int  geo_getpointlist2(lua_State *L, const char* name, vector<vec2>& points2) {
+  luaL_checktype(L, -1, LUA_TTABLE);
   int ok = 0;
   int i;
   lua_getfield(L, 1, name);

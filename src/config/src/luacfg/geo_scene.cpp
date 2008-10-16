@@ -31,8 +31,12 @@ void Scene_createmeta(lua_State *L)
 
 int Scene_create(lua_State *L)
 {
+  double value = 0.;
+  luaL_checktype(L, -1, LUA_TTABLE);
+  geo_getdouble(L,"value",&value);
   Scene** sceneptr = (Scene **)lua_newuserdata(L, sizeof(Scene*));
   (*sceneptr) = new Scene();
+  (*sceneptr)->dValue = value;
   luageo_setmeta(L, LUAGEO_SCENE);
   return 1;
 }
@@ -56,8 +60,11 @@ int Scene_add_object(lua_State *L)
   lua_pop(L,1);
   CObject* cobj = objptr->object->clone();
   (*sceneptr)->objects.push_back(cobj);
-  double depth = 0;
+  double depth = 0.;
+  double value = 1.;
   geo_getdouble(L, "depth", &depth );
+  geo_getdouble(L,"value",&value);
+  cobj->dValue = value;
   cobj->dDepth = depth;
   return 1;
 }

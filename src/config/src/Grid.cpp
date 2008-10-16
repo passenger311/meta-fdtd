@@ -57,10 +57,9 @@ Grid::~Grid()
 {
 }
 
-void Grid::generateOutput(Scene* scnScene, FileHandler* fhd)
+void Grid::generateOutput(Scene* scnScene, FileHandler* fhd, const char* method, bool silent)
 {
-
-  bool bSilentMode = true;
+  bool bSilentMode = silent;
 
   fhd->writeFileHeader(this);
 	
@@ -137,9 +136,10 @@ void Grid::generateOutput(Scene* scnScene, FileHandler* fhd)
       (*scnobj)->preProcess();
     }
   // --> [AH]
-  // sort the objects according to depth
-  std::reverse(objects.begin(), objects.end()); // reverse it, so that later defined objects paint over previous defined ones
-  std::sort(objects.begin(), objects.end(), PredicateCObjectDepth()); // and sort according to depth
+  // reverse list, so that later defined objects paint over previous defined ones
+  std::reverse(objects.begin(), objects.end()); 
+  // ... and sort according to depth
+  std::sort(objects.begin(), objects.end(), PredicateCObjectDepth());
   // <-- [AH]
   vector<CObject*> currentobjects;
 
@@ -156,17 +156,22 @@ void Grid::generateOutput(Scene* scnScene, FileHandler* fhd)
     for (int iY = 0; iY < cellsY; iY++) {
       pfrm.moveX(-dDimX);
       for (int iX = 0; iX < cellsX; iX++) {
+
 	if (!bNoSubgridding) {
-	  double weight = 1.; // +[AH]
+
+	  // -------------------------
+
+	  double value = -1; // set bad value
 	  int insd = 0;
 	  for (vector<CObject*>::iterator scnobj = currentobjects.begin(); 
 	       scnobj != currentobjects.end(); scnobj++) {
 	    insd = MAX(insd, (*scnobj)->iLastInside = (*scnobj)->Inside(pfrm));
-	    weight = (*scnobj)->fWeight; // +[AH]
+	    value = (*scnobj)->dValue; // +[AH]
 	    if (insd == 2 && !bAlwaysSubgridding) break;
 	  }
+
 	  if (insd == 1 || bAlwaysSubgridding) {
-	    // Subgridding
+
 	    iSubGriddedCells++;	
 	    vec3 ptSub(pfrm.movingPoint);
 	    //ptSub += vec3(iX*dDX+dSubDX/2,(iY+1)*dDY+dSubDY/2,(iZ+1)*dDZ+dSubDZ/2);
@@ -182,41 +187,49 @@ void Grid::generateOutput(Scene* scnScene, FileHandler* fhd)
 		       scnobj != currentobjects.end(); scnobj++) {
 		    if ((*scnobj)->iLastInside > 0 && (*scnobj)->PointInside(ptSub)) {
 		      subinside = true;
-		      weight = (*scnobj)->fWeight; // +[AH]
+		      value = (*scnobj)->dValue;
 		      break;
 		    }
 		  }
-		  dGridVal += subinside ? dSubValSteps : 0;
+		  dGridVal += subinside ? value : scnScene->dValue ;
 		  ptSub[VZ] += dSubDZ; 
 		}
 		ptSub[VY] += dSubDY; 
 	      }
 	      ptSub[VX] += dSubDX; 
 	    }
-	    //m_dGridvalues[iGrid] = dGridVal; // -[AH]
-	    m_dGridvalues[iGrid] = dGridVal * weight; // +[AH]
+	    dGridVal *= dSubValSteps;
+	    m_dGridvalues[iGrid] = dGridVal;
 	    if (dGridVal  >= 0.99999999) iSubGriddedFilledCells++;	
 	    if (dGridVal == 0.0) iSubGriddedEmptyCells++;	
 	
 	  } else {
-	    // m_dGridvalues[iGrid] = (insd == 2) ? 1 : 0; // -[AH]
-	    m_dGridvalues[iGrid] = (insd == 2) ? 1 * weight : 0; // +[AH]
+
+	    m_dGridvalues[iGrid] = (insd == 2) ? value : scnScene->dValue;
+	    
 	  }
+
 	} else {
-	  m_dGridvalues[iGrid] = 0;
+
+	  // ---- no subgridding -----
+
+ 	  m_dGridvalues[iGrid] = scnScene->dValue; // background value
 	  for (vector<CObject*>::iterator scnobj = currentobjects.begin(); 
 	       scnobj != currentobjects.end(); scnobj++) {
 	    if ((*scnobj)->InsideFrame(pfrm.movingPoint) &&  
 		(*scnobj)->PointInside(pfrm.movingPoint)) {
-	      double weight = (*scnobj)->fWeight; // +[AH]
-	      //m_dGridvalues[iGrid] = 1; // -[AH]
-	      m_dGridvalues[iGrid] = 1*weight; //+[AH]
+	      m_dGridvalues[iGrid] = (*scnobj)->dValue; // overwrite background
 	      break;
 	    }
 	  }
+
+	  // -------------------------
+
 	}
+
+
 	// ---> [AH]
-	// FIX: the gridvalues can be > 1 if the weight is > 1.
+	// FIX: the gridvalues can be > 1 if the value is > 1.
 	if (m_dGridvalues[iGrid] >= 0.99999999 && m_dGridvalues[iGrid] <= 1.0000001 ) {
 	  m_dGridvalues[iGrid] = 1;
 	}

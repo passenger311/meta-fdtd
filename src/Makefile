@@ -10,7 +10,7 @@ ARCH=gcc
 endif
 include ./define.mk
 
-.PHONY: default clean proper distclean fftpack5 engine config geopre postps  build tests
+.PHONY: default clean distclean fftpack5 engine config geopre postps  build tests
 
 build: 
 	-@$(MAKE) -s proper
@@ -46,12 +46,12 @@ config postps:
 	@cd $@ && $(MAKE) -s MPI= info all install
 
 
-clean proper: 
+clean: 
 	@cd engine; $(MAKE) -s $@; cd ..
 	@cd config; $(MAKE) -s $@; cd ..
 	@cd postps; $(MAKE) -s $@; cd ..
 
-distclean: proper
+distclean: clean
 	@rm -rf build-* build
 
 # ---------------------------------------------------------------------

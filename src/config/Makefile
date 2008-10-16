@@ -19,7 +19,7 @@ include ../define.mk
 
 INSTALLFILES=\
 src/luacfg/luacfg\
-config.lua
+src/luacfg/config.lua
 
 default: all
 

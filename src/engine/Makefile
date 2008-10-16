@@ -15,7 +15,7 @@ include ../define.mk
 
 # ---------------------------------------------------------------------
 
-.PHONY: clean proper default install all info sign check 
+.PHONY: clean default install all info sign check 
 
 M4= m4 $(M4DEFINE)
 M4= m4 $(M4DEFINE)
@@ -174,9 +174,7 @@ $(ENGINE)/$(EXE) : $(TOP_OBJ) $(CORE_OBJ) $(THIRD_OBJ) $(BASIC_OBJ) second_wall.
 
 clean:
 	@rm -f  core* a.out *.L *.par *.log *.list *.diag *.txt *_m4.f90 *_m4.F90 *_m4.tmp BUILD VERSION FLAVOUR MANIFEST
-
-proper: clean
-	@cd engine-tests; $(MAKE) -s proper
+	@cd engine-tests; $(MAKE) -s clean
 	@rm -f $(PREEXE) *.o *~ *.gpl *.vtk *.set *.mod
 	@rm -f fftpack5/*.o fftpack5/*.a
 	@rm -rf meta1* meta2* meta3* 

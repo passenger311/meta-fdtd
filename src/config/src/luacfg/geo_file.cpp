@@ -31,7 +31,11 @@ void File_createmeta(lua_State *L)
 
 int FileVTK_create(lua_State *L)
 {
-  const char* name = luaL_checkstring(L, 1);
+  luaL_checktype(L, 1, LUA_TTABLE);
+  lua_pushnumber(L,1);
+  lua_gettable(L,-2);
+  const char* name = luaL_checkstring(L, -1);
+  lua_pop(L,1); 
   FileHandler** fileptr = (FileHandler**)lua_newuserdata(L, sizeof(void*));
   (*fileptr) = new FileHandlerVTK(name);
   luageo_setmeta(L, LUAGEO_FILE);
@@ -40,9 +44,15 @@ int FileVTK_create(lua_State *L)
 
 int FileIN_create(lua_State *L)
 {
-  const char* name = luaL_checkstring(L, 1);
+  luaL_checktype(L, 1, LUA_TTABLE);
+  lua_pushnumber(L,1);
+  lua_gettable(L,-2);
+  const char* name = luaL_checkstring(L, -1);
+  lua_pop(L,1);
+  double comps;
+  geo_getdouble(L, "comps", &comps );
   FileHandler** fileptr = (FileHandler**)lua_newuserdata(L, sizeof(void*));
-  (*fileptr) = new FileHandlerFortranIN(name);
+  (*fileptr) = new FileHandlerFortranIN(name,(int)(comps+0.5));
   luageo_setmeta(L, LUAGEO_FILE);
   return 1;
 }

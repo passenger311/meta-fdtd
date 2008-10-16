@@ -28,7 +28,7 @@
 
 (GRID
   2                     ! dimension (1,2 or 3)	
-  1                     ! partitions
+  0 1                   ! partition x of y
   9000        		! ncyc
   0.706             	! dt
   -200 200		! i range

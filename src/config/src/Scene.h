@@ -13,9 +13,10 @@ class Scene
 {
 public:
 	vector<CObject*> objects;
+	double dValue;
 
 public:
-	Scene() { }
+	Scene() { dValue = 0.; }
 	~Scene() { }
 };
 

@@ -32,12 +32,10 @@ info:
 tests: 
 	@./run-all ../$(ENGINE)
 
-.PHONY: clean proper
+.PHONY: clean
 
 clean:
 	@rm -f */*.gpl */log */log.err */*_sh
-
-proper: clean
 	@rm -f TESTED
 
 # ---------------------------------------------------------------------

@@ -12,9 +12,10 @@
 ------------------------------------------------------------------------------
 
 
-local _G,print,pairs,ipairs,type,assert,setmetatable,table,string,io,tostring
-   = 
-   _G,print,pairs,ipairs,type,assert,setmetatable,table,string,io,tostring
+local _G,print,pairs,ipairs,type,assert,setmetatable,table,string,io,tostring,
+   unpack = 
+   _G,print,pairs,ipairs,type,assert,setmetatable,table,string,io,tostring,
+   unpack
 local geo = require "geo"
 
 module("cfg")
@@ -29,33 +30,36 @@ ConfigMethods.__index = ConfigMethods
 -- BLOCK DEFINITIONS
 ---------------------------------------------------------------------------
 
-function CONFIG()
+local scenes = {}
+
+function CONFIG(parms)
    local tab = {}
    tab.mat = {} -- subtables
    tab.src = {}
    tab.diag = {}
+   if parms.scenes == nil then parms.scenes = true end
+   tab.scenes_on = parms.scenes
    return setmetatable(tab,ConfigMethods)
 end
-
 
 -- GRID Config-Block definition
 
 function ConfigMethods:GRID(parms)
-   self.GRID = { block="GRID" }
-   self.GRID.irange = parms.irange or { 0, 0 };
-   self.GRID.jrange = parms.jrange or { 0, 0 };
-   self.GRID.krange = parms.krange or { 0, 0 };
-   self.GRID.dim =  parms.dim or 1;
-   self.GRID.partition = parms.partition or { 0,1 };
-   self.GRID.ncyc = parms.ncyc or 100;
-   self.GRID.dt = parms.ncyc or 0.9999;
+   self.grid = { block="GRID" }
+   self.grid.irange = parms.irange or { 0, 0 };
+   self.grid.jrange = parms.jrange or { 0, 0 };
+   self.grid.krange = parms.krange or { 0, 0 };
+   self.grid.dim =  parms.dim or 1;
+   self.grid.partition = parms.partition or { 0,1 };
+   self.grid.ncyc = parms.ncyc or 100;
+   self.grid.dt = parms.ncyc or 0.9999;
 end
 
 -- FDTD Config-Block definition
 
 function ConfigMethods:FDTD(parms)
-   self.FDTD = { block="FDTD" }
-   for i,v in ipairs(parms) do self.FDTD[i] = parms[i] end
+   self.fdtd = { block="FDTD" }
+   for i,v in ipairs(parms) do self.fdtd[i] = parms[i] end
 end
 
 -- EPSILON Sub-Block definition
@@ -69,12 +73,12 @@ end
 -- BOUND Config-Block definition
 
 function ConfigMethods:BOUND(parms)
-   self.BOUND = { block = "BOUND" }
-   self.BOUND.config = parms.config or { 0,0,0,0,0,0 }
+   self.bound = { block = "BOUND" }
+   self.bound.config = parms.config or { 0,0,0,0,0,0 }
    for i = 1,6 do 
-      if not self.BOUND.config[i] then self.BOUND.config[i] = 0 end 
+      if not self.bound.config[i] then self.bound.config[i] = 0 end 
    end
-   for i,v in ipairs(parms) do self.BOUND[i] = parms[i] end
+   for i,v in ipairs(parms) do self.bound[i] = parms[i] end
 end
 
 -- PML Sub-Block definition
@@ -108,12 +112,29 @@ function LOAD(parms)
    return LOAD
 end
 
--- (NEW!) GEO Sub-Block definition
 
-function GEO(parms) 
-   local GEO = { block = "GEO" }
-   for k,v in pairs(parms) do GEO[k] = v end
-   return GEO
+-- (NEW!) LOAD_SCENE Sub-Block definition
+
+function LOAD_SCENE(parms) 
+   local LOAD_SCENE = { block = "LOAD_SCENE" }
+   for k,v in pairs(parms) do LOAD_SCENE[k] = v end
+   assert(scenes[parms[1]] ~=nil, "SCENE{} <name>="..parms[1].." does not exist!")
+   LOAD_SCENE.file = "scene_"..tostring(parms[1])..".in"
+   return LOAD_SCENE
+end
+
+-- (NEW!) CREATE_SCENE Sub-Block definition
+
+function ConfigMethods:CREATE_SCENE(parms) 
+   assert(scenes[parms[1]] == nil, "SCENE{} <name>="..parms[1].." is already in use!")
+   local file = "scene_"..tostring(parms[1])..".in"
+   scenes[parms[1]] = 1
+   if not self.scenes_on or parms.on == false then return end 
+   local geo_fh = geo.FileIN{file,comps=parms.comps};
+   assert(parms.scene and parms.grid,"CREATE_SCENE{} must define <grid> and <scene>")
+   print("processing "..file)
+   parms.grid:write{geo_fh, parms.scene, method=parms.method, silent=parms.silent}
+   print(" done.\n")
 end
 
 -- POINT Sub-Block definition
@@ -258,18 +279,10 @@ local function writeBOX(fh,BOX)
    assert(BOX and BOX.block == "BOX", "Expected BOX{}")
    if BOX.on == false then return end  
    fh:write("      (BOX\n")
-   for b=1, #BOX, 2 do
+   for _,box in ipairs(BOX) do
       fh:write("\t")
-      coord = BOX[b]
-      fillf = BOX[b+1]
-      for i=1,#coord do
-	 fh:write(coord[i]," ");
-      end
-      if fillf and #fillf > 0 then
-	 fh:write(": ");
-	 for i=1,#fillf do
-	    fh:write(fillf[i]," ");
-	 end
+      for _,val in ipairs(box) do
+	 fh:write(val," ")
       end
       fh:write("\n");
    end
@@ -282,18 +295,10 @@ local function writePOINT(fh,POINT)
    assert(POINT and POINT.block == "POINT", "Expected POINT{}")
    if POINT.on == false then return end  
    fh:write("      (POINT\n")
-   for p=1, #POINT, 2 do
+   for _,point in ipairs(POINT) do
       fh:write("\t")
-      coord = POINT[p]
-      fillf = POINT[p+1]
-      for i=1,#coord do
-	 fh:write(coord[i]," ");
-      end
-      if fillf and #fillf > 0 then
-	 fh:write(": ");
-	 for i=1,#fillf do
-	    fh:write(fillf[i]," ");
-	 end
+      for _,val in ipairs(point) do
+	 fh:write(val," ")
       end
       fh:write("\n");
    end
@@ -306,26 +311,17 @@ local function writeLOAD(fh,LOAD)
    assert(LOAD and LOAD.block == "LOAD", "Expected LOAD{}")
    if LOAD.on == false then return end  
    fh:write("      (LOAD\n")
-   fh:write("\t",LOAD.file,"\t! file to load\n")
+   fh:write("\t",LOAD[1],"\t! file to load\n")
    fh:write("      )LOAD\n")
 end
 
--- GEO Sub-Block write
+-- LOAD_SCENE Sub-Block write
 
-local geonum = 0
-
-local function writeGEO(fh,GEO)
-   assert(GEO and GEO.block == "GEO", "Expected GEO{}")
-   if GEO.on == false then return end  
-   geonum = geonum + 1
-   GEO.file = "config_geo"..tostring(geonum)..".in";
-   geo_fh = geo.FileIN(GEO.file);
-   assert(GEO.scene and GEO.grid,"GEO{} must define <grid> and <scene>") 
-   print("processing "..GEO.file.." ... ")
-   GEO.grid:write{geo_fh,GEO.scene}
-   print("DONE.\n")
+local function writeLOAD_SCENE(fh,LOAD_SCENE)
+   assert(LOAD_SCENE and LOAD_SCENE.block == "LOAD_SCENE", "Expected LOAD_SCENE{}")
+   if LOAD_SCENE.on == false then return end  
    fh:write("      (LOAD\n")
-   fh:write("\t",GEO.file,"\t! file to load\n")
+   fh:write("\t",LOAD_SCENE.file,"\t! scene file to load\n")
    fh:write("      )LOAD\n")
 end
 
@@ -339,7 +335,7 @@ local function writeREG(fh,REG)
       if v.block == "BOX" then writeBOX(fh,v) end
       if v.block == "POINT" then writePOINT(fh,v) end
       if v.block == "LOAD" then writeLOAD(fh,v) end
-      if v.block == "GEO" then writeGEO(fh,v) end
+      if v.block == "LOAD_SCENE" then writeLOAD_SCENE(fh,v) end
    end
    if REG.auto then fh:write("      AUTO\t! auto loop mode\n") end
    if REG.mask then fh:write("      MASK\t! mask loop mode\n") end
@@ -536,13 +532,13 @@ end
 -- CREATE configuration file
 
 function ConfigMethods:CREATE()
-   local part = self.GRID.partition[1];
+   local part = self.grid.partition[1];
    local filename = "config."..tostring(part)..".in"
    local fh = io.open(filename,"w");
    fh:write("\n! ------ BEGIN [",filename,"] file generated by <luacfg>\n\n");
-   writeGRID(fh,self.GRID);
-   writeFDTD(fh,self.FDTD);
-   writeBOUND(fh,self.BOUND);
+   writeGRID(fh,self.grid);
+   writeFDTD(fh,self.fdtd);
+   writeBOUND(fh,self.bound);
    for _, src in ipairs(self.src) do writeSRC(fh,src) end
    for _, mat in ipairs(self.mat) do writeMAT(fh,mat) end
    for _, diag in ipairs(self.diag) do writeDIAG(fh,diag) end

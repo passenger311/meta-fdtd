@@ -1,7 +1,7 @@
 #ifndef COBJECT_H_
 #define COBJECT_H_
 
-#define DEBUG
+#undef DEBUG
 
 #include "algebra3extension.h"
 #include <string>
@@ -19,10 +19,8 @@ public:
 	frame box;
 	int iLastInside;
 	string name;
-	// [AH] --->
-	double fWeight;
+	double dValue;
 	double dDepth;
-	// <---
 
 	virtual void preProcess();
 	virtual int Inside(pointframe& pfrm);

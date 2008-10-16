@@ -178,7 +178,6 @@ contains
        M4_ALLOC_ERROR(err,"InitializeMatlhmgrad")
        
        f = real(l) / real(mat%gradlen)
-       write(6,*) "XXX ",mat%gradlen
        do i = 0, mat%gradlen
           j = int(i*f)
           t = i*f - j 

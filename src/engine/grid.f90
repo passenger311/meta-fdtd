@@ -57,6 +57,7 @@ module grid
   integer :: DIM
 
   integer :: PARTITIONS
+  integer :: THISPARTITION
 
   type(T_REG) :: fdtdreg
 
@@ -90,8 +91,10 @@ contains
     if ( DIM .ne. sdim ) then
        M4_FATAL_ERROR({"ENGINE HAS NOT BEEN COMPILED FOR DIM = ",TRIM(i2str(DIM))})
     end if
-    call readint(funit, lcount, PARTITIONS)
-    M4_WRITE_DBG({"read PARTITIONS: ", PARTITIONS})
+    call readints(funit, lcount, v ,2)
+    THISPARTITION = v(1)
+    PARTITIONS = v(2)
+    M4_WRITE_DBG({"read PARTITIONS: ", THISPARTITION, PARTITIONS})
     call readint(funit, lcount, NCYCMAX)
     M4_WRITE_DBG({"read NCYCMAX: ", NCYCMAX})
     call readfloat(funit, lcount, DT)

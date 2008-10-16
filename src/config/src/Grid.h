@@ -49,7 +49,7 @@ public:
   Grid(Grid* gridbox);
   Grid(frame& box, int cellsX, int cellsY, int cellsZ);
   ~Grid();
-  void generateOutput(Scene* scene, FileHandler* fhd);
+  void generateOutput(Scene* scene, FileHandler* fhd, const char* method, bool silent = true);
   double getDataPoint(int x, int y, int z, YEEGRIDCOMPONENT cp);
 };
 
