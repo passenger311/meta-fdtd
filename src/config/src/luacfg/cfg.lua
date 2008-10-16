@@ -52,21 +52,21 @@ function ConfigMethods:GRID(parms)
    self.grid.dim =  parms.dim or 1;
    self.grid.partition = parms.partition or { 0,1 };
    self.grid.ncyc = parms.ncyc or 100;
-   self.grid.dt = parms.ncyc or 0.9999;
+   self.grid.dt = parms.dt or 0.9999;
 end
 
 -- FDTD Config-Block definition
 
 function ConfigMethods:FDTD(parms)
    self.fdtd = { block="FDTD" }
-   for i,v in ipairs(parms) do self.fdtd[i] = parms[i] end
+   for k,v in ipairs(parms) do self.fdtd[k] = v end
 end
 
 -- EPSILON Sub-Block definition
 
 function EPSILON(parms)
    local EPSILON = { block="EPSILON" }
-   for i,v in ipairs(parms) do EPSILON[i] = parms[i] end 
+   for k,v in pairs(parms) do EPSILON[k] = v end 
    return EPSILON
 end
 
@@ -74,22 +74,22 @@ end
 
 function ConfigMethods:BOUND(parms)
    self.bound = { block = "BOUND" }
+   for k,v in pairs(parms) do self.bound[k] = v end 
    self.bound.config = parms.config or { 0,0,0,0,0,0 }
    for i = 1,6 do 
       if not self.bound.config[i] then self.bound.config[i] = 0 end 
    end
-   for i,v in ipairs(parms) do self.bound[i] = parms[i] end
 end
 
 -- PML Sub-Block definition
 
 function PML(parms)
    local PML = { block = "PML" }
+   for k,v in pairs(parms) do PML[k] = v end 
    PML.cells = parms.cells or 11
    PML.pot = parms.pot or 3.2
    PML.sigma = parms.sigma or 1.94444444444444
    PML.kappa = parms.kappa or 1.1
-   for i,v in ipairs(parms) do PML[i] = parms[i] end
    return PML
 end
 
@@ -97,10 +97,7 @@ end
 
 function REG(parms) 
    local REG = { block = "REG" }
-   REG.mask = parms.mask
-   REG.list = parms.list
-   REG.auto = parms.auto
-   for i,v in ipairs(parms) do REG[i] = parms[i] end
+   for k,v in pairs(parms) do REG[k] = v end 
    return REG
 end
 
