@@ -61,7 +61,7 @@ int Grid_create(lua_State *L)
 {
   double from[3] = { -1.,-1.,-1. };
   double to[3] = { 1.,1.,1. };
-  double cells[3] = { 11.,11.,11. };
+  double cells[3] = { -1,-1,-1 };
   double cagescale = 2.;
   double cagediv[3] = { 1.,1.,1. };
   double subdiv[3] = { 5.,5.,5. };

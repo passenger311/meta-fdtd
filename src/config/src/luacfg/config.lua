@@ -23,7 +23,7 @@ box1 = Box{at={0,0,0}, size = {200,200,200} }
 cyl1 = Cylinder{at={0,0,0}, radius = 50, height = 2 }
 obj1 = BinaryAndNot{box1,cyl1} 
 scene1:add{ obj1, depth=1, value=3. }
-grid1 = Grid{from={-101,-101,0},to={101,101,0},cells={203,203,1}}
+grid1 = Grid{from={-101,-101,0},to={101,101,0}}
 
 cfg:CREATE_SCENE{"scene1", scene=scene1, grid=grid1, method="default", 
 		 comps=3 }
@@ -62,6 +62,26 @@ cfg:BOUND{
       pot = 3.2,
       sigma = 1.94444444444444,
       kappa = 1.1,
+   }
+}
+
+--- SRC Definition(s)
+
+cfg:SRC{
+   HARDJ{
+      invlambda = 0.0133333333,
+      amplitude = 1.,
+      pulse = { 
+	 shape="Gaussian", 
+	 width=700,
+	 offset=0, attack=1200, sustain=800, decay=1200 
+      },
+      planewave = { phi=-45.0, theta=90.0, psi=0.0, nrefr=2.0 }
+   },
+   REG{
+      POINT{
+	 { 8, 94 }, {9, 95}, {10, 96}, {11, 97}, {12, 98}, {13, 99}, {14,100}
+      }
    }
 }
 

@@ -235,13 +235,50 @@ function BLOCH(parms)
    return BLOCH
 end
 
-
 -- SRC Config-Block definition
 
 function ConfigMethods:SRC(parms)
    local SRC = { block = "SRC" }
    for k,v in pairs(parms) do SRC[k] = v end
    table.insert(self.src, SRC)   
+end
+
+--(SRC)HARDJ Sub-Block definition
+
+function HARDJ(parms) 
+   local HARDJ = { block = "HARDJ" }
+   HARDJ.invlambda = parms.invlambda
+   HARDJ.amplitude = parms.amplitude or 1.
+   HARDJ.pulse = parms.pulse or { shape="Gaussian", width=0, 
+				  offset=0, attack=0, sustain=0, decay=0 }
+   HARDJ.planewave = parms.planewave or { on=false, phi=0, theta=0, psi=0, nrefr=1 }
+   if not HARDJ.planewave.on then HARDJ.planewave.on=true end
+   return HARDJ
+end
+
+--(SRC)TFSFINJ Sub-Block definition
+
+function TFSFINJ(parms) 
+   local TFSFINJ = { block = "TFSFINJ" }
+   TFSFINJ.invlambda = parms.invlambda
+   TFSFINJ.amplitude = parms.amplitude or 1.
+   TFSFINJ.pulse = parms.pulse or { shape="Gaussian", width=0, 
+				    offset=0, attack=0, sustain=0, decay=0 }
+   TFSFINJ.planewave = parms.planewave or { on=true, phi=0, theta=0, psi=0, nrefr=1 }
+   return TFSFINJ
+end
+
+--(SRC)TFSFBOX Sub-Block definition
+
+function TFSFBOX(parms) 
+   local TFSFBOX = { block = "TFSFBOX" }
+   TFSFBOX.invlambda = parms.invlambda
+   TFSFBOX.amplitude = parms.amplitude or 1.
+   TFSFBOX.pulse = parms.pulse or { shape="Gaussian", width=0, 
+				    offset=0, attack=0, sustain=0, decay=0 }
+   TFSFBOX.planewave = parms.planewave or { on=true, phi=0, theta=0, psi=0, nrefr=1 }
+   TFSFBOX.config = parms.config or { 1,1,1,1,1,1 }
+   return TFSFBOX
 end
 
 -- DIAG Config-Block definition
@@ -278,7 +315,7 @@ end
 local function writeBOX(fh,BOX)
    assert(BOX and BOX.block == "BOX", "Expected BOX{}")
    if BOX.on == false then return end  
-   fh:write("      (BOX\n")
+   fh:write("    (BOX\n")
    for _,box in ipairs(BOX) do
       fh:write("\t")
       for _,val in ipairs(box) do
@@ -286,7 +323,7 @@ local function writeBOX(fh,BOX)
       end
       fh:write("\n");
    end
-   fh:write("      )BOX\n")
+   fh:write("    )BOX\n")
 end
 
 -- POINT Sub-Block write
@@ -294,7 +331,7 @@ end
 local function writePOINT(fh,POINT)
    assert(POINT and POINT.block == "POINT", "Expected POINT{}")
    if POINT.on == false then return end  
-   fh:write("      (POINT\n")
+   fh:write("    (POINT\n")
    for _,point in ipairs(POINT) do
       fh:write("\t")
       for _,val in ipairs(point) do
@@ -302,7 +339,7 @@ local function writePOINT(fh,POINT)
       end
       fh:write("\n");
    end
-   fh:write("      )POINT\n")
+   fh:write("    )POINT\n")
 end
 
 -- LOAD Sub-Block write
@@ -310,9 +347,9 @@ end
 local function writeLOAD(fh,LOAD)
    assert(LOAD and LOAD.block == "LOAD", "Expected LOAD{}")
    if LOAD.on == false then return end  
-   fh:write("      (LOAD\n")
+   fh:write("    (LOAD\n")
    fh:write("\t",LOAD[1],"\t! file to load\n")
-   fh:write("      )LOAD\n")
+   fh:write("    )LOAD\n")
 end
 
 -- LOAD_SCENE Sub-Block write
@@ -320,9 +357,9 @@ end
 local function writeLOAD_SCENE(fh,LOAD_SCENE)
    assert(LOAD_SCENE and LOAD_SCENE.block == "LOAD_SCENE", "Expected LOAD_SCENE{}")
    if LOAD_SCENE.on == false then return end  
-   fh:write("      (LOAD\n")
+   fh:write("    (LOAD\n")
    fh:write("\t",LOAD_SCENE.file,"\t! scene file to load\n")
-   fh:write("      )LOAD\n")
+   fh:write("    )LOAD\n")
 end
 
 -- REG Sub-Block write
@@ -330,17 +367,17 @@ end
 local function writeREG(fh,REG)
    assert(REG and REG.block == "REG", "Expected REG{}")
    if REG.on == false then return end  
-   fh:write("    (REG\n")
+   fh:write("  (REG\n")
    for i,v in ipairs(REG) do
       if v.block == "BOX" then writeBOX(fh,v) end
       if v.block == "POINT" then writePOINT(fh,v) end
       if v.block == "LOAD" then writeLOAD(fh,v) end
       if v.block == "LOAD_SCENE" then writeLOAD_SCENE(fh,v) end
    end
-   if REG.auto then fh:write("      AUTO\t! auto loop mode\n") end
-   if REG.mask then fh:write("      MASK\t! mask loop mode\n") end
-   if REG.list then fh:write("      LIST\t! list loop mode\n") end
-   fh:write("    )REG\n")
+   if REG.auto then fh:write("    AUTO\t! auto loop mode\n") end
+   if REG.mask then fh:write("    MASK\t! mask loop mode\n") end
+   if REG.list then fh:write("    LIST\t! list loop mode\n") end
+   fh:write("  )REG\n")
 end
 
 -- EPSILON Sub-Block write
@@ -348,10 +385,10 @@ end
 local function writeEPSILON(fh,EPSILON)
    assert(EPSILON and EPSILON.block == "EPSILON", "Expected EPSILON{}")
    if EPSILON.on == false then return end  
-   fh:write("  (EPSILON\n")
+   fh:write("(EPSILON\n")
    assert(EPSILON[1] and EPSILON[1].block == "REG","EPSILON{} must define REG{}")
    writeREG(fh, EPSILON[1])
-   fh:write("  )EPSILON\n")
+   fh:write(")EPSILON\n")
 end
 
 -- OUT Sub-Block write
@@ -360,12 +397,12 @@ local function writeOUT(fh,OUT)
    assert(OUT and OUT.block == "OUT", "Expected OUT{}")
    assert(OUT[1] and OUT[1].block == "REG","OUT{} must define REG{}")
    if OUT.on == false then return end  
-   fh:write("  (OUT\n")
-   fh:write("    ",OUT.file[1]," ",OUT.file[2],"\t! file type and name\n"); 
-   fh:write("    ",OUT.type[1]," ",OUT.type[2]," ",OUT.type[3],"\t! file type and name\n"); 
-   fh:write("    ",OUT.time[1]," ",OUT.time[2]," ",OUT.time[3],"\t! time\n");
+   fh:write("(OUT\n")
+   fh:write("  ",OUT.file[1]," ",OUT.file[2],"\t! file type and name\n"); 
+   fh:write("  ",OUT.type[1]," ",OUT.type[2]," ",OUT.type[3],"\t! file type and name\n"); 
+   fh:write("  ",OUT.time[1]," ",OUT.time[2]," ",OUT.time[3],"\t! time\n");
    writeREG(fh, OUT[1])
-   fh:write("  )OUT\n")
+   fh:write(")OUT\n")
 end
 
 -- FDTD Config-Block write
@@ -390,12 +427,12 @@ end
 
 local function writePML(fh,PML)
    assert(PML and PML.block == "PML", "Expected PML{}")
-   fh:write("  (PML\n")
-   fh:write("    ",PML.cells,"\t! # of cells\n");
-   fh:write("    ",PML.pot,"\t! pot parameter\n");
-   fh:write("    ",PML.sigma,"\t! sigma parameter\n");
-   fh:write("    ",PML.kappa,"\t! kappa parameter\n");
-   fh:write("  )PML\n")
+   fh:write("(PML\n")
+   fh:write(PML.cells,"\t! # of cells\n");
+   fh:write(PML.pot,"\t! pot parameter\n");
+   fh:write(PML.sigma,"\t! sigma parameter\n");
+   fh:write(PML.kappa,"\t! kappa parameter\n");
+   fh:write(")PML\n")
 end
 
 -- BOUND Config-Block write
@@ -403,8 +440,8 @@ end
 local function writeBOUND(fh,BOUND)
    assert(BOUND and BOUND.block == "BOUND", "Expected BOUND{}")
    fh:write("(BOUND\n")
-   fh:write("  ",BOUND.config[1]," ",BOUND.config[2]," ",BOUND.config[3],
-	    " ",BOUND.config[4]," ",BOUND.config[5]," ",BOUND.config[6],
+   fh:write(BOUND.config[1]," ",BOUND.config[2]," ",BOUND.config[3]," ",
+	    BOUND.config[4]," ",BOUND.config[5]," ",BOUND.config[6],
 	    "\t! boundary config\n"); 
    for i,v in ipairs(BOUND) do
       if v.block == "PML" then writePML(fh,v) end
@@ -412,72 +449,44 @@ local function writeBOUND(fh,BOUND)
    fh:write(")BOUND\n\n")
 end
 
--- (VARIOUS) SRC Sub-Block write
-
-local writesrc = {
-
-}
-
-
--- SRC Config-Block write
-
-local function writeSRC(fh,SRC)
-   assert(SRC and SRC.block == "SRC", "Expected SRC{}")
-   if SRC.on == false then return end  
-   assert( SRC[1] and SRC[2] and SRC[1].block and SRC[2].block, "Bad SRC{} structure") 
-   local type = string.upper(SRC[1].block)
-   fh:write("(SRC"..type.."\n")
-   assert(writesrc[type], "SRC{} type "..type.." does not exist")
-   writesrc[type](fh,SRC[1])
-   writeREG(fh, SRC[2])
-   for _, sub in ipairs(SRC) do 
-      if sub.block then
-	 if sub.block == "OUT" then 
-	    writeOUT(fh,sub);
-	 end
-      end
-   end  
-   fh:write(")SRC"..type.."\n\n");
-end
-
--- (VARIOUS) MAT Sub-Block write
+-- (MAT) MAT Sub-Block write
 
 local writemat = {
    DRUDE = function(fh,DRUDE)
-	      fh:write("  ", DRUDE.invlambdapl,"\t! invlambdapl [2 pi c]\n")
-	      fh:write("  ", DRUDE.gammapl,"\t! gammapl (damping) [1/dt]\n")
-	      fh:write("  ", DRUDE.order,"\t! order: 1 (J ode) or 2 (P ode)\n")
+	      fh:write(DRUDE.invlambdapl,"\t! invlambdapl [2 pi c]\n")
+	      fh:write(DRUDE.gammapl,"\t! gammapl (damping) [1/dt]\n")
+	      fh:write(DRUDE.order,"\t! order: 1 (J ode) or 2 (P ode)\n")
 	   end,
    LHM = function(fh,LHM)
-	      fh:write("  ", LHM.invlambdapl,"\t! invlambdapl [2 pi c]\n")
-	      fh:write("  ", LHM.gammapl,"\t! gammapl (damping) [1/dt]\n")
-	      fh:write("  ", LHM.order,"\t! order: 1 (J ode) or 2 (P ode)\n")
+	      fh:write(LHM.invlambdapl,"\t! invlambdapl [2 pi c]\n")
+	      fh:write(LHM.gammapl,"\t! gammapl (damping) [1/dt]\n")
+	      fh:write(LHM.order,"\t! order: 1 (J ode) or 2 (P ode)\n")
 	   end,
    LORENTZ = function(fh,LORENTZ)
-	      fh:write("  ", LORENTZ.invlambdal,"\t! invlambdal [2 pi c]\n")
-	      fh:write("  ", LORENTZ.gammal,"\t! gammal (damping) [1/dt]\n")
-	      fh:write("  ", LORENTZ.deltaepsl,"\t! deltaepsl coupling coeff.\n")
+	      fh:write(LORENTZ.invlambdal,"\t! invlambdal [2 pi c]\n")
+	      fh:write(LORENTZ.gammal,"\t! gammal (damping) [1/dt]\n")
+	      fh:write(LORENTZ.deltaepsl,"\t! deltaepsl coupling coeff.\n")
 	   end,
    DEBYE = function(fh,DEBYE)
-	      fh:write("  ", DEBYE.taud,"\t! taud [dt]\n")
-	      fh:write("  ", DEBYE.deltaepsd,"\t! deltaepsd coupling coeff.\n")
+	      fh:write(DEBYE.taud,"\t! taud [dt]\n")
+	      fh:write(DEBYE.deltaepsd,"\t! deltaepsd coupling coeff.\n")
 	   end,
    PEC = function(fh,PEC)
 	 end,
    BLOCH = function(fh,BLOCH)
-	      fh:write("  ", BLOCH.invlambdal,"\t! invlambdal [2 pi c]\n")
-	      fh:write("  ", BLOCH.gammal,"\t! gammal (damping) [1/dt]\n")
-	      fh:write("  ", 
+	      fh:write(BLOCH.invlambdal,"\t! invlambdal [2 pi c]\n")
+	      fh:write(BLOCH.gammal,"\t! gammal (damping) [1/dt]\n")
+	      fh:write(
 		       "(",BLOCH.dipole[1][1],",",BLOCH.dipole[1][2],") ",
 		       "(",BLOCH.dipole[2][1],",",BLOCH.dipole[2][2],") ",
 		       "(",BLOCH.dipole[3][1],",",BLOCH.dipole[3][2],") ",
 		       "\t! dipole matrix elem. []\n")
-	      fh:write("  ", BLOCH.carrier[1]," ", BLOCH.carrier[2],
+	      fh:write(BLOCH.carrier[1]," ", BLOCH.carrier[2],
 		       "\t! carrier numbers transp./initial  []\n")
-	      fh:write("  ", BLOCH.gammanr,"\t! non-rad. recomb. [1/dt]\n")
-	      fh:write("  ", BLOCH.pump,"\t! pump rate [1/dt]\n")
-	      fh:write("  ", BLOCH.satmodel,"\t! sat.model 0=>(N-Ntr), 1=>Ntr*log(N/Ntr)\n")		       
-	   end
+	      fh:write(BLOCH.gammanr,"\t! non-rad. recomb. [1/dt]\n")
+	      fh:write(BLOCH.pump,"\t! pump rate [1/dt]\n")
+	      fh:write(BLOCH.satmodel,"\t! sat.model 0=>(N-Ntr), 1=>Ntr*log(N/Ntr)\n")		       
+	   end,
 }
 
 -- MAT Config-Block write
@@ -501,7 +510,84 @@ local function writeMAT(fh,MAT)
    fh:write(")MAT"..type.."\n\n");
 end
 
--- (VARIOUS) DIAG Sub-Block write
+-- (SRC) SRC Sub-Block write
+
+local writesrc = {
+   HARDJ = function(fh,HARDJ)
+	      fh:write(HARDJ.invlambda," \t! invlambda [2 pi c]\n")
+	      fh:write(HARDJ.amplitude," \t! amplitude []\n")
+	      fh:write(HARDJ.pulse.shape," \t! pulse shape\n")
+	      fh:write(HARDJ.pulse.width," \t! pulse width [hwhm]\n")
+	      fh:write(HARDJ.pulse.offset or 0," ",
+		       HARDJ.pulse.attack or 0," ",
+		       HARDJ.pulse.sustain or 0," ",
+		       HARDJ.pulse.decay or 0," \t! offset attack sustain decay [dt]\n")
+	      if HARDJ.planewave.on then
+		 fh:write(".T."," \t! plane wave mode?\n ")
+	      else
+		 fh:write(".F."," \t! plane wave mode?\n ")
+	      end
+	      fh:write(HARDJ.planewave.phi, " ",
+		       HARDJ.planewave.theta, " ",
+		       HARDJ.planewave.psi, " ",
+		       HARDJ.planewave.nrefr, " \t! planewave: phi, theta, psi, nrefr\n")
+	   end,
+   TFSFINJ = function(fh,TFSFINJ)
+	      fh:write(TFSFINJ.invlambda," \t! invlambda [2 pi c]\n")
+	      fh:write(TFSFINJ.amplitude," \t! amplitude []\n")
+	      fh:write(TFSFINJ.pulse.shape," \t! pulse shape\n")
+	      fh:write(TFSFINJ.pulse.width," \t! pulse width [hwhm]\n")
+	      fh:write(TFSFINJ.pulse.offset or 0," ",
+		       TFSFINJ.pulse.attack or 0," ",
+		       TFSFINJ.pulse.sustain or 0," ",
+		       TFSFINJ.pulse.decay or 0," \t! offset attack sustain decay [dt]\n")
+	      fh:write(TFSFINJ.planewave.phi, " ",
+		       TFSFINJ.planewave.theta, " ",
+		       TFSFINJ.planewave.psi, " ",
+		       TFSFINJ.planewave.nrefr, " \t! planewave: phi, theta, psi, nrefr\n")
+	   end,
+   TFSFBOX = function(fh,TFSFBOX)
+	      fh:write(TFSFBOX.invlambda," \t! invlambda [2 pi c]\n")
+	      fh:write(TFSFBOX.amplitude," \t! amplitude []\n")
+	      fh:write(TFSFBOX.pulse.shape," \t! pulse shape\n")
+	      fh:write(TFSFBOX.pulse.width," \t! pulse width [hwhm]\n")
+	      fh:write(TFSFBOX.pulse.offset or 0," ",
+		       TFSFBOX.pulse.attack or 0," ",
+		       TFSFBOX.pulse.sustain or 0," ",
+		       TFSFBOX.pulse.decay or 0," \t! offset attack sustain decay [dt]\n")
+	      fh:write(TFSFBOX.planewave.phi, " ",
+		       TFSFBOX.planewave.theta, " ",
+		       TFSFBOX.planewave.psi, " ",
+		       TFSFBOX.planewave.nrefr, " \t! planewave: phi, theta, psi, nrefr\n")
+	      fh:write(TFSFBOX.config[1]," ", TFSFBOX.config[2]," ",
+		        TFSFBOX.config[3]," ", TFSFBOX.config[4]," ",
+			TFSFBOX.config[5]," ", TFSFBOX.config[6]," \t! active planes\n")
+	   end,
+
+}
+
+-- SRC Config-Block write
+
+local function writeSRC(fh,SRC)
+   assert(SRC and SRC.block == "SRC", "Expected SRC{}")
+   if SRC.on == false then return end  
+   assert( SRC[1] and SRC[2] and SRC[1].block and SRC[2].block, "Bad SRC{} structure") 
+   local type = string.upper(SRC[1].block)
+   fh:write("(SRC"..type.."\n")
+   assert(writesrc[type], "SRC{} type "..type.." does not exist")
+   writesrc[type](fh,SRC[1])
+   writeREG(fh, SRC[2])
+   for _, sub in ipairs(SRC) do 
+      if sub.block then
+	 if sub.block == "OUT" then 
+	    writeOUT(fh,sub);
+	 end
+      end
+   end  
+   fh:write(")SRC"..type.."\n\n");
+end
+
+-- (DIAG) DIAG Sub-Block write
 
 local writediag = {
 
