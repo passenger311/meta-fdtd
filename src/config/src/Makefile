@@ -19,7 +19,6 @@ include ../../define.mk
 
 # objects
 OBJ=\
-errorclasses.o\
 Grid.o\
 objects/CObject.o\
 objects/CBinaryObject.o\
