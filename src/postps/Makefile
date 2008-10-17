@@ -24,9 +24,7 @@ stitch-outgpl
 default: all
 
 info:
-	@echo "."
-	@echo ". POSTPS"
-	@echo "."
+	@echo "----- POSTPS"
 
 all: info install
  

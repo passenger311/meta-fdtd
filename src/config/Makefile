@@ -26,15 +26,11 @@ default: all
 all: lua cfg
 
 lua: 
-	@echo . 
-	@echo . BUILDING VANILLA LUA INTERPRETER
-	@echo . 
+	@echo ----- BUILDING VANILLA LUA INTERPRETER
 	@cd lua/src; $(MAKE) -s ansi
 
 cfg:
-	@echo . 
-	@echo . BUILDING LUACFG PREPROCESSOR
-	@echo . 
+	@echo ----- BUILDING LUACFG PREPROCESSOR
 	@cd src; $(MAKE) -s all
 
 install: build-dir

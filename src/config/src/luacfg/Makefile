@@ -56,7 +56,7 @@ $(CXXOBJ): %.o: %.cpp
 	@echo [CXX] $@
 	@$(strip $(CXX) $(CXXFLAGS) -c $< -o $@)
 
-$(LUAEXE): $(CCOBJ) $(CXXOBJ)
+$(LUAEXE): $(CCOBJ) $(CXXOBJ) $(LIBLUA) $(LIBGEO)
 	@echo [LD] $@
 	@$(strip $(CXX) $(LDFLAGS) $^ $(LIBLUA) $(LIBGEO) $(LIBS) -o $@)
 

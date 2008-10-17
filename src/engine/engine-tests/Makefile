@@ -25,9 +25,7 @@ default: all
 all: tests
 
 info:
-	@echo "."
-	@echo ". RUNNING ENGINE TESTS"
-	@echo "."
+	@echo "----- RUNNING ENGINE TESTS"
 
 tests: 
 	@./run-all ../$(ENGINE)

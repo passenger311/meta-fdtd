@@ -13,9 +13,8 @@ include ./define.mk
 .PHONY: default clean distclean fftpack5 engine config geopre postps  build tests
 
 build: 
-	-@$(MAKE) -s proper
-	@echo 
-	@echo "+ CREATE BUILD [$(BUILDDIR)]"
+	-@$(MAKE) -s clean
+	@echo "===== CREATE BUILD [$(BUILDDIR)]"
 	-@$(MAKE) -s config
 	-@$(MAKE) -s postps
 	-@$(MAKE) -s engine DIM=1 
@@ -25,8 +24,7 @@ build:
 	-@$(MAKE) -s engine DIM=2 CF=1
 	-@$(MAKE) -s engine DIM=3 CF=1
 	@cd $(BUILDDIR)/engine-tests; $(MAKE) -s info all; cd .. 
-	@echo "."
-	@echo "+ BUILD COMPLETED [$(BUILDDIR)]"
+	@echo "----- BUILD COMPLETED [$(BUILDDIR)]"
 	@echo
 
 default: all
