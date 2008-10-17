@@ -134,6 +134,8 @@ function ConfigMethods:CREATE_SCENE(parms)
    print(" done.\n")
 end
 
+
+
 -- POINT Sub-Block definition
 
 function POINT(parms) 

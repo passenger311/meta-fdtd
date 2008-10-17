@@ -40,7 +40,7 @@ void FileHandlerFortranIN::writeFileHeader(Grid* gbGrid)
   
   m_fsFileStream << " ! (.IN) FIELD DATA FILE" << endl;
   m_fsFileStream << " ! NUMNODES: " << iPointCount << endl;
-  m_fsFileStream << "INIT" << endl;
+  m_fsFileStream << "SAVE" << endl;
   m_fsFileStream << "(BOX" << endl;
   m_fsFileStream << from[0] << " " << to[0] << " " << 1 << " "
 		 << from[1] << " " << to[1] << " " << 1 << " "

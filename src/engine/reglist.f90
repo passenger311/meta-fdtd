@@ -74,14 +74,14 @@
 !  where filename.dat has the same format as any section in reglist. In 
 !  particular:
 !
-!  INIT
+!  SAVE
 !  (BOX
 !   1 100 1 1 100 1 1 100 1
 !  )BOX
 !  (SET 
 !     ... 100 x 100 x 100 lines of values ...
 !  )SET
-!  INIT
+!  SAVE
 !
 !  Init makes sure that the pointer to the next value to be initialized
 !  is aligned to the new box object.
