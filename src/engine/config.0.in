@@ -168,7 +168,7 @@
 
     
 (SRCHARDJ
-0.0133333333		! inv vacuum wavelength in units of [2 pi c]
+0.0133333333		! inv vacuum wavelength [] = omega in units of [2 pi c]
 1.			! amplitude
 Gaussian		! pulse shape
 1000            	! half width half maximum in timedomain [dt]
@@ -201,7 +201,7 @@ Gaussian		! pulse shape
 )SRCHARDJ
  
 (!SRCHARDJ
-0.0133333333		! inv vacuum wavelength in units of [2 pi c]
+0.0133333333		! inv vacuum wavelength [] = omega in units of [2 pi c]
 1.			! amplitude
 Gaussian		! pulse shape
 700             	! half width half maximum in timedomain [dt]
@@ -239,7 +239,7 @@ Gaussian		! pulse shape
 
     
 (!SRCTFSFINJ
-0.01333333333		! inv vacuum wavelength in units of [2 pi c]
+0.01333333333		! inv vacuum wavelength [] = omega in units of [2 pi c]
 1.			! amplitude
 Gaussian		! pulse shape
 600           		! half width half maximum in timedomain [dt]
@@ -259,8 +259,8 @@ Gaussian		! pulse shape
 
     
 (!SRCTFSFBOX
-0.0133333333		! inv vacuum wavelength in units of [2 pi c]
-!0.01333333333		! inv vacuum wavelength in units of [2 pi c]
+0.0133333333		! inv vacuum wavelength [] = omega in units of [2 pi c]
+!0.01333333333		! 
 2.			! amplitude
 Gaussian		! pulse shape
 600           		! half width half maximum in timedomain [dt]
@@ -275,7 +275,7 @@ Gaussian		! pulse shape
 )SRCTFSFBOX
 
 (!SRCTFSFBOX
-0.0333333333		! inv vacuum wavelength in units of [2 pi c]
+0.0333333333		! inv vacuum wavelength [] = omega in units of [2 pi c]
 2.			! amplitude
 Gaussian		! pulse shape
 6             		! half width half maximum in timedomain [dt]
@@ -323,7 +323,7 @@ Gaussian		! pulse shape
 ! -----------------------------------------------------------------------
     
 (!MATLHM
-0.0471404520791	   	! lambdaplinv : inv plasma freq wavelength [2 pi c]
+0.0471404520791	   	! lambdaplinv : inv plasma wavelength
 0. 	 	    	! gammapl: damping constant [1/dt]
 1		    	! order: 1 (=J) or 2 (=P)
 (REG
@@ -350,7 +350,7 @@ Gaussian		! pulse shape
 ! -----------------------------------------------------------------------
     
 (!MATDRUDE
-0.0471404520791	   	! lambdaplinv : inv plasma freq wavelength [2 pi c]
+0.0471404520791	   	! lambdaplinv : inv plasma wavelength 
 1.e-10 	    		! gammapl: damping constant [1/dt] 
 1		    	! order: 1 (=J) or 2 (=P)
 (REG
@@ -378,7 +378,7 @@ Gaussian		! pulse shape
 ! -----------------------------------------------------------------------
     
 (MATBLOCH
-0.0471404520791	   	! lambdaprinv : inv resonance freq wavelength [2 pi c]
+0.0471404520791	   	! lambdaprinv : inv resonance wavelength
 1.e-10 	    		! gammapl: lorentzian damping rate 
 (1.,0.) (1.,0.) (1.,0.)	! M: dipole matrix element vector
 1. 0.5			! N_tr [N_0]: transparency density and initial density
