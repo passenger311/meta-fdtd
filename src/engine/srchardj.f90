@@ -185,8 +185,8 @@ contains
           M4_FATAL_ERROR("0 <= Theta <= 180!")
        endif
        
-       src%phi = mod(src%phi+360., 360.)
-       src%psi = mod(src%psi+360., 360.)
+       src%phi = mod(real(src%phi+360.), real(360.))
+       src%psi = mod(real(src%psi+360.), real(360.))
 
        if ( src%theta .ge. 0. .and. src%theta .lt. 90. ) then
           src%orig(3) = reg%ks
