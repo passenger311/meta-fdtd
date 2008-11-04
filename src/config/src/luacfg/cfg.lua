@@ -30,7 +30,7 @@ ConfigMethods.__index = ConfigMethods
 -- BLOCK DEFINITIONS
 ---------------------------------------------------------------------------
 
-local scenes = {}
+local scenes, pscenes = {}, {}
 
 function CONFIG(parms)
    local tab = {}
@@ -120,11 +120,11 @@ function LOAD_SCENE(parms)
    return LOAD_SCENE
 end
 
--- (NEW!) CREATE_SCENE Sub-Block definition
+-- (NEW!) CREATE_GEO Sub-Block definition
 
-function ConfigMethods:CREATE_SCENE(parms) 
+function ConfigMethods:CREATE_GEO(parms) 
    assert(scenes[parms[1]] == nil, "SCENE{} <name>="..parms[1].." is already in use!")
-   local file = "scene_"..tostring(parms[1])..".in"
+   local file = "geo_"..tostring(parms[1])..".in"
    scenes[parms[1]] = 1
    if not self.scenes_on or parms.on == false then return end 
    local geo_fh = geo.FileIN{file,comps=parms.comps};
@@ -134,6 +134,20 @@ function ConfigMethods:CREATE_SCENE(parms)
    print(" done.\n")
 end
 
+
+-- (NEW!) CREATE_PREVIEW Sub-Block definition
+
+function ConfigMethods:CREATE_PREVIEW(parms) 
+   assert(pscenes[parms[1]] == nil, "SCENE{} <name>="..parms[1].." is already in use!")
+   local file = "preview_"..tostring(parms[1])..".vtk"
+   pscenes[parms[1]] = 1
+   if not self.scenes_on or parms.on == false then return end 
+   local geo_fh = geo.FileVTK{file,comps=parms.comps};
+   assert(parms.scene and parms.grid,"CREATE_SCENE{} must define <grid> and <scene>")
+   print("processing "..file)
+   parms.grid:write{geo_fh, parms.scene, method=parms.method, silent=parms.silent}
+   print(" done.\n")
+end
 
 
 -- POINT Sub-Block definition

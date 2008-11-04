@@ -24,6 +24,7 @@ public:
   int iCellsX, iCellsY, iCellsZ;
   double dPointframeScale;
   int iPointframeDivisionsX,iPointframeDivisionsY,iPointframeDivisionsZ;
+  int iOffsetX,iOffsetY,iOffsetZ;
   bool bPointframeFacepoints;
   int iSubGriddingDivX, iSubGriddingDivY, iSubGriddingDivZ;
   bool bAlwaysSubgridding;
@@ -47,7 +48,7 @@ protected:
 public:
   Grid();
   Grid(Grid* gridbox);
-  Grid(frame& box, int cellsX, int cellsY, int cellsZ);
+  Grid(frame& box, int cellsX, int cellsY, int cellsZ, int offsX, int offsY, int offsZ);
   ~Grid();
   void generateOutput(Scene* scene, FileHandler* fhd, const char* method, bool silent = true);
   double getDataPoint(int x, int y, int z, YEEGRIDCOMPONENT cp);

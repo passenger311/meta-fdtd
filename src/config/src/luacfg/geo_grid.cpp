@@ -62,6 +62,7 @@ int Grid_create(lua_State *L)
   double from[3] = { -1.,-1.,-1. };
   double to[3] = { 1.,1.,1. };
   double cells[3] = { -1,-1,-1 };
+  double offset[3] = { 0,0,0 };
   double cagescale = 2.;
   double cagediv[3] = { 1.,1.,1. };
   double subdiv[3] = { 5.,5.,5. };
@@ -73,6 +74,7 @@ int Grid_create(lua_State *L)
   geo_getvec3(L, "from", from);
   geo_getvec3(L, "to", to);
   geo_getvec3(L, "cells", cells );
+  geo_getvec3(L, "offset", offset );
   geo_getdouble(L, "cagescale", &cagescale );
   geo_getvec3(L, "cagediv", cagediv );
   geo_getbool(L, "cagefp", &cagefps );
@@ -84,7 +86,7 @@ int Grid_create(lua_State *L)
   vec3 vto(to[0],to[1],to[2]);
   frame fr(vfrom,vto);
   Grid** gridptr = (Grid **)lua_newuserdata(L, sizeof(Grid*));
-  (*gridptr) = new Grid(fr,(int)cells[0],(int)cells[1],(int)cells[2]);
+  (*gridptr) = new Grid(fr,(int)cells[0],(int)cells[1],(int)cells[2],(int)offset[0],(int)offset[1],(int)offset[2]);
   (*gridptr)->iSubGriddingDivX = (int)subdiv[0];
   (*gridptr)->iSubGriddingDivY = (int)subdiv[1];
   (*gridptr)->iSubGriddingDivZ = (int)subdiv[2];

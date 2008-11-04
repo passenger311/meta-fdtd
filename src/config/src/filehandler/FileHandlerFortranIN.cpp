@@ -24,16 +24,25 @@ void FileHandlerFortranIN::writeFileHeader(Grid* gbGrid)
   to[1] = gbGrid->frBBox.position_end[VY];
   to[2] = gbGrid->frBBox.position_end[VZ];
   double 
-    dimX = to[0]-from[0], 
-    dimY = to[1]-from[1],
-    dimZ = to[2]-from[2];
+    sizeX = to[0]-from[0], 
+    sizeY = to[1]-from[1],
+    sizeZ = to[2]-from[2];
+  int 
+    i0 = gbGrid->iOffsetX,
+    j0 = gbGrid->iOffsetY,
+    k0 = gbGrid->iOffsetZ;
+  int
+    i1 = i1 + gbGrid->iCellsX,
+    j1 = j1 + gbGrid->iCellsY,
+    k1 = k1 + gbGrid->iCellsZ;
 
-  double dDX = dimX / (gbGrid->iCellsX-1);
-  if (gbGrid->iCellsX <= 1) dDX = dimX;
-  double dDY = dimY / (gbGrid->iCellsY-1);
-  if (gbGrid->iCellsY <= 1) dDY = dimY;
-  double dDZ = dimZ / (gbGrid->iCellsZ-1);
-  if (gbGrid->iCellsZ <= 1) dDZ = dimZ;
+
+  double dDX = sizeX / (gbGrid->iCellsX-1);
+  if (gbGrid->iCellsX <= 1) dDX = sizeX;
+  double dDY = sizeY / (gbGrid->iCellsY-1);
+  if (gbGrid->iCellsY <= 1) dDY = sizeY;
+  double dDZ = sizeZ / (gbGrid->iCellsZ-1);
+  if (gbGrid->iCellsZ <= 1) dDZ = sizeZ;
   int iPointCount = gbGrid->iCellsX * gbGrid->iCellsY * gbGrid->iCellsZ;
   
   m_fsFileStream.open(sFile.c_str());
@@ -42,9 +51,9 @@ void FileHandlerFortranIN::writeFileHeader(Grid* gbGrid)
   m_fsFileStream << " ! NUMNODES: " << iPointCount << endl;
   m_fsFileStream << "SAVE" << endl;
   m_fsFileStream << "(BOX" << endl;
-  m_fsFileStream << from[0] << " " << to[0] << " " << 1 << " "
-		 << from[1] << " " << to[1] << " " << 1 << " "
-		 << from[2] << " " << to[2] << " " << 1 << endl;
+  m_fsFileStream << i0 << " " << i1 << " " << 1 << " "
+		 << j0 << " " << j1 << " " << 1 << " "
+		 << k0 << " " << k1 << " " << 1 << endl;
   m_fsFileStream << ")BOX" << endl;
   m_fsFileStream << "(SET" << endl;
 }

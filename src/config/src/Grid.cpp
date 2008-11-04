@@ -44,7 +44,7 @@ Grid::Grid(Grid* grid) {
   bYeeGrid = grid->bYeeGrid;
 }
 
-Grid::Grid(frame& box, int cellsX, int cellsY, int cellsZ)
+Grid::Grid(frame& box, int cellsX, int cellsY, int cellsZ, int offsX, int offsY, int offsZ)
 {
   Init();
   frBBox = box;
@@ -52,21 +52,27 @@ Grid::Grid(frame& box, int cellsX, int cellsY, int cellsZ)
   iCellsX = cellsX;
   iCellsY = cellsY;
   iCellsZ = cellsZ;
+  iOffsetX = offsX;
+  iOffsetY = offsY;
+  iOffsetZ = offsZ;
 
   if (cellsX < 0 ) { // interprete frame coordinates as grid coordinates
     double from = frBBox.position_start[VX];
     double to = frBBox.position_end[VX];    
     iCellsX = (int)(to-from+1.5);
+    iOffsetX = (int)from;
   } 
   if (cellsY < 0 ) { // interprete frame coordinates as grid coordinates
     double from = frBBox.position_start[VY];
     double to = frBBox.position_end[VY];    
     iCellsY = (int)(to-from+1.5);
+    iOffsetY = (int)from;
   } 
   if (cellsZ < 0 ) { // interprete frame coordinates as grid coordinates
     double from = frBBox.position_start[VZ];
     double to = frBBox.position_end[VZ];    
     iCellsZ = (int)(to-from+1.5);
+    iOffsetZ = (int)from;
   } 
 }
 

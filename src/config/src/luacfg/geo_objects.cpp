@@ -86,14 +86,27 @@ int CCylinder_create(lua_State *L) {
 }
 
 int CBox_create(lua_State *L) {
+  int ok = 0;
   double pos[3] = {0.,0.,0.};
   double size[3] = {1.,1.,1.};
+  double from[3] = {-0.5,-0.5,-0.5};
+  double to[3] = {0.5,0.5,0.5};
   if ( lua_istable(L,1) ) {
-    geo_getvec3(L, "at", pos);
-    geo_getvec3(L, "size", size);
+    ok = geo_getvec3(L, "from", from);
+    geo_getvec3(L, "to", to);
+    if ( ! ok ) {
+      geo_getvec3(L, "at", pos);
+      geo_getvec3(L, "size", size);
+    }
   }  
+  vec3 f(from[0],from[1],from[2]);
+  vec3 t(to[0],to[1],to[2]);
   vec3 p(pos[0],pos[1],pos[2]);
   vec3 s(size[0],size[1],size[2]);
+  if ( ok ) { 
+    s = t - f;
+    p = t - 0.5*s;
+  }
   geo_obj_create(L, new CBox(p,s)); 
   luageo_setmeta(L, LUAGEO_OBJECT);
   return 1;
