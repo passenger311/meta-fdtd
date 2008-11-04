@@ -80,10 +80,8 @@ Grid::~Grid()
 {
 }
 
-void Grid::generateOutput(Scene* scnScene, FileHandler* fhd, const char* method, bool silent)
+void Grid::generateOutput(Scene* scnScene, FileHandler* fhd, const char* method, bool silentMode)
 {
-  bool bSilentMode = silent;
-
   fhd->writeFileHeader(this);
 	
   vector<CObject*> objects(scnScene->objects);
@@ -285,7 +283,7 @@ void Grid::generateOutput(Scene* scnScene, FileHandler* fhd, const char* method,
       m_iCurrentZ = iZ;
       fhd->writeGridZDataSlice(this,m_iCurrentZ);
     }
-    if (!bSilentMode && iZ % MAX((int)cellsZ/50,1) == 0) {
+    if (!silentMode && iZ % MAX((int)cellsZ/50,1) == 0) {
       cout << "." << flush;
     }
     pfrm.moveZ(dDZ);
