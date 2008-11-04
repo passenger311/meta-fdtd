@@ -110,25 +110,26 @@ function LOAD(parms)
 end
 
 
--- (NEW!) LOAD_SCENE Sub-Block definition
+-- (NEW!) LOAD_GEO Sub-Block definition
 
-function LOAD_SCENE(parms) 
-   local LOAD_SCENE = { block = "LOAD_SCENE" }
-   for k,v in pairs(parms) do LOAD_SCENE[k] = v end
+function LOAD_GEO(parms) 
+   local LOAD_GEO = { block = "LOAD_SCENE" }
+   for k,v in pairs(parms) do LOAD_GEO[k] = v end
    assert(scenes[parms[1]] ~=nil, "SCENE{} <name>="..parms[1].." does not exist!")
-   LOAD_SCENE.file = "scene_"..tostring(parms[1])..".in"
-   return LOAD_SCENE
+   LOAD_GEO.file = "geo_"..tostring(parms[1])..".in"
+   return LOAD_GEO
 end
 
 -- (NEW!) CREATE_GEO Sub-Block definition
 
 function ConfigMethods:CREATE_GEO(parms) 
+   if parms.on == false then return end 
    assert(scenes[parms[1]] == nil, "SCENE{} <name>="..parms[1].." is already in use!")
    local file = "geo_"..tostring(parms[1])..".in"
    scenes[parms[1]] = 1
    if not self.scenes_on or parms.on == false then return end 
    local geo_fh = geo.FileIN{file,comps=parms.comps};
-   assert(parms.scene and parms.grid,"CREATE_SCENE{} must define <grid> and <scene>")
+   assert(parms.scene and parms.grid,"CREATE_GEO{} must define <grid> and <scene>")
    print("processing "..file)
    parms.grid:write{geo_fh, parms.scene, method=parms.method, silent=parms.silent}
    print(" done.\n")
@@ -138,12 +139,13 @@ end
 -- (NEW!) CREATE_PREVIEW Sub-Block definition
 
 function ConfigMethods:CREATE_PREVIEW(parms) 
+   if parms.on == false then return end 
    assert(pscenes[parms[1]] == nil, "SCENE{} <name>="..parms[1].." is already in use!")
    local file = "preview_"..tostring(parms[1])..".vtk"
    pscenes[parms[1]] = 1
    if not self.scenes_on or parms.on == false then return end 
    local geo_fh = geo.FileVTK{file,comps=parms.comps};
-   assert(parms.scene and parms.grid,"CREATE_SCENE{} must define <grid> and <scene>")
+   assert(parms.scene and parms.grid,"CREATE_PREVIEW{} must define <grid> and <scene>")
    print("processing "..file)
    parms.grid:write{geo_fh, parms.scene, method=parms.method, silent=parms.silent}
    print(" done.\n")
@@ -365,13 +367,13 @@ local function writeLOAD(fh,LOAD)
    fh:write("    )LOAD\n")
 end
 
--- LOAD_SCENE Sub-Block write
+-- LOAD_GEO Sub-Block write
 
-local function writeLOAD_SCENE(fh,LOAD_SCENE)
-   assert(LOAD_SCENE and LOAD_SCENE.block == "LOAD_SCENE", "Expected LOAD_SCENE{}")
-   if LOAD_SCENE.on == false then return end  
+local function writeLOAD_GEO(fh,LOAD_GEO)
+   assert(LOAD_GEO and LOAD_GEO.block == "LOAD_GEO", "Expected LOAD_GEO{}")
+   if LOAD_GEO.on == false then return end  
    fh:write("    (LOAD\n")
-   fh:write("\t",LOAD_SCENE.file,"\t! scene file to load\n")
+   fh:write("\t",LOAD_GEO.file,"\t! scene file to load\n")
    fh:write("    )LOAD\n")
 end
 
@@ -385,7 +387,7 @@ local function writeREG(fh,REG)
       if v.block == "BOX" then writeBOX(fh,v) end
       if v.block == "POINT" then writePOINT(fh,v) end
       if v.block == "LOAD" then writeLOAD(fh,v) end
-      if v.block == "LOAD_SCENE" then writeLOAD_SCENE(fh,v) end
+      if v.block == "LOAD_GEO" then writeLOAD_GEO(fh,v) end
    end
    if REG.auto then fh:write("    AUTO\t! auto loop mode\n") end
    if REG.mask then fh:write("    MASK\t! mask loop mode\n") end
