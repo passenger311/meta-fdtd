@@ -30,7 +30,7 @@ all: info install
  
 install: build-dir
 	@echo [INSTALL] $(BUILDFILES)
-	@ cp $(BUILDFILES) ../$(BUILDDIR)
+	#@ cp $(BUILDFILES) ../$(BUILDDIR)
 
 %.o : %.f90
 	@echo [F90] $*
