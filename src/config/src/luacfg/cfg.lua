@@ -123,7 +123,6 @@ end
 -- (NEW!) CREATE_GEO Sub-Block definition
 
 function ConfigMethods:CREATE_GEO(parms) 
-   if parms.on == false then return end 
    assert(scenes[parms[1]] == nil, "SCENE{} <name>="..parms[1].." is already in use!")
    local file = "geo_"..tostring(parms[1])..".in"
    scenes[parms[1]] = 1
@@ -139,7 +138,6 @@ end
 -- (NEW!) CREATE_PREVIEW Sub-Block definition
 
 function ConfigMethods:CREATE_PREVIEW(parms) 
-   if parms.on == false then return end 
    assert(pscenes[parms[1]] == nil, "SCENE{} <name>="..parms[1].." is already in use!")
    local file = "preview_"..tostring(parms[1])..".vtk"
    pscenes[parms[1]] = 1
