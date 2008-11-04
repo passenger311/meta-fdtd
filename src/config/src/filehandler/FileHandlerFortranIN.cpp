@@ -32,9 +32,9 @@ void FileHandlerFortranIN::writeFileHeader(Grid* gbGrid)
     j0 = gbGrid->iOffsetY,
     k0 = gbGrid->iOffsetZ;
   int
-    i1 = i1 + gbGrid->iCellsX,
-    j1 = j1 + gbGrid->iCellsY,
-    k1 = k1 + gbGrid->iCellsZ;
+    i1 = i0 + gbGrid->iCellsX,
+    j1 = j0 + gbGrid->iCellsY,
+    k1 = k0 + gbGrid->iCellsZ;
 
 
   double dDX = sizeX / (gbGrid->iCellsX-1);
