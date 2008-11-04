@@ -25,7 +25,7 @@ shell1 = BinaryAndNot{sphere1,sphere2}
 scene1:add{ shell1, depth=1 }
 grid1 = Grid{from={-21,-21,-21},to={21,21,21}}
 
-cfg:CREATE_SCENE{"scene1", scene=scene1, grid=grid1, method="default", 
+cfg:CREATE_GEO{"scene1", scene=scene1, grid=grid1, method="default", 
 		 comps=3, silent=false }
 
 scene2 = Scene{value=1.}
@@ -33,7 +33,7 @@ sphere1 = Sphere{at={0,0,0}, radius = 18 }
 scene2:add{ sphere1, depth=1, value=2.0 }
 grid2 = Grid{from={-21,-21,-21},to={21,21,21}}
 
-cfg:CREATE_SCENE{"scene2", scene=scene2, grid=grid2, method="default", 
+cfg:CREATE_GEO{"scene2", scene=scene2, grid=grid2, method="default", 
 		 comps=3, silent=false }
 
 --- FDTD Definition
@@ -42,7 +42,7 @@ cfg:FDTD{
 
    EPSILON{
       REG{
-	 LOAD_SCENE{ "scene2" }
+	 LOAD_GEO{ "scene2" }
       },
       on = true
    },
@@ -137,7 +137,7 @@ cfg:MAT{
       order = 2
    },
    REG{
-      LOAD_SCENE{ "scene1" }
+      LOAD_GEO{ "scene1" }
    }
 }
 
