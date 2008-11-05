@@ -113,9 +113,9 @@ end
 -- (NEW!) LOAD_GEO Sub-Block definition
 
 function LOAD_GEO(parms) 
-   local LOAD_GEO = { block = "LOAD_SCENE" }
+   local LOAD_GEO = { block = "LOAD_GEO" }
    for k,v in pairs(parms) do LOAD_GEO[k] = v end
-   assert(scenes[parms[1]] ~=nil, "SCENE{} <name>="..parms[1].." does not exist!")
+   assert(scenes[parms[1]] ~=nil, "LOAD_GEO{} <name>="..parms[1].." does not exist!")
    LOAD_GEO.file = "geo_"..tostring(parms[1])..".in"
    return LOAD_GEO
 end
@@ -123,7 +123,7 @@ end
 -- (NEW!) CREATE_GEO Sub-Block definition
 
 function ConfigMethods:CREATE_GEO(parms) 
-   assert(scenes[parms[1]] == nil, "SCENE{} <name>="..parms[1].." is already in use!")
+   assert(scenes[parms[1]] == nil, "LOAD_GEO{} <name>="..parms[1].." is already in use!")
    local file = "geo_"..tostring(parms[1])..".in"
    scenes[parms[1]] = 1
    if not self.scenes_on or parms.on == false then return end 
