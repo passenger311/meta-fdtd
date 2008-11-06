@@ -155,7 +155,7 @@ module reglist
 
   integer, allocatable, dimension(:,:,:) :: tmpmask
   real(kind=8), allocatable, dimension(:,:) :: tmpval
-  integer :: numnodes, numvalues
+  integer :: numnodes
 
 
 contains
@@ -198,6 +198,7 @@ contains
     character :: bc, ec
     integer :: lcstack(0:10), ldepth = 0
     logical :: auto
+    integer :: i,j,k,v,p
 
     M4_WRITE_DBG(". enter ReadRegObj")
 
@@ -304,31 +305,52 @@ contains
              read(unit,*,iostat = ios) string
              M4_WRITE_DBG({"consumed ",TRIM(string)}) ! consume )LOAD
           end if
-       case("CLEAR")    
-          numvalues = 1 	
-       case("SAVE")    
-          numvalues = numnodes + 1 	
-       case("(FILL") ! a list of values
+       case("(SET") ! a box plus a list of values
+          bvec = defbvec
           fvec = 1.0
           call readline(unit,lcount,eof,line)
-          M4_EOF_ERROR({eof},{lcount})
-          call getfloatvec(line, fvec, 6, ":", err) ! then read up to 6 floats
-          M4_SYNTAX_ERROR({err},lcount,"[FLOATS]")
-          call FillValueRegObj(reg, fvec)
-          call readtoken(unit,lcount,")FILL")
-       case("(SET") ! a list of values
-          do 
-             fvec = 1.0
-             call readline(unit,lcount,eof,line)
-             M4_EOF_ERROR({eof},lcount)
-             call getfloatvec(line, fvec, 6, ":", err) ! then read up to 6 floats
-             if ( err ) then
-                M4_WRITE_DBG({"end of set list"})
-                M4_SYNTAX_ERROR({line .ne. ")SET"},lcount,{")SET"})
-                exit
-             end if
-             call SetValueRegObj(reg, fvec)
+          M4_EOF_ERROR({eof},lcount)
+          call getintvec(line, bvec, 9, ":", err)
+          if ( err ) then
+             M4_SYNTAX_ERROR({line .ne. ")SET" },lcount,{")SET"})
+             exit
+          end if
+          do k = bvec(7), bvec(8), bvec(9)
+             do j = bvec(4), bvec(5), bvec(6)
+                do i = bvec(1), bvec(2), bvec(3)
+                   read(unit,"(A159)",iostat=ios) line
+                   if ( ios .ne. 0 ) then
+                      M4_EOF_ERROR({.true.},lcount)      
+                   end if
+                   lcount = lcount + 1
+!                   call readline(unit,lcount,eof,line)
+!                   M4_EOF_ERROR({eof},lcount)
+                   if ( k .lt. domreg%ks .or. k .gt. domreg%ke .or. &
+                        j .lt. domreg%js .or. j .gt. domreg%je .or. &
+                        i .lt. domreg%is .or. i .gt. domreg%ie ) cycle
+                   fvec = 1.0
+                   call getfloatvec(line, fvec, 6, ":", err) ! then read up to 6 floats
+                   if ( err ) then
+                      M4_WRITE_DBG({"end of set list"})
+                      M4_SYNTAX_ERROR({line .ne. ")SET"},lcount,{")SET"})
+                      exit
+                   end if
+                   p = tmpmask(i,j,k)
+                   if ( p .eq. 0 ) then
+                      numnodes = numnodes + 1
+                      tmpmask(i,j,k) = numnodes 
+                      do v = 1, reg%numval
+                         tmpval(v,numnodes) = fvec(v)
+                      end do
+                   else
+                      do v = 1, reg%numval
+                         tmpval(v,p) = fvec(v)
+                      end do
+                   end if
+                end do
+             end do
           end do
+          read(unit,*,iostat = ios) string
        case ("LIST")
           auto = .false.
           reg%islist = .true.
@@ -410,7 +432,6 @@ contains
     tmpmask = 0
     tmpval = 0.0
     numnodes = 0
-    numvalues = 1
 
     numregobj = numregobj + 1
     regobj(numregobj)%idx = numregobj
@@ -426,9 +447,9 @@ contains
     regobj(numregobj)%ps = 1
     regobj(numregobj)%pe = 0
     !no steps
-    regobj(numregobj)%di = 0
-    regobj(numregobj)%dj = 0
-    regobj(numregobj)%dk = 0
+    regobj(numregobj)%di = 1
+    regobj(numregobj)%dj = 1
+    regobj(numregobj)%dk = 1
 
     regobj(numregobj)%numval = numval
     regobj(numregobj)%isbox = .false.
@@ -713,49 +734,6 @@ contains
     M4_WRITE_DBG({"point set!"})
 
   end subroutine SetPointRegObj
-
-!----------------------------------------------------------------------
-
-  subroutine SetValueRegObj(reg, fvec)
-  
-    type(T_REG) :: reg
-    real(kind=8) :: fvec(6)
-    integer :: v,i
-    
-    if ( reg%idx .eq. -1 ) return
-
-    M4_WRITE_DBG({"set value at ",numvalues," of ",numnodes," nodes"})
-	
-    if ( numvalues .gt. numnodes ) return
-    
-    do v = 1, reg%numval
-       tmpval(v,numvalues) = fvec(v)
-    end do
-
-    numvalues = numvalues + 1
-
-    	
-  end subroutine SetValueRegObj
-
-!----------------------------------------------------------------------
-  
-  subroutine FillValueRegObj(reg, fvec)
-  
-    type(T_REG) :: reg
-    real(kind=8) :: fvec(6)
-    integer :: v,p
-    
-    M4_WRITE_DBG({"fill values from ",numvalues," to ",numnodes," nodes"})
-    
-    do p = numvalues, numnodes	
-       do v = 1, reg%numval
-          tmpval(v,p) = fvec(v)
-       end do
-    end do
-   
-   numvalues = numnodes + 1
-	
-  end subroutine FillValueRegObj
 
 !----------------------------------------------------------------------
 

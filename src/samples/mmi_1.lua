@@ -2,12 +2,12 @@
 cfg = CONFIG{scenes=true}
 
 
---- real device parameters
+--- real device parameters (um)
 
-real_wavelength = 1.550 -- um
-real_width_mmi = 2.43 -- um
-real_length_mmi = 6.15 -- um
-real_width_wg = 0.400 -- um
+real_wavelength = 1.550
+real_width_mmi = 2.43
+real_length_mmi = 6.15
+real_width_wg = 0.400
 real_height_bsio2 = 0.7
 real_height_wg = 0.220
 real_length_wg1 = 1.4
@@ -23,6 +23,8 @@ eps_sio2 = nref_sio2^2
 
 resolution = 40
 
+dt = 0.574
+
 real_dx = real_wavelength / nref_si / resolution
 
 print("resolution = ", resolution)
@@ -31,7 +33,7 @@ print("real_dx = ", real_dx)
 
 print("wavelength (grid) = ", real_wavelength/real_dx)
 
-invwavelength = real_dx/real_wavelength;
+invwavelength = real_dx / real_wavelength
 
 print("invwavelength (grid) = ", invwavelength)
 
@@ -42,9 +44,10 @@ ncyc = 8000
 pulsehwhm = 500
 pulsehsteps = 1000
 
-width = 281   -- i
-height = 101  -- j
-length = 850  -- k
+-- i,j,k
+width = 281
+height = 101
+length = 850
 
 maxi = math.floor( (width - 1) / 2  )
 maxj = math.floor( height - 1 )
@@ -120,7 +123,7 @@ scene1:add{ box_wg3, depth=1, value=eps_si }
 grid1 = Grid{from={-maxi,height_bsio2-10,0},to={maxi,height_bsio2+height_wg+1,maxk}}
 gridv =  Grid{yee=false,from={-maxi,height_bsio2-10,0},to={maxi,height_bsio2+height_wg+1,maxk},offset={-maxi,0,0},cells={50,100,100}}
 
-cfg:CREATE_GEO{"scene1", scene=scene1, grid=grid1, method="default",comps=3, silent=false, on=false }
+cfg:CREATE_GEO{"scene1", scene=scene1, grid=grid1, method="default",comps=3, silent=false, on=true }
 cfg:CREATE_PREVIEW{"scene1", scene=scene1, grid=gridv, method="default", silent=false, on=true }
 
 
@@ -131,7 +134,7 @@ cfg:GRID{
    dim = 3,
    partition = { 0, 1 },
    ncyc = ncyc,
-   dt = 0.576,
+   dt = dt,
    irange = { -maxi, maxi },
    jrange = { 0, maxj },
    krange = { 0, maxk }
@@ -145,7 +148,7 @@ cfg:FDTD{
       REG{
 	 BOX{
 	    { -maxi-1, maxi+1, 1, 0, height_bsio2-1, 1, 0, maxk, 1, ":", eps_sio2, eps_sio2, eps_sio2 },
-	    { -maxi-1, maxi+1, 1, height_bsio2, maxj, 1, 0, maxk, 1, ":", eps_si, eps_si, eps_si }
+	    { -maxi-1, maxi+1, 1, height_bsio2, maxj, 1, 0, maxk, 1, ":", 1.,1.,1. }
 	 },
 	 LOAD_GEO{ "scene1" }
       },
@@ -155,7 +158,7 @@ cfg:FDTD{
    OUT{
       file = { "VTK", "slice1_xy_e" },
       type = { "E", "N" },
-      time = { 0, 1000, 500 },
+      time = { 1000, ncyc, 1000 },
       REG{
 	 BOX{
 	    { -hwidth_wg-10,hwidth_wg+10, 1, 
@@ -168,7 +171,7 @@ cfg:FDTD{
    OUT{
       file = { "VTK", "slice2_xy_e" },
       type = { "E", "N" },
-      time = { 0, 1000, 500 },
+      time = { 1000, ncyc, 1000 },
       REG{
 	 BOX{
 	    { -hwidth_wg-10,hwidth_wg+10, 1, 
@@ -181,7 +184,7 @@ cfg:FDTD{
     OUT{
       file = { "VTK", "slice3_xy_e" },
       type = { "E", "N" },
-      time = { 0, 1000, 500 },
+      time = { 1000, ncyc, 1000 },
       REG{
 	 BOX{
 	    { -hwidth_mmi-10,hwidth_mmi+10, 1, 
@@ -194,7 +197,7 @@ cfg:FDTD{
     OUT{
        file = { "VTK", "slice4_xy_e" },
        type = { "E", "N" },
-       time = { 0, 1000, 500 },
+      time = { 1000, ncyc, 1000 },
        REG{
 	  BOX{
 	     { -hwidth_sep-hwidth_wg-10,hwidth_sep+hwidth_wg+10, 1, 
@@ -207,7 +210,7 @@ cfg:FDTD{
     OUT{
        file = { "VTK", "slice5_xy_e" },
        type = { "E", "N" },
-       time = { 0, 1000, 500 },
+      time = { 1000, ncyc, 1000 },
        REG{
 	  BOX{
 	     { -hwidth_sep-hwidth_wg-10,hwidth_sep+hwidth_wg+10, 1, 
@@ -221,7 +224,7 @@ cfg:FDTD{
     OUT{
        file = { "VTK", "slice1_xz_e" },
        type = { "E", "N" },
-       time = { 0, 1000, 500 },
+      time = { 1000, ncyc, 1000 },
        REG{
 	  BOX{
 	     { -maxi+11, maxi-11, 1, 

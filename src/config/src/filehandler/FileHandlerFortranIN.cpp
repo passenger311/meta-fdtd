@@ -49,13 +49,10 @@ void FileHandlerFortranIN::writeFileHeader(Grid* gbGrid)
   
   m_fsFileStream << " ! (.IN) FIELD DATA FILE" << endl;
   m_fsFileStream << " ! NUMNODES: " << iPointCount << endl;
-  m_fsFileStream << "SAVE" << endl;
-  m_fsFileStream << "(BOX" << endl;
+  m_fsFileStream << "(SET" << endl;
   m_fsFileStream << i0 << " " << i1 << " " << 1 << " "
 		 << j0 << " " << j1 << " " << 1 << " "
 		 << k0 << " " << k1 << " " << 1 << endl;
-  m_fsFileStream << ")BOX" << endl;
-  m_fsFileStream << "(SET" << endl;
 }
 
 void FileHandlerFortranIN::writeGridZDataSlice(Grid* gbGrid,int z)
