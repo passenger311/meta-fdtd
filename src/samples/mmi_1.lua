@@ -1,5 +1,5 @@
 
-cfg = CONFIG{scenes=true}
+cfg = CONFIG{scenes=false}
 
 
 --- real device parameters (um)
@@ -153,6 +153,32 @@ cfg:FDTD{
 	 LOAD_GEO{ "scene1" }
       },
       on = true
+   },
+
+   OUT{
+      file = { "VTK", "slice0_xy_eps" },
+      type = { "Eps", "N" },
+      time = { 0, ncyc, 1000 },
+      REG{
+	 BOX{
+	    { -maxi,maxi, 1, 
+	       0, maxj, 1, 
+	       31, 31, 1  }
+	 }
+      }
+   },
+
+   OUT{
+      file = { "VTK", "slice0_xy_e" },
+      type = { "E", "N" },
+      time = { 1000, ncyc, 1000 },
+      REG{
+	 BOX{
+	    { -hwidth_wg-10,hwidth_wg+10, 1, 
+	       height_bsio2-10, height_bsio2+height_wg+10, 1, 
+	       31, 31, 1  }
+	 }
+      }
    },
 
    OUT{
