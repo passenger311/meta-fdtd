@@ -66,7 +66,7 @@ contains
     select case (out%fn)
     case('EH')
        call WriteEH(out,mode)
-    case('NRef')
+    case('N')
        call WriteN(out,mode)
     case default
        write(out%funit,*) "OUTPUT FUNCTION NOT IMPLEMENTED" 
