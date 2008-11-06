@@ -32,7 +32,7 @@ endif
 
 CCFLAGS+=
 CXXFLAGS+=
-F90FLAGS+= -Mbackslash
+F90FLAGS+=
 LDFLAGS+= -static
 
 # --- openmp flags
