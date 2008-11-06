@@ -162,14 +162,8 @@ contains
   
     M4_WRITE_DBG({"write header ",TRIM(out%filename)})
     
-    write(out%funit,*) '! (SET-) FIELD DATA FILE '
-    write(out%funit,*) '! META: M4_VERSION(), M4_FLAVOUR()'
-    write(out%funit,*) '! ISBOX: ',reg%isbox           
-    write(out%funit,*) '! NUMNODES: ',reg%numnodes 
-    write(out%funit,*) '! IRANGE: ',reg%is,reg%ie,reg%di 
-    write(out%funit,*) '! JRANGE: ',reg%js,reg%je,reg%dj
-    write(out%funit,*) '! KRANGE: ',reg%ks,reg%ke,reg%dk
-
+    write(out%funit,"(A)") "(SET"
+    write(out%funit,*) reg%is,reg%ie,reg%di,reg%js,reg%je,reg%dj,reg%ks,reg%ke,reg%dk
 
   end subroutine WriteHeaderOutsetObj
 

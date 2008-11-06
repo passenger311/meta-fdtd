@@ -61,8 +61,22 @@ contains
   subroutine WriteDataFdtdOutsetObj(out, mode)
 
     type (T_OUT) :: out
-    type (T_BUF) :: buf
     logical :: mode
+
+    select case (out%fn)
+    case('EH')
+       call WriteEH(out,mode)
+    case('Eps')
+       call WriteEps(out,mode)
+    end select
+
+  end subroutine WriteDataFdtdOutsetObj
+
+  subroutine WriteEH(out,mode)
+ 
+    type (T_OUT) :: out
+    logical :: mode
+
     M4_REGLOOP_DECL(reg,p,i,j,k,w(0))  
 
     M4_WRITE_DBG({"write data ",TRIM(out%filename), " ",TRIM(out%fn)})
@@ -73,9 +87,7 @@ contains
     
     reg = regobj(out%regidx)
     
-    write(out%funit,"(A)") "(SET"
-
-    M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+     M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
     
     write(out%funit,"(6E15.6E3)") Ex(i,j,k),Ey(i,j,k),Ez(i,j,k),Hx(i,j,k),Hy(i,j,k),Hz(i,j,k)
     
@@ -83,7 +95,37 @@ contains
     
     write(out%funit,"(A)") ")SET"
 
-  end subroutine WriteDataFdtdOutsetObj
+  end subroutine WriteEH
+
+  subroutine WriteEps(out,mode)
+ 
+    type (T_OUT) :: out
+    logical :: mode
+    real(kind=8) :: eps
+
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(0))  
+
+    M4_WRITE_DBG({"write data ",TRIM(out%filename), " ",TRIM(out%fn)})
+
+    if ( .not. mode ) return
+    
+    M4_IFELSE_DBG({call EchoRegObj(regobj(out%regidx))})
+    
+    reg = regobj(out%regidx)
+    
+     M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+    
+     eps = 0.125 * ( 1./epsinvx(i,j,k) + 1./epsinvx(i-1,j,k) + &
+          1./epsinvy(i,j,k) + 1./epsinvy(i,j-1,k) + &
+          1./epsinvz(i,j,k) + 1./epsinvz(i,j,k-1) )
+
+    write(out%funit,"(E15.6E3)") eps
+    
+    },{}, {} )
+    
+    write(out%funit,"(A)") ")SET"
+
+  end subroutine WriteEps
 
 
 end module fdtd_outset
