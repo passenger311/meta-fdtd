@@ -350,6 +350,23 @@ contains
                 end do
              end do
           end do
+
+          ! clip box to domain
+          bvec(1) = Max(bvec(1),domreg%is)
+          bvec(2) = Min(bvec(2),domreg%ie)
+          bvec(4) = Max(bvec(4),domreg%js)
+          bvec(5) = Min(bvec(5),domreg%je)
+          bvec(7) = Max(bvec(7),domreg%ks)
+          bvec(8) = Min(bvec(8),domreg%ke)
+          
+          ! resize bounding box
+          reg%is = Min(bvec(1),reg%is)
+          reg%ie = Max(bvec(2),reg%ie)
+          reg%js = Min(bvec(4),reg%js)
+          reg%je = Max(bvec(5),reg%je)
+          reg%ks = Min(bvec(7),reg%ks)
+          reg%ke = Max(bvec(8),reg%ke)
+
           read(unit,*,iostat = ios) string
        case ("LIST")
           auto = .false.
@@ -519,6 +536,7 @@ contains
              do i = reg%is, reg%ie
                 p = tmpmask(i,j,k)
                 if ( p .lt. 0 ) then
+                   num = num + 1 
                    tmpmask(i,j,k) = - tmpmask(i,j,k) ! flip sign back
                 else
                    tmpmask(i,j,k) = 0 ! erase all non-flipped
@@ -527,7 +545,7 @@ contains
           end do
        end do
        if ( num .gt. numnodes ) then
-          M4_FATAL_ERROR({"BAD NODE COUNT!"})
+          M4_FATAL_ERROR({"BAD NODE COUNT 1!"})
        endif
        numnodes = num ! new node number
 
@@ -582,7 +600,7 @@ contains
        end do
 
        if ( num .ne. numnodes ) then
-          M4_FATAL_ERROR({"BAD NODE COUNT!"})
+          M4_FATAL_ERROR({"BAD NODE COUNT 2!"})
        endif
        
     end if
