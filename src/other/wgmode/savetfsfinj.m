@@ -3,7 +3,7 @@ function [ ] = savetfsfinj( filename, e, h, range, nrange )
 fid = fopen(filename,'w');
 fprintf(fid,'(SET\n');
 
-fprintf(fid,'%d %d %d %d %d %d %d %d %d\n',nrange(1),nrange(2),1,nrange(4),nrange(5),1,nrange(7),nrange(9),1);
+fprintf(fid,'%d %d %d %d %d %d %d %d %d\n',nrange(1),nrange(2),1,nrange(4),nrange(5),1,nrange(7),nrange(8),1);
 
 si = nrange(2)-nrange(1)+1;
 sj = nrange(5)-nrange(4)+1;

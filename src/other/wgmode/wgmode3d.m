@@ -49,7 +49,7 @@ end
 assert( l == sl );
 fclose(fid);
 
-assert( si>=1 && sj>=1 && sk == 1 );
+assert( si>=1 && sj>=1 );
 
 leps(sl+1:sl+si,1) = leps(sl,1); % add a row
 leps(sl+1:sl+si,2) = leps(sl,2); % add a row
@@ -221,7 +221,7 @@ L = zeros(1,c);
 M = zeros(1,c);
 V = zeros(1,c);
 
-fprintf('cleaning out zeroes ...\n');
+fprintf('wiping out zero values ...\n');
 
 c = 0;
 for k = 1:length(Vt) % cleanup matrix
@@ -363,7 +363,7 @@ colorbar;
 view(90,-90);
 hold off;
 
-colormap jet;
+colormap jet(512);
 
 fprintf('done.\n');
 
