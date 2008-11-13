@@ -306,6 +306,7 @@ contains
              M4_WRITE_DBG({"consumed ",TRIM(string)}) ! consume )LOAD
           end if
        case("(SET") ! a box plus a list of values
+          reg%isbox = numnodes .eq. 0
           bvec = defbvec
           fvec = 1.0
           call readline(unit,lcount,eof,line)
@@ -350,8 +351,6 @@ contains
                 end do
              end do
           end do
-
-          reg%isbox = numnodes .eq. 0
 
           ! clip box to domain
           bvec(1) = Max(bvec(1),domreg%is)
