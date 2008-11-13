@@ -66,8 +66,8 @@ contains
     select case (out%fn)
     case('EH')
        call WriteEH(out,mode)
-    case('N')
-       call WriteN(out,mode)
+    case('Eps')
+       call WriteEps(out,mode)
     case default
        write(out%funit,*) "OUTPUT FUNCTION NOT IMPLEMENTED" 
     end select
@@ -99,12 +99,11 @@ contains
 
   end subroutine WriteEH
 
-  subroutine WriteN(out,mode)
+  subroutine WriteEps(out,mode)
  
     type (T_OUT) :: out
     logical :: mode
-    real(kind=8) :: eps
-
+ 
     M4_REGLOOP_DECL(reg,p,i,j,k,w(0))  
 
     M4_WRITE_DBG({"write data ",TRIM(out%filename), " ",TRIM(out%fn)})
@@ -116,18 +115,15 @@ contains
     reg = regobj(out%regidx)
     
      M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-    
-     eps = 1./6. * ( 1./epsinvx(i,j,k) + 1./epsinvx(i-1,j,k) + &
-          1./epsinvy(i,j,k) + 1./epsinvy(i,j-1,k) + &
-          1./epsinvz(i,j,k) + 1./epsinvz(i,j,k-1) )
 
-    write(out%funit,"(E15.6E3)") sqrt(eps)
+    write(out%funit,"(3E15.6E3)") &
+         1./epsinvx(i,j,k), 1./epsinvy(i,j,k), 1./epsinvz(i,j,k)
     
     },{}, {} )
     
     write(out%funit,"(A)") ")SET"
 
-  end subroutine WriteN
+  end subroutine WriteEps
 
 
 end module fdtd_outset

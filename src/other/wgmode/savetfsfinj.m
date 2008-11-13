@@ -1,22 +1,18 @@
-function [ ] = savetfsfinj( filename, e, h, range, itrim, jtrim )
-
-range(1) = range(1) + itrim(1);
-range(2) = range(2) - itrim(2);
-
-range(4) = range(4) + jtrim(1);
-range(5) = range(5) - jtrim(2);
+function [ ] = savetfsfinj( filename, e, h, range, nrange )
 
 fid = fopen(filename,'w');
 fprintf(fid,'(SET\n');
 
-fprintf(fid,'%d %d %d %d %d %d %d %d %d\n',range(1),range(2),1,range(4),range(5),1,range(7),range(9),1);
+fprintf(fid,'%d %d %d %d %d %d %d %d %d\n',nrange(1),nrange(2),1,nrange(4),nrange(5),1,nrange(7),nrange(9),1);
 
-si = range(2)-range(1)+1;
-sj = range(5)-range(4)+1;
-sk = range(8)-range(7)+1;
+si = nrange(2)-nrange(1)+1;
+sj = nrange(5)-nrange(4)+1;
 
-for j=1:sj
-   for i=1:si
+oi = nrange(1) - range(1) ;
+oj = nrange(4) - range(4) ;
+
+for j=oj+1:oj+sj
+   for i=oi+1:oi+si
       fprintf(fid,'%f %f\n',e(j,i),h(j,i));
    end
 end

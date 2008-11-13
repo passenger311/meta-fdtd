@@ -16,18 +16,15 @@ while feof(fid) == 0
     if ( tline(1) =='!' || tline(1) == '(' ) 
         continue;
     end
-    range = sscanf(tline,'%i %i %i %i %i %i %i %i %i');
+    range = sscanf(tline,'%i %i %i %i %i %i %i %i %i')';
     break;
 end
 
-
 ri = [ range(1) range(2) ]; % range i
 rj = [ range(4) range(5) ]; % range j
-rk = [ range(7) range(8) ]; % range k
 
 si = ri(2)-ri(1)+1; % length i
 sj = rj(2)-rj(1)+1; % length j
-sk = rk(2)-rk(1)+1; % length k
 
 sl = si*sj;
 
@@ -62,8 +59,6 @@ leps(sl+1:sl+si,3) = leps(sl,3); % add a row
 
 fprintf('plotting epsilon ...\n');
 
-subplot(3,2,1)
-
 eps = zeros(sj,si);
 
 nmax = 0;
@@ -77,17 +72,22 @@ for j=2:sj
     end
 end
 
-nmax
+fprintf(' -> nmax = %f\n', nmax);
 
 eps(1,:) = eps(2,:);
 eps(:,1) = eps(:,2);
 
+subplot(3,2,1)
+hold on;
+title('Refractive index profile n(x,y)')
+xlabel('x [a.u.]')
+ylabel('y [a.u.]')
 surfc(sqrt(eps));
 axis tight;
 shading interp;
 colorbar;
 view(0,90);
-
+hold off;
 
 % --- calculate diagonals A,B,C,D,E,F for 4 BLOCKS
 
@@ -191,7 +191,7 @@ Gm = [1:sl] + si;
 
 % --- build sparse matrix with indices (l,m) for (row,column)
 
-fprintf('setting sparse elements ...\n');
+fprintf('setting sparse matrix elements ...\n');
 
 loff = [ 0, 0, sl, sl ]; % block row offset 
 moff = [ 0, sl, sl, 0 ]; % block column offset
@@ -234,18 +234,22 @@ for k = 1:length(Vt) % cleanup matrix
     end
 end
 
-fprintf('running sparse solver ...\n');
+fprintf('constructing sparse matrix ...\n');
 
 S = sparse(L,M,V,sl*2,sl*2,length(V));
 
 % --- run eigensolver
 
+fprintf('running sparse solver ...\n');
+
 opts.disp = 0;
-[EVec,EVal] = eigs(S,[],1, betaguess);
+[EVec,EVal] = eigs(S,[],1, betaguess,opts);
 
 keff = sqrt(EVal(1));
 
-neff = keff/om
+neff = keff/om;
+fprintf(' -> keff = %f\n', keff);
+fprintf(' -> neff = %f\n', neff);
 
 Hx = zeros(sj,si);
 Hy = zeros(sj,si);
@@ -306,35 +310,60 @@ fprintf('plotting fields ...\n');
 
 subplot(3,2,3);
 
-surfc(Ex);
+hold on;
+%contour(Ex',25);
+title(sprintf('Ex component @ neff = %f',neff));
+ylabel('x [a.u.]')
+xlabel('y [a.u.]')
+surfc(Ex');
 axis tight;
 shading interp;
 colorbar;
-view(0,90);
+view(90,-90);
+hold off;
 
 subplot(3,2,4);
 
-surfc(Ey);
+hold on;
+%contour(Ey',25);
+title(sprintf('Ey component @ neff = %f',neff));
+ylabel('x [a.u.]')
+xlabel('y [a.u.]')
+surfc(Ey');
 axis tight;
 shading interp;
 colorbar;
-view(0,90);
+view(90,-90);
+hold off;
 
 subplot(3,2,5);
 
-surfc(Hx);
+hold on;
+%contour(Hx',25);
+title(sprintf('Hx component @ neff = %f',neff));
+ylabel('x [a.u.]')
+xlabel('y [a.u.]')
+surfc(Hx');
 axis tight;
 shading interp;
 colorbar;
-view(0,90);
+view(90,-90);
+hold off;
 
 subplot(3,2,6);
-
-surfc(Hy);
+hold on;
+title(sprintf('Hy component @ neff = %f',neff));
+ylabel('x [a.u.]')
+xlabel('y [a.u.]')
+%contour(Hy',25);
+surfc(Hy');
 axis tight;
 shading interp;
 colorbar;
-view(0,90);
+view(90,-90);
+hold off;
+
+colormap jet;
 
 fprintf('done.\n');
 
