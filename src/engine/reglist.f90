@@ -351,6 +351,8 @@ contains
              end do
           end do
 
+          reg%isbox = numnodes .eq. 0
+
           ! clip box to domain
           bvec(1) = Max(bvec(1),domreg%is)
           bvec(2) = Min(bvec(2),domreg%ie)
