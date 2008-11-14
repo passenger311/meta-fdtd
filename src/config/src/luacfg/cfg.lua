@@ -207,6 +207,16 @@ function LHM(parms)
    return LHM
 end
 
+-- (MAT)LHM Sub-Block definition
+
+function LHMGRAD(parms) 
+   local LHMGRAD = { block = "LHMGRAD" }
+   LHMGRAD.file = parms.file
+   LHMGRAD.point = parms.offset or { 0, 0, 0 }
+   LHMGRAD.size = parms.size or { 0, 0, 0 }
+   return LHMGRAD
+end
+
 -- (MAT)PEC Sub-Block definition
 
 function PEC(parms) 
@@ -302,6 +312,28 @@ function ConfigMethods:DIAG(parms)
    table.insert(self.diag, DIAG)   
 end
 
+
+-- (DIAG)PSPEC Sub-Block definition
+
+function PSPEC(parms) 
+   local PSPEC = { block = "PSPEC" }
+   PSPEC.file = parms.file
+   PSPEC.reffile = parms.reffile
+   PSPEC.mode = parms.mode
+   PSPEC.phasefwd = parms.phasefwd
+   PSPEC.phasebwd = parms.phasebwd
+   PSPEC.time = parms.time or { 0,-1, 1 }  
+   PSPEC.polarize = parms.polarize or { phi=0, theta=0, psi=0 }
+   return PSPEC
+end
+
+-- (DIAG)EBAL Sub-Block definition
+
+function EBAL(parms) 
+   local EBAL = { block = "EBAL" }
+   EBAL.time = parms.time or { 0,-1, 1 }  
+   return EBAL
+end
 
 
 ---------------------------------------------------------------------------
@@ -475,6 +507,15 @@ local writemat = {
 	      fh:write(LHM.gammapl,"\t! gammapl (damping) [1/dt]\n")
 	      fh:write(LHM.order,"\t! order: 1 (J ode) or 2 (P ode)\n")
 	   end,
+   LHMGRAD = function(fh,LHMGRAD)
+	      fh:write(LHMGRAD.file,"\t! file to load\n")
+	      fh:write(LHMGRAD.point[1]," ",
+		       LHMGRAD.point[2]," ",
+		       LHMGRAD.point[3],"\t! offset point\n")
+	      fh:write(LHMGRAD.size[1]," ",
+		       LHMGRAD.size[2]," ",
+		       LHMGRAD.size[3],"\t! size vector\n")
+	   end,
    LORENTZ = function(fh,LORENTZ)
 	      fh:write(LORENTZ.invlambdal,"\t! invlambdal [2 pi c]\n")
 	      fh:write(LORENTZ.gammal,"\t! gammal (damping) [1/dt]\n")
@@ -603,7 +644,18 @@ end
 -- (DIAG) DIAG Sub-Block write
 
 local writediag = {
-
+   PSPEC = function(fh,PSPEC)
+	      fh:write(PSPEC.file," \t! filename (.pspec)\n")
+	      fh:write(PSPEC.mode, " ", PSPEC.reffile," \t! mode ( S,Ecs,Hcs,Eap,Hap) and [ref. file]\n")
+	      fh:write(PSPEC.phasefwd," ", PSPEC.phasebwd, " \t! wrap phase forward / backward\n")
+	      fh:write(PSPEC.time[1]," ",PSPEC.time[2]," ",PSPEC.time[3]," \t! time window [from to step]\n")
+	      fh:write(PSPEC.polarize.phi, " ",
+		       PSPEC.polarize.theta, " ",
+		       PSPEC.polarize.psi, " \t! polarize: phi, theta, psi\n")
+	   end,
+   EBAL = function(fh,EBAL)
+	     fh:write(EBAL.time[1]," ",PSPEC.time[2]," ",PSPEC.time[3]," \t! time window [from to step]\n")
+	  end,
 }
 
 
