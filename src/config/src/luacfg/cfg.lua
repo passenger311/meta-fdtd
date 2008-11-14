@@ -318,10 +318,10 @@ end
 function PSPEC(parms) 
    local PSPEC = { block = "PSPEC" }
    PSPEC.file = parms.file
-   PSPEC.reffile = parms.reffile
-   PSPEC.mode = parms.mode
-   PSPEC.phasefwd = parms.phasefwd
-   PSPEC.phasebwd = parms.phasebwd
+   PSPEC.reffile = parms.reffile or ""
+   PSPEC.mode = parms.mode or "S"
+   PSPEC.phasefwd = parms.phasefwd or 0 
+   PSPEC.phasebwd = parms.phasebwd or 0
    PSPEC.time = parms.time or { 0,-1, 1 }  
    PSPEC.polarize = parms.polarize or { phi=0, theta=0, psi=0 }
    return PSPEC
