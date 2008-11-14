@@ -13,12 +13,13 @@ fid = fopen(epsfile,'r');
 
 while feof(fid) == 0
     tline = fgetl(fid);
-    if ( tline(1) =='!' || tline(1) == '(' ) 
+    if ( tline(1) =='!' || tline(2)=='!' || tline(1) == '(' ) 
         continue;
     end
     range = sscanf(tline,'%i %i %i %i %i %i %i %i %i')';
     break;
 end
+
 
 ri = [ range(1) range(2) ]; % range i
 rj = [ range(4) range(5) ]; % range j

@@ -1,10 +1,11 @@
 
-cfg = CONFIG{scenes=false}
+cfg = CONFIG{scenes=true}
 
 
 --- real device parameters (um)
 
 real_wavelength = 1.550
+
 real_width_mmi = 2.43
 real_length_mmi = 6.15
 real_width_wg = 0.400
@@ -41,12 +42,15 @@ print("invwavelength (grid) = ", invwavelength)
 --- device in natural HL, dx=dy=dz=1.
 
 ncyc = 8000
+
 pulsehwhm = 500
 pulsehsteps = 1000
+kpulse = 30
 
--- i,j,k
+-- grid dimensions: i,j,k
+
 width = 281
-height = 101
+height = 121
 length = 850
 
 maxi = math.floor( (width - 1) / 2  )
@@ -55,7 +59,7 @@ maxk = math.floor( length - 1 )
 
 
 height_wg = math.floor(real_height_wg/real_dx+0.5)
-height_bsio2 = math.floor(real_height_bsio2/real_dx)
+height_bsio2 = math.floor(real_height_bsio2/real_dx+0.5)
 hwidth_wg = math.floor(real_width_wg/2/real_dx+0.5)
 hwidth_mmi = math.floor(real_width_mmi/2/real_dx+0.5)
 length_wg1 = math.floor(real_length_wg1/real_dx+0.5)
@@ -120,12 +124,17 @@ scene1:add{ box_wg1, depth=1, value=eps_si }
 scene1:add{ box_mmi, depth=1, value=eps_si }
 scene1:add{ box_wg2, depth=1, value=eps_si }
 scene1:add{ box_wg3, depth=1, value=eps_si }
+
 grid1 = Grid{from={-maxi,height_bsio2-10,0},to={maxi,height_bsio2+height_wg+1,maxk}}
-gridv =  Grid{yee=false,from={-maxi,height_bsio2-10,0},to={maxi,height_bsio2+height_wg+1,maxk},offset={-maxi,0,0},cells={50,100,100}}
+pad = 50
+grid2 = Grid{from={-hwidth_wg-pad,height_bsio2-pad,kpulse }, to={hwidth_wg+pad,height_bsio2+height_wg+pad,kpulse}}
+grid3 =  Grid{yee=false,from={-maxi,height_bsio2-10,0},to={maxi,height_bsio2+height_wg+1,maxk},offset={-maxi,0,0},cells={50,100,100}}
 
 cfg:CREATE_GEO{"scene1", scene=scene1, grid=grid1, method="default",comps=3, silent=false, on=true }
-cfg:CREATE_PREVIEW{"scene1", scene=scene1, grid=gridv, method="default", silent=false, on=true }
 
+cfg:CREATE_GEO{"inj1", scene=scene1, grid=grid2, method="default",comps=3, silent=false, on=true }
+
+cfg:CREATE_PREVIEW{"scene1", scene=scene1, grid=grid3, method="default", silent=false, on=true }
 
 --- GRID Definition
 
@@ -135,7 +144,8 @@ cfg:GRID{
    partition = { 0, 1 },
    ncyc = ncyc,
    dt = dt,
-   irange = { -maxi, maxi },
+--   irange = { -maxi, maxi },
+   irange = { 0, maxi },
    jrange = { 0, maxj },
    krange = { 0, maxk }
 
@@ -174,8 +184,8 @@ cfg:FDTD{
       time = { 1000, ncyc, 1000 },
       REG{
 	 BOX{
-	    { -hwidth_wg-10,hwidth_wg+10, 1, 
-	       height_bsio2-10, height_bsio2+height_wg+10, 1, 
+	    { -hwidth_wg-20,hwidth_wg+20, 1, 
+	       height_bsio2-20, height_bsio2+height_wg+20, 1, 
 	       31, 31, 1  }
 	 }
       }
@@ -187,8 +197,8 @@ cfg:FDTD{
       time = { 1000, ncyc, 1000 },
       REG{
 	 BOX{
-	    { -hwidth_wg-10,hwidth_wg+10, 1, 
-	       height_bsio2-10, height_bsio2+height_wg+10, 1, 
+	    { -hwidth_wg-20,hwidth_wg+20, 1, 
+	       height_bsio2-20, height_bsio2+height_wg+20, 1, 
 	      math.floor(length_wg1/2), math.floor(length_wg1/2) , 1  }
 	 }
       }
@@ -213,8 +223,8 @@ cfg:FDTD{
       time = { 1000, ncyc, 1000 },
       REG{
 	 BOX{
-	    { -hwidth_mmi-10,hwidth_mmi+10, 1, 
-	       height_bsio2-10, height_bsio2+height_wg+10, 1, 
+	    { -hwidth_mmi-20,hwidth_mmi+20, 1, 
+	       height_bsio2-20, height_bsio2+height_wg+20, 1, 
 	      length_wg1+math.floor(length_mmi/2),length_wg1+math.floor(length_mmi/2) , 1  }
 	 }
       }
@@ -226,8 +236,8 @@ cfg:FDTD{
       time = { 1000, ncyc, 1000 },
        REG{
 	  BOX{
-	     { -hwidth_sep-hwidth_wg-10,hwidth_sep+hwidth_wg+10, 1, 
-	       height_bsio2-10, height_bsio2+height_wg+10, 1, 
+	     { -hwidth_sep-hwidth_wg-20,hwidth_sep+hwidth_wg+20, 1, 
+	       height_bsio2-20, height_bsio2+height_wg+20, 1, 
 	       length_wg1+length_mmi,length_wg1+length_mmi, 1  }
 	  }
        }
@@ -239,8 +249,8 @@ cfg:FDTD{
       time = { 1000, ncyc, 1000 },
        REG{
 	  BOX{
-	     { -hwidth_sep-hwidth_wg-10,hwidth_sep+hwidth_wg+10, 1, 
-	       height_bsio2-10, height_bsio2+height_wg+10, 1, 
+	     { -hwidth_sep-hwidth_wg-20,hwidth_sep+hwidth_wg+20, 1, 
+	       height_bsio2-20, height_bsio2+height_wg+20, 1, 
 	       length_wg1+length_mmi+math.floor(length_wg2/2),length_wg1+length_mmi+math.floor(length_wg2/2) , 1  }
 	  }
        }
@@ -266,7 +276,7 @@ cfg:FDTD{
 --- BOUND Definition
 
 cfg:BOUND{
-   config = { 1, 1, 1, 1, 1, 1 },
+   config = { 2, 1, 1, 1, 1, 1 },
    PML{
       cells = 11,
       pot = 3.2,
@@ -289,14 +299,42 @@ cfg:SRC{
       planewave = { phi=0, theta=0.0, psi=90.0, nrefr=nref_si }
    },
    REG{
-      BOX{
-	 { -hwidth_wg+10, hwidth_wg-10, 1, 
-	   height_bsio2+10, height_bsio2+height_wg-10, 1,
-	   30, 30, 1 
-	}
-      }
+      LOAD{ "inj1.set" }
    },
    on = true
+}
+
+
+--- PSPEC
+
+yc = height_bsio2+math.floor(height_wg/2)
+
+cfg:DIAG{
+   PSPEC{
+      file = "input",
+      time = { 1, 8192, 1 },
+      mode = "S",
+      polarize = { phi=0, theta=0, psi=90.0 }
+   },
+   REG{
+      BOX{ 
+	 { 1, 21, 3, yc-10, yc+10, 3, 90, 90, 1 }  
+      }
+   }
+}
+
+cfg:DIAG{
+   PSPEC{
+      file = "output",
+      time = { 1, 8192, 1 },
+      mode = "S",
+      polarize = { phi=0, theta=0, psi=90.0 }
+   },
+   REG{
+      BOX{ 
+	 { hwidth_sep+1, hwidth_sep+21, 3, yc-10, yc+10, 3, 700, 700, 1 }  
+      }
+   }
 }
 
 
