@@ -206,7 +206,7 @@ contains
 
        if ( mode ) then 
           call OpenOutgplObj(out, ncyc, out%snap)
-          if ( out%numnodes .gt. 1 ) write(out%funit,*)
+          if ( out%numnodes .gt. 1 .and. out%mode .ne. 'S' ) write(out%funit,*)
        end if
        call WriteDataFdtdOutgplObj(out,mode)
        if ( mode ) call CloseOutgplObj(out)

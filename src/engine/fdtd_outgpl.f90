@@ -285,9 +285,7 @@ contains
 
       },{}, {} )
    
-
       if ( out%mode .eq. 'S' ) then
-         write(out%funit,*) "FIELD FieldSum ", buf%numslot
          write(out%funit,*) (real(sum(l),8), l=1, buf%numslot,1)
       endif
 
