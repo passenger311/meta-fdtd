@@ -19,7 +19,7 @@ module bound
   use grid  
   use fdtd
   use pec 
-  use sbc
+  use pmc
   use pbc
   use pml
 
@@ -128,7 +128,7 @@ contains
     
     call InitializePec(planebound,0)
     call InitializePml(planebound,1)
-    call InitializeSbc(planebound,2)
+    call InitializePmc(planebound,2)
     call InitializePbc(planebound,3)
 
     M4_WRITE_DBG({". exit InitializeBound"})
@@ -143,7 +143,7 @@ contains
 
     call FinalizePml
     call FinalizePec
-    call FinalizeSbc
+    call FinalizePmc
     call FinalizePbc
 
     M4_WRITE_DBG({". exit FinalizeBound"})
@@ -178,7 +178,7 @@ contains
           case ( 1 )
              ! call StepHBoundPml(i)
           case ( 2 )
-             call StepHBoundSbc(i)
+             call StepHBoundPmc(i)
           case ( 3 )
              call StepHBoundPbc(i)
 
@@ -219,7 +219,7 @@ contains
        case ( 1 )
           ! call StepEBoundPml(i)
        case ( 2 )
-          call StepEBoundSbc(i)
+          call StepEBoundPmc(i)
        case ( 3 )
           call StepEBoundPbc(i)
 

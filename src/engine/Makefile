@@ -63,7 +63,7 @@ signal.o\
 fdtd.o\
 fdtd_calc.o\
 pec.o\
-sbc.o\
+pmc.o\
 pbc.o\
 pml.o\
 out_calc.o\
