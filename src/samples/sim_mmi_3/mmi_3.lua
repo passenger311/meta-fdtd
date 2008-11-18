@@ -1,5 +1,5 @@
 
-cfg = CONFIG{scenes=true}
+cfg = CONFIG{scenes=false}
 
 
 --- real device parameters (um)
@@ -24,7 +24,7 @@ eps_sio2 = nref_sio2^2
 
 resolution = 40
 
-dt = 0.574
+dt = 0.572
 
 real_dx = real_wavelength / nref_si / resolution
 
@@ -41,10 +41,10 @@ print("invwavelength (grid) = ", invwavelength)
 
 --- device in natural HL, dx=dy=dz=1.
 
-ncyc = 8000
+ncyc = 8192
 
-pulsehwhm = 500
-pulsehsteps = 1000
+pulsehwhm = 150
+pulsehsteps = 500
 kpulse = 30
 
 -- grid dimensions: i,j,k
@@ -152,6 +152,8 @@ cfg:GRID{
 }
 --- FDTD Definition
 
+yc = height_bsio2+math.floor(height_wg/2)
+
 cfg:FDTD{
 
    EPSILON{
@@ -163,6 +165,50 @@ cfg:FDTD{
 	 LOAD_GEO{ "scene1" }
       },
       on = true
+   },
+
+   OUT{
+      file = { "GPL", "point_e_input" },
+      type = { "E", "N", ".F." },
+      time = { 0, ncyc, 10 },
+      REG{
+	 POINT{ 
+	    { 0, yc, 31 }  
+	 }
+      }
+   },
+
+   OUT{
+      file = { "GPL", "point_e_output" },
+      type = { "E", "N", ".F." },
+      time = { 0, ncyc, 10 },
+      REG{
+	 POINT{ 
+	    { hwidth_sep, yc, 800 }  
+	 }
+      }
+   },
+
+   OUT{
+      file = { "GPL", "point_en_input" },
+      type = { "En", "S", ".F." },
+      time = { 0, ncyc, 10 },
+      REG{
+	 BOX{ 
+	    { 1, 21, 3, yc-10, yc+10, 3, 90, 90, 1 }  
+	 }
+      }
+   },
+
+   OUT{
+      file = { "GPL", "point_en_output" },
+      type = { "En", "S", ".F." },
+      time = { 0, ncyc, 10 },
+      REG{
+	 BOX{ 
+	    { hwidth_sep+1, hwidth_sep+21, 3, yc-10, yc+10, 3, 700, 700, 1 }  
+	 }
+      }
    },
 
    OUT{
@@ -264,7 +310,7 @@ cfg:FDTD{
        REG{
 	  BOX{
 	     { -maxi+11, maxi-11, 1, 
-	       height_bsio2+math.floor(height_wg/2),height_bsio2+math.floor(height_wg/2), 1,
+	       yc, yc, 1,
 	       0+11, maxk-11, 1	       
 	    }
 	  }
@@ -276,7 +322,7 @@ cfg:FDTD{
 --- BOUND Definition
 
 cfg:BOUND{
-   config = { 2, 1, 1, 1, 1, 1 },
+   config = { 0, 1, 1, 1, 1, 1 },
    PML{
       cells = 11,
       pot = 3.2,
@@ -307,13 +353,12 @@ cfg:SRC{
 
 --- PSPEC
 
-yc = height_bsio2+math.floor(height_wg/2)
 
 cfg:DIAG{
    PSPEC{
       file = "input",
       time = { 1, 8192, 1 },
-      mode = "S",
+      mode = "Eap",
       polarize = { phi=0, theta=0, psi=90.0 }
    },
    REG{
@@ -327,7 +372,7 @@ cfg:DIAG{
    PSPEC{
       file = "output",
       time = { 1, 8192, 1 },
-      mode = "S",
+      mode = "Eap",
       polarize = { phi=0, theta=0, psi=90.0 }
    },
    REG{

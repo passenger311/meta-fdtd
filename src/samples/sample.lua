@@ -1,5 +1,5 @@
 
-cfg = CONFIG{scenes=false}
+cfg = CONFIG{scenes=true}
 
 --- GRID Definition
 
@@ -22,10 +22,11 @@ scene1 = Scene{value=0.}
 sphere1 = Sphere{at={0,0,0}, radius = 20 }
 sphere2 = Sphere{at={0,0,0}, radius = 18 }
 shell1 = BinaryAndNot{sphere1,sphere2}
-scene1:add{ shell1, depth=1 }
-grid1 = Grid{from={-21,-21,-21},to={21,21,21}}
 
-cfg:CREATE_GEO{"scene1", scene=scene1, grid=grid1, method="default", 
+
+grid1 = Grid{yee=false, from={-21,-21,-21},to={21,21,21}}
+
+cfg:CREATE_PREVIEW{"scene1", scene=scene1, grid=grid1, method="default", 
 		 comps=3, silent=false }
 
 scene2 = Scene{value=1.}
