@@ -70,14 +70,6 @@ contains
 
     integer :: i
 
-  end subroutine StepHBoundPmc
-
-!----------------------------------------------------------------------
-
-  subroutine StepEBoundPmc(i)
-
-    integer :: i
-
     select case (i)
 
        case ( 1 )
@@ -101,8 +93,16 @@ contains
 
        end select
 
+     end subroutine StepHBoundPmc
+
+!----------------------------------------------------------------------
+
+  subroutine StepEBoundPmc(i)
+
+    integer :: i
 
   end subroutine StepEBoundPmc
+
 
 !----------------------------------------------------------------------
 
