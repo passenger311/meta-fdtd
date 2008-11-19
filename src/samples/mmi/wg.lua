@@ -6,13 +6,9 @@ cfg = CONFIG{scenes=true}
 
 real_wavelength = 1.550
 
-real_width_mmi = 2.43
-real_length_mmi = 6.15
 real_width_wg = 0.400
 real_height_bsio2 = 0.7
 real_height_wg = 0.220
-real_length_wg1 = 2.4
-real_hwidth_sep = 0.65
 real_kinj = 0.2
 real_kfft1 = real_kinj + 1.6 
 real_kfft2 = - 0.4
@@ -52,7 +48,7 @@ kpulse = 30
 
 -- grid dimensions: i,j,k
 
-width = 281
+width = 101
 height = 121
 length = 850
 
@@ -64,11 +60,8 @@ kmax = math.floor( length - 1 )
 height_wg = math.floor(real_height_wg/real_dx+0.5)
 height_bsio2 = math.floor(real_height_bsio2/real_dx+0.5)
 hwidth_wg = math.floor(real_width_wg/2/real_dx+0.5)
-hwidth_mmi = math.floor(real_width_mmi/2/real_dx+0.5)
-length_wg1 = math.floor(real_length_wg1/real_dx+0.5)
-length_mmi = math.floor(real_length_mmi/real_dx+0.5)
-hwidth_sep = math.floor(real_hwidth_sep/real_dx+0.5)
-length_wg2 = kmax - length_wg1 - length_mmi
+length_wg1 = length
+hwidth_sep = 0
 kinj =  math.floor(real_kinj/real_dx+0.5)
 kfft1 =  math.floor(real_kfft1/real_dx+0.5)
 kfft2 =  kmax + math.floor(real_kfft2/real_dx+0.5)
@@ -82,10 +75,6 @@ print("height_wg (grid) = ", height_wg)
 print("height_bsio2 (grid) = ", height_bsio2)
 print("hwidth_wg (grid) = ", hwidth_wg)
 print("length_wg1 (grid) = ", length_wg1)
-print("length_mmi (grid) = ", length_mmi)
-print("hwidth_mmi (grid) = ", hwidth_mmi)
-print("hwidth_sep (grid) = ", hwidth_sep)
-print("length_wg2 (grid) = ", length_wg2)
 print("kinj (grid) = ", kinj)
 print("kfft1 (grid) = ", kfft1)
 print("kfft2 (grid) = ", kfft2)
@@ -98,7 +87,7 @@ print("krange (real) = ", 0, kmax*real_dx)
 
 --- create dielectric structure
 
-mmi = Scene{value=1.}
+wg = Scene{value=1.}
 box_bsio2 = Box{ 
    from={-imax-1,-1,-1},
    to={imax+1,height_bsio2,kmax+1}
@@ -106,44 +95,20 @@ box_bsio2 = Box{
 
 box_wg1 = Box{
    from={-hwidth_wg,height_bsio2,-1},
-   to={hwidth_wg,height_bsio2+height_wg,length_wg1 }
+   to={hwidth_wg,height_bsio2+height_wg,length_wg1+1 }
 }
 
-box_mmi = Box{
-   from={-hwidth_mmi,height_bsio2,length_wg1},
-   to={hwidth_mmi,height_bsio2+height_wg,length_wg1+length_mmi }
-}
-
-i0 = -hwidth_sep-hwidth_wg
-i1 = -hwidth_sep+hwidth_wg
-
-box_wg2 = Box{
-   from={i0,height_bsio2,length_wg1+length_mmi},
-   to={i1,height_bsio2+height_wg,kmax+1 }
-}
-
-i0 = hwidth_sep-hwidth_wg
-i1 = hwidth_sep+hwidth_wg
-
-box_wg3 = Box{
-   from={i0,height_bsio2,length_wg1+length_mmi},
-   to={i1,height_bsio2+height_wg,kmax+1 }
-}
-
-mmi:add{ box_bsio2, depth=1, value=eps_sio2 }
-mmi:add{ box_wg1, depth=1, value=eps_si }
-mmi:add{ box_mmi, depth=1, value=eps_si }
-mmi:add{ box_wg2, depth=1, value=eps_si }
-mmi:add{ box_wg3, depth=1, value=eps_si }
+wg:add{ box_bsio2, depth=1, value=eps_sio2 }
+wg:add{ box_wg1, depth=1, value=eps_si }
 
 grid_eps = Grid{from={-imax,height_bsio2-10,0},to={imax,height_bsio2+height_wg+1,kmax}}
 pad = 50
 grid_inj = Grid{from={-hwidth_wg-pad,height_bsio2-pad,kpulse }, to={hwidth_wg+pad,height_bsio2+height_wg+pad,kpulse}}
 grid_prev =  Grid{yee=false,from={-imax,height_bsio2-10,0},to={imax,height_bsio2+height_wg+1,kmax},offset={-imax,0,0},cells={50,100,100}}
 
-cfg:CREATE_GEO{"mmi", scene=mmi, grid=grid_eps, method="default",comps=3, silent=false, on=true }
-cfg:CREATE_GEO{"inj", scene=mmi, grid=grid_inj, method="default",comps=3, silent=false, on=true }
-cfg:CREATE_PREVIEW{"mmi", scene=mmi, grid=grid_prev, method="default", silent=false, on=true }
+cfg:CREATE_GEO{"wg", scene=wg, grid=grid_eps, method="default",comps=3, silent=false, on=true }
+cfg:CREATE_GEO{"inj", scene=wg, grid=grid_inj, method="default",comps=3, silent=false, on=true }
+cfg:CREATE_PREVIEW{"wg", scene=wg, grid=grid_prev, method="default", silent=false, on=true }
 
 --- GRID Definition
 
@@ -169,13 +134,13 @@ cfg:FDTD{
 	    { -imax-1, imax+1, 1, 0, height_bsio2-1, 1, 0, kmax, 1, ":", eps_sio2, eps_sio2, eps_sio2 },
 	    { -imax-1, imax+1, 1, height_bsio2, jmax, 1, 0, kmax, 1, ":", 1.,1.,1. }
 	 },
-	 LOAD_GEO{ "mmi" }
+	 LOAD_GEO{ "wg" }
       },
       on = true
    },
 
    OUT{
-      file = { "GPL", "point_e_input" },
+      file = { "GPL", "wg_point_e_input" },
       type = { "E", "N", ".F." },
       time = { 0, ncyc, 10 },
       REG{
@@ -186,7 +151,7 @@ cfg:FDTD{
    },
 
    OUT{
-      file = { "GPL", "point_e_middle" },
+      file = { "GPL", "wg_point_e_middle" },
       type = { "E", "N", ".F." },
       time = { 0, ncyc, 10 },
       REG{
@@ -197,7 +162,7 @@ cfg:FDTD{
    },
 
    OUT{
-      file = { "GPL", "point_e_output" },
+      file = { "GPL", "wg_point_e_output" },
       type = { "E", "N", ".F." },
       time = { 0, ncyc, 10 },
       REG{
@@ -208,7 +173,7 @@ cfg:FDTD{
    },
 
    OUT{
-      file = { "GPL", "point_en_fft1" },
+      file = { "GPL", "wg_point_en_fft1" },
       type = { "En", "S", ".F." },
       time = { 0, ncyc, 10 },
       REG{
@@ -219,7 +184,7 @@ cfg:FDTD{
    },
 
    OUT{
-      file = { "GPL", "point_en_fft2" },
+      file = { "GPL", "wg_point_en_fft2" },
       type = { "En", "S", ".F." },
       time = { 0, ncyc, 10 },
       REG{
@@ -230,7 +195,7 @@ cfg:FDTD{
    },
 
    OUT{
-      file = { "VTK", "slice0_xy_eps" },
+      file = { "VTK", "wg_slice0_xy_eps" },
       type = { "Eps", "N" },
       time = { 0, ncyc, 1000 },
       REG{
@@ -243,7 +208,7 @@ cfg:FDTD{
    },
 
    OUT{
-      file = { "VTK", "slice0_xy_e" },
+      file = { "VTK", "wg_slice0_xy_e" },
       type = { "E", "N" },
       time = { 1000, ncyc, 1000 },
       REG{
@@ -256,7 +221,7 @@ cfg:FDTD{
    },
 
    OUT{
-      file = { "VTK", "slice1_xy_e" },
+      file = { "VTK", "wg_slice1_xy_e" },
       type = { "E", "N" },
       time = { 1000, ncyc, 1000 },
       REG{
@@ -269,7 +234,7 @@ cfg:FDTD{
    },
 
    OUT{
-      file = { "VTK", "slice2_xy_e" },
+      file = { "VTK", "wg_slice2_xy_e" },
       type = { "E", "N" },
       time = { 1000, ncyc, 1000 },
       REG{
@@ -282,20 +247,20 @@ cfg:FDTD{
    },
 
     OUT{
-      file = { "VTK", "slice3_xy_e" },
+      file = { "VTK", "wg_slice3_xy_e" },
       type = { "E", "N" },
       time = { 1000, ncyc, 1000 },
       REG{
 	 BOX{
-	    { -hwidth_mmi-20,hwidth_mmi+20, 1, 
+	    { -hwidth_wg-20,hwidth_wg+20, 1, 
 	       height_bsio2-20, height_bsio2+height_wg+20, 1, 
-	      length_wg1+math.floor(length_mmi/2),length_wg1+math.floor(length_mmi/2) , 1  }
+	      math.floor(length_wg1/2),math.floor(length_wg1/2) , 1  }
 	 }
       }
    },
 
     OUT{
-       file = { "VTK", "slice4_xy_e" },
+       file = { "VTK", "wg_slice4_xy_e" },
        type = { "E", "N" },
       time = { 1000, ncyc, 1000 },
        REG{
@@ -308,7 +273,7 @@ cfg:FDTD{
     },
       
     OUT{
-       file = { "VTK", "slice1_xz_e" },
+       file = { "VTK", "wg_slice1_xz_e" },
        type = { "E", "N" },
       time = { 1000, ncyc, 1000 },
        REG{
@@ -319,7 +284,7 @@ cfg:FDTD{
 	    }
 	  }
        }
-    },
+    }
 
 }
 
@@ -360,21 +325,21 @@ cfg:SRC{
 
 cfg:DIAG{
    PSPEC{
-      file = "mmi_in",
+      file = "wg_in",
       time = { 1, 16384, 1 },
       mode = "Eap",
       polarize = { phi=0, theta=0, psi=90.0 }
    },
    REG{
       BOX{ 
-	 { 1, 21, 3, yc-10, yc+10, 3, 90, 90, 1 }  
+	 { 1, 21, 3, yc-10, yc+10, 3, kfft1, kfft1, 1 }  
       }
    }
 }
 
 cfg:DIAG{
    PSPEC{
-      file = "mmi_out",
+      file = "wg_out",
       time = { 1, 16384, 1 },
       reffile = "wg_out",
       mode = "Eap",
@@ -382,7 +347,7 @@ cfg:DIAG{
    },
    REG{
       BOX{ 
-	 { hwidth_sep+1, hwidth_sep+21, 3, yc-10, yc+10, 3, 700, 700, 1 }  
+	 { hwidth_sep+1, hwidth_sep+21, 3, yc-10, yc+10, 3, kfft2, kfft2, 1 }  
       }
    }
 }
