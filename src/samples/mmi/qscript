@@ -44,18 +44,31 @@
 
 echo "in directory: `pwd`"
 echo "on host:      `hostname`"
+echo "taskid: $SGE_TASK_ID"
+
+if [ "x$SGE_TASK_ID" == "xundefined" ]; then
+RUNDIR=.
+TASKDIR=.
+else
+RUNDIR=..
+TASKDIR="task$SGE_TASK_ID"
+mkdir $TASKDIR 2>/dev/null
+cp scale.lua tfsfinj.set $TASKDIR
+cd $TASKDIR
+fi
 
 echo "* waveguide reference simulation"
 echo "running pre-processor"
-time ./luacfg wg.lua
+time $RUNDIR/luacfg $RUNDIR/wg.lua $SGE_TASK_ID
 echo "running simulation"
-time ./meta
+time $RUNDIR/meta
 echo "* mmi simulation"
 echo "running pre-processor"
-time ./luacfg mmi.lua
+time $RUNDIR/luacfg $RUNDIR/mmi.lua  $SGE_TASK_ID
 echo "running simulation"
-time ./meta
+time $RUNDIR/meta
 
+cd $RUNDIR
 
 
 

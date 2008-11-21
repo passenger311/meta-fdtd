@@ -1,4 +1,14 @@
 
+taskid = select(1,...)
+
+if taskid then
+   print("taskid = ",taskid)
+-- do something like this:
+   scanval = 4. + (taskid-1) * 0.5
+-- for array job set real_length_mmi=scanval.
+end
+
+
 --- real device parameters (um)
 
 real_wavelength = 1.550
