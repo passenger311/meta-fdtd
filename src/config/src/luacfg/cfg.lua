@@ -320,8 +320,7 @@ function PSPEC(parms)
    PSPEC.file = parms.file
    PSPEC.reffile = parms.reffile or ""
    PSPEC.mode = parms.mode or "S"
-   PSPEC.phasefwd = parms.phasefwd or 0 
-   PSPEC.phasebwd = parms.phasebwd or 0
+   PSPEC.phasewrap = parms.phasewrap or { 0, 0 } 
    PSPEC.time = parms.time or { 0,-1, 1 }  
    PSPEC.polarize = parms.polarize or { phi=0, theta=0, psi=0 }
    return PSPEC
@@ -647,7 +646,7 @@ local writediag = {
    PSPEC = function(fh,PSPEC)
 	      fh:write(PSPEC.file," \t! filename (.pspec)\n")
 	      fh:write(PSPEC.mode, " ", PSPEC.reffile," \t! mode ( S,Ecs,Hcs,Eap,Hap) and [ref. file]\n")
-	      fh:write(PSPEC.phasefwd," ", PSPEC.phasebwd, " \t! wrap phase forward / backward\n")
+	      fh:write(PSPEC.phasewrap[1]," ", PSPEC.phasewrap[2], " \t! unwrap phase forward / backward\n")
 	      fh:write(PSPEC.time[1]," ",PSPEC.time[2]," ",PSPEC.time[3]," \t! time window [from to step]\n")
 	      fh:write(PSPEC.polarize.phi, " ",
 		       PSPEC.polarize.theta, " ",
