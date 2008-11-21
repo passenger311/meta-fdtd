@@ -1,0 +1,62 @@
+#!/bin/bash
+
+# ----------------------------------------------------------
+# simple qscript
+# ----------------------------------------------------------
+
+# all documented in "man qsub"
+
+# ------- name of job
+#$ -N meta-mmi-1
+# ------- shell to use
+#$ -S /bin/bash
+# ------- current working directory
+#$ -cwd
+# ------- environment variables (use -V to export all)
+#$ -v PATH,LD_LIBRARY_PATH
+# ------- email notification
+# #$ -m
+# #$ -M someuser@somewhere
+# ------- redirect output streams 
+# #$ -j            
+# #$ -o logstd
+# #$ -e logerr
+# ------- specify ressources
+# #$ -l h_rt=1:00:00     
+# #$ -l h_vmem=1G        
+# ------- smp job?
+# #$ -l mp=1
+# ------- quad node? (default: false)
+# #$ -l quad=true
+# ------- specific instance?
+# #$ -q smp.q@quad10.beowulf.cluster
+
+
+# ------- SCRIPT
+
+#  $HOME       home directory on execution machine
+#  $USER       user ID of job owner
+#  $JOB_ID     current job ID
+#  $JOB_NAME   current job name (see -N option)
+#  $HOSTNAME   name of the execution host
+#  $TASK_ID    array job task index number
+
+
+echo "in directory: `pwd`"
+echo "on host:      `hostname`"
+
+echo "* waveguide reference simulation"
+echo "running pre-processor"
+time ./luacfg wg.lua
+echo "running simulation"
+time ./meta
+echo "* mmi simulation"
+echo "running pre-processor"
+time ./luacfg mmi.lua
+echo "running simulation"
+time ./meta
+
+
+
+
+
