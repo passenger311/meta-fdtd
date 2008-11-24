@@ -212,8 +212,8 @@ end
 function LHMGRAD(parms) 
    local LHMGRAD = { block = "LHMGRAD" }
    LHMGRAD.file = parms.file
-   LHMGRAD.point = parms.offset or { 0, 0, 0 }
-   LHMGRAD.size = parms.size or { 0, 0, 0 }
+   LHMGRAD.from = parms.from or { 0, 0, 0 }
+   LHMGRAD.to = parms.to or { 0, 0, 0 }
    return LHMGRAD
 end
 
@@ -508,12 +508,12 @@ local writemat = {
 	   end,
    LHMGRAD = function(fh,LHMGRAD)
 	      fh:write(LHMGRAD.file,"\t! file to load\n")
-	      fh:write(LHMGRAD.point[1]," ",
-		       LHMGRAD.point[2]," ",
-		       LHMGRAD.point[3],"\t! offset point\n")
-	      fh:write(LHMGRAD.size[1]," ",
-		       LHMGRAD.size[2]," ",
-		       LHMGRAD.size[3],"\t! size vector\n")
+	      fh:write(LHMGRAD.from[1]," ",
+		       LHMGRAD.from[2]," ",
+		       LHMGRAD.from[3],"\t! offset point\n")
+	      fh:write(LHMGRAD.to[1]," ",
+		       LHMGRAD.to[2]," ",
+		       LHMGRAD.to[3],"\t! size vector\n")
 	   end,
    LORENTZ = function(fh,LORENTZ)
 	      fh:write(LORENTZ.invlambdal,"\t! invlambdal [2 pi c]\n")
