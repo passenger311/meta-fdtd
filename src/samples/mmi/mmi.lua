@@ -175,6 +175,17 @@ cfg:FDTD{
    },
 
    OUT{
+      file = { "GPL", "mmi_point_en_fft0" },
+      type = { "En", "S", ".F." },
+      time = { 0, ncyc, 10 },
+      REG{
+	 BOX{ 
+	    { 1, 21, 3, yc-10, yc+10, 3, kinj+1, kinj+1, 1 }  
+	 }
+      }
+   },
+
+   OUT{
       file = { "GPL", "mmi_point_en_fft1" },
       type = { "En", "S", ".F." },
       time = { 0, ncyc, 10 },
@@ -339,7 +350,22 @@ cfg:SRC{
 
 cfg:DIAG{
    PSPEC{
-      file = "mmi1",
+      file = "mmi_fft0",
+      time = { 1, ncyc, 1 },
+      mode = "Eap",
+      phasewrap = { 1, 0 },
+      polarize = { phi=0, theta=0, psi=90.0 }
+   },
+   REG{
+      BOX{ 
+	 { 1, 21, 3, yc-10, yc+10, 3, kinj+1, kinj+1, 1 }  
+      }
+   }
+}
+
+cfg:DIAG{
+   PSPEC{
+      file = "mmi_fft1",
       time = { 1, ncyc, 1 },
       mode = "Eap",
       phasewrap = { 1, 0 },
@@ -354,9 +380,9 @@ cfg:DIAG{
 
 cfg:DIAG{
    PSPEC{
-      file = "mmi33",
+      file = "mmi_fft2",
       time = { 1, ncyc, 1 },
-      reffile = "wg3",
+--      reffile = "wg3",
       phasewrap = { 1, 0 },
       mode = "Eap",
       polarize = { phi=0, theta=0, psi=90.0 }
@@ -370,9 +396,9 @@ cfg:DIAG{
 
 cfg:DIAG{
    PSPEC{
-      file = "mmi32",
+      file = "mmi_fft3",
       time = { 1, ncyc, 1 },
-      reffile = "wg2",
+--      reffile = "wg2",
        phasewrap = { 1, 0 },
       mode = "Eap",
       polarize = { phi=0, theta=0, psi=90.0 }

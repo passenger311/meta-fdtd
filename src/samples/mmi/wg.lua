@@ -150,6 +150,17 @@ cfg:FDTD{
    },
 
    OUT{
+      file = { "GPL", "wg_point_en_fft0" },
+      type = { "En", "S", ".F." },
+      time = { 0, ncyc, 10 },
+      REG{
+	 BOX{ 
+	    { 1, 21, 3, yc-10, yc+10, 3, kinj+1, kinj+1, 1 }  
+	 }
+      }
+   },
+
+   OUT{
       file = { "GPL", "wg_point_en_fft1" },
       type = { "En", "S", ".F." },
       time = { 0, ncyc, 10 },
@@ -311,10 +322,25 @@ cfg:SRC{
 
 --- PSPEC
 
+cfg:DIAG{
+   PSPEC{
+      file = "wg_fft0",
+      time = { 1, ncyc, 1 },
+      mode = "Eap",
+      phasewrap = { 1, 0 },
+      polarize = { phi=0, theta=0, psi=90.0 }
+   },
+   REG{
+      BOX{ 
+	 { 1, 21, 3, yc-10, yc+10, 3, kinj+1, kinj+1, 1 }  
+      }
+   }
+}
+
 
 cfg:DIAG{
    PSPEC{
-      file = "wg1",
+      file = "wg_fft1",
       time = { 1, ncyc, 1 },
       mode = "Eap",
       phasewrap = { 1, 0 },
@@ -329,7 +355,7 @@ cfg:DIAG{
 
 cfg:DIAG{
    PSPEC{
-      file = "wg2",
+      file = "wg_fft2",
       time = { 1, ncyc, 1 },
       mode = "Eap",
       phasewrap = { 1, 0 },
@@ -344,7 +370,7 @@ cfg:DIAG{
 
 cfg:DIAG{
    PSPEC{
-      file = "wg3",
+      file = "wg_fft3",
       time = { 1, ncyc, 1 },
       mode = "Eap",
       phasewrap = { 1, 0 },

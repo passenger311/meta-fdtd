@@ -21,7 +21,7 @@ real_length_wg2 = 2.4
 real_hwidth_sep = 0.65
 real_kinj = 0.2
 real_height_bsio2 = 2*real_height_wg
-real_height = real_height_bsio2 + real_height_wg + real_height_wg
+real_height = real_height_bsio2 + real_height_wg + 1.5*real_height_wg
 real_length = real_length_wg1 + real_length_mmi + real_length_wg2
 
 
