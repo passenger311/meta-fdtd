@@ -1,8 +1,6 @@
 
 taskid = select(1,...)
 
-  print("taskid = ",taskid)
-
 if taskid then
    print("taskid = ",taskid)
 -- do something like this:

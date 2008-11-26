@@ -272,6 +272,19 @@ cfg:FDTD{
        }
     },
       
+    OUT{  
+       file = { "VTK", "mmi_slice5_xy_e" },
+       type = { "E", "N" },
+      time = { 1000, ncyc, 500 },
+       REG{
+	  BOX{
+	     { imin, imax, 1, 
+	       jmin, jmax, 1, 
+	       kfft3,kfft3, 1  }
+	  }
+       }
+    },
+      
     OUT{
        file = { "VTK", "wg_slice1_xz_e" },
        type = { "E", "N" },
