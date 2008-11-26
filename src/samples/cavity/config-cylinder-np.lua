@@ -4,8 +4,8 @@ cfg = CONFIG{scenes=true}
 dofile("scale.lua")
 
 imin = 0
-imax = rcavity+10
-jmin = -rcavity-10
+imax = rcavity+20
+jmin = -rcavity-20
 jmax = 0
 kmin = 0
 kmax = 4*hhwaveguide+2*hhcavity

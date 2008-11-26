@@ -47,15 +47,6 @@ real_omegaL = 650.07       -- Lorentzian plasma frequency [2 pi c]
 real_gammaL = 104.86*2*pi   -- Lorentzian damping constant [1/dt]
 deltaepsl = 1.09
 
--- Gaussian envelope of injection field
-kinj = math.floor(real_kinj/conv+.5)
-widthl = 2     -- width in number of periods
-offsetl = 0    -- offset in number of periods
-attackl = 4    -- attack in number of periods
-sustainl = 0   -- sustain in number of periods
-decayl = 4     -- decay in number of periods
-nrefr = 3.1378985767173 -- reference injection refractive index
-
 
 --- conversion to computation scale
 
@@ -73,6 +64,15 @@ rcavity = math.floor(real_rcavity/conv+.5)
 rnp = math.floor(real_rnp/conv+.5)
 hdnp = math.floor(real_hdnp/conv+.5)
 
+-- Gaussian envelope of injection field
+kinj = math.floor(real_kinj/conv+.5)
+widthl = 2     -- width in number of periods
+offsetl = 0    -- offset in number of periods
+attackl = 4    -- attack in number of periods
+sustainl = 0   -- sustain in number of periods
+decayl = 4     -- decay in number of periods
+nrefr = 3.1378985767173 -- reference injection refractive index
+
 -- Fourier transform parameters
 kfft0 = kinj - 2
 kfft1 = kinj + 2
@@ -87,6 +87,7 @@ size_pml = 11
 dt = 0.574  -- time step length compared to grid step length (--> Courant stability factor)
 
 ncycles = 8000 -- number of cycles
+
 
 field_out = "field" -- geo output file to compute injection profile with Matlab
 field_inj = "tfsfInjProfile.set" -- file created by Matlab
