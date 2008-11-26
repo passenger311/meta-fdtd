@@ -15,13 +15,21 @@ pi = 3.141592653589793116
 
 --- Real values in nm
 
-real_wavelength=500.0   -- real wavelength
+real_wavelength = 500.0    -- real wavelength
 
 real_hhwaveguide = 300.0   -- waveguide half height
 real_rwaveguide = 120.0    -- waveguide radius
 real_hhcavity = 500.0      -- cavity half height
 real_rcavity = 240         -- cavity radius
 real_rnp = 20              -- nanoparticle radius
+
+real_kmax = 4*real_hhwaveguide+2*real_hhcavity
+
+real_kinj = 50
+
+real_kfft2 = real_kmax / 2
+real_kfft3 = real_kmax - 2*real_hhwaveguide + 100
+real_kfft4 = real_kmax - 100
 
 n_waveguide = 3.47   -- waveguide refractive index
 n_max = n_waveguide  -- maximum refraxctive index to determine optically thickest medium
@@ -40,6 +48,7 @@ real_gammaL = 104.86*2*pi   -- Lorentzian damping constant [1/dt]
 deltaepsl = 1.09
 
 -- Gaussian envelope of injection field
+kinj = math.floor(real_kinj/conv+.5)
 widthl = 2     -- width in number of periods
 offsetl = 0    -- offset in number of periods
 attackl = 4    -- attack in number of periods
@@ -65,9 +74,11 @@ rnp = math.floor(real_rnp/conv+.5)
 hdnp = math.floor(real_hdnp/conv+.5)
 
 -- Fourier transform parameters
-kfft1 = 20
-kfft2 = 2*hhwaveguide+hhcavity
-kfft3 = 4*hhwaveguide+2*hhcavity-20
+kfft0 = kinj - 2
+kfft1 = kinj + 2
+kfft2 = math.floor(real_kfft3/conv+.5)
+kfft3 = math.floor(real_kfft3/conv+.5)
+kfft4 = math.floor(real_kfft4/conv+.5)
 
 -- PML size parameter
 size_pml = 11
@@ -75,7 +86,7 @@ size_pml = 11
 -- Courant factor
 dt = 0.574  -- time step length compared to grid step length (--> Courant stability factor)
 
-ncycles = 5000 -- number of cycles
+ncycles = 8000 -- number of cycles
 
 field_out = "field" -- geo output file to compute injection profile with Matlab
 field_inj = "tfsfInjProfile.set" -- file created by Matlab

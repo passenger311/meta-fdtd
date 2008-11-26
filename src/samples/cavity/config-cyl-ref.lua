@@ -40,9 +40,9 @@ scene1 = Scene{
 }
 for i=0,1 do
    cylinder1 = Cylinder{                                 -- create cylinder
-      at={0,0.5,hhwaveguide+i*2*(hhwaveguide+hhcavity)},   -- center of cylinder at
+      at={0,0.5,hhwaveguide+i*2*(hhwaveguide+hhcavity)}, -- center of cylinder at
       radius = rwaveguide,                               -- radius of cylinder
-      height = 2*hhwaveguide                             -- height of cylinder
+      height = 2*hhwaveguide+2*size_pml                  -- height of cylinder
    }
    scene1:add{ -- add a geometrical object with constant permittivity "value = 'permittivity'" to the scene
       cylinder1,              -- geometrical object which will be added to the scene
@@ -76,8 +76,8 @@ grid2 = Grid{
 }
 -- waveguide grid in injection plane
 grid3 = Grid{ 
-   from={-rwaveguide-1.5*resolution,-rwaveguide-1.5*resolution-1,10},
-   to={rwaveguide+1.5*resolution,rwaveguide+1.5*resolution+2,10}
+   from={-rwaveguide-1.5*resolution,-rwaveguide-1.5*resolution-1,kinj},
+   to={rwaveguide+1.5*resolution,rwaveguide+1.5*resolution+2,kinj}
 }
 
 
@@ -113,6 +113,18 @@ cfg:FDTD{
       on = true
    },
 
+
+   OUT{
+      file = { "GPL", "ref_point_en_fft0" },
+      type = { "En", "S", ".F." },
+      time = { 0, ncycles, 10 },
+      REG{
+         BOX{ 
+            { imin, rwaveguide, 3, -rwaveguide, jmax, 3, kfft0, kfft0, 1 }
+         }
+      }
+   },
+
    OUT{
       file = { "GPL", "ref_point_en_fft1" },
       type = { "En", "S", ".F." },
@@ -142,6 +154,17 @@ cfg:FDTD{
       REG{
          BOX{ 
             { imin, rwaveguide, 3, -rwaveguide, jmax, 3, kfft3, kfft3, 1 }  
+         }
+      }
+   },
+
+   OUT{
+      file = { "GPL", "ref_point_en_fft4" },
+      type = { "En", "S", ".F." },
+      time = { 0, ncycles, 10 },
+      REG{
+         BOX{ 
+            { imin, rwaveguide, 3, -rwaveguide, jmax, 3, kfft4, kfft4, 1 }
          }
       }
    },
@@ -234,18 +257,33 @@ cfg:SRC{
 
 
 --- PSPEC
+cfg:DIAG{
+   PSPEC{
+      file = "fft_ref-0",
+      time = { 1, ncycles, 1 },
+--      reffile = "fft_ref-1",
+      mode = "Eap",
+      phasewrap = { 1, 0 },
+      polarize = { phi=0, theta=0, psi=90.0 }
+   },
+   REG{
+      BOX{ 
+         { imin, rwaveguide, 3, -rwaveguide, jmax, 3, kfft0, kfft0, 1 }
+      }
+   }
+}
 
 cfg:DIAG{
    PSPEC{
       file = "fft_ref-1",
       time = { 1, ncycles, 1 },
       mode = "Eap",
-      phasewrap = { 0, 0 },
+      phasewrap = { 1, 0 },
       polarize = { phi=0, theta=0, psi=90.0 }
    },
    REG{
       BOX{ 
-         { imin, rwaveguide, 3, jmin, rwaveguide, 3, kfft1, kfft1, 1 }
+         { imin, rwaveguide, 3, -rwaveguide, jmax, 3, kfft1, kfft1, 1 }
       }
    }
 }
@@ -254,13 +292,13 @@ cfg:DIAG{
    PSPEC{
       file = "fft_ref-2",
       time = { 1, ncycles, 1 },
-      phasewrap = { 0, 0 },
+      phasewrap = { 1, 0 },
       mode = "Eap",
       polarize = { phi=0, theta=0, psi=90.0 }
    },
    REG{
       BOX{ 
-         { imin, rcavity, 6, jmin, rcavity, 6,  kfft2, kfft2, 1 }
+         { imin, rcavity, 6, -rcavity, jmax, 6,  kfft2, kfft2, 1 }
       }
    }
 }
@@ -269,17 +307,32 @@ cfg:DIAG{
    PSPEC{
       file = "fft_ref-3",
       time = { 1, ncycles, 1 },
-      phasewrap = { 0, 0 },
+      phasewrap = { 1, 0 },
       mode = "Eap",
       polarize = { phi=0, theta=0, psi=90.0 }
    },
    REG{
       BOX{ 
-         { imin, rwaveguide, 3, jmin, rwaveguide, 3,  kfft3, kfft3, 1 }  
+         { imin, rwaveguide, 3, -rwaveguide, jmax, kfft3, kfft3, 1 }  
       }
    }
 }
 
+cfg:DIAG{
+   PSPEC{
+      file = "fft_ref-4",
+      time = { 1, ncycles, 1 },
+--      reffile = "fft_ref-3",
+       phasewrap = { 1, 0 },
+      mode = "Eap",
+      polarize = { phi=0, theta=0, psi=90.0 }
+   },
+   REG{
+      BOX{ 
+         { imin, rwaveguide, 3, -rwaveguide, jmax,  kfft4, kfft4, 1 }
+      }
+   }
+}
 
 --- CREATE: config.<part>.in
 cfg:CREATE()
@@ -290,7 +343,7 @@ foutput = io.open("lua.matlab","w+")
 foutput:write(3, "\n", inv_wavelength, "\n")
 foutput:write(-rwaveguide-1.5*resolution, " ", rwaveguide+1.5*resolution, " ", 1, " ",
               -rwaveguide-1.5*resolution, " ", rwaveguide+1.5*resolution, " ", 1, " ",
-              10, " ", 10, " ", 1, "\n")
+              kinj, " ", kinj, " ", 1, "\n")
 foutput:write("geo_",field_out,".in\n")
 foutput:write(field_inj, "\n")
 foutput:close()
