@@ -389,7 +389,7 @@ cfg:DIAG{
    },
    REG{
       BOX{ 
-	 { hwidth_sep+1, hwidth_sep+21, 3, yc-10, yc+10, 3, kfft3, kfft3, 1 }  
+	 { hwidth_sep+1, hwidth_sep+21, 3, yc-10, yc+10, 3, kfft2, kfft2, 1 }  
       }
    }
 }
