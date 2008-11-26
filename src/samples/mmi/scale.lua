@@ -1,6 +1,4 @@
 
-taskid = select(1,...)
-
 if taskid then
    print("taskid = ",taskid)
 -- do something like this:

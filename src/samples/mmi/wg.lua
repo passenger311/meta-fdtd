@@ -1,6 +1,8 @@
 
 cfg = CONFIG{scenes=true}
 
+taskid = select(1,...)
+
 dofile("scale.lua")
 
 -- grid dimensions: i,j,k
