@@ -1,8 +1,6 @@
 
 cfg = CONFIG{scenes=true}
 
-taskid = select(1,...)
-
 dofile("scale.lua")
 
 -- grid dimensions: i,j,k
@@ -44,12 +42,12 @@ mmi = Scene{ value=1.}
 
 wg = Scene{value=1.}
 box_bsio2 = Box{ 
-   from={-imax0-100,jmin0-100,kmin0},
+   from={-imax0-100,jmin0-100,kmin0-1},
    to={imax0+100,height_bsio2,kmax0+1}
 }
 
 box_wg1 = Box{
-   from={-hwidth_wg,height_bsio2,-1},
+   from={-hwidth_wg,height_bsio2,kmin0-1},
    to={hwidth_wg,height_bsio2+height_wg,length_wg1 }
 }
 
@@ -63,7 +61,7 @@ i1 = -hwidth_sep+hwidth_wg
 
 box_wg2 = Box{
    from={i0,height_bsio2,length_wg1+length_mmi},
-   to={i1,height_bsio2+height_wg,kmax+1 }
+   to={i1,height_bsio2+height_wg,kmax0+1 }
 }
 
 i0 = hwidth_sep-hwidth_wg
@@ -71,7 +69,7 @@ i1 = hwidth_sep+hwidth_wg
 
 box_wg3 = Box{
    from={i0,height_bsio2,length_wg1+length_mmi},
-   to={i1,height_bsio2+height_wg,kmax+1 }
+   to={i1,height_bsio2+height_wg,kmax0+1 }
 }
 
 mmi:add{ box_bsio2, depth=1, value=eps_sio2 }

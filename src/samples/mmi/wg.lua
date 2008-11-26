@@ -1,8 +1,6 @@
 
 cfg = CONFIG{scenes=true}
 
-taskid = select(1,...)
-
 dofile("scale.lua")
 
 -- grid dimensions: i,j,k
@@ -43,12 +41,12 @@ length_wg1 = length
 
 wg = Scene{value=1.}
 box_bsio2 = Box{ 
-   from={-imax0-100,jmin0-100,kmin0},
+   from={-imax0-100,jmin0-100,kmin0-1},
    to={imax0+100,height_bsio2,kmax0+1}
 }
 
 box_wg1 = Box{
-   from={-hwidth_wg,height_bsio2,kmin0},
+   from={-hwidth_wg,height_bsio2,kmin0-1},
    to={hwidth_wg,height_bsio2+height_wg,kmax0+1 }
 }
 
