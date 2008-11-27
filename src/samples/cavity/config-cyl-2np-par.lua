@@ -80,8 +80,8 @@ end
 
 -- specify a grid for the scene (only objects that are inside the grid will be part of the geometry)
 grid1 = Grid{
-   from={-rcavity-2,-rcavity-2,0},                    -- lower rear left corner of scene-object
-   to={rcavity+2,rcavity+2,4*hhwaveguide+2*hhcavity}  -- upper front right corner of scene-object
+   from={-rcavity-2,-rcavity-2,-size_pml},                    -- lower rear left corner of scene-object
+   to={rcavity+2,rcavity+2,4*hhwaveguide+2*hhcavity+size_pml}  -- upper front right corner of scene-object
    -- if no further input is given 'from' and 'to' correspond directly to grid points
 }
 -- coarse grid for .VTK-preview

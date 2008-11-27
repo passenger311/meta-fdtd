@@ -1,4 +1,3 @@
-
 if taskid then
    print("taskid = ",taskid)
 -- do something like this:
@@ -22,6 +21,8 @@ real_rwaveguide = 120.0    -- waveguide radius
 real_hhcavity = 500.0      -- cavity half height
 real_rcavity = 240         -- cavity radius
 real_rnp = 20              -- nanoparticle radius
+real_xnp = 0               -- x position of center of nanoparticle
+real_ynp = 0               -- y position of center of nanoparticle
 
 real_kmax = 4*real_hhwaveguide+2*real_hhcavity
 
@@ -63,6 +64,8 @@ hhcavity = math.floor(real_hhcavity/conv+.5) -- number of grid points representi
 rcavity = math.floor(real_rcavity/conv+.5)
 rnp = math.floor(real_rnp/conv+.5)
 hdnp = math.floor(real_hdnp/conv+.5)
+xnp = math.floor(real_xnp/conv+.5)
+ynp = math.floor(real_ynp/conv+.5)
 
 -- Gaussian envelope of injection field
 kinj = math.floor(real_kinj/conv+.5)
@@ -71,12 +74,12 @@ offsetl = 0    -- offset in number of periods
 attackl = 4    -- attack in number of periods
 sustainl = 0   -- sustain in number of periods
 decayl = 4     -- decay in number of periods
-nrefr = 3.1378985767173 -- reference injection refractive index
+nrefr = 3.137864062349 -- reference injection refractive index
 
 -- Fourier transform parameters
 kfft0 = kinj - 2
 kfft1 = kinj + 2
-kfft2 = math.floor(real_kfft3/conv+.5)
+kfft2 = math.floor(real_kfft2/conv+.5)
 kfft3 = math.floor(real_kfft3/conv+.5)
 kfft4 = math.floor(real_kfft4/conv+.5)
 
@@ -104,3 +107,4 @@ print("Radius of cavity in cells (grid):         ", rcavity)
 print("The following two parameters are only applicable in the case of two nanoparticles")
 print("Radius of nanoparticles (grid):           ", rnp)
 print("Half-Distance of nanoparticles (grid):    ", hdnp)
+print("Position of nanoparticle (grid):          ", xnp, ynp)
