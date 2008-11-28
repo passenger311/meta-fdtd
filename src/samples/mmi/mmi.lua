@@ -42,8 +42,8 @@ mmi = Scene{ value=1.}
 
 wg = Scene{value=1.}
 box_bsio2 = Box{ 
-   from={-imax0-100,jmin0-100,kmin0-1},
-   to={imax0+100,height_bsio2,kmax0+1}
+   from={-imax0-1,jmin0-1,kmin0-1},
+   to={imax0+1,height_bsio2,kmax0+1}
 }
 
 box_wg1 = Box{
@@ -78,10 +78,10 @@ mmi:add{ box_mmi, depth=1, value=eps_si }
 mmi:add{ box_wg2, depth=1, value=eps_si }
 mmi:add{ box_wg3, depth=1, value=eps_si }
 
-grid_eps = Grid{from={-imax,height_bsio2-10,0},to={imax,height_bsio2+height_wg+1,kmax}}
+grid_eps = Grid{from={imin0-1,height_bsio2-10,kmin0-1},to={imax0+1,height_bsio2+height_wg+1,kmax0+1}}
 pad = 50
 grid_inj = Grid{from={-hwidth_wg-pad,height_bsio2-pad,kinj }, to={hwidth_wg+pad,height_bsio2+height_wg+pad,kinj}}
-grid_prev =  Grid{yee=false,from={-imax,height_bsio2-10,0},to={imax,height_bsio2+height_wg+1,kmax},offset={-imax,0,0},cells={50,100,100}}
+grid_prev =  Grid{yee=false,from={-imax0-1,height_bsio2-10,kmin0-1},to={imax0+1,height_bsio2+height_wg+1,kmax0+1},offset={-imax,0,0},cells={50,100,100}}
 
 cfg:CREATE_GEO{"mmi", scene=mmi, grid=grid_eps, method="default",comps=3, silent=false, on=true }
 cfg:CREATE_GEO{"inj", scene=mmi, grid=grid_inj, method="default",comps=3, silent=false, on=true }
@@ -108,8 +108,8 @@ cfg:FDTD{
    EPSILON{
       REG{
 	 BOX{
-	    { imin0, imax0+1, 1, jmin0, height_bsio2-1, 1, kmin0, kmax0+1, 1, ":", eps_sio2, eps_sio2, eps_sio2 },
-	    { imin0, imax0+1, 1, height_bsio2, jmax0+1, 1, kmin0, kmax0+1, 1, ":", 1.,1.,1. }
+	    { imin0-1, imax0+1, 1, jmin0-1, height_bsio2-1, 1, kmin0-1, kmax0+1, 1, ":", eps_sio2, eps_sio2, eps_sio2 },
+	    { imin0-1, imax0+1, 1, height_bsio2, jmax0+1, 1, kmin0-1, kmax0+1, 1, ":", 1.,1.,1. }
 	 },
 	 LOAD_GEO{ "mmi" }
       },
@@ -180,7 +180,7 @@ cfg:FDTD{
       time = { 0, ncyc, 10 },
       REG{
 	 BOX{ 
-	    { 1, 21, 3, yc-10, yc+10, 3, kinj+1, kinj+1, 1 }  
+	    { imin, imax, 2, yc, yc, 1, kinj+1, kinj+1, 1 }  
 	 }
       }
    },
@@ -191,7 +191,7 @@ cfg:FDTD{
       time = { 0, ncyc, 10 },
       REG{
 	 BOX{ 
-	    { 1, 21, 3, yc-10, yc+10, 3, kfft1, kfft1, 1 }  
+	    { imin, imax, 2, yc, yc, 1, kfft1, kfft1, 1 }  
 	 }
       }
    },
@@ -202,7 +202,7 @@ cfg:FDTD{
       time = { 0, ncyc, 10 },
       REG{
 	 BOX{ 
-	    { hwidth_sep+1, hwidth_sep+21, 3, yc-10, yc+10, 3, kfft2, kfft2, 1 }  
+	    { imin, imax, 2, yc, yc, 1, kfft2, kfft2, 1 }  
 	 }
       }
    },
@@ -213,7 +213,7 @@ cfg:FDTD{
       time = { 0, ncyc, 10 },
       REG{
 	 BOX{ 
-	    { hwidth_sep+1, hwidth_sep+21, 3, yc-10, yc+10, 3, kfft3, kfft3, 1 }  
+	    { imin, imax, 2, yc, yc, 1, kfft3, kfft3, 1 }  
 	 }
       }
    },
@@ -371,7 +371,7 @@ cfg:DIAG{
    },
    REG{
       BOX{ 
-	 { 1, 21, 3, yc-10, yc+10, 3, kinj+1, kinj+1, 1 }  
+	 { imin, imax, 2, yc, yc, 1, kinj+1, kinj+1, 1 }  
       }
    }
 }
@@ -386,7 +386,7 @@ cfg:DIAG{
    },
    REG{
       BOX{ 
-	 { 1, 21, 3, yc-10, yc+10, 3, kfft1, kfft1, 1 }  
+	 { imin, imax, 2, yc, yc, 1, kfft1, kfft1, 1 }  
       }
    }
 }
@@ -402,7 +402,7 @@ cfg:DIAG{
    },
    REG{
       BOX{ 
-	 { hwidth_sep+1, hwidth_sep+21, 3, yc-10, yc+10, 3, kfft2, kfft2, 1 }  
+	 { imin, imax, 2, yc, yc, 1, kfft2, kfft2, 1 }  
       }
    }
 }
@@ -418,7 +418,7 @@ cfg:DIAG{
    },
    REG{
       BOX{ 
-	 { hwidth_sep+1, hwidth_sep+21, 3, yc-10, yc+10, 3, kfft3, kfft3, 1 }  
+	 { imin, imax, 2, yc, yc, 1, kfft3, kfft3, 1 }  
       }
    }
 }
