@@ -2,11 +2,11 @@ if taskid then
    print("taskid = ",taskid)
 -- do something like this:
 --   real_hdnp = 20. + (taskid-1) * 20.-- half distance between 2 nanoparticles
-
+  dxnp=taskid*10+10
 -- for array job set real_length_mmi=scanval.
 else
 -- real_hdnp = 40.-- half distance between 2 nanoparticles
-
+  dxnp=30
 end
 
 pi = 3.141592653589793116
@@ -17,10 +17,10 @@ real_wavelength = 500.0    -- real wavelength
 
 real_hhwaveguide = 800.0   -- waveguide half height
 real_rwaveguide = 120.0    -- waveguide radius
-real_rnp = {20, 30}        -- nanoparticle radius
-real_xnp = {-8, 10}        -- x position of center of nanoparticle relative to wg center
-real_ynp = {20, -5}        -- y position of center of nanoparticle
-real_znp = {40, -2}        -- z position of center of nanoparticle
+real_rnp = {20,20}        -- nanoparticle radius
+real_xnp = {-dxnp,dxnp}        -- x position of center of nanoparticle relative to wg center
+real_ynp = {0,0}        -- y position of center of nanoparticle
+real_znp = {0,0}        -- z position of center of nanoparticle
 
 real_kmax = 2*real_hhwaveguide
 
@@ -53,7 +53,7 @@ deltaepsl = 1.09
 
 --- conversion to computation scale
 
-resolution = 20 -- resolution of wavelength in optically thickest medium (even number)
+resolution = 50 -- resolution of wavelength in optically thickest medium (even number)
 
 conv = real_wavelength/resolution/n_max -- conversion factor between real and computation length scale
 frequ_factor = 2.99792458e5  -- change from frequency in THz (c|=1) to inverse wavelength in 1/nm (c=1)
@@ -72,12 +72,12 @@ end
 
 -- Gaussian envelope of injection field
 kinj = math.floor(real_kinj/conv+.5)
-widthl = 2     -- width in number of periods
+widthl = 1     -- width in number of periods
 offsetl = 0    -- offset in number of periods
-attackl = 4    -- attack in number of periods
+attackl = 3  -- attack in number of periods
 sustainl = 0   -- sustain in number of periods
-decayl = 4     -- decay in number of periods
-nrefr = 3.137864062349 -- reference injection refractive index
+decayl = 3     -- decay in number of periods
+nrefr = 1 --3.1493530190359 -- reference injection refractive index
 
 -- Fourier transform parameters
 kfft0 = math.floor(real_kfft0/conv+.5)
@@ -96,7 +96,7 @@ size_pad = 20
 -- Courant factor
 dt = 0.574  -- time step length compared to grid step length (--> Courant stability factor)
 
-ncycles = 8000 -- number of cycles
+ncycles = 6000 -- number of cycles
 
 
 field_out = "field" -- geo output file to compute injection profile with Matlab
@@ -114,3 +114,5 @@ for i,v in ipairs(rnp) do
 print("Radius of nanoparticle (grid):            ", v)
 print("Position of nanoparticle (grid):          ", inp[i], jnp[i], knp[i])
 end
+print("Position of Injection plane (grid):       ", kinj)
+print("Position of Fourier transforms (grid):    ", kfft0, kfft1, kfft2, kfft3, kfft4, kfft5)

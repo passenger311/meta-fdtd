@@ -1,5 +1,6 @@
 
 cfg = CONFIG{scenes=true}
+taskid = select(1,...)
 
 dofile("scale.lua")
 
@@ -99,12 +100,12 @@ for i,v in ipairs(rnp) do
 end
 
 grid4 = Grid{
-   from={inp_min-rnp[inp_mini]-2,jnp_mini-rnp[jnp_mini]-2,hhwaveguide-knp_min-rnp[knp_mini]-2},
+   from={inp_min-rnp[inp_mini]-2,jnp_min-rnp[jnp_mini]-2,hhwaveguide-knp_min-rnp[knp_mini]-2},
    to={inp_max+rnp[inp_maxi]+2,jnp_max+rnp[jnp_maxi]+2,hhwaveguide+knp_max+rnp[knp_maxi]+2}
 }
 grid_scene2 = Grid{
    yee=false,
-   from={inp_min-rnp[inp_mini]-2,jnp_mini-rnp[jnp_mini]-2,hhwaveguide-knp_min-rnp[knp_mini]-2},
+   from={inp_min-rnp[inp_mini]-2,jnp_min-rnp[jnp_mini]-2,hhwaveguide-knp_min-rnp[knp_mini]-2},
    to={inp_max+rnp[inp_maxi]+2,jnp_max+rnp[jnp_maxi]+2,hhwaveguide+knp_max+rnp[knp_maxi]+2}
 }
 
@@ -159,7 +160,7 @@ cfg:FDTD{
       time = { 0, ncycles, 10 },
       REG{
          BOX{ 
-            { -rwaveguide, rwaveguide, 3, -rwaveguide, jmax, 3, kfft0, kfft0, 1 }
+            { -rwaveguide, rwaveguide, 3, -rwaveguide, rwaveguide, 3, kfft0, kfft0, 1 }
          }
       }
    },
@@ -250,6 +251,42 @@ cfg:FDTD{
       REG{
          BOX{
             { imin, imax, 1, jmin, jmax, 1, kfft0, kfft0, 1 }
+         }
+      },
+      on = true
+   },
+
+   OUT{
+      file = { "VTK", "np_np_xy_e" },
+      type = { "E", "N" },
+      time = { 0, ncycles, 200 },
+      REG{
+         BOX{
+            { imin, imax, 1, jmin, jmax, 1, hhwaveguide, hhwaveguide, 1 }
+         }
+      },
+      on = true
+   },
+
+   OUT{
+      file = { "VTK", "np_np_yz_e" },
+      type = { "E", "N" },
+      time = { 0, ncycles, 200 },
+      REG{
+         BOX{
+            { 0, 0, 1, jmin, jmax, 1, hhwaveguide-rwaveguide, hhwaveguide+rwaveguide, 1 }
+         }
+      },
+      on = true
+   },
+
+   OUT{
+      file = { "VTK", "np_np_xz_e" },
+      type = { "E", "N" },
+      time = { 0, ncycles, 200 },
+      REG{
+         BOX{
+            { imin, imax, 1, 0, 0, 1, hhwaveguide-rwaveguide, hhwaveguide+rwaveguide, 1 }
          }
       },
       on = true
@@ -353,7 +390,7 @@ cfg:DIAG{
    },
    REG{
       BOX{ 
-         { rwaveguide, rwaveguide, 3, -rwaveguide, rwaveguide, 3, kfft0, kfft0, 1 }
+         { -waveguide, rwaveguide, 3, -rwaveguide, rwaveguide, 3, kfft0, kfft0, 1 }
       }
    }
 }
@@ -369,7 +406,7 @@ cfg:DIAG{
    },
    REG{
       BOX{ 
-         { rwaveguide, rwaveguide, 3, -rwaveguide, rwaveguide, 3, kfft1, kfft1, 1 }
+         { -waveguide, rwaveguide, 3, -rwaveguide, rwaveguide, 3, kfft1, kfft1, 1 }
       }
    }
 }
@@ -401,7 +438,7 @@ cfg:DIAG{
    },
    REG{
       BOX{ 
-         { -rwaveguide, rwaveguide, 3, -rwaveguide, rwaveguide, kfft3, kfft3, 1 }
+         { -rwaveguide, rwaveguide, 3, -rwaveguide, rwaveguide, 3, kfft3, kfft3, 1 }
       }
    }
 }
@@ -417,7 +454,7 @@ cfg:DIAG{
    },
    REG{
       BOX{ 
-         { -rwaveguide, rwaveguide, 3, -rwaveguide, rwaveguide,  kfft4, kfft4, 1 }
+         { -rwaveguide, rwaveguide, 3, -rwaveguide, rwaveguide, 3, kfft4, kfft4, 1 }
       }
    }
 }
@@ -433,7 +470,7 @@ cfg:DIAG{
    },
    REG{
       BOX{ 
-         { -rwaveguide, rwaveguide, 3, -rwaveguide, rwaveguide,  kfft5, kfft5, 1 }
+         { -rwaveguide, rwaveguide, 3, -rwaveguide, rwaveguide, 3, kfft5, kfft5, 1 }
       }
    }
 }

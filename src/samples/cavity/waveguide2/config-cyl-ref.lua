@@ -108,7 +108,7 @@ cfg:FDTD{
       time = { 0, ncycles, 10 },
       REG{
          BOX{ 
-            { -rwaveguide, rwaveguide, 3, -rwaveguide, jmax, 3, kfft0, kfft0, 1 }
+            { -rwaveguide, rwaveguide, 3, -rwaveguide, rwaveguide, 3, kfft0, kfft0, 1 }
          }
       }
    },
@@ -279,7 +279,7 @@ cfg:DIAG{
    },
    REG{
       BOX{ 
-         { rwaveguide, rwaveguide, 3, -rwaveguide, rwaveguide, 3, kfft0, kfft0, 1 }
+         { -rwaveguide, rwaveguide, 3, -rwaveguide, rwaveguide, 3, kfft0, kfft0, 1 }
       }
    }
 }
@@ -294,7 +294,7 @@ cfg:DIAG{
    },
    REG{
       BOX{ 
-         { rwaveguide, rwaveguide, 3, -rwaveguide, rwaveguide, 3, kfft1, kfft1, 1 }
+         { -rwaveguide, rwaveguide, 3, -rwaveguide, rwaveguide, 3, kfft1, kfft1, 1 }
       }
    }
 }
@@ -324,7 +324,7 @@ cfg:DIAG{
    },
    REG{
       BOX{ 
-         { -rwaveguide, rwaveguide, 3, -rwaveguide, rwaveguide, kfft3, kfft3, 1 }
+         { -rwaveguide, rwaveguide, 3, -rwaveguide, rwaveguide, 3, kfft3, kfft3, 1 }
       }
    }
 }
@@ -340,7 +340,7 @@ cfg:DIAG{
    },
    REG{
       BOX{ 
-         { -rwaveguide, rwaveguide, 3, -rwaveguide, rwaveguide,  kfft4, kfft4, 1 }
+         { -rwaveguide, rwaveguide, 3, -rwaveguide, rwaveguide, 3, kfft4, kfft4, 1 }
       }
    }
 }
@@ -356,7 +356,7 @@ cfg:DIAG{
    },
    REG{
       BOX{ 
-         { -rwaveguide, rwaveguide, 3, -rwaveguide, rwaveguide,  kfft5, kfft5, 1 }
+         { -rwaveguide, rwaveguide, 3, -rwaveguide, rwaveguide, 3, kfft5, kfft5, 1 }
       }
    }
 }

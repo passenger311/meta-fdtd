@@ -31,7 +31,7 @@
 # ------- specific instance?
 # #$ -q smp.q@quad10.beowulf.cluster
 # ------- split into several tasks (SGE_TASK_ID is used then)
-# #$ -t 2
+#$ -t 1-5
 
 # ------- SCRIPT
 
@@ -58,19 +58,16 @@ cp scale.lua tfsfInjProfile.set $TASKDIR
 cd $TASKDIR
 fi
 
-echo "* cavity reference simulation"
-echo "running pre-processor"
-time $RUNDIR/luacfg $RUNDIR/config-cyl-ref.lua $SGE_TASK_ID
-echo "running simulation"
-time $RUNDIR/meta
+#echo "* cavity reference simulation"
+#echo "running pre-processor"
+#time $RUNDIR/luacfg $RUNDIR/config-cyl-ref.lua $SGE_TASK_ID
+#echo "running simulation"
+#time $RUNDIR/meta
 echo "* NP simulation"
 echo "running pre-processor"
 time $RUNDIR/luacfg $RUNDIR/config-cyl-np.lua  $SGE_TASK_ID
 echo "running simulation"
 time $RUNDIR/meta
-
-cd $RUNDIR
-
 
 
 
