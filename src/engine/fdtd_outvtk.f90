@@ -315,15 +315,17 @@ contains
 
       if ( .not. mode ) return
 
-      write(out%funit,"(A)") "SCALARS scalar float 3"
+      write(out%funit,"(A)") "SCALARS scalar float 1"
       write(out%funit,"(A)") "LOOKUP_TABLE default"
 
       reg = regobj(out%regidx)
       
       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-      write(out%funit,"(E14.6E2)") &
-           real(1./epsinvx(i,j,k),4),real(1./epsinvy(i,j,k),4),real(1./epsinvz(i,j,k),4)
+      val = 1./epsinvx(i,j,k)+1./epsinvx(i-1,j,k)+1./epsinvy(i,j,k)+1./epsinvy(i,j-1,k)+ &
+           1./epsinvz(i,j,k) + 1./epsinvz(i,j,k-1)
+
+      write(out%funit,"(E14.6E2)") real(val/6.,4)
       
       },{}, {} )
 
@@ -341,15 +343,17 @@ contains
 
       if ( .not. mode ) return
 
-      write(out%funit,"(A)") "SCALARS scalar float 3"
+      write(out%funit,"(A)") "SCALARS scalar float 1"
       write(out%funit,"(A)") "LOOKUP_TABLE default"
 
       reg = regobj(out%regidx)
       
       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-      write(out%funit,"(3E14.6E2)") &
-           real(1./M4_MUINVX(i,j,k),4),real(1./M4_MUINVY(i,j,k),4),real(1./M4_MUINVZ(i,j,k),4)
+      val = 1./M4_MUINVX(i,j,k)+1./M4_MUINVX(i-1,j,k)+1./M4_MUINVY(i,j,k)+1./M4_MUINVY(i,j-1,k)+ &
+           1./M4_MUINVZ(i,j,k) + 1./M4_MUINVZ(i,j,k-1)
+
+      write(out%funit,"(3E14.6E2)") real(val/6.,4)
 
       },{}, {} )
 
