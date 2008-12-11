@@ -7,7 +7,7 @@
 # all documented in "man qsub"
 
 # ------- name of job
-#$ -N meta-np
+#$ -N job-meta-np
 # ------- shell to use
 #$ -S /bin/bash
 # ------- current working directory
@@ -31,7 +31,7 @@
 # ------- specific instance?
 # #$ -q smp.q@quad10.beowulf.cluster
 # ------- split into several tasks (SGE_TASK_ID is used then)
-#$ -t 1-5
+# #$ -t 1-7
 
 # ------- SCRIPT
 
@@ -58,14 +58,14 @@ cp scale.lua tfsfInjProfile.set $TASKDIR
 cd $TASKDIR
 fi
 
-#echo "* cavity reference simulation"
+#echo "* waveguide reference simulation"
 #echo "running pre-processor"
-#time $RUNDIR/luacfg $RUNDIR/config-cyl-ref.lua $SGE_TASK_ID
+#time $RUNDIR/luacfg $RUNDIR/config-cyl-slab-ref.lua $SGE_TASK_ID
 #echo "running simulation"
 #time $RUNDIR/meta
 echo "* NP simulation"
 echo "running pre-processor"
-time $RUNDIR/luacfg $RUNDIR/config-cyl-np.lua  $SGE_TASK_ID
+time $RUNDIR/luacfg $RUNDIR/config-cyl-slab-np.lua  $SGE_TASK_ID
 echo "running simulation"
 time $RUNDIR/meta
 

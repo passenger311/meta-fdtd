@@ -54,18 +54,18 @@ scene2 = Scene{
    value =0.
 }
 for i,v in ipairs(rnp) do
-sphere1 = Sphere{
-   at={inp[i],jnp[i],hhwaveguide+knp[i]},
-   radius=rnp[i]
-}
-scene1:add{
-   sphere1,
-   value = eps_infDL
-}
-scene2:add{
-   sphere1,
-   value = 1   -- filling factor for metal!!!!!!!!!!!!
-}
+   sphere1 = Sphere{
+      at={inp[i],jnp[i],hhwaveguide+knp[i]},
+      radius=rnp[i]
+   }
+   scene1:add{
+      sphere1,
+      value = eps_infDL
+   }
+   scene2:add{
+      sphere1,
+      value = 1   -- filling factor for metal!!!!!!!!!!!!
+   }
 end
 
 -- specify a grid for the scene (only objects that are inside the grid will be part of the geometry)
@@ -390,7 +390,7 @@ cfg:DIAG{
    },
    REG{
       BOX{ 
-         { -waveguide, rwaveguide, 3, -rwaveguide, rwaveguide, 3, kfft0, kfft0, 1 }
+         { -rwaveguide, rwaveguide, 3, -rwaveguide, rwaveguide, 3, kfft0, kfft0, 1 }
       }
    }
 }
@@ -406,7 +406,7 @@ cfg:DIAG{
    },
    REG{
       BOX{ 
-         { -waveguide, rwaveguide, 3, -rwaveguide, rwaveguide, 3, kfft1, kfft1, 1 }
+         { -rwaveguide, rwaveguide, 3, -rwaveguide, rwaveguide, 3, kfft1, kfft1, 1 }
       }
    }
 }

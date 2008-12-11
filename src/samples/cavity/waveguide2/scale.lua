@@ -1,8 +1,8 @@
-if taskid then
+if (taskid and (taskid ~= "undefined")) then
    print("taskid = ",taskid)
 -- do something like this:
 --   real_hdnp = 20. + (taskid-1) * 20.-- half distance between 2 nanoparticles
-  dxnp=taskid*10+10
+  dxnp=(taskid-1)*10
 -- for array job set real_length_mmi=scanval.
 else
 -- real_hdnp = 40.-- half distance between 2 nanoparticles
@@ -17,14 +17,14 @@ real_wavelength = 500.0    -- real wavelength
 
 real_hhwaveguide = 800.0   -- waveguide half height
 real_rwaveguide = 120.0    -- waveguide radius
-real_rnp = {20,20}        -- nanoparticle radius
-real_xnp = {-dxnp,dxnp}        -- x position of center of nanoparticle relative to wg center
-real_ynp = {0,0}        -- y position of center of nanoparticle
-real_znp = {0,0}        -- z position of center of nanoparticle
+real_rnp = {20,20,20,20,20,20,20,20}        -- nanoparticle radius
+real_xnp = {20,0,-20,0,14,14,-14,-14}        -- x position of center of nanoparticle relative to wg center
+real_ynp = {0,20,0,-20,14,-14,-14,14}        -- y position of center of nanoparticle
+real_znp = {20,20,20,20,-20,-20,-20,-20}        -- z position of center of nanoparticle
 
 real_kmax = 2*real_hhwaveguide
 
-real_kinj = 50
+real_kinj = 100
 
 
 real_kfft0 = real_kinj - 10
@@ -74,9 +74,9 @@ end
 kinj = math.floor(real_kinj/conv+.5)
 widthl = 1     -- width in number of periods
 offsetl = 0    -- offset in number of periods
-attackl = 3  -- attack in number of periods
+attackl = 4  -- attack in number of periods
 sustainl = 0   -- sustain in number of periods
-decayl = 3     -- decay in number of periods
+decayl = 10     -- decay in number of periods
 nrefr = 1 --3.1493530190359 -- reference injection refractive index
 
 -- Fourier transform parameters
@@ -96,7 +96,7 @@ size_pad = 20
 -- Courant factor
 dt = 0.574  -- time step length compared to grid step length (--> Courant stability factor)
 
-ncycles = 6000 -- number of cycles
+ncycles = 10000 -- number of cycles
 
 
 field_out = "field" -- geo output file to compute injection profile with Matlab
@@ -105,14 +105,17 @@ field_inj = "tfsfInjProfile.set" -- file created by Matlab
 --- print some parameters
 print("Resolution:                               ", resolution)
 print("Conversion factor:                   dx = ", conv, "nm")
+print("Courant factor:                      dt = ", dt, "dx")
 print("Wavelength (grid):                        ", 1/inv_wavelength)
 print("Inverse wavelength (grid):                ", inv_wavelength)
-print("Half-Height of waveguide in cells (grid): ", hhwaveguide)
-print("Radius of waveguide in cells (grid):      ", rwaveguide)
+print("Half-Height of waveguide (grid):          ", hhwaveguide)
+print("Radius of waveguide(grid):                ", rwaveguide)
+print("Size of padding (grid):                   ", size_pad)
+print("Size of PML (grid):                       ", size_pml)
 print("The following parameters are only applicable in the case of nanoparticles")
 for i,v in ipairs(rnp) do
 print("Radius of nanoparticle (grid):            ", v)
 print("Position of nanoparticle (grid):          ", inp[i], jnp[i], knp[i])
 end
-print("Position of Injection plane (grid):       ", kinj)
+print("\nPosition of Injection plane (grid):       ", kinj)
 print("Position of Fourier transforms (grid):    ", kfft0, kfft1, kfft2, kfft3, kfft4, kfft5)

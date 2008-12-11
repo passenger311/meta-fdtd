@@ -10,12 +10,12 @@ jmax = rwaveguide+size_pad
 kmin = 0
 kmax = 2*hhwaveguide
 
-print("Computational window without PML:  ", imin, imax, jmin, jmax, kmin, kmax)
-print("Time steps:                        ", ncycles)
+print("Computational window without PML:         ", imin, imax, jmin, jmax, kmin, kmax)
+print("Time steps:                               ", ncycles)
 max_tstep = math.floor(n_max*math.sqrt((imax-imin)^2+(jmax-jmin)^2+(kmax-kmin)^2)/dt +
             (attackl+sustainl+decayl)/inv_wavelength +.5)
 print("Maximum number of time steps to")
-print("propagate wave through structure:  ", max_tstep)
+print("propagate wave through structure:         ", max_tstep)
 
 
 --- GRID Definition
