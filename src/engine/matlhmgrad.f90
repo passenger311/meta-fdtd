@@ -381,7 +381,6 @@ M4_IFELSE_TM({
 
     type(T_MATLHMGRAD) :: mat
  
-   
     call DisplayRegObj(regobj(mat%regidx))
     	
   end subroutine DisplayMatlhmgradObj

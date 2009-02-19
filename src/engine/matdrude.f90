@@ -360,7 +360,6 @@ M4_IFELSE_TE({    M4_VOLEZ(i,j,k) * w(3) * real(Ez(i,j,k)) * real( mat%Jz(p,m) -
  
     M4_WRITE_INFO({"#",TRIM(i2str(mat%idx)),&
     	" lambdapl=",TRIM(f2str(mat%lambdaplinv,5)),&
-    	" omegapl=",TRIM(f2str(mat%omegapl,5)),&
     	" gammapl=",TRIM(f2str(mat%gammapl,5))
     })
     call DisplayRegObj(regobj(mat%regidx))

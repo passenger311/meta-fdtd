@@ -440,7 +440,7 @@ M4_IFELSE_TM({    M4_VOLHZ(i,j,k) * w(6) * real(Hz(i,j,k)) * real( mat%Kz(p,m) -
     type(T_MATLHM) :: mat
  
     M4_WRITE_INFO({"#",TRIM(i2str(mat%idx)),&
-    	" omegapl=",TRIM(f2str(mat%omegapl,5)),&
+    	" lambdaplinv=",TRIM(f2str(mat%lambdaplinv,5)),&
     	" gammapl=",TRIM(f2str(mat%gammapl,5))
     })
     call DisplayRegObj(regobj(mat%regidx))

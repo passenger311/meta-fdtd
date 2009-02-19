@@ -279,7 +279,7 @@ M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * real(Ez(i,j,k)) * real( mat%Pz(p,m) - ma
     type(T_MATLORENTZ) :: mat
  
     M4_WRITE_INFO({"#",TRIM(i2str(mat%idx)),&
-    	" omegal=",TRIM(f2str(mat%omegal,5)),&
+    	" lambdalinv=",TRIM(f2str(mat%lambdalinv,5)),&
     	" gammal=",TRIM(f2str(mat%gammal,5)),&
     	" deltaepsl=",TRIM(f2str(mat%deltaepsl,5))
     })
