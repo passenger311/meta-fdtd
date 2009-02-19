@@ -133,6 +133,7 @@ contains
        diag%freqs(i) = freqs(i)
     end do
     
+    diag%done = .false.
 
     M4_IFELSE_DBG({call EchoDiagModeObj(diag)})
 
@@ -219,7 +220,7 @@ contains
 
           do c = 1, diag%numfreqs 
              
-             phi = 2. * PI * diag%freqs(c) * ( ncyc - diag%ns ) * diag%dn * DT
+             phi = 2. * PI * diag%freqs(c) * ( ncyc - diag%ns ) * DT
 
              cosfac = cos( phi )
              sinfac = sin( phi )
@@ -248,9 +249,10 @@ contains
           
           do c = 1, diag%numfreqs 
              
-             do l = 1, 12
+             do l = 1, 6
              
                 diag%Fcos(c,p,l) = 2./diag%numsteps * diag%Fcos(c,p,l)
+                diag%Fsin(c,p,l) = 2./diag%numsteps * diag%Fsin(c,p,l)
 
              end do
 
@@ -285,7 +287,7 @@ contains
 
     sfx = ".set"
 
-    fn = cat4(diag%filename,"_",TRIM(i2str(k)),sfx)
+    fn = cat4(diag%filename,"_",TRIM(i2str(c)),sfx)
     
     M4_WRITE_INFO({"writing mode #",TRIM(i2str(diag%idx)), " -> ", TRIM(fn)})
 
