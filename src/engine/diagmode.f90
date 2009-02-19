@@ -33,7 +33,7 @@ module diagmode
 
   integer :: numsteps
 
-  character(len=80) :: filename, mode
+  character(len=80) :: filename, outfile, mode
 
   logical :: done
 
@@ -66,6 +66,9 @@ contains
 
     call readstring(funit,lcount,diag%filename)
     M4_WRITE_DBG({"filename: ", TRIM(diag%filename)})
+
+    call readstring(funit,lcount,diag%outfile)
+    M4_WRITE_DBG({"outfile: ", TRIM(diag%outfile)})
 
     call readline(funit,lcount,eof,line)
     M4_EOF_ERROR(eof,lcount)
@@ -115,18 +118,19 @@ contains
        M4_WRITE_WARN({"could not open frequency file: ",  TRIM(diag%filename),"!"})
        return
     end if
-    
-    close(unit)
-    M4_WRITE_DBG(". got ",TRIM(i2str(diag%numfreqs)), " channels!")
 
     diag%numfreqs = 0
     ios = 0
 
-    do while ( ios .eq. 0 )   
+    do while ( ios .eq. 0 )
        diag%numfreqs = diag%numfreqs + 1
-       read(unit,*,iostat=ios) freqs(diag%numfreqs) 
+       read(unit,*,iostat=ios) freqs(diag%numfreqs)
     end do
 
+    close(unit)
+
+!    diag%numfreqs = diag%numfreqs - 1
+  
     allocate(diag%freqs(diag%numfreqs))
 
     do i = 1, diag%numfreqs
@@ -287,7 +291,7 @@ contains
 
     sfx = ".set"
 
-    fn = cat4(diag%filename,"_",TRIM(i2str(c)),sfx)
+    fn = cat4(diag%outfile,"_",TRIM(i2str(c)),sfx)
     
     M4_WRITE_INFO({"writing mode #",TRIM(i2str(diag%idx)), " -> ", TRIM(fn)})
 
