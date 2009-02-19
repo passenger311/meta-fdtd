@@ -333,6 +333,7 @@ function MODE(parms)
    MODE.time = parms.time or { 0,-1, 1 }  
    MODE.mode = parms.mode or "F"
    MODE.file = parms.file
+   MODE.outfile = parms.outfile
    return MODE
 end
 
@@ -663,7 +664,8 @@ local writediag = {
 		       PSPEC.polarize.psi, " \t! polarize: phi, theta, psi\n")
 	   end,
    MODE =  function(fh,MODE)
-	      fh:write(MODE.file," \t! filename, frequencies \n")
+	      fh:write(MODE.file," \t! filename, frequencies\n")
+	      fh:write(MODE.outfile," \t! output filename\n")
 	      fh:write(MODE.mode, " \t! mode ( F, En )\n")
 	      fh:write(MODE.time[1]," ",MODE.time[2]," ",MODE.time[3]," \t! time window [from to step]\n")
 
