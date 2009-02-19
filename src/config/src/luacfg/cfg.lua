@@ -326,6 +326,16 @@ function PSPEC(parms)
    return PSPEC
 end
 
+-- (DIAG)MODE Sub-Block definition
+
+function MODE(parms) 
+   local MODE = { block = "MODE" }
+   MODE.time = parms.time or { 0,-1, 1 }  
+   MODE.mode = parms.mode or "F"
+   MODE.file = parms.file
+   return MODE
+end
+
 -- (DIAG)EBAL Sub-Block definition
 
 function EBAL(parms) 
@@ -652,9 +662,15 @@ local writediag = {
 		       PSPEC.polarize.theta, " ",
 		       PSPEC.polarize.psi, " \t! polarize: phi, theta, psi\n")
 	   end,
+   MODE =  function(fh,MODE)
+	      fh:write(MODE.file," \t! filename, frequencies \n")
+	      fh:write(MODE.mode, " \t! mode ( F, En )\n")
+	      fh:write(MODE.time[1]," ",MODE.time[2]," ",MODE.time[3]," \t! time window [from to step]\n")
+
+	   end,
    EBAL = function(fh,EBAL)
-	     fh:write(EBAL.time[1]," ",PSPEC.time[2]," ",PSPEC.time[3]," \t! time window [from to step]\n")
-	  end,
+	     fh:write(EBAL.time[1]," ",EBAL.time[2]," ",EBAL.time[3]," \t! time window [from to step]\n")
+	  end
 }
 
 
