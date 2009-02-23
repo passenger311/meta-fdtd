@@ -102,7 +102,7 @@ contains
     M4_MODLOOP_DECL({DIAGMODE},diag)
     type (T_REG) :: reg
     integer :: ier
-    integer :: unit, ios, i
+    integer :: ios, i
     real(kind=8) :: freqs(1000),maxfreq
 
     M4_WRITE_DBG(". enter InitializeDiagMode")
@@ -110,7 +110,7 @@ contains
     
     M4_MODOBJ_GETREG(diag,reg)
 
-    open(unit,FILE=diag%filename,STATUS="old", IOSTAT=ios)
+    open(UNITTMP,FILE=diag%filename,STATUS="old", IOSTAT=ios)
 
     if ( ios .ne. 0 ) then 
        M4_WRITE_WARN({"could not open frequency file: ",  TRIM(diag%filename),"!"})
@@ -122,10 +122,10 @@ contains
 
     do while ( ios .eq. 0 )
        diag%numfreqs = diag%numfreqs + 1
-       read(unit,*,iostat=ios) freqs(diag%numfreqs)
+       read(UNITTMP,*,iostat=ios) freqs(diag%numfreqs)
     end do
 
-    close(unit)
+    close(UNITTMP)
 
     diag%numfreqs = diag%numfreqs - 1
 
@@ -142,7 +142,7 @@ contains
     end do
 
     if ( diag%dn .eq. 0 .or. diag%dn .eq.-1 ) then
-       diag%dn = int((diag%ne-diag%ns)/(2.*(maxfreq*(diag%ne-diag%ns+1)*DT)))
+       diag%dn = int((diag%ne-diag%ns)/(2.*(maxfreq*(diag%ne-diag%ns+1)*DT)+1.))
        if ( diag%dn .eq. 0 ) then
           M4_FATAL_ERROR({"MAXIMUM FREQUENCY EXCEEDS POSSIBLE FREQUENCY SPACE!"})
        end if
