@@ -85,7 +85,7 @@ contains
     diag%ne = min(diag%ne,NCYCMAX)
 
     ! time window
-    if ( diag%ns .ge. diag%ne .or. diag%ns .lt. 0 .or. diag%dn .lt. 1 ) then
+    if ( diag%ns .ge. diag%ne .or. diag%ns .lt. 0 .or. diag%dn .lt. -1 ) then
        M4_FATAL_ERROR({"BAD TIME WINDOW!"})
     end if
     
@@ -103,14 +103,12 @@ contains
     type (T_REG) :: reg
     integer :: ier
     integer :: unit, ios, i
-    real(kind=8) :: freqs(1000)
+    real(kind=8) :: freqs(1000),maxfreq
 
     M4_WRITE_DBG(". enter InitializeDiagMode")
     M4_MODLOOP_EXPR({DIAGMODE},diag,{
     
     M4_MODOBJ_GETREG(diag,reg)
-
-    diag%numsteps = (diag%ne-diag%ns)/diag%dn + 1
 
     open(unit,FILE=diag%filename,STATUS="old", IOSTAT=ios)
 
@@ -129,14 +127,30 @@ contains
 
     close(unit)
 
-!    diag%numfreqs = diag%numfreqs - 1
-  
+    diag%numfreqs = diag%numfreqs - 1
+
+    M4_WRITE_INFO({"recording dft for ",TRIM(i2str(diag%numfreqs))," frequencies"})
+
     allocate(diag%freqs(diag%numfreqs))
 
+    maxfreq = 0.
     do i = 1, diag%numfreqs
        diag%freqs(i) = freqs(i)
+       if ( freqs(i) .gt. maxfreq ) then
+          maxfreq = freqs(i)
+       end if
     end do
-    
+
+    if ( diag%dn .eq. 0 .or. diag%dn .eq.-1 ) then
+       diag%dn = int((diag%ne-diag%ns)/(2.*(maxfreq*(diag%ne-diag%ns+1)*DT)))
+       if ( diag%dn .eq. 0 ) then
+          M4_FATAL_ERROR({"MAXIMUM FREQUENCY EXCEEDS POSSIBLE FREQUENCY SPACE!"})
+       end if
+       M4_WRITE_INFO({"Automated sampling using dn = ",TRIM(i2str(diag%dn))})
+    end if
+
+    diag%numsteps = (diag%ne-diag%ns)/diag%dn + 1
+
     diag%done = .false.
 
     M4_IFELSE_DBG({call EchoDiagModeObj(diag)})
@@ -153,7 +167,12 @@ contains
     M4_MODLOOP_DECL({DIAGMODE},diag)
     M4_WRITE_DBG(". enter FinalizeDiagMode")
     M4_MODLOOP_EXPR({DIAGMODE},diag,{
+
        deallocate(diag%freqs)
+! Not the best place to finalize
+       deallocate(diag%Fcos)
+       deallocate(diag%Fsin)
+
     })
 
     M4_WRITE_DBG(". exit FinalizeDiagMode")
@@ -180,7 +199,7 @@ contains
     integer :: ier, c, l
     M4_MODLOOP_DECL({DIAGMODE},diag)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(0))
-    
+
     real(kind=8) :: Exh, Eyh, Ezh, Hxh, Hyh, Hzh, phi, cosfac, sinfac
 
     M4_MODLOOP_EXPR({DIAGMODE},diag,{
@@ -197,10 +216,10 @@ contains
 
           allocate(diag%Fcos(diag%numfreqs,reg%numnodes,6),stat=ier) 
           M4_ALLOC_ERROR({ier},"StepEDiagMode")
-          
+
           allocate(diag%Fsin(diag%numfreqs,reg%numnodes,6),stat=ier) 
           M4_ALLOC_ERROR({ier},"StepEDiagMode")
-   
+
           diag%Fcos = 0.
           diag%Fsin = 0.
 
@@ -208,12 +227,12 @@ contains
 
        if ( ncyc .ge. diag%ns .and. ncyc .le. diag%ne .and. &
             mod(ncyc-diag%ns,diag%dn) .eq. 0) then
-          
-          
+
+
           M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-       
+
           ! store E field projections
-          
+
           Exh = real( 0.5 * ( Ex(M4_COORD(i,j,k)) + Ex(M4_COORD(i-1,j,k)) ) )
           Eyh = real( 0.5 * ( Ey(M4_COORD(i,j,k)) + Ey(M4_COORD(i,j-1,k)) ) )
           Ezh = real( 0.5 * ( Ez(M4_COORD(i,j,k)) + Ez(M4_COORD(i,j,k-1)) ) )
@@ -223,12 +242,12 @@ contains
           Hzh = real( 0.25 * ( Hz(M4_COORD(i,j,k)) + Hz(M4_COORD(i-1,j,k)) + Hz(M4_COORD(i,j-1,k)) + Hz(M4_COORD(i-1,j-1,k)) ) )
 
           do c = 1, diag%numfreqs 
-             
+
              phi = 2. * PI * diag%freqs(c) * ( ncyc - diag%ns ) * DT
 
              cosfac = cos( phi )
              sinfac = sin( phi )
-        
+
              diag%Fcos(c,p,1) = diag%Fcos(c,p,1) + Exh * cosfac
              diag%Fcos(c,p,2) = diag%Fcos(c,p,2) + Eyh * cosfac
              diag%Fcos(c,p,3) = diag%Fcos(c,p,3) + Ezh * cosfac
@@ -242,30 +261,31 @@ contains
              diag%Fsin(c,p,4) = diag%Fsin(c,p,4) + Hxh * sinfac
              diag%Fsin(c,p,5) = diag%Fsin(c,p,5) + Hyh * sinfac
              diag%Fsin(c,p,6) = diag%Fsin(c,p,6) + Hzh * sinfac
-             
+
           end do
-          
-          })      
+
+          })
 
        end if
 
        if ( ncyc .ge. diag%ne .and. .not. diag%done ) then
-          
-          do c = 1, diag%numfreqs 
-             
+
+          do c = 1, diag%numfreqs
+
              do l = 1, 6
-             
-                diag%Fcos(c,p,l) = 2./diag%numsteps * diag%Fcos(c,p,l)
-                diag%Fsin(c,p,l) = 2./diag%numsteps * diag%Fsin(c,p,l)
+
+                diag%Fcos(c,p,l) = 2. / diag%numsteps * diag%Fcos(c,p,l)
+                diag%Fsin(c,p,l) = 2. / diag%numsteps * diag%Fsin(c,p,l)
 
              end do
 
              call WriteMode(diag, c)
-             
+
           end do
 
-          deallocate(diag%Fcos)
-          deallocate(diag%Fsin)
+!          Gives segmentation faults, deallocation presently in FinalizeDiagMode
+!          deallocate(diag%Fcos)
+!          deallocate(diag%Fsin)
 
           diag%done = .true. ! we are done here
 
@@ -322,16 +342,16 @@ contains
     else 
 
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-       
-        do l = 1,6
-           F(2*l-1) =  diag%Fcos(c,p,l)
-           F(2*l) = diag%Fsin(c,p,l)
-        end do
-            
-        write(UNITTMP,"(12E15.6E3)") ( real(F(l),4), l = 1, 12, 1 )
-       
+
+       do l = 1,6
+          F(2*l-1) =  diag%Fcos(c,p,l)
+          F(2*l) = diag%Fsin(c,p,l)
+       end do
+
+       write(UNITTMP,"(12E15.6E3)") ( real(F(l),4), l = 1, 12, 1 )
+
        })
-     
+
     endif
 
     write(UNITTMP,"(A)") ")SET"
@@ -346,16 +366,16 @@ contains
    subroutine EchoDiagModeObj(diag)
 
     type(T_DIAGMODE) :: diag
- 
+
     M4_WRITE_INFO({"--- diagmode # ",&
          TRIM(i2str(diag%idx))," ", TRIM(diag%type)})
 
     M4_WRITE_INFO({"defined over:"})
     call EchoRegObj(regobj(diag%regidx))
-    
+
 
   end subroutine EchoDiagModeObj
-  
+
 !----------------------------------------------------------------------
 
 end module diagmode
