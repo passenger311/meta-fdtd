@@ -305,7 +305,7 @@ contains
 
     character(len=STRLNG) :: fn, sfx
     integer :: l, m, ios
-    real(kind=4) :: En, F(12)
+    real(kind=8) :: En, F(12)
 
     M4_REGLOOP_DECL(reg,p,i,j,k,w(0))
 
@@ -335,7 +335,8 @@ contains
           En = En + 1./M4_MUINVY(i,j,k)* ( diag%Fcos(c,p,5)**2 + diag%Fsin(c,p,5)**2 )
           En = En + 1./M4_MUINVZ(i,j,k)* ( diag%Fcos(c,p,6)**2 + diag%Fsin(c,p,6)**2 )
 
-          write(UNITTMP,"(E15.6E3)") real(En,4)
+          write(UNITTMP,*) real(En,8)
+          !write(UNITTMP,"(E15.6E3)") real(En,4)
 
        })
 
@@ -348,7 +349,8 @@ contains
           F(2*l) = diag%Fsin(c,p,l)
        end do
 
-       write(UNITTMP,"(12E15.6E3)") ( real(F(l),4), l = 1, 12, 1 )
+       write(UNITTMP,*) ( real(F(l),8), l = 1, 12, 1 )
+       !write(UNITTMP,"(12E15.6E3)") ( real(F(l),4), l = 1, 12, 1 )
 
        })
 
