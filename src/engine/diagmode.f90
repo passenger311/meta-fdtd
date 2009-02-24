@@ -170,8 +170,8 @@ contains
 
        deallocate(diag%freqs)
 ! Not the best place to finalize
-       deallocate(diag%Fcos)
-       deallocate(diag%Fsin)
+!       deallocate(diag%Fcos)
+!       deallocate(diag%Fsin)
 
     })
 
@@ -269,23 +269,27 @@ contains
        end if
 
        if ( ncyc .ge. diag%ne .and. .not. diag%done ) then
-
+          
           do c = 1, diag%numfreqs
+             
+             M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
              do l = 1, 6
-
+                
                 diag%Fcos(c,p,l) = 2. / diag%numsteps * diag%Fcos(c,p,l)
                 diag%Fsin(c,p,l) = 2. / diag%numsteps * diag%Fsin(c,p,l)
-
+                
              end do
-
+             
+             })
+             
              call WriteMode(diag, c)
 
           end do
 
 !          Gives segmentation faults, deallocation presently in FinalizeDiagMode
-!          deallocate(diag%Fcos)
-!          deallocate(diag%Fsin)
+          deallocate(diag%Fcos)
+          deallocate(diag%Fsin)
 
           diag%done = .true. ! we are done here
 
