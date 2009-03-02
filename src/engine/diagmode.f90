@@ -45,6 +45,9 @@ module diagmode
   real(kind=8), pointer, dimension(:,:,:) :: Fcos
   real(kind=8), pointer, dimension(:,:,:) :: Fsin
 
+  ! for tangential DFT
+  integer :: numcomp, face
+
   })
 
 contains
@@ -141,8 +144,10 @@ contains
        end if
     end do
 
+    !automated determination of dn
+
     if ( diag%dn .eq. 0 .or. diag%dn .eq.-1 ) then
-       diag%dn = int((diag%ne-diag%ns)/(2.*(maxfreq*(diag%ne-diag%ns+1)*DT)+1.))
+       diag%dn = int(((diag%ne-diag%ns)/(2.*(maxfreq*(diag%ne-diag%ns+1)*DT)+1.))/2.+.5)
        if ( diag%dn .eq. 0 ) then
           M4_FATAL_ERROR({"MAXIMUM FREQUENCY EXCEEDS POSSIBLE FREQUENCY SPACE!"})
        end if
@@ -152,6 +157,29 @@ contains
     diag%numsteps = (diag%ne-diag%ns)/diag%dn + 1
 
     diag%done = .false.
+
+    !check if box is a plane and if so which one
+
+    if ( reg%is .eq. reg%ie ) then
+       diag%face = 1
+    else if ( reg%js .eq. reg%je ) then
+       diag%face = 2
+    else if ( reg%ks .eq. reg%ke ) then
+       diag%face = 3
+    else if ( diag%mode .eq. "EHT" .or. diag%mode .eq. "ET" .or. diag%mode .eq. "HT" ) then
+       diag%mode = "F"
+       M4_WRITE_WARN({"Mode changed to: ",  TRIM(diag%mode),"!"})
+    end if
+
+    !set the number of components needed to evaluate DFT in volume or on plane only
+
+    if ( diag%mode .eq. "ET" .or. diag%mode .eq. "HT" ) then
+       diag%numcomp = 2
+    else if ( diag%mode .eq. "EHT" ) then
+       diag%numcomp = 4
+    else
+       diag%numcomp = 6
+    end if
 
     M4_IFELSE_DBG({call EchoDiagModeObj(diag)})
 
@@ -169,9 +197,6 @@ contains
     M4_MODLOOP_EXPR({DIAGMODE},diag,{
 
        deallocate(diag%freqs)
-! Not the best place to finalize
-!       deallocate(diag%Fcos)
-!       deallocate(diag%Fsin)
 
     })
 
@@ -201,6 +226,8 @@ contains
     M4_REGLOOP_DECL(reg,p,i,j,k,w(0))
 
     real(kind=8) :: Exh, Eyh, Ezh, Hxh, Hyh, Hzh, phi, cosfac, sinfac
+    ! tangential field projections
+    real(kind=8) :: Ep1, Ep2, Hp1, Hp2 
 
     M4_MODLOOP_EXPR({DIAGMODE},diag,{
 
@@ -214,10 +241,10 @@ contains
 
           M4_WRITE_INFO({"recording dft #",TRIM(i2str(diag%idx))})
 
-          allocate(diag%Fcos(diag%numfreqs,reg%numnodes,6),stat=ier) 
+          allocate(diag%Fcos(diag%numfreqs,reg%numnodes,diag%numcomp),stat=ier) 
           M4_ALLOC_ERROR({ier},"StepEDiagMode")
 
-          allocate(diag%Fsin(diag%numfreqs,reg%numnodes,6),stat=ier) 
+          allocate(diag%Fsin(diag%numfreqs,reg%numnodes,diag%numcomp),stat=ier) 
           M4_ALLOC_ERROR({ier},"StepEDiagMode")
 
           diag%Fcos = 0.
@@ -228,43 +255,309 @@ contains
        if ( ncyc .ge. diag%ns .and. ncyc .le. diag%ne .and. &
             mod(ncyc-diag%ns,diag%dn) .eq. 0) then
 
+          !HT and EHT are staggered (no arithmetic mean of H in direction perpendicular to plane taken)
 
-          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+          select case ( diag%mode  )          
 
-          ! store E field projections
+          case ( "ET"  )
 
-          Exh = real( 0.5 * ( Ex(M4_COORD(i,j,k)) + Ex(M4_COORD(i-1,j,k)) ) )
-          Eyh = real( 0.5 * ( Ey(M4_COORD(i,j,k)) + Ey(M4_COORD(i,j-1,k)) ) )
-          Ezh = real( 0.5 * ( Ez(M4_COORD(i,j,k)) + Ez(M4_COORD(i,j,k-1)) ) )
+              ! store E field projections
+             select case ( diag%face )
+             case( 1 )
 
-          Hxh = real( 0.25 * ( Hx(M4_COORD(i,j,k)) + Hx(M4_COORD(i,j-1,k)) + Hx(M4_COORD(i,j,k-1)) + Hx(M4_COORD(i,j-1,k-1)) ) )
-          Hyh = real( 0.25 * ( Hy(M4_COORD(i,j,k)) + Hy(M4_COORD(i-1,j,k)) + Hy(M4_COORD(i,j,k-1)) + Hy(M4_COORD(i-1,j,k-1)) ) )
-          Hzh = real( 0.25 * ( Hz(M4_COORD(i,j,k)) + Hz(M4_COORD(i-1,j,k)) + Hz(M4_COORD(i,j-1,k)) + Hz(M4_COORD(i-1,j-1,k)) ) )
+                M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-          do c = 1, diag%numfreqs 
+                Ep1 = real( 0.5 * ( Ey(M4_COORD(i,j,k)) + Ey(M4_COORD(i,j-1,k)) ) )
+                Ep2 = real( 0.5 * ( Ez(M4_COORD(i,j,k)) + Ez(M4_COORD(i,j,k-1)) ) )
 
-             phi = 2. * PI * diag%freqs(c) * ( ncyc - diag%ns ) * DT
+                do c = 1, diag%numfreqs 
 
-             cosfac = cos( phi )
-             sinfac = sin( phi )
+                   phi = 2. * PI * diag%freqs(c) * ( ncyc - diag%ns ) * DT
 
-             diag%Fcos(c,p,1) = diag%Fcos(c,p,1) + Exh * cosfac
-             diag%Fcos(c,p,2) = diag%Fcos(c,p,2) + Eyh * cosfac
-             diag%Fcos(c,p,3) = diag%Fcos(c,p,3) + Ezh * cosfac
-             diag%Fcos(c,p,4) = diag%Fcos(c,p,4) + Hxh * cosfac
-             diag%Fcos(c,p,5) = diag%Fcos(c,p,5) + Hyh * cosfac
-             diag%Fcos(c,p,6) = diag%Fcos(c,p,6) + Hzh * cosfac
+                   cosfac = cos( phi )
+                   sinfac = sin( phi )
 
-             diag%Fsin(c,p,1) = diag%Fsin(c,p,1) + Exh * sinfac
-             diag%Fsin(c,p,2) = diag%Fsin(c,p,2) + Eyh * sinfac
-             diag%Fsin(c,p,3) = diag%Fsin(c,p,3) + Ezh * sinfac
-             diag%Fsin(c,p,4) = diag%Fsin(c,p,4) + Hxh * sinfac
-             diag%Fsin(c,p,5) = diag%Fsin(c,p,5) + Hyh * sinfac
-             diag%Fsin(c,p,6) = diag%Fsin(c,p,6) + Hzh * sinfac
+                   diag%Fcos(c,p,1) = diag%Fcos(c,p,1) + Ep1 * cosfac
+                   diag%Fcos(c,p,2) = diag%Fcos(c,p,2) + Ep2 * cosfac
 
-          end do
+                   diag%Fsin(c,p,1) = diag%Fsin(c,p,1) + Ep1 * sinfac
+                   diag%Fsin(c,p,2) = diag%Fsin(c,p,2) + Ep2 * sinfac
 
-          })
+                end do
+
+                })
+
+             case( 2 )
+
+                M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+
+                Ep1 = real( 0.5 * ( Ex(M4_COORD(i,j,k)) + Ex(M4_COORD(i-1,j,k)) ) )
+                Ep2 = real( 0.5 * ( Ez(M4_COORD(i,j,k)) + Ez(M4_COORD(i,j,k-1)) ) )
+
+                do c = 1, diag%numfreqs 
+
+                   phi = 2. * PI * diag%freqs(c) * ( ncyc - diag%ns ) * DT
+
+                   cosfac = cos( phi )
+                   sinfac = sin( phi )
+
+                   diag%Fcos(c,p,1) = diag%Fcos(c,p,1) + Ep1 * cosfac
+                   diag%Fcos(c,p,2) = diag%Fcos(c,p,2) + Ep2 * cosfac
+
+                   diag%Fsin(c,p,1) = diag%Fsin(c,p,1) + Ep1 * sinfac
+                   diag%Fsin(c,p,2) = diag%Fsin(c,p,2) + Ep2 * sinfac
+
+                end do
+
+                })
+
+             case( 3 )
+
+                M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+
+                Ep1 = real( 0.5 * ( Ex(M4_COORD(i,j,k)) + Ex(M4_COORD(i-1,j,k)) ) )
+                Ep2 = real( 0.5 * ( Ey(M4_COORD(i,j,k)) + Ey(M4_COORD(i,j-1,k)) ) )
+
+                do c = 1, diag%numfreqs 
+
+                   phi = 2. * PI * diag%freqs(c) * ( ncyc - diag%ns ) * DT
+
+                   cosfac = cos( phi )
+                   sinfac = sin( phi )
+
+                   diag%Fcos(c,p,1) = diag%Fcos(c,p,1) + Ep1 * cosfac
+                   diag%Fcos(c,p,2) = diag%Fcos(c,p,2) + Ep2 * cosfac
+
+                   diag%Fsin(c,p,1) = diag%Fsin(c,p,1) + Ep1 * sinfac
+                   diag%Fsin(c,p,2) = diag%Fsin(c,p,2) + Ep2 * sinfac
+
+                end do
+
+                })
+
+             end select
+
+          case ( "HT" )
+
+             ! store H field projections
+
+             select case ( diag%face )
+
+             case( 1 )
+
+                M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+
+                Hp1 = real( 0.5 * ( Hy(M4_COORD(i,j,k)) + Hy(M4_COORD(i,j,k-1)) ) )
+                Hp2 = real( 0.5 * ( Hz(M4_COORD(i,j,k)) + Hz(M4_COORD(i,j-1,k)) ) )
+
+                do c = 1, diag%numfreqs 
+
+                   phi = 2. * PI * diag%freqs(c) * ( ncyc - diag%ns ) * DT
+
+                   cosfac = cos( phi )
+                   sinfac = sin( phi )
+
+                   diag%Fcos(c,p,1) = diag%Fcos(c,p,1) + Hp1 * cosfac
+                   diag%Fcos(c,p,2) = diag%Fcos(c,p,2) + Hp2 * cosfac
+
+                   diag%Fsin(c,p,1) = diag%Fsin(c,p,1) + Hp1 * sinfac
+                   diag%Fsin(c,p,2) = diag%Fsin(c,p,2) + Hp2 * sinfac
+
+                end do
+
+                })
+
+             case( 2 )
+
+                M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+
+                Hp1 = real( 0.5 * ( Hx(M4_COORD(i,j,k)) + Hx(M4_COORD(i,j,k-1)) ) )
+                Hp2 = real( 0.5 * ( Hz(M4_COORD(i,j,k)) + Hz(M4_COORD(i-1,j,k)) ) )
+
+                do c = 1, diag%numfreqs 
+
+                   phi = 2. * PI * diag%freqs(c) * ( ncyc - diag%ns ) * DT
+
+                   cosfac = cos( phi )
+                   sinfac = sin( phi )
+
+                   diag%Fcos(c,p,1) = diag%Fcos(c,p,1) + Hp1 * cosfac
+                   diag%Fcos(c,p,2) = diag%Fcos(c,p,2) + Hp2 * cosfac
+
+                   diag%Fsin(c,p,1) = diag%Fsin(c,p,1) + Hp1 * sinfac
+                   diag%Fsin(c,p,2) = diag%Fsin(c,p,2) + Hp2 * sinfac
+
+                end do
+
+                })
+
+             case( 3 )
+
+                M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+
+                Hp1 = real( 0.5 * ( Hx(M4_COORD(i,j,k)) + Hx(M4_COORD(i,j-1,k)) ) )
+                Hp2 = real( 0.5 * ( Hy(M4_COORD(i,j,k)) + Hy(M4_COORD(i-1,j,k)) ) )
+
+                do c = 1, diag%numfreqs 
+
+                   phi = 2. * PI * diag%freqs(c) * ( ncyc - diag%ns ) * DT
+
+                   cosfac = cos( phi )
+                   sinfac = sin( phi )
+
+                   diag%Fcos(c,p,1) = diag%Fcos(c,p,1) + Hp1 * cosfac
+                   diag%Fcos(c,p,2) = diag%Fcos(c,p,2) + Hp2 * cosfac
+
+                   diag%Fsin(c,p,1) = diag%Fsin(c,p,1) + Hp1 * sinfac
+                   diag%Fsin(c,p,2) = diag%Fsin(c,p,2) + Hp2 * sinfac
+
+                end do
+
+                })
+
+             end select
+
+          case ( "EHT"  )
+
+             ! store E and H field projections
+
+             select case ( diag%face )
+
+             case( 1 )
+
+                M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+
+                Ep1 = real( 0.5 * ( Ey(M4_COORD(i,j,k)) + Ey(M4_COORD(i,j-1,k)) ) )
+                Ep2 = real( 0.5 * ( Ez(M4_COORD(i,j,k)) + Ez(M4_COORD(i,j,k-1)) ) )
+
+                Hp1 = real( 0.5 * ( Hy(M4_COORD(i,j,k)) + Hy(M4_COORD(i,j,k-1)) ) )
+                Hp2 = real( 0.5 * ( Hz(M4_COORD(i,j,k)) + Hz(M4_COORD(i,j-1,k)) ) )
+
+                do c = 1, diag%numfreqs 
+
+                   phi = 2. * PI * diag%freqs(c) * ( ncyc - diag%ns ) * DT
+
+                   cosfac = cos( phi )
+                   sinfac = sin( phi )
+
+                   diag%Fcos(c,p,1) = diag%Fcos(c,p,1) + Ep1 * cosfac
+                   diag%Fcos(c,p,2) = diag%Fcos(c,p,2) + Ep2 * cosfac
+                   diag%Fcos(c,p,3) = diag%Fcos(c,p,3) + Hp1 * cosfac
+                   diag%Fcos(c,p,4) = diag%Fcos(c,p,4) + Hp2 * cosfac
+
+                   diag%Fsin(c,p,1) = diag%Fsin(c,p,1) + Ep1 * sinfac
+                   diag%Fsin(c,p,2) = diag%Fsin(c,p,2) + Ep2 * sinfac
+                   diag%Fsin(c,p,3) = diag%Fsin(c,p,3) + Hp1 * sinfac
+                   diag%Fsin(c,p,4) = diag%Fsin(c,p,4) + Hp2 * sinfac
+
+                end do
+
+                })
+
+             case( 2 )
+
+                M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+
+                Ep1 = real( 0.5 * ( Ex(M4_COORD(i,j,k)) + Ex(M4_COORD(i-1,j,k)) ) )
+                Ep2 = real( 0.5 * ( Ez(M4_COORD(i,j,k)) + Ez(M4_COORD(i,j,k-1)) ) )
+
+                Hp1 = real( 0.5 * ( Hx(M4_COORD(i,j,k)) + Hx(M4_COORD(i,j,k-1)) ) )
+                Hp2 = real( 0.5 * ( Hz(M4_COORD(i,j,k)) + Hz(M4_COORD(i-1,j,k)) ) )
+
+                do c = 1, diag%numfreqs 
+
+                   phi = 2. * PI * diag%freqs(c) * ( ncyc - diag%ns ) * DT
+
+                   cosfac = cos( phi )
+                   sinfac = sin( phi )
+
+                   diag%Fcos(c,p,1) = diag%Fcos(c,p,1) + Ep1 * cosfac
+                   diag%Fcos(c,p,2) = diag%Fcos(c,p,2) + Ep2 * cosfac
+                   diag%Fcos(c,p,3) = diag%Fcos(c,p,3) + Hp1 * cosfac
+                   diag%Fcos(c,p,4) = diag%Fcos(c,p,4) + Hp2 * cosfac
+
+                   diag%Fsin(c,p,1) = diag%Fsin(c,p,1) + Ep1 * sinfac
+                   diag%Fsin(c,p,2) = diag%Fsin(c,p,2) + Ep2 * sinfac
+                   diag%Fsin(c,p,3) = diag%Fsin(c,p,3) + Hp1 * sinfac
+                   diag%Fsin(c,p,4) = diag%Fsin(c,p,4) + Hp2 * sinfac
+
+                end do
+
+                })
+
+             case( 3 )
+
+                M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+
+                Ep1 = real( 0.5 * ( Ex(M4_COORD(i,j,k)) + Ex(M4_COORD(i-1,j,k)) ) )
+                Ep2 = real( 0.5 * ( Ey(M4_COORD(i,j,k)) + Ey(M4_COORD(i,j-1,k)) ) )
+
+                Hp1 = real( 0.5 * ( Hx(M4_COORD(i,j,k)) + Hx(M4_COORD(i,j-1,k)) ) )
+                Hp2 = real( 0.5 * ( Hy(M4_COORD(i,j,k)) + Hy(M4_COORD(i-1,j,k)) ) )
+
+                do c = 1, diag%numfreqs 
+
+                   phi = 2. * PI * diag%freqs(c) * ( ncyc - diag%ns ) * DT
+
+                   cosfac = cos( phi )
+                   sinfac = sin( phi )
+
+                   diag%Fcos(c,p,1) = diag%Fcos(c,p,1) + Ep1 * cosfac
+                   diag%Fcos(c,p,2) = diag%Fcos(c,p,2) + Ep2 * cosfac
+                   diag%Fcos(c,p,3) = diag%Fcos(c,p,3) + Hp1 * cosfac
+                   diag%Fcos(c,p,4) = diag%Fcos(c,p,4) + Hp2 * cosfac
+
+                   diag%Fsin(c,p,1) = diag%Fsin(c,p,1) + Ep1 * sinfac
+                   diag%Fsin(c,p,2) = diag%Fsin(c,p,2) + Ep2 * sinfac
+                   diag%Fsin(c,p,3) = diag%Fsin(c,p,3) + Hp1 * sinfac
+                   diag%Fsin(c,p,4) = diag%Fsin(c,p,4) + Hp2 * sinfac
+
+                end do
+
+                })
+
+             end select
+
+          case default
+
+             M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+
+             ! store E and H field projections
+
+             Exh = real( 0.5 * ( Ex(M4_COORD(i,j,k)) + Ex(M4_COORD(i-1,j,k)) ) )
+             Eyh = real( 0.5 * ( Ey(M4_COORD(i,j,k)) + Ey(M4_COORD(i,j-1,k)) ) )
+             Ezh = real( 0.5 * ( Ez(M4_COORD(i,j,k)) + Ez(M4_COORD(i,j,k-1)) ) )
+
+             Hxh = real( 0.25 * ( Hx(M4_COORD(i,j,k)) + Hx(M4_COORD(i,j-1,k)) + Hx(M4_COORD(i,j,k-1)) + Hx(M4_COORD(i,j-1,k-1)) ) )
+             Hyh = real( 0.25 * ( Hy(M4_COORD(i,j,k)) + Hy(M4_COORD(i-1,j,k)) + Hy(M4_COORD(i,j,k-1)) + Hy(M4_COORD(i-1,j,k-1)) ) )
+             Hzh = real( 0.25 * ( Hz(M4_COORD(i,j,k)) + Hz(M4_COORD(i-1,j,k)) + Hz(M4_COORD(i,j-1,k)) + Hz(M4_COORD(i-1,j-1,k)) ) )
+
+             do c = 1, diag%numfreqs 
+
+                phi = 2. * PI * diag%freqs(c) * ( ncyc - diag%ns ) * DT
+
+                cosfac = cos( phi )
+                sinfac = sin( phi )
+
+                diag%Fcos(c,p,1) = diag%Fcos(c,p,1) + Exh * cosfac
+                diag%Fcos(c,p,2) = diag%Fcos(c,p,2) + Eyh * cosfac
+                diag%Fcos(c,p,3) = diag%Fcos(c,p,3) + Ezh * cosfac
+                diag%Fcos(c,p,4) = diag%Fcos(c,p,4) + Hxh * cosfac
+                diag%Fcos(c,p,5) = diag%Fcos(c,p,5) + Hyh * cosfac
+                diag%Fcos(c,p,6) = diag%Fcos(c,p,6) + Hzh * cosfac
+
+                diag%Fsin(c,p,1) = diag%Fsin(c,p,1) + Exh * sinfac
+                diag%Fsin(c,p,2) = diag%Fsin(c,p,2) + Eyh * sinfac
+                diag%Fsin(c,p,3) = diag%Fsin(c,p,3) + Ezh * sinfac
+                diag%Fsin(c,p,4) = diag%Fsin(c,p,4) + Hxh * sinfac
+                diag%Fsin(c,p,5) = diag%Fsin(c,p,5) + Hyh * sinfac
+                diag%Fsin(c,p,6) = diag%Fsin(c,p,6) + Hzh * sinfac
+
+             end do
+
+             })
+
+          end select
 
        end if
 
@@ -274,10 +567,10 @@ contains
              
              M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-             do l = 1, 6
+             do l = 1, diag%numcomp
                 
                 diag%Fcos(c,p,l) = 2. / diag%numsteps * diag%Fcos(c,p,l)
-                diag%Fsin(c,p,l) = 2. / diag%numsteps * diag%Fsin(c,p,l)
+                diag%Fsin(c,p,l) = 2./ diag%numsteps * diag%Fsin(c,p,l)
                 
              end do
              
@@ -287,7 +580,6 @@ contains
 
           end do
 
-!          Gives segmentation faults, deallocation presently in FinalizeDiagMode
           deallocate(diag%Fcos)
           deallocate(diag%Fsin)
 
@@ -348,12 +640,12 @@ contains
 
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-       do l = 1,6
+       do l = 1, diag%numcomp
           F(2*l-1) =  diag%Fcos(c,p,l)
           F(2*l) = diag%Fsin(c,p,l)
        end do
 
-       write(UNITTMP,*) ( real(F(l),8), l = 1, 12, 1 )
+       write(UNITTMP,*) ( real(F(l),8), l = 1, 2*diag%numcomp, 1 )
        !write(UNITTMP,"(12E15.6E3)") ( real(F(l),4), l = 1, 12, 1 )
 
        })
