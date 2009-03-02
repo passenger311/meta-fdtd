@@ -22,7 +22,7 @@ eta0 = 1;
 for freqnumber = 1:kmax
    invlambda = inv_lambda(freqnumber)
    RCS = ntff(invlambda,freqnumber,theta,phi,eta0);
-   saveRCS(freqnumber,theta,phi,RCS);
+   saveRCS('',freqnumber,theta,phi,RCS);
 end
 
 %figure(1);
