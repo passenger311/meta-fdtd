@@ -1,0 +1,2 @@
+for i in `seq 500 1 999` ; do ./gmm01f ; replace "`echo $i`d-9" "`echo $[$i+1]`d-9" -- input.in ; sed -i 1,+15d Mgmm01f.out; mv Mgmm01f.out $i.out; done; replace "`echo $[$i+1]`d-9" "500d-9" -- input.in; rm mueller.out crMgmm01f.out;
+for i in *.out; do a=`tail -n 1 $i`; b=`basename $i .out`; echo $b $a >> backscattering.dat ;done

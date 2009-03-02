@@ -1,0 +1,62 @@
+input.in:   Input file name
+
+1 1 1:      Number of angles under which the aggregate of spheres should be turned (orientation)
+
+0. 0. 0. 0. 0. 0.:   Minimum and maximum of each of these Euler angles
+
+1:          If the number is 1: calculate only coherent Mie-scattering, no interaction
+
+0:          When calculating only a single orientation
+
+0 1:        When calculating only a single orientation, idc and iseed have no function
+
+1 1 500:    factor1 and factor2 are numerical factors used for improving the
+  convergence behavior of the iterative solution process in solving
+  interacting equations, which are in the range of [0,1]
+  factor1 is for x-polarized incident plane wave and factor2 for
+  y-polarized incident wave
+  MXINT is the maximum number of iterations allowed in the iterative
+  solution process
+  This code uses two alternative methods in the iterative solution of
+  interacting equations: iteration scheme [see Fuller and Kattawar, Opt.
+  Lett. 13, 90 (1988); Xu, Appl. Opt. 34, 4573 (1995)] and BI-CGSTAB, the
+  stabilized Bi-Conjugate Gradient [see H.A. van der Vorst, SIAM J. Sci.
+  Stat. Comput. 13, 631, (1992)].
+  When factor1=0 or factor2=0, the code directly goes to BI-CGSTAB
+  without using the other iteration scheme.
+  When factor1=factor2=1 it is equivalent to  Fuller and Kattawar's
+  order-of-scattering method.
+  In many cases, a divergence will occur when factor1=factor2=1. Then,
+  setting factor1,factor2<1 may help to converge to a numerical solution.
+  When MXINT is exceeded, it will automatically switch to BI-CGSTAB.
+
+0:          Normally, set NADD=0
+
+1.d-20:     eps: error tolerance for determining single-sphere field-expansion
+  truncation, default: 1.d-20
+
+1.d-6:      small: error tolerance for the iterative solution process for solving
+  the interacting scattering coefficients (1.d-6)
+
+0.02:       fint is the interaction index in the range of [0,1] (default: 0.02)
+
+1 0:        sang -- the scattering angle interval for output  
+  example: when sang=1, the results in output will be written for every
+  degree of scattering angle from 0 to 180
+           pang -- the azimuth angle interval for the two-dimensional Mueller
+          matrix output
+      (1) For each azimuth angle, the number of scattering angles that
+          will be calculated is the same as that determined by "sang",
+          i.e., the number of scattering angles that will calculated is
+          the same as calculated for the scattering plane of the azimuth
+          angle=0 (180/sang +1).
+      (2) When pang = 0., no additional calculations for the scattering
+          matrix map, i.e., calculating only the scattering plane of the
+          azimuth angle = 0.
+      (3) When pang>0, the number of azimuth angles in the range of
+          (0,360) degrees that will be calculated in addition to 0 (360)
+          degrees is npng-1 with npng=360/pang. For example, when
+          pang=180, npng=2, the azimuth angles 0 (360) and 180 degrees
+          will be calculated. In the output for the Mueller matrix at
+          each azimuth angle, there are nang2 (=2*nang-1) sets of the
+          16 elements.
