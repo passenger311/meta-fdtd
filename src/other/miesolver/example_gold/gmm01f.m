@@ -1,7 +1,7 @@
 clear all;
 
-min_lambda = 500; %in nm
-max_lambda = 1000;
+min_lambda = 400; %in nm
+max_lambda = 800;
 position = [0. 0. 0.];
 min_radius = 1;
 max_radius = 10;
@@ -21,7 +21,7 @@ for sqradius = min_radius : 1 : max_radius
   dirname = sprintf('data%ie-9',sqradius^2*4);
   mkdir(dirname);
 
-  for j = min_lambda:max_lambda
+  for j = min_lambda:50:max_lambda
 
     In1 = (frequ_factor)/j;
     n = sqrt(eps_inf - omegaD^2./(In1*In1-i*In1*gammaD) - deltaeps*omegaL^2/(In1*In1-i*2.*gammaL*In1-omegaL^2));
@@ -33,12 +33,22 @@ for sqradius = min_radius : 1 : max_radius
     fclose(fid);
     !gmm01f
     !sed -i 1,+15d Mgmm01f.out
+
+    fid=fopen('Mgmm01f.out','r');
+    fid_wr=fopen('Mgmm01f.dat','w');
+    while feof(fid) == 0 
+       tline = fgetl(fid);
+       tmp = sscanf(tline,'%f %e %e %e %e %e %e %e');
+       fprintf(fid_wr,'%f %e %e\n', tmp(1),tmp(7)/pi, tmp(4)/pi);
+    end
+    fclose(fid); fclose(fid_wr);
+
     destination = sprintf('%s/%i.out',dirname,j);
-    movefile('Mgmm01f.out',destination);
+    movefile('Mgmm01f.dat',destination);
 
   end
-  cd(dirname);
-  addpath ..;
-  backscattering;
-  cd ..;
+%  cd(dirname);
+%  addpath ..;
+%  backscattering;
+%  cd ..;
 end
