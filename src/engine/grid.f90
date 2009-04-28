@@ -123,7 +123,12 @@ contains
     call InitializeGrid
 
     fdtdreg = CreateBoxRegObj(IBEG, IEND, 1, JBEG, JEND, 1, KBEG, KEND, 1)
-
+!FIX ME
+! fdtdreg = CreateBoxRegObj(IBEG, IEND+1, 1, JBEG, JEND+1, 1, KBEG, KEND+1, 1)
+! When using a PBC and a TFSFBOX reaching out of the FDTD domain, the clipping of the
+! TFSFBOX leads to the Ex-component at IEND (or Ey at JEND or Ez at KEND) not
+! being updated with the source field in the TFSFBOX routine. This leads to
+! errors in the fields at the incoupling plane.
     M4_WRITE_DBG({". exit ReadConfigGrid"})
 
   end subroutine ReadConfigGrid
