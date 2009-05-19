@@ -12,22 +12,22 @@ end
 --- real device parameters (um)
 
 real_wavelength = 1.550
-real_width_mmi = 2.43
+real_width_mmi  = 2.43
 real_length_mmi = 6.15
-real_width_wg = 0.400
-real_height_wg = 0.220
+real_width_wg   = 0.400
+real_height_wg  = 0.220
 real_length_wg1 = 2.4
 real_length_wg2 = 2.4
 real_hwidth_sep = 0.65
-real_kinj = 0.2
+real_kinj       = 0.2
 real_height_bsio2 = 2*real_height_wg
-real_height = real_height_bsio2 + real_height_wg + 1.5*real_height_wg
-real_length = real_length_wg1 + real_length_mmi + real_length_wg2
+real_height       = real_height_bsio2 + real_height_wg + 1.5*real_height_wg
+real_length       = real_length_wg1 + real_length_mmi + real_length_wg2
 
 
-real_kfft1 = real_kinj + 1.6 
+real_kfft1 = real_kinj   + 1.6 
 real_kfft3 = real_length - 0.4
-real_kfft2 = real_kfft3 - real_length_mmi
+real_kfft2 = real_kfft3  - real_length_mmi
 
 --- material parameters
 
