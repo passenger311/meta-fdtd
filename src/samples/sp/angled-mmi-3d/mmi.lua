@@ -1,6 +1,6 @@
 cfg = CONFIG{scenes=true}  -- scences takes either true or false 
 
-taskid = select(1,...)
+TASKID = select(1,...)
 
 dofile("scale.lua")  -- geometrical and material parameters are defined in scale file
 
@@ -108,6 +108,8 @@ grid_inj = Grid{
    from = {x8-pad,gjmin-pad,kinj }, 
    to   = {x8+2*hwidth_wg+pad,gjmax+pad,kinj}
 }
+
+
 -- coarse grid for .VTK-preview
 grid_prev = Grid{
    yee    = false,                            -- single permittivity component only
@@ -144,6 +146,11 @@ grid=grid_prev,      -- grid to be used
 method="default", 
 silent=false, 
 on=true }
+
+--- fire up matlab mode calculator!
+
+print("> luacfg mode.lua "..tostring(invwavelength).." "..tostring(betaeff).." 1")
+os.execute("luacfg mode.lua "..tostring(invwavelength).." "..tostring(betaeff).." 1")
 
 --- GRID Definition
 
@@ -293,7 +300,7 @@ cfg:FDTD{
    OUT{
       file = { "VTK", "mmi_slice0_xy_e" },
       type = { "E", "N" },
-      time = { 0, ncyc, 200 },
+      time = { 0, ncyc, 250 },
       REG{
 	 BOX{
 	    {  imin, imax, 1, 
@@ -306,7 +313,7 @@ cfg:FDTD{
     OUT{
        file = { "VTK", "mmi_slice1_xz_e" },
        type = { "E", "N" },
-      time = { 1000, ncyc, 100 },
+      time = { 0, ncyc, 250 },
        REG{
 	  BOX{
 	     { imin, imax, 1, 
@@ -345,11 +352,10 @@ cfg:SRC{
          sustain = 0, 
          decay   = pulsehsteps   
       },
-      -- set psi 0./90. for TE/ TM
-      planewave = { phi=0, theta=0.0, psi=90.0, nrefr=neff }  -- this gives the position of injection plane and refractive index of injection plane
+      planewave = injplane 
    },
    REG{
-      LOAD{ "tfsf90.set" }   -- input waveguide mode
+      LOAD{ injfile }   -- input waveguide mode
    },
    on = true
 }

@@ -1,59 +1,75 @@
 
-if taskid then
-   print("taskid = ",taskid)
--- do something like this:
-   real_hwidth_mmi = 1.0 + (taskid-1) * 0.05  -- vary angle rotation of channels
+--- This is like the 3d version but with k<->j flipped
 
--- for array job set real_length_mmi=scanval.
+if TASKID then
+   print("TASKID = ",TASKID)
+   TASKPAR = 1.0 + (TASKID-1) * 0.05
 else
-   real_hwidth_mmi = 1.0               -- angle of rotation of channels
+   TASKPAR = 1.0                     
 end
-print(" real_hwidth_mmi = ", real_hwidth_mmi)
 
-
---- define function round for mathfloor which gives integer number
+--- utility function; rounds to integer number
 
 function round(f)
    return math.floor(f+0.5)
 end
 
---- geometrical parameters in real units(um)
+
+--- select mode
+
+te = true
+
+if te then               -- te mode: Ey dominant
+
+   betaeff = 2.532
+   injfile = "tfsfey.set"
+   injplane = { phi=90, theta=90, psi=90.0, nrefr=betaeff }
+
+else                  -- tm mode: Ex dominant
+
+   betaeff = 2.530
+   injfile = "tfsfex.set"
+   injplane = { phi=90, theta=90, psi=0.0, nrefr=betaeff }
+
+end
+
+--- geometrical parameters in real units (um)
 
 numchannel = 3
 
-real_wavelength   = 1.550               -- real wavelength 
+real_wavelength   = 1.550                -- real wavelength 
 
-real_hlength_mmi   = 3.                -- mmi half length
---real_hwidth_mmi    = 1.0                -- mmi width 
-real_length_wg     = 1.5
+real_hlength_mmi  = 12.                 -- mmi half length
+real_hwidth_mmi   = 1.0                 -- mmi width 
+real_length_wg    = 1.5                 -- mmi length
 
 real_width_wg     = 0.305               -- waveguide width   
 real_width_pad    = real_width_wg/3. 
-real_width_sep = 0.305                -- separation distance of two waveguide channels
+real_width_sep    = 0.305               -- separation distance of two waveguide channels
 
 real_height_wg    = 0.300               -- waveguide height
 real_height_bsi   = 0.100               -- mmi height 
-real_height_bsio2 = 1.0*real_height_wg    -- cladding height
+real_height_bsio2 = 1.0*real_height_wg  -- cladding height
 real_height_top   = 0.200               -- upper cladding height
 
 real_height = real_height_bsio2 +real_height_bsi + real_height_wg + real_height_top -- total height of structure
 
-angle = 25.           -- angle of rotation of the channels (alpha)
+angle = 10.           -- angle of rotation of mmi axis vs input channel (alpha)
 
 --- material parameters
 
 nref_si   = 3.47             -- refractive index of MMI and waveguide channels
 nref_sio2 = 1.444            -- refractive index of the cladding
 
-eps_si   = nref_si^2         -- dielectric constant of the MMI and waveguide channels
-eps_sio2 = nref_sio2^2       -- dielectric constant of the base cladding
-eps_bg = eps_sio2            -- dielectric constant of the background (top cladding)
+eps_si    = nref_si^2        -- dielectric constant of the MMI and waveguide channels
+eps_sio2  = nref_sio2^2      -- dielectric constant of the base cladding
+eps_bg    = eps_sio2         -- dielectric constant of the background (top cladding)
 
 
 --- scaling parameters
 
-resolution = 30              -- resolution of wavelength in optically thickest medium (even number)         
-dt         = 0.574           -- time step
+resolution = 20              -- resolution of wavelength in optically thickest medium (even number)         
+dt         = 0.7             -- time step
 
 real_dx       = real_wavelength / nref_si / resolution  -- conversion factor between real and grid length scale
 invwavelength = real_dx / real_wavelength               -- this gives frequency for c=1, inverse of wavelength
@@ -61,24 +77,15 @@ invwavelength = real_dx / real_wavelength               -- this gives frequency 
 
 --- waveguide effective refractive index (neff)
 
-neff = 3.47
+neff = betaeff
 
 
 --- in order to print do the following
 
-print("resolution = ", resolution)
-print("real_dx    = ", real_dx)
-print("wavelength (grid) = ", real_wavelength/real_dx)
-print("invwavelength (grid) = ", invwavelength)
-
-
---- Gaussian envelope of injection field 
---width1= 2   -- width in number of periods
---offset1 = 0 -- offset in number of periods
---attack1 = 4 -- attack in number of periods
---sustain1 = 0 -- sustain in number of periods
---decay1 = 4 -- decay in number of periods
---nrefr = 3.47 -- reference injection refractive index
+print("resolution    = ", resolution)
+print("real_dx       = ", real_dx)
+print("wavelength    = ", real_wavelength/real_dx)
+print("invwavelength = ", invwavelength)
 
 --- time steps and excitation pulse
 
@@ -99,17 +106,15 @@ width_pad    = real_width_pad/real_dx
 width_sep    = real_width_sep/real_dx
 hlength_mmi  = real_hlength_mmi/real_dx
 length_wg    = real_length_wg/real_dx
-yc           = height_bsio2+ (height_bsi+height_wg)/2
 
+yc           = height_bsio2+ (height_bsi+height_wg)/2
 yc1          = height_bsio2+ (height_bsi)/2   -- for fourier transform lower point (y direction)
 yc2          = height_bsio2+ height_bsi+height_wg   -- for fourier transform higher point  
 
 
+--- precalculate
 
-
---- CALCULATE STRUCTURE
-
-l = 100000
+l = 100000000 -- (something really long!)
 l1 = hlength_mmi
 w2 = hwidth_wg
 w1 = hwidth_mmi
@@ -120,7 +125,16 @@ ye = ys + height_wg
 alpha = math.pi/180. * angle
 beta = math.pi/180. * ( 90.-angle )
 
-----
+--- check whether all out channels fit
+
+real_mmi_xproj = math.sin(alpha)*real_hlength_mmi*2
+real_ch_xproj = numchannel*real_width_wg + (numchannel-1)*real_width_sep
+
+if ( real_ch_xproj > real_mmi_xproj ) then
+   error("output channels won't fit onto mmi")
+end
+
+--- calculate points of angled mmi
 
 x1 = l1*math.sin(alpha)
 z1 = l1*math.cos(alpha)
@@ -159,23 +173,20 @@ p10 = { x10,z10 }
 
 points = {p1,p2,p3,p4,p5,p6,p7,p8,p9,p10}
 
-for i,v in ipairs(points) do
-   print("p"..tostring(i).." = ",v[1],v[2])
-end
-
 --- calculate length and width of computational domain
 
-hwidth = x5 + width_pad
+hwidth = math.max(x5,x6) + width_pad
 hlength = z3 + length_wg
 
 --- setup source / diagnostic planes
 
-kinj =  round(- hlength + 20)
-kfft1 = round(- hlength + 10)
-kfft2 = round(- hlength + length_wg / 2)
-kfft3 = round(hlength - 10)
+jinj =  round(- hlength + 20)
+jfft1 = round(- hlength + 10)
+jfft2 = round(- hlength + length_wg / 2)
+jfft3 = round(hlength - 10)
 
--- x pos of channel centers
+--- x pos of channel centers
+
 iin =  round(x8 + hwidth_wg)
 iout1 = round(x10 + hwidth_wg)
 iout2 = round(iout1 - width_sep - 2*hwidth_wg)
@@ -186,34 +197,36 @@ iout6 = round(iout5 - width_sep - 2*hwidth_wg)
 
 deltai = round(hwidth_wg+width_sep/2)
 
-jc = round(yc)
+kc = round(yc)
 
-jc1 = round(yc1)
-jc2 = round(yc2)
+kc1 = round(yc1)
+kc2 = round(yc2)
 
 --- print the following parameters
 
-print("height_wg (grid)    = ", height_wg)
-print("height_bsi (grid)   = ", height_bsi)
-print("height_bsio2 (grid) = ", height_bsio2)
-print("height (grid)       = ", height)
-print("hwidth (grid)       = ", hwidth)
-print("hwidth_wg (grid)    = ", hwidth_wg)
-print("hwidth_mmi (grid)   = ", hwidth_mmi)
-print("width_sep (grid)    = ", width_sep)
-print("hlength (grid)      = ", hlength)
-print("length_wg (grid)    = ", length_wg)
-print("hlength_mmi (grid)  = ", hlength_mmi)
-print("yc (grid)           = ", yc)
-print("yc1 (grid)           = ", yc1)
-print("yc2 (grid)           = ", yc2)
+print("height_wg     = ", height_wg)
+print("height_bsi    = ", height_bsi)
+print("height_bsio2  = ", height_bsio2)
+print("height        = ", height)
+print("hwidth        = ", hwidth)
+print("hwidth_wg     = ", hwidth_wg)
+print("hwidth_mmi    = ", hwidth_mmi)
+print("width_sep     = ", width_sep)
+print("hlength       = ", hlength)
+print("length_wg     = ", length_wg)
+print("hlength_mmi   = ", hlength_mmi)
+print("kc            = ", kc)
+print("kc1           = ", kc1)
+print("kc2           = ", kc2)
 
-print("kinj                = ",kinj)
-print("kfft1               = ",kfft1)
-print("kfft2               = ",kfft2)
-print("kfft3               = ",kfft3)
-print("joffs               = ",joffs)
+print("jinj          = ",jinj)
+print("jfft1         = ",jfft1)
+print("jfft2         = ",jfft2)
+print("jfft3         = ",jfft3)
 
+for i,v in ipairs(points) do
+   print("P"..tostring(i).." = ",v[1],v[2])
+end
 
 --- pml cells
 

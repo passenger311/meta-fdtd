@@ -1,20 +1,34 @@
 
-if taskid then
-   print("taskid = ",taskid)
--- do something like this:
-   real_hwidth_mmi = 1.0 + (taskid-1) * 0.05  -- vary angle rotation of channels
 
--- for array job set real_length_mmi=scanval.
+if TASKID then
+   print("TASKID = ",TASKID)
+   TASKPAR = 1.0 + (TASKID-1) * 0.05
 else
-   real_hwidth_mmi = 1.0               -- angle of rotation of channels
+   TASKPAR = 1.0                     
 end
-print(" real_hwidth_mmi = ", real_hwidth_mmi)
-
 
 --- define function round for mathfloor which gives integer number
 
 function round(f)
    return math.floor(f+0.5)
+end
+
+--- select mode
+
+te = true
+
+if te then               -- te mode: Ey dominant
+
+   betaeff = 2.5
+   injfile = "tfsfey.set"
+   injplane = { phi=0, theta=0, psi=0.0, nrefr=betaeff }
+
+else                  -- tm mode: Ex dominant
+
+   betaeff = 2.6
+   injfile = "tfsfex.set"
+   injplane = { phi=0, theta=0, psi=90.0, nrefr=betaeff }
+
 end
 
 --- geometrical parameters in real units(um)
@@ -24,7 +38,7 @@ numchannel = 3
 real_wavelength   = 1.550               -- real wavelength 
 
 real_hlength_mmi   = 3.                -- mmi half length
---real_hwidth_mmi    = 1.0                -- mmi width 
+real_hwidth_mmi    = 1.0                -- mmi width 
 real_length_wg     = 1.5
 
 real_width_wg     = 0.305               -- waveguide width   
@@ -61,7 +75,7 @@ invwavelength = real_dx / real_wavelength               -- this gives frequency 
 
 --- waveguide effective refractive index (neff)
 
-neff = 3.47
+neff = betaeff
 
 
 --- in order to print do the following
@@ -120,6 +134,15 @@ ye = ys + height_wg
 alpha = math.pi/180. * angle
 beta = math.pi/180. * ( 90.-angle )
 
+--- check whether all out channels fit
+
+real_mmi_xproj = math.sin(alpha)*real_hlength_mmi*2
+real_ch_xproj = numchannel*real_width_wg + (numchannel-1)*real_width_sep
+
+if ( real_ch_xproj > real_mmi_xproj ) then
+   error("output channels won't fit onto mmi")
+end
+
 ----
 
 x1 = l1*math.sin(alpha)
@@ -165,7 +188,7 @@ end
 
 --- calculate length and width of computational domain
 
-hwidth = x5 + width_pad
+hwidth = math.max(x5,x6) + width_pad
 hlength = z3 + length_wg
 
 --- setup source / diagnostic planes
