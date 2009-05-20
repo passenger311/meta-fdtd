@@ -47,10 +47,14 @@ while feof(fid) == 0
    leps(l,3) = tmp(3);
 end 
 
-assert( l == sl );
+if ( l ~= sl )
+ error('error')
+end
 fclose(fid);
 
-assert( si>=1 && sj>=1 );
+if ( si<1 || sj<1 )
+ error('error')
+end
 
 leps(sl+1:sl+si,1) = leps(sl,1); % add a row
 leps(sl+1:sl+si,2) = leps(sl,2); % add a row
