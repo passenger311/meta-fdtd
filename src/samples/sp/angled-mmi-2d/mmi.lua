@@ -19,10 +19,12 @@ kmin = 0
 print("irange (grid) = ", imin, imax)
 print("jrange (grid) = ", jmin, jmax)
 print("krange (grid) = ", kmin, kmax)
+print("ncyc          = ", ncyc)
 
 print("irange (real) = ", imin*real_dx, imax*real_dx)
 print("jrange (real) = ", jmin*real_dx, jmax*real_dx)
 print("krange (real) = ", kmin*real_dx, kmax*real_dx)
+
 
 --- full domain including PMLs
 
@@ -118,6 +120,15 @@ grid_prev = Grid{
    to={imax0,jmax0,kc+1}   -- upper front right corner of the geometry pml not included
 }
 
+
+cfg:CREATE_PREVIEW   -- create a preview of the scene
+{"mmi",              -- filename: preview_"***".vtk
+scene=mmi,           -- scene to be added
+grid=grid_prev,      -- grid to be used 
+method="default", 
+silent=false, 
+on=true }
+
 cfg:CREATE_GEO   -- add the scene to the geometry
 {"mmi",          -- filename: geo_"***".in 
 scene=mmi,       -- scene to be added  
@@ -133,14 +144,6 @@ scene=mmi,
 grid=grid_inj, 
 method="default",
 comps=3, 
-silent=false, 
-on=true }
-
-cfg:CREATE_PREVIEW   -- create a preview of the scene
-{"mmi",              -- filename: preview_"***".vtk
-scene=mmi,           -- scene to be added
-grid=grid_prev,      -- grid to be used 
-method="default", 
 silent=false, 
 on=true }
 
@@ -183,29 +186,29 @@ cfg:FDTD{
    },
 
    OUT{
-      file = { "GPL", "mmi_point_e_injb" },  -- gpl (gnuplot format) electric field before source
+      file = { "GPL", "point_e_inb" },  -- gpl (gnuplot format) electric field before source
       type = { "E", "N", ".F." },
       time = { 0, ncyc, 1 },              -- start end step 
       REG{
 	 POINT{ 
-	    { 0, jinj-1, kc }     -- this is the point where we calculate the field evloution with time
+	    { 0, jinb }     -- this is the point where we calculate the field evloution with time
 	 }
       }
    },
 
    OUT{
-      file = { "GPL", "mmi_point_e_injf" },   -- just after source 
+      file = { "GPL", "point_e_inf" },   -- just after source 
       type = { "E", "N", ".F." },
       time = { 0, ncyc, 1 },
       REG{
 	 POINT{ 
-	    { 0, jinj+1, kc }  
+	    { 0, jinf }  
 	 }
       }
    },
 
    OUT{
-      file = { "GPL", "mmi_point_e_mid" },
+      file = { "GPL", "point_e_mid" },
       type = { "E", "N", ".F." },
       time = { 0, ncyc, 1 },
       REG{
@@ -216,76 +219,42 @@ cfg:FDTD{
    },
 
    OUT{
-      file = { "GPL", "mmi_point_e_end" },
+      file = { "GPL", "point_e_ch1" },
       type = { "E", "N", ".F." },
-      time = { 0, ncyc, 10 },
+      time = { 0, ncyc, 1 },
       REG{
 	 POINT{ 
-	    { iout1, jfft3, kc }   -- end point (at the output channel)
+	    { ich[1], jch[1] }   -- end point (at the output channel)
 	 }
       }
    },
 
    OUT{
-      file = { "GPL", "mmi_point_en_fft1" },   -- energy density at inch (before source!)
-      type = { "En", "S", ".F." },             -- S stands for sum En stands for six components of E and H fields
-      time = { 0, ncyc, 10 },
-      REG{
-	 BOX{ 
-           { iin-deltai, iin+deltai, 2, jfft1, jfft1, 1 }  -- this defines range of points where we collect En and sum it   
-	 }
-      }
-   },
-
-   OUT{
-      file = { "GPL", "mmi_point_en_fft2" },   -- energy density  at inch (after source!)
-      type = { "En", "S", ".F." },             -- S stands for sum En stands for six components of E and H fields
-      time = { 0, ncyc, 10 },
-      REG{
-	 BOX{ 
-           { iin-deltai, iin+deltai, 2, jfft2, jfft2, 1 }  -- this defines range of points where we collect En and sum it   
-	 }
-      }
-   },
-
-   OUT{
-      file = { "GPL", "mmi_point_en_out1" },   -- energy density at outch1
-      type = { "En", "S", ".F." },             -- S stands for sum En stands for six components of E and H fields
-      time = { 0, ncyc, 10 },
-      REG{
-	 BOX{ 
-           { iout1-deltai, iout1+deltai, 2, jfft3, jfft3, 1 }  -- this defines range of points where we collect En and sum it   
-	 }
-      }
-   },
-
-  
-   OUT{
-      file = { "VTK", "mmi_slice1_xy_eps" },
-      type = { "Eps", "N" },
-      time = { 0, 0, 1 },
-      REG{
-	 BOX{
-	    {  imin, imax, 1, 
-	       jinj, jinj, 1  }
-	 }
-      }
-   },
-
-   OUT{
-      file = { "VTK", "mmi_slice0_xy_e" },
+      file = { "VTK", "slice_e_jinb" },
       type = { "E", "N" },
       time = { 0, ncyc, 250 },
       REG{
 	 BOX{
 	    {  imin, imax, 1, 
-	       jinj-1, jinj-1, 1  }
+	       jinb, jinb, 1  }
 	 }
       }
    },
-   
+
+   OUT{
+      file = { "VTK", "slice_e_jinf" },
+      type = { "E", "N" },
+      time = { 0, ncyc, 250 },
+      REG{
+	 BOX{
+	    {  imin, imax, 1, 
+	       jinf, jinf, 1  }
+	 }
+      }
+   },
+
     OUT{
-       file = { "VTK", "mmi_slice1_xz_e" },
+       file = { "VTK", "slice_e_xz" },
        type = { "E", "N" },
       time = { 0, ncyc, 250 },
        REG{
@@ -336,6 +305,33 @@ cfg:SRC{
 
 --- PSPEC
 
+cfg:DIAG{
+   PSPEC{
+      file = "inb1",
+      time = {1, 4*pulsehsteps, 1},
+      mode = "S",
+      polarize = injplane
+   },
+   REG{
+      BOX{ 
+	 { iin-idelta, iin+idelta, istep, jinb, jinb, 1 }
+      }
+   }
+}
+
+cfg:DIAG{
+   PSPEC{
+      file = "inf1",
+      time = {1, 4*pulsehsteps, 1},
+      mode = "S",
+      polarize = injplane
+   },
+   REG{
+      BOX{ 
+	 { iin-idelta, iin+idelta, istep, jinf, jinf, 1 }
+      }
+   }
+}
 
 cfg:DIAG{
    PSPEC{
@@ -346,7 +342,7 @@ cfg:DIAG{
    },
    REG{
       BOX{ 
-	 { iin-deltai, iin+deltai, 2, jfft1, jfft1, 1 }
+	 { iin-idelta, iin+idelta, istep, jinb, jinb, 1 }
       }
    }
 }
@@ -360,21 +356,65 @@ cfg:DIAG{
    },
    REG{
       BOX{ 
-	 { iin-deltai, iin+deltai, 2, jfft2, jfft2, 1 }
+	 { iin-idelta, iin+idelta, istep, jinf, jinf, 1 }
       }
    }
 }
 
 cfg:DIAG{
    PSPEC{
-      file = "out1",
+      file = "in0",
       time = {1, ncyc, 1},
       mode = "S",
       polarize = injplane
    },
    REG{
       BOX{ 
-	 { iout1-deltai, iout1+deltai, 2, jfft3, jfft3, 1 }
+	 { iin-idelta, iin+idelta, istep, jin0, jin0, 1 }
+      }
+   }
+}
+
+cfg:DIAG{
+   PSPEC{
+      file = "ch1",
+      time = {1, ncyc, 1},
+      mode = "S",
+      polarize = injplane
+   },
+   REG{
+      BOX{ 
+	 { ich[1]-idelta, ich[1]+idelta, istep, jch[1], jch[1], 1 }
+      }
+   }
+}
+
+
+cfg:DIAG{
+   PSPEC{
+      file = "ch2",
+      time = {1, ncyc, 1},
+      mode = "S",
+      polarize = injplane
+   },
+   REG{
+      BOX{ 
+	 { ich[2]-idelta, ich[2]+idelta, istep, jch[2], jch[2], 1 }
+      }
+   }
+}
+
+
+cfg:DIAG{
+   PSPEC{
+      file = "ch3",
+      time = {1, ncyc, 1},
+      mode = "S",
+      polarize = injplane
+   },
+   REG{
+      BOX{ 
+	 { ich[3]-idelta, ich[3]+idelta, istep, jch[3], jch[3], 1 }
       }
    }
 }

@@ -17,7 +17,7 @@ end
 
 --- select mode
 
-te = true
+te = false
 
 if te then               -- te mode: Ey dominant
 
@@ -39,13 +39,13 @@ numchannel = 3
 
 real_wavelength   = 1.550                -- real wavelength 
 
-real_hlength_mmi  = 12.                 -- mmi half length
-real_hwidth_mmi   = 1.0                 -- mmi width 
-real_length_wg    = 1.5                 -- mmi length
+real_hlength_mmi  = 22.                 -- mmi half length
+real_hwidth_mmi   = 0.8                 -- mmi width 
+real_length_wg    = 2.5                 -- wg length
 
 real_width_wg     = 0.305               -- waveguide width   
 real_width_pad    = real_width_wg/3. 
-real_width_sep    = 0.305               -- separation distance of two waveguide channels
+real_width_sep    = 1.5               -- separation distance of two waveguide channels
 
 real_height_wg    = 0.300               -- waveguide height
 real_height_bsi   = 0.100               -- mmi height 
@@ -54,11 +54,16 @@ real_height_top   = 0.200               -- upper cladding height
 
 real_height = real_height_bsio2 +real_height_bsi + real_height_wg + real_height_top -- total height of structure
 
-angle = 10.           -- angle of rotation of mmi axis vs input channel (alpha)
+angle = 15.           -- angle of rotation of mmi axis vs input channel (alpha)
+
+--- calculate alpha and beta angles in radians
+
+alpha = math.pi/180. * angle
+beta = math.pi/180. * ( 90.-angle )
 
 --- material parameters
 
-nref_si   = 3.47             -- refractive index of MMI and waveguide channels
+nref_si   = 3.2             -- refractive index of MMI and waveguide channels
 nref_sio2 = 1.444            -- refractive index of the cladding
 
 eps_si    = nref_si^2        -- dielectric constant of the MMI and waveguide channels
@@ -66,10 +71,23 @@ eps_sio2  = nref_sio2^2      -- dielectric constant of the base cladding
 eps_bg    = eps_sio2         -- dielectric constant of the background (top cladding)
 
 
+--- (AUTO) automatically calculate length of mmi for 3 channels!
+
+-- center channel fits the L=4.. condition.
+
+numchannel = 3
+
+L = 4 * nref_si * 1./real_wavelength * (2*real_hwidth_mmi)^2
+
+DL = (real_width_sep + real_width_wg) / math.sin(alpha)
+
+real_hlength_mmi  = (L + DL)/2
+
+
 --- scaling parameters
 
 resolution = 20              -- resolution of wavelength in optically thickest medium (even number)         
-dt         = 0.7             -- time step
+dt         = 0.705             -- time step
 
 real_dx       = real_wavelength / nref_si / resolution  -- conversion factor between real and grid length scale
 invwavelength = real_dx / real_wavelength               -- this gives frequency for c=1, inverse of wavelength
@@ -87,12 +105,6 @@ print("real_dx       = ", real_dx)
 print("wavelength    = ", real_wavelength/real_dx)
 print("invwavelength = ", invwavelength)
 
---- time steps and excitation pulse
-
-ncyc        = 6*1024       -- number of cycles 
-pulsehwhm   = 150
-pulsehsteps = 500          -- from center of the gaussian pulse to its tail on its both sides total is 1000
-
 
 -- parameters in grid coordinates
 
@@ -106,11 +118,19 @@ width_pad    = real_width_pad/real_dx
 width_sep    = real_width_sep/real_dx
 hlength_mmi  = real_hlength_mmi/real_dx
 length_wg    = real_length_wg/real_dx
-
 yc           = height_bsio2+ (height_bsi+height_wg)/2
-yc1          = height_bsio2+ (height_bsi)/2   -- for fourier transform lower point (y direction)
-yc2          = height_bsio2+ height_bsi+height_wg   -- for fourier transform higher point  
 
+--- calculate time steps 
+
+total_length = ( 2*hlength_mmi ) / math.cos(alpha) + 2*length_wg 
+total_time = 1.2 * total_length * nref_si
+
+ncyc        = round(total_time/dt)       -- number of time steps
+
+--- excitation pulse
+
+pulsehwhm   = 150
+pulsehsteps = 500          -- from center of the gaussian pulse to its tail on its both sides total is 1000
 
 --- precalculate
 
@@ -122,8 +142,6 @@ w1 = hwidth_mmi
 ys = height_bsio2 + height_bsi
 ye = ys + height_wg
 
-alpha = math.pi/180. * angle
-beta = math.pi/180. * ( 90.-angle )
 
 --- check whether all out channels fit
 
@@ -178,29 +196,42 @@ points = {p1,p2,p3,p4,p5,p6,p7,p8,p9,p10}
 hwidth = math.max(x5,x6) + width_pad
 hlength = z3 + length_wg
 
---- setup source / diagnostic planes
-
-jinj =  round(- hlength + 20)
-jfft1 = round(- hlength + 10)
-jfft2 = round(- hlength + length_wg / 2)
-jfft3 = round(hlength - 10)
-
---- x pos of channel centers
+--- x.y pos of center output channels 
 
 iin =  round(x8 + hwidth_wg)
-iout1 = round(x10 + hwidth_wg)
-iout2 = round(iout1 - width_sep - 2*hwidth_wg)
-iout3 = round(iout2 - width_sep - 2*hwidth_wg)
-iout4 = round(iout3 - width_sep - 2*hwidth_wg)
-iout5 = round(iout4 - width_sep - 2*hwidth_wg)
-iout6 = round(iout5 - width_sep - 2*hwidth_wg)
+ifirst = x10 + hwidth_wg
+jfirst = z9
+inext = ifirst
+iout = {}
+jout = {}
+for l = 1,numchannel do
+   iout[l] = round(inext)
+   inext = inext - width_sep - 2*hwidth_wg
+   jout[l] = round(jfirst  - ( ifirst - iout[l] ) / math.tan(alpha) )
+end
 
-deltai = round(hwidth_wg+width_sep/2)
 
 kc = round(yc)
 
-kc1 = round(yc1)
-kc2 = round(yc2)
+
+--- setup source / diagnostic planes for ffts
+
+jinj =  round(- hlength + 10)
+jinf = jinj+5
+jinb = jinj-5
+jin0 = jinj + round( length_wg/2 )
+ich = {}
+jch = {}
+for l = 1, numchannel do
+   ich[l] = iout[l]
+   jch[l] = math.min( jout[l] + round( 2* length_wg ), round(hlength-5) )
+end
+
+
+
+
+idelta = round(2*hwidth_wg)
+istep = 2
 
 --- print the following parameters
 
@@ -219,14 +250,16 @@ print("kc            = ", kc)
 print("kc1           = ", kc1)
 print("kc2           = ", kc2)
 
-print("jinj          = ",jinj)
-print("jfft1         = ",jfft1)
-print("jfft2         = ",jfft2)
-print("jfft3         = ",jfft3)
-
 for i,v in ipairs(points) do
    print("P"..tostring(i).." = ",v[1],v[2])
 end
+
+print("jinj          = ",jinj)
+print("jinf          = ",jinf)
+print("jinb          = ",jinb)
+print("jin0          = ",jin0)
+
+
 
 --- pml cells
 
