@@ -1,15 +1,28 @@
 
-if taskid then
-   print("taskid = ",taskid)
--- do something like this:
-   real_hwidth_sep = 0.1 + (taskid-1) * 0.05  -- vary distance between channels
---     real_length_mmi = 0.1 + (taskid-1) * 0.05  -- vary mmi length 
--- for array job set real_length_mmi=scanval.
+if TASKID then
+   print("TASKID = ",TASKID)
+   TASKPAR = 0.1 + (TASKID-1) * 0.05  -- vary distance between channels
 else
-   real_hwidth_sep = 0.5               -- angle of rotation of channels
+   TASKPAR = 1.
+end
+
+--- select mode
+
+te = true
+
+if te then               -- te mode: Ey dominant
+
+   betaeff = 2.5
+   injfile = "tfsfey.set"
+   injplane = { phi=0, theta=0, psi=0.0, nrefr=betaeff }
+
+else                  -- tm mode: Ex dominant
+
+   betaeff = 2.6
+   injfile = "tfsfex.set"
+   injplane = { phi=0, theta=0, psi=90.0, nrefr=betaeff }
 
 end
-print(" real_hwidth_sep = ", real_hwidth_sep)
 
 --- geometrical parameters in real units(um)
 
@@ -21,7 +34,7 @@ real_length_wg2   = 2.4                 -- waveguide length
 
 real_width_mmi    = 10.0                -- mmi width 
 real_width_wg     = 0.305               -- waveguide width   
---real_hwidth_sep = 0.65                -- separation distance of two waveguide channels
+real_hwidth_sep = 0.65                -- separation distance of two waveguide channels
 
 real_height_wg    = 0.300               -- waveguide height
 real_height_bsi   = 0.100               -- mmi height 

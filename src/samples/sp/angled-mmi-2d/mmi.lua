@@ -342,7 +342,7 @@ cfg:DIAG{
       file = "inb",
       time = {1, ncyc, 1},
       mode = "S",
-      polarize = { phi=90, theta=90, psi=0.0 }
+      polarize = injplane
    },
    REG{
       BOX{ 
@@ -356,7 +356,7 @@ cfg:DIAG{
       file = "inf",
       time = {1, ncyc, 1},
       mode = "S",
-      polarize = { phi=90, theta=90, psi=0.0 }
+      polarize = injplane
    },
    REG{
       BOX{ 
@@ -370,7 +370,7 @@ cfg:DIAG{
       file = "out1",
       time = {1, ncyc, 1},
       mode = "S",
-      polarize = { phi=90, theta=90, psi=0.0 }
+      polarize = injplane
    },
    REG{
       BOX{ 

@@ -1,6 +1,6 @@
 cfg = CONFIG{scenes=true}    -- scences takes either true or false 
 
-taskid = select(1,...)
+TASKID = select(1,...)
 
 dofile("scale.lua")          -- geometrical and material parameters are defined in scale file
 
@@ -311,10 +311,10 @@ cfg:SRC{
          sustain = 0, 
          decay   = pulsehsteps   
       },
-      planewave = { phi=0, theta=0.0, psi=0, nrefr=neff }  -- this gives the position of injection plane and refractive index of injection plane
+      planewave = injplane  -- this gives the position of injection plane and refractive index of injection plane
    },
    REG{
-      LOAD{ "tfsf0.set" }   -- input waveguide mode
+      LOAD{ injfile }   -- input waveguide mode
    },
    on = true
 }
@@ -325,18 +325,13 @@ cfg:SRC{
 
 cfg:DIAG{
    PSPEC{
-      file = "mmi0",
-  --  time = { 1, ncyc-128, 1 },  
+      file = "inb",
       time = {1, ncyc, 1},
-  --  mode = "Eap",
       mode = "S",
-  --  phasewrap = { 1, 0 },
-      polarize = { phi=0, theta=0, psi=0.0 }
---    polarize = { phi=0, theta=30.0, psi=0.0 }
+      polarize = injplane
    },
    REG{
       BOX{ 
---	 { 0, imax-1,   2,   yc1, yc2, 2, kfft0, kfft0, 1 }
         { imin, imax-1, 2,   yc1, yc2, 2, kfft0, kfft0, 1 } 
       }
    }
@@ -345,56 +340,24 @@ cfg:DIAG{
 --fourier transform after source
 cfg:DIAG{
    PSPEC{
-      file = "mmi1",
-  --  time = { 1, ncyc-128, 1 },  
+      file = "inf",
       time = {1, ncyc, 1},
-  --  mode = "Eap",
       mode = "S",
- --   phasewrap = { 1, 0 },
-      polarize = { phi=0, theta=0, psi=0.0 }
---    polarize = { phi=0, theta=30.0, psi=0.0 }
+      polarize = injplane
    },
    REG{
       BOX{ 
---	 { 0, imax-1, 2, yc1, yc1, 2, kfft1, kfft1, 1 }
         { imin, imax-1, 2, yc1, yc2, 2, kfft1, kfft1, 1 } 
       }
    }
 }
 
--- fourier transform before source
-
-
 cfg:DIAG{
    PSPEC{
-        file = "mmi2",
-  --    time = { 128, ncyc, 1 },
+      file = "out",
         time = { 1, ncyc, 1 },
- --     reffile = "mmi1",
- --     phasewrap = { 1, 0 },
---      mode = "Eap",
         mode = "S",
-        polarize = { phi=0, theta=0, psi=0.0 }
- --     polarize = { phi=0, theta=30.0, psi=0.0 }
-   },
-   REG{
-      BOX{ 
-	 --{ 0, imax-1, 2, yc1, yc2, 2, kfft3, kfft3, 1 } 
-           { imin, imax-1, 3, yc1, yc2, 2, kfft2, kfft2, 1 }   
-      }
-   }
-}
-cfg:DIAG{
-   PSPEC{
-      file = "mmi3",
-  --    time = { 128, ncyc, 1 },
-        time = { 1, ncyc, 1 },
-  --    reffile = "mmi1",
- --     phasewrap = { 1, 0 },
-        mode = "S",
-   --   mode = "Eap",
-        polarize = { phi=0, theta=0, psi=0.0 }
-  --    polarize = { phi=0, theta=30.0, psi=0.0 }
+        polarize = injplane
    },
    REG{
       BOX{ 
