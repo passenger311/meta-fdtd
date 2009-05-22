@@ -96,9 +96,9 @@ fprintf('calculating matrix elements ...\n');
 % l - si -> i,j-1
 % l + sl -> Hy
 
-C = zeros(4,sl); % C -> i-1,j
-D = zeros(4,sl); % D -> i,j
-E = zeros(4,sl); % E -> i+1,j
+C = zeros(2,sl); % C -> i-1,j
+D = zeros(2,sl); % D -> i,j
+E = zeros(2,sl); % E -> i+1,j
 
 % in real (i,j) coordinates
 %  j
@@ -119,10 +119,10 @@ E = zeros(4,sl); % E -> i+1,j
         C(1,l) = 1./(hx*hx);
         D(1,l) = -2./(hx*hx) + leps(l,2)*om*om;
         E(1,l) = 1./(hx*hx);
-        % --- block 3 (Hy-Hy)
-        C(3,l) = leps(l,1)/leps(l,3)/(hx*hx);
-        D(3,l) = leps(l,1)*om*om - leps(l,1)/(hx*hx)*(1./leps(l+1,3)+1./leps(l,3));
-        E(3,l) = leps(l,1)/leps(l+1,3)/(hx*hx);    
+        % --- block 2 (Hy-Hy)
+        C(2,l) = leps(l,1)/leps(l,3)/(hx*hx);
+        D(2,l) = leps(l,1)*om*om - leps(l,1)/(hx*hx)*(1./leps(l+1,3)+1./leps(l,3));
+        E(2,l) = leps(l,1)/leps(l+1,3)/(hx*hx);    
     end
 
 
@@ -151,21 +151,22 @@ Em = [1:sl] + 1;
 
 fprintf('setting sparse matrix elements ...\n');
 
-loff = [ 0, 0, sl, sl ]; % block row offset 
-moff = [ 0, sl, sl, 0 ]; % block column offset
+
+Hc = zeros(2,si);
+keff = zeros(1,2);
+neff = zeros(1,2);
+
+lv = [1:sl];
+
+for b = 1:2
 
 Lt = [];
 Mt = [];
 Vt = [];
 
-l = [1:sl];
-for b=1:4 
-    lo = loff(b);
-    mo = moff(b);
-    Lt = [ Lt, l+lo, l+lo, l+lo];
-    Mt = [ Mt, Cm+mo, Dm+mo, Em+mo];
-    Vt = [ Vt, C(b,:),D(b,:),E(b,:) ];
-end
+Lt = [ Lt, lv, lv, lv];
+Mt = [ Mt, Cm, Dm, Em];
+Vt = [ Vt, C(b,:),D(b,:),E(b,:) ];
 
 c = 0;
 for k = 1:length(Vt) % cleanup matrix
@@ -194,7 +195,8 @@ end
 
 fprintf('constructing sparse matrix ...\n');
 
-S = sparse(L,M,V,sl*2,sl*2,length(V));
+S = sparse(L,M,V,sl,sl,length(V));
+
 
 % --- run eigensolver
 
@@ -203,24 +205,21 @@ fprintf('running sparse solver ...\n');
 opts.disp = 0;
 [EVec,EVal] = eigs(S,[],1, betaguess,opts);
 
-keff = sqrt(EVal(1));
+keff(1,b) = sqrt(EVal(1));
 
-neff = keff/om;
-fprintf(' -> keff = %f\n', keff);
-fprintf(' -> neff = %f\n', neff);
-
-Hx = zeros(1,si);
-Hy = zeros(1,si);
-
-size(Hx)
-size(Hy)
+neff(1,b) = keff(1,b)/om;
+fprintf(' -> keff = %f\n', keff(1,b));
+fprintf(' -> neff = %f\n', neff(1,b));
 
     for i=1:si
         l=i;
-        Hx(i) = EVec(l,1);
-        Hy(i) = EVec(l+sl,1);
+        Hc(b,i) = EVec(l,1);
     end
 
+end
+    
+Hx = Hc(1,:);
+Hy = Hc(2,:);
 
 % --- calculate remaining field components
 
@@ -231,7 +230,7 @@ Ex = zeros(1,si);
 Ey = zeros(1,si);
 
     for i=1:si-1
-        Hz(i) = -1/keff*( (Hx(i+1)-Hx(i))/hx ); % = Hz / i
+        Hz(i) = -1/keff(1,1)*( (Hx(i+1)-Hx(i))/hx ); % = Hz / i
     end
 
 Hz(si) = Hz(si-1);
@@ -240,8 +239,8 @@ emax = 0;
 
     for i=2:si
         l=i;
-        Ex(i) = 1./(leps(l,1)*om) * (  keff*Hy(i) ); 
-        Ey(i) = - 1./(leps(l,2)*om) * ( (Hz(i)-Hz(i-1))/hx + keff*Hx(i) ); 
+        Ex(i) = 1./(leps(l,1)*om) * (  keff(1,2)*Hy(i) ); 
+        Ey(i) = - 1./(leps(l,2)*om) * ( (Hz(i)-Hz(i-1))/hx + keff(1,1)*Hx(i) ); 
         if abs(Ex(i)) > abs(emax) 
             emax = Ex(i);
         end
@@ -267,7 +266,7 @@ subplot(3,2,3);
 
 hold on;
 %contour(Ex',25);
-title(sprintf('Ex component @ neff = %f',neff));
+title(sprintf('Ex component @ neff = %f',neff(1,2)));
 xlabel('x [a.u.]')
 plot(Ex');
 axis tight;
@@ -277,7 +276,7 @@ subplot(3,2,4);
 
 hold on;
 %contour(Ey',25);
-title(sprintf('Ey component @ neff = %f',neff));
+title(sprintf('Ey component @ neff = %f',neff(1,1)));
 xlabel('x [a.u.]')
 plot(Ey');
 hold off;
@@ -286,7 +285,7 @@ subplot(3,2,5);
 
 hold on;
 %contour(Hx',25);
-title(sprintf('Hx component @ neff = %f',neff));
+title(sprintf('Hx component @ neff = %f',neff(1,1)));
 xlabel('x [a.u.]')
 plot(Hx');
 axis tight;
@@ -294,7 +293,7 @@ hold off;
 
 subplot(3,2,6);
 hold on;
-title(sprintf('Hy component @ neff = %f',neff));
+title(sprintf('Hy component @ neff = %f',neff(1,2)));
 xlabel('x [a.u.]')
 %contour(Hy',25);
 plot(Hy');
