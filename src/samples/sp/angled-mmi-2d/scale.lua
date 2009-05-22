@@ -21,13 +21,13 @@ te = false
 
 if te then               -- te mode: Ey dominant
 
-   betaeff = 2.532
+   betaeff = 2.25 -- 2.53
    injfile = "tfsfey.set"
    injplane = { phi=90, theta=90, psi=90.0, nrefr=betaeff }
 
 else                  -- tm mode: Ex dominant
 
-   betaeff = 2.530
+   betaeff = 2.28 -- 2.530
    injfile = "tfsfex.set"
    injplane = { phi=90, theta=90, psi=0.0, nrefr=betaeff }
 
@@ -123,13 +123,13 @@ yc           = height_bsio2+ (height_bsi+height_wg)/2
 --- calculate time steps 
 
 total_length = ( 2*hlength_mmi ) / math.cos(alpha) + 2*length_wg 
-total_time = 1.2 * total_length * nref_si
+total_time = 2 * total_length * nref_si
 
 ncyc        = round(total_time/dt)       -- number of time steps
 
 --- excitation pulse
 
-pulsehwhm   = 150
+pulsehwhm   = 100
 pulsehsteps = 500          -- from center of the gaussian pulse to its tail on its both sides total is 1000
 
 --- precalculate

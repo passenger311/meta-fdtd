@@ -97,18 +97,23 @@ end
 gkmin = height_bsio2                         -- cladding height          
 gkmax = height_bsio2+height_bsi+height_wg    -- total height of the structure
 
---- specify grid for the scene, only real structure will be discretised
-
 grid_eps = Grid{
    from={imin0,jmin0,kc-1},  -- left corner of the geometry pml not included 
    to={imax0,jmax0,kc+1}   -- upper front right corner of the geometry pml not included
 }
 
 pad = 80
--- waveguide grid in injection plane
+
 grid_inj = Grid{
    from = {x8-pad, jinj, gkmin-pad }, 
    to   = {x8+2*hwidth_wg+pad, jinj ,gkmax+pad}
+}
+
+pad = 200
+
+grid_inj1 = Grid{
+   from = {x8-pad, jinj, kc }, 
+   to   = {x8+2*hwidth_wg+pad, jinj , kc}
 }
 
 print("CENTER OF INJ I/J: ", x8+hwidth_wg, jinj)
@@ -147,10 +152,22 @@ comps=3,
 silent=false, 
 on=true }
 
+cfg:CREATE_GEO   -- create the waveguide injection plane
+{"inj1", 
+scene=mmi, 
+grid=grid_inj1, 
+method="default",
+comps=3, 
+silent=false, 
+on=true }
+
+
 --- fire up matlab mode calculator!
 
-print("> luacfg mode.lua "..tostring(invwavelength).." "..tostring(betaeff).." 1")
-os.execute("luacfg mode.lua "..tostring(invwavelength).." "..tostring(betaeff).." 1")
+cmd = "./luacfg wgmode2j.lua geo_inj1.in "..tostring(invwavelength).." "..tostring(betaeff).." 1" 
+
+print(cmd)
+os.execute(cmd)
 
 
 --- GRID Definition
@@ -308,7 +325,7 @@ cfg:SRC{
 cfg:DIAG{
    PSPEC{
       file = "inb1",
-      time = {1, 4*pulsehsteps, 1},
+      time = {1, round(ncyc/2), 1},
       mode = "S",
       polarize = injplane
    },
@@ -322,7 +339,7 @@ cfg:DIAG{
 cfg:DIAG{
    PSPEC{
       file = "inf1",
-      time = {1, 4*pulsehsteps, 1},
+      time = {1, round(ncyc/2), 1},
       mode = "S",
       polarize = injplane
    },
