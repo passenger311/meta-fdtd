@@ -1,4 +1,4 @@
-function [ Ex,Ey,Hx,Hy,range] = wgmode3d( epsfile, lambdainv, hx, hy, neffguess )
+function [ Ex,Ey,Hx,Hy,range] = wgmode3k( epsfile, lambdainv, hx, hy, neffguess )
 %  Detailed explanation goes here
 
 om = 2*pi*lambdainv;
