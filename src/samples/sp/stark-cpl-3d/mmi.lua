@@ -6,31 +6,30 @@ dofile("scale.lua")          -- geometrical and material parameters are defined 
 
 -- grid dimensions: i,j,k
 
-width = math.floor((2*real_width_wg+real_width_mmi)/real_dx) -- width in grid points width of mmi plus twice wg width
+imax = round( hwidth )   -- i -> width
+jmax = round( height )   -- j -> height
+kmax = round( length )   -- k -> direction of propagation
 
-imax = math.floor( (width - 1) / 2  )   -- i along x axis
-jmax = math.floor( height - 1 )         -- j along z axis 
-kmax = math.floor( length - 1 )         -- k along y axis this is the direction where wave propagates
-
---- (print("computational window without pml: ", imin, imax, jmin, jmax, kmin, kmax))
-
-print("irange (grid) = ", -imax, imax)
-print("jrange (grid) = ", 0,     jmax)
-print("krange (grid) = ", 0,     kmax)
-
-print("irange (real) = ", -imax*real_dx, imax*real_dx)
-print("jrange (real) = ", 0,             jmax*real_dx)
-print("krange (real) = ", 0,             kmax*real_dx)
-
-
-pad1=2
---- fix some parameters
+--- inner computational domain
 
 imin = 0
 jmin = 0
 kmin = 0
 
-imin0 = imin - pad1
+print("irange (grid) = ", imin, imax)
+print("jrange (grid) = ", jmin, jmax)
+print("krange (grid) = ", kmin, kmax)
+print("ncyc          = ", ncyc)
+
+print("irange (real) = ", imin*real_dx, imax*real_dx)
+print("jrange (real) = ", jmin*real_dx, jmax*real_dx)
+print("krange (real) = ", kmin*real_dx, kmax*real_dx)
+
+--- fix some parameters
+
+pad1=0
+
+imin0 = imin
 imax0 = imax +pad1 + cpml
 jmin0 = jmin -pad1 - cpml
 jmax0 = jmax +pad1 + cpml
@@ -40,51 +39,117 @@ kmax0 = kmax +pad1 + cpml
 
 --- create dielectric structure (scenes)
 
-mmi = Scene{ value=eps_bg }   -- value represents dielectric constant of the background value=1 means air background
+mmi = Scene{ value=eps_bg }  
 
----wg = Scene{value=1.}
---- cladding block it does not matter if the block is larger than its actual size (-/+ 100)
+-- do sio2 base
 
-box_bsio2 = Box{ 
+box_bsio2 = Box{
    from={-imax0-100,jmin0-100,kmin0-100},
    to={imax0+100,height_bsio2,kmax0+100}
 }
 
---- mmi block (silicon) 
+mmi:add{ box_bsio2, depth=1, value=eps_sio2 }
+
+-- do silicon base
+
 box_bsi = Box{ 
-   from={-imax0-100,height_bsio2,kmin0-100},          --  height_bsio2 represents jmin0 for this block
-   to={imax0+100,height_bsio2+height_bsi,kmax0+100}   -- height_bsio2+height_bsi gives height of silicon block
+   from={-imax0-100,height_bsio2,kmin0-100},
+   to={imax0+100,height_bsio2+height_bsi,kmax0+100}
 }
 
-mmi:add{ box_bsio2, depth=1, value=eps_sio2 }         -- paint geometrical objects on the scene depth represents the permittivity
-mmi:add{ box_bsi, depth=1, value=eps_si }             -- lower value of depth of the object is painted on the top
+mmi:add{ box_bsi, depth=1, value=eps_si }     
 
-dofile("mmi_structure.lua")                           -- this file mmi_structure where we defined rotation of channels 
+joffs1 = height_bsio2+height_bsi-1
+joffs2 = height_bsio2 + height_bsi + height_wg
 
-gjmin = height_bsio2                                  -- cladding height          
-gjmax = height_bsio2+height_bsi+height_wg             -- total height of the structure
+box_wg1 = Box{
+   from = { -hwidth_wg, joffs1, kmin0-100 },
+   to = { hwidth_wg, joffs2, length_wg1+1 }
+}
 
---- specify grid for the scene, only real structure will be discretised
+mmi:add{ box_wg1, depth=1, value=eps_si }
+
+box_mmi = Box{
+   from = { -hwidth_mmi, joffs1, length_wg1 },
+   to = { hwidth_mmi, joffs2, length_wg1+length_mmi }
+}
+
+mmi:add{ box_mmi, depth=1, value=eps_si }
+
+box_wg21 = Transform{  
+   Box{
+      from = { 0, joffs1, -2 },
+      to = { 2*hwidth_wg, joffs2, length_wg2+100000 }
+   },
+   axis = { 0, 1, 0 },
+   angle = angle,
+   move = { p8[1],0,p8[2] }  
+}
+
+box_wg22 = Transform{  
+   Box{
+      from = { -2*hwidth_wg, joffs1, -2 },
+      to = { 0, joffs2, length_wg2+100000 }
+   },
+   axis = { 0, 1, 0 },
+   angle = -angle,
+   move = { -p8[1],0,p8[2] }  
+}
+
+
+box_wg21_corr = BinaryAndNot{
+   box_wg21,
+   Box{
+      from = { imin0-100, joffs1, length_wg1-100 },
+      to = { hwidth_mmi, joffs2, length_wg1 }
+   }
+  
+}
+box_wg22_corr = BinaryAndNot{
+   box_wg22,
+   Box{
+      from = { imin0-100, joffs1, length_wg1-100 },
+      to = { hwidth_mmi, joffs2, length_wg1 }
+   }
+  
+}
+
+mmi:add{ box_wg21_corr, depth=1, value=eps_si }
+mmi:add{ box_wg22_corr, depth=1, value=eps_si }
+
+
+-- the vertical layer with the structure embedded
+
+gjmin = height_bsio2
+gjmax = height_bsio2+height_bsi+height_wg 
+
 
 grid_eps = Grid{
-   from={-imax,gjmin-10,0},  -- left corner of the geometry pml not included 
-   to={imax,gjmax+10,kmax}   -- upper front right corner of the geometry pml not included
+   from={-imax0-1,gjmin-10,kmin0-1},
+   to={imax0+1,gjmax+10,kmax0+1} 
 }
 
 pad = 80
--- waveguide grid in injection plane
+
 grid_inj = Grid{
    from = {-hwidth_wg-pad,gjmin-pad,kinj }, 
    to   = {hwidth_wg+pad,gjmax+pad,kinj}
 }
--- coarse grid for .VTK-preview
+
 grid_prev = Grid{
-   yee    = false,                     -- single permittivity component only
-   from   = {-imax0,gjmin-10,kmin0},   -- lower rear left corner of scene-object 
-   to     = {imax0,gjmax+10,kmax0},    -- upper front right corner of scene-object
-   offset = {-imax0,0,0},              -- this is origin of coordinate system, not really offset
-   cells  = {70,100,100}               -- this gives number of cells in each direction to grid scene
+   yee    = false, 
+   from   = {-imax0,gjmin-10,kmin0}, 
+   to     = {imax0,gjmax+10,kmax0},
 }
+
+
+cfg:CREATE_PREVIEW                  -- create a preview of the scene
+{"mmi",                             -- filename: preview_"***".vtk
+scene=mmi,                          -- scene to be added
+grid=grid_prev,                     -- grid to be used 
+method="default", 
+silent=false, 
+on=true }
 
 cfg:CREATE_GEO                       -- add the scene to the geometry
 {"mmi",                              -- filename: geo_"***".in 
@@ -104,13 +169,14 @@ comps=3,
 silent=false, 
 on=true }
 
-cfg:CREATE_PREVIEW                  -- create a preview of the scene
-{"mmi",                             -- filename: preview_"***".vtk
-scene=mmi,                          -- scene to be added
-grid=grid_prev,                     -- grid to be used 
-method="default", 
-silent=false, 
-on=true }
+
+--- fire up matlab mode calculator!
+
+cmd = "./luacfg wgmode3k.lua geo_inj.in "..tostring(invwavelength).." "..tostring(betaeff).." 1" 
+
+print(cmd)
+os.execute(cmd)
+
 
 --- GRID Definition
 
@@ -133,13 +199,13 @@ cfg:FDTD{
    EPSILON{
       REG{
 	 BOX{                            -- background block
-	    { imin0, imax0+1,        1,  -- coordinate start, end and step 
-              jmin0, height_bsio2-1, 1, 
+	    { -imax0-1, imax0+1,        1,  -- coordinate start, end and step 
+	       jmin0, round(height_bsio2), 1, 
               kmin0, kmax0+1,        1, ":", 
               eps_sio2, eps_sio2, eps_sio2 },   -- dielectric constant  
 	    
-            { imin0, imax0+1,        1, 
-              height_bsio2, jmax0+1, 1, 
+            { -imax0-1, imax0+1,        1, 
+              round(height_bsio2), jmax0+1, 1, 
               kmin0, kmax0+1,        1, ":", 
               eps_bg, eps_bg, eps_bg }
 	 },
@@ -148,108 +214,13 @@ cfg:FDTD{
       on = true   
    },
 
-
    OUT{
-      file = { "SET", "mmi_eps" },   -- set here represents file format (mmi_eps.set)
+      file = { "VTK", "slice_eps_inj" },  
       type = { "Eps", "N" },
-      time = { 0, 0, 1 },            -- start end and step
+      time = { 0, 0, 1 },                 -- start end step 
       REG{
 	 BOX{
-	    {  imin,imax, 1, 
-	       jmin,jmax, 1, 
-	       kinj, kinj, 1}
-	 }
-      }
-   },
-
-   OUT{
-      file = { "GPL", "mmi_point_e_injb" },  -- gpl (gnuplot format) electric field before source
-      type = { "E", "N", ".F." },
-      time = { 0, ncyc, 1 },                 -- start end step 
-      REG{
-	 POINT{ 
-	    { 0, yc, kinj-1 }                -- this is the point where we calculate the field evloution with time
-	 }
-      }
-   },
-
-   OUT{
-      file = { "GPL", "mmi_point_e_injf" },   -- after source 
-      type = { "E", "N", ".F." },
-      time = { 0, ncyc, 1 },
-      REG{
-	 POINT{ 
-	    { 0, yc, kinj+1 }  
-	 }
-      }
-   },
-
-   OUT{
-      file = { "GPL", "mmi_point_e_mid" },
-      type = { "E", "N", ".F." },
-      time = { 0, ncyc, 1 },
-      REG{
-	 POINT{ 
-	    { 0, yc, math.floor(kmax/2) }   -- middle point of the structure  
-	 }
-      }
-   },
-
-   OUT{
-      file = { "GPL", "mmi_point_e_end" },
-      type = { "E", "N", ".F." },
-      time = { 0, ncyc, 10 },
-      REG{
-	 POINT{ 
-	    { hwidth_sep, yc, kmax }   -- end point (at the output channel)
-	 }
-      }
-   },
-
-   OUT{
-      file = { "GPL", "mmi_point_en_fft1" },   -- energy density  
-      type = { "En", "S", ".F." },             -- S stands for sum En stands for six components of E and H fields
-      time = { 0, ncyc, 10 },
-      REG{
-	 BOX{ 
-	 --   { 1, 21, 3, yc-10, yc+10, 3, kfft1, kfft1, 1 }  
-           { imin, imax-1, 2, yc1, yc2, 2, kfft1, kfft1, 1 }  -- this defines range of points where we collect En and sum it   
-	 }
-      }
-   },
-
-   OUT{
-      file = { "GPL", "mmi_point_en_fft2" },   
-      type = { "En", "S", ".F." },
-      time = { 0, ncyc, 10 },
-      REG{
-	 BOX{ 
-	    --{ hwidth_sep+1, hwidth_sep+21, 3, yc-10, yc+10, 3, kfft2, kfft2, 1 } 
-           {  imin, imax-1, 2, yc1, yc2, 2, kfft2, kfft2, 1 }     
-	 }
-      }
-   },
-
-   OUT{
-      file = { "GPL", "mmi_point_en_fft3" }, -- energy density
-      type = { "En", "S", ".F." },
-      time = { 0, ncyc, 10 },
-      REG{
-	 BOX{ 
-	    -- { hwidth_sep+1, hwidth_sep+21, 3, yc-10, yc+10, 3, kfft3, kfft3, 1 }  
-           { imin, imax-1, 2, yc1, yc2, 2, kfft3, kfft3, 1 }    
-	 }
-      }
-   },
-
-  
-   OUT{
-      file = { "VTK", "mmi_slice1_xy_eps" },
-      type = { "Eps", "N" },
-      time = { 0, 0, 1 },
-      REG{
-	 BOX{
-	    {  imin, imax, 1, 
+	    {  -imax, imax, 1, 
 	       jmin, jmax, 1, 
 	       kinj, kinj, 1  }
 	 }
@@ -257,26 +228,73 @@ cfg:FDTD{
    },
 
    OUT{
-      file = { "VTK", "mmi_slice0_xy_e" },
+      file = { "GPL", "point_e_injb" },  
+      type = { "E", "N", ".F." },
+      time = { 0, ncyc, 1 },                 -- start end step 
+      REG{
+	 POINT{ 
+	    { 0, jc, kinb }                -- this is the point where we calculate the field evloution with time
+	 }
+      }
+   },
+
+   OUT{
+      file = { "GPL", "point_e_injf" },   -- after source 
+      type = { "E", "N", ".F." },
+      time = { 0, ncyc, 1 },
+      REG{
+	 POINT{ 
+	    { 0, jc, kinf }  
+	 }
+      }
+   },
+
+   OUT{
+      file = { "GPL", "point_e_ch" },
+      type = { "E", "N", ".F." },
+      time = { 0, ncyc, 10 },
+      REG{
+	 POINT{ 
+	    { ich, jc, kch }   -- end point (at the output channel)
+	 }
+      }
+   },
+
+  
+   OUT{
+      file = { "VTK", "slice0_xy_inb" },
       type = { "E", "N" },
-      time = { 0, ncyc, 500 },
+      time = { 0, 1000, 250 },
       REG{
 	 BOX{
 	    {  imin, imax, 1, 
 	       jmin, jmax, 1, 
-	       kinj-1, kinj-1, 1  }
+	       kinb, kinb, 1  }
+	 }
+      }
+   },
+
+    OUT{
+      file = { "VTK", "slice0_xy_inj" },
+      type = { "E", "N" },
+      time = { 0, 1000, 250 },
+      REG{
+	 BOX{
+	    {  -imax, imax, 1, 
+	       jmin, jmax, 1, 
+	       kinj, kinj, 1  }
 	 }
       }
    },
    
     OUT{
-       file = { "VTK", "mmi_slice1_xz_e" },
+       file = { "VTK", "slice1_xz_e" },
        type = { "E", "N" },
-      time = { 1000, ncyc, 100 },
+      time = { 0, ncyc, 250 },
        REG{
 	  BOX{
-	     { imin, imax, 1, 
-	       yc, yc, 1,
+	     { -imax, imax, 1, 
+	       jc, jc, 1,
 	       kmin, kmax, 1	       
 	    }
 	  }
@@ -288,7 +306,7 @@ cfg:FDTD{
 --- BOUND Definition (pml boundary condition)
 
 cfg:BOUND{
-   config = { 0, 1, 1, 1, 1, 1 },   -- 1 pml 0 means not
+   config = { bc, 1, 1, 1, 1, 1 },   -- 1 pml 0 means not
    PML{
       cells = 11,                   -- no of pml cells
       pot = 3.2,                     
@@ -332,12 +350,11 @@ cfg:DIAG{
    },
    REG{
       BOX{ 
-        { imin, imax-1, 2,   yc1, yc2, 2, kfft0, kfft0, 1 } 
+        { 0, idelta, istep, jc1, jc2, jstep, kinb, kinb, 1 } 
       }
    }
 }
 
---fourier transform after source
 cfg:DIAG{
    PSPEC{
       file = "inf",
@@ -347,22 +364,36 @@ cfg:DIAG{
    },
    REG{
       BOX{ 
-        { imin, imax-1, 2, yc1, yc2, 2, kfft1, kfft1, 1 } 
+        { 0, idelta, istep, jc1, jc2, jstep, kinf, kinf, 1 } 
       }
    }
 }
 
 cfg:DIAG{
    PSPEC{
-      file = "out",
-        time = { 1, ncyc, 1 },
-        mode = "S",
-        polarize = injplane
+      file = "in0",
+      time = {1, ncyc, 1},
+      mode = "S",
+      polarize = injplane
    },
    REG{
       BOX{ 
-	 --{ 0, imax-1, 2, yc1, yc2, 2, kfft3, kfft3, 1 } 
-           { imin, imax-1, 2, yc1, yc2, 2, kfft3, kfft3, 1 }    
+        { 0, idelta, istep, jc1, jc2, jstep, kin0, kin0, 1 } 
+      }
+   }
+}
+
+cfg:DIAG{
+   PSPEC{
+      file = "ch1",
+        time = { 1, ncyc, 1 },
+        mode = "S",
+        polarize = { phi=injplane.phi, theta=angle, 
+		     psi=injplane.psi, nrefr=injplane.nrefr }
+   },
+   REG{
+      BOX{ 
+        { 0, idelta, istep, jc1, jc2, jstep, kin0, kin0, 1 } 
       }
    }
 }
