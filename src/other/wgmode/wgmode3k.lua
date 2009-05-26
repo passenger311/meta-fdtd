@@ -11,7 +11,7 @@ cmd = "[ Ex,Ey,Hx,Hy,range] = wgmode3k( '"..filename.."' ,"
 fh:write(cmd.."\n")
 cmd = "wgsave3k( 'tfsfex.set', Ex, Hy, range, range );"
 fh:write(cmd.."\n")
-cmd = "wgsave3k( 'tfsfey.set', Ey, Hx, range, range );"
+cmd = "wgsave3k( 'tfsfey.set', Ey, -Hx, range, range );"
 fh:write(cmd.."\n")
 if silent then
 cmd = "quit;"
