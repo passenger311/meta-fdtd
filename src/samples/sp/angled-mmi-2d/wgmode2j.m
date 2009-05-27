@@ -152,11 +152,11 @@ Em = [1:sl] + 1;
 fprintf('setting sparse matrix elements ...\n');
 
 
-Hc = zeros(2,si);
 keff = zeros(1,2);
 neff = zeros(1,2);
 
 lv = [1:sl];
+Hc = zeros(2,si); 
 
 for b = 1:2
 
@@ -235,17 +235,17 @@ Ey = zeros(1,si);
 
 Hz(si) = Hz(si-1);
 
-emax = 0;
+emax = zeros(1,2);
 
     for i=2:si
         l=i;
         Ex(i) = 1./(leps(l,1)*om) * (  keff(1,2)*Hy(i) ); 
         Ey(i) = - 1./(leps(l,2)*om) * ( (Hz(i)-Hz(i-1))/hx + keff(1,1)*Hx(i) ); 
-        if abs(Ex(i)) > abs(emax) 
-            emax = Ex(i);
+        if abs(Ex(i)) > abs(emax(1,2)) 
+            emax(1,2) = Ex(i);
         end
-        if abs(Ey(i)) > abs(emax) 
-            emax = Ey(i);
+        if abs(Ey(i)) > abs(emax(1,1)) 
+            emax(1,1) = Ey(i);
         end
     end
 
@@ -253,10 +253,10 @@ emax = 0;
 Ex(1) = Ex(2);
 Ey(1) = Ey(2);
 
-Ex = Ex/emax;
-Ey = Ey/emax;
-Hx = Hx/emax;
-Hy = Hy/emax;
+Ex = Ex/emax(1,2);
+Ey = Ey/emax(1,1);
+Hx = Hx/emax(1,1);
+Hy = Hy/emax(1,2);
 
 % --- plot fields
 
