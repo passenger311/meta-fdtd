@@ -1,4 +1,4 @@
-function [ ] = wgsave2j( filename, e, h, range, nrange )
+function [ ] = wgsaveneg2j( filename, e, h, range, nrange )
 
 fid = fopen(filename,'w');
 fprintf(fid,'(SET\n');
