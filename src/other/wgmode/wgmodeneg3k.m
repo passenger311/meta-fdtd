@@ -311,11 +311,11 @@ for j=2:sj
         m=j*si+i;
         Ex(j,i) = 1./(leps(m,1)*om) * ( (Hz(j,i)-Hz(j-1,i))/hy + keff*Hy(j,i) ); 
         Ey(j,i) = - 1./(leps(m,2)*om) * ( (Hz(j,i)-Hz(j,i-1))/hx + keff*Hx(j,i) ); 
-        if abs(Ex(j,i)) > abs(emax) 
-            emax = Ex(j,i);
+        if abs(Ex(j,i)) > emax 
+            emax = abs(Ex(j,i));
         end
-        if abs(Ey(j,i)) > abs(emax) 
-            emax = Ey(j,i);
+        if abs(Ey(j,i)) > emax 
+            emax = abs(Ey(j,i));
         end
     end
 end
@@ -325,14 +325,18 @@ Ex(:,1) = Ex(:,2);
 Ey(1,:) = Ey(2,:);
 Ey(:,1) = Ey(:,2);
 
-Ex = real(Ex)/real(emax);
-Ey = real(Ey)/real(emax);
-Hx = real(Hx)/real(emax);
-Hy = real(Hy)/real(emax);
+Ex = real(Ex)/emax;
+Ey = real(Ey)/emax;
+Hx = real(Hx)/emax;
+Hy = real(Hy)/emax;
 
 % --- plot fields
 
 fprintf('plotting fields ...\n');
+
+colormap(jet(256));
+cmax = size(colormap,1)-1;
+v = (0:-3:-45)';
 
 subplot(3,2,3);
 
@@ -341,11 +345,12 @@ hold on;
 title(sprintf('Ex component @ neff = %f',neff));
 ylabel('x [a.u.]')
 xlabel('y [a.u.]')
-surfc(Ex');
+modebmp = uint8(abs(cmax*Ex));
+image(modebmp);
+set(gca,'YDir','normal');
+axis equal;
 axis tight;
-shading interp;
-colorbar;
-view(90,-90);
+contour(20*log10(abs(Ex)),v);
 hold off;
 
 subplot(3,2,4);
@@ -355,11 +360,12 @@ hold on;
 title(sprintf('Ey component @ neff = %f',neff));
 ylabel('x [a.u.]')
 xlabel('y [a.u.]')
-surfc(Ey');
+modebmp = uint8(abs(cmax*Ey));
+image(modebmp);
+set(gca,'YDir','normal');
+axis equal;
 axis tight;
-shading interp;
-colorbar;
-view(90,-90);
+contour(20*log10(abs(Ey)),v);
 hold off;
 
 subplot(3,2,6);
@@ -369,11 +375,12 @@ hold on;
 title(sprintf('Hx component @ neff = %f',neff));
 ylabel('x [a.u.]')
 xlabel('y [a.u.]')
-surfc(Hx');
+modebmp = uint8(abs(cmax*Hx));
+image(modebmp);
+set(gca,'YDir','normal');
+axis equal;
 axis tight;
-shading interp;
-colorbar;
-view(90,-90);
+contour(20*log10(abs(Hx)),v);
 hold off;
 
 subplot(3,2,5);
@@ -381,15 +388,13 @@ hold on;
 title(sprintf('Hy component @ neff = %f',neff));
 ylabel('x [a.u.]')
 xlabel('y [a.u.]')
-%contour(Hy',25);
-surfc(Hy');
+modebmp = uint8(abs(cmax*Hy));
+image(modebmp);
+set(gca,'YDir','normal');
+axis equal;
 axis tight;
-shading interp;
-colorbar;
-view(90,-90);
+contour(20*log10(abs(Hy)),v);
 hold off;
-
-colormap jet(512);
 
 fprintf('done.\n');
 
