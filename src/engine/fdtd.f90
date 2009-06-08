@@ -232,7 +232,7 @@ M4_IFELSE_WMU({
 
  subroutine InitializeMu
 
-   M4_REGLOOP_DECL(reg,p,i,j,k,v(1))  
+   M4_REGLOOP_DECL(reg,p,i,j,k,v(3))  
    integer :: err
 
    M4_WRITE_DBG({"allocate mu"})   
