@@ -54,6 +54,8 @@ M4_MODHEAD_DECL({$1},{$2},{$3})})
 define({M4_DIAGHEAD_DECL},{
 M4_MODHEAD_DECL({$1},{$2},{$3})})
 
+define({M4_LUMPEDHEAD_DECL},{
+M4_MODHEAD_DECL({$1},{$2},{$3})})
 
 define({M4_MODLOOP_DECL},{
     integer :: m4_n

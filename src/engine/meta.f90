@@ -26,6 +26,7 @@ program meta
   use config
   use mpicomms
   use manifest
+  USE lumped
   use timer
 
   implicit none
@@ -72,6 +73,8 @@ M4_IFELSE_MPI(call SynchronizeMPIWorld)
         call InitializeFdtd
         write(6,*) "* -> InitializeFdtdCalc"
         call InitializeFdtdCalc
+	WRITE(6,*) "* -> InitializeLumped"
+	CALL InitializeLumped
         write(6,*) "* -> InitializeBound"
         call InitializeBound
         write(6,*) "* -> InitializeSrc"
@@ -162,29 +165,38 @@ M4_MPE_SECTION(2,{
 })
 call StopTimer(2)
 
-! -------------------------- StepHSrc ---------------------------------
+! ------------------------------ StepHLumped --------------------------------
 
 call StartTimer(3)
 M4_MPE_SECTION(3,{
-	if ( ncyc .gt. 0 ) call StepHSrc(ncyc)
+	if ( ncyc .gt. 0 ) call StepHLumped(ncyc)
 })
 call StopTimer(3)
 
-! -------------------------- StepHMat ---------------------------------
+
+! -------------------------- StepHSrc ---------------------------------
 
 call StartTimer(4)
 M4_MPE_SECTION(4,{
-	if ( ncyc .gt. 0 ) call StepHMat(ncyc)
+	if ( ncyc .gt. 0 ) call StepHSrc(ncyc)
 })
 call StopTimer(4)
 
-! -------------------------- StepHBound -------------------------------
+! -------------------------- StepHMat ---------------------------------
 
 call StartTimer(5)
 M4_MPE_SECTION(5,{
-	if ( ncyc .gt. 0 )  call StepHBound
+	if ( ncyc .gt. 0 ) call StepHMat(ncyc)
 })
 call StopTimer(5)
+
+! -------------------------- StepHBound -------------------------------
+
+call StartTimer(6)
+M4_MPE_SECTION(6,{
+	if ( ncyc .gt. 0 )  call StepHBound
+})
+call StopTimer(6)
 
 ! ---------------------------- COMMS H --------------------------------
 
@@ -202,11 +214,11 @@ call StartTimer(10)
 
 ! use the time while comms are pending to do some useful stuff
 
-call StartTimer(6)
-M4_MPE_SECTION(6,{
+call StartTimer(7)
+M4_MPE_SECTION(7,{
 	call StepHDiag(ncyc)
 })
-call StopTimer(6)
+call StopTimer(7)
 
 ! ------------------------ LoadDataOut --------------------------------
 
@@ -238,30 +250,37 @@ M4_MPE_SECTION(6,{
 })
 call StopTimer(2)
 
-
-! -------------------------- StepHSrc ---------------------------------
+! -------------------------- StepELumped ---------------------------------
 
 call StartTimer(3)
 M4_MPE_SECTION(3,{
-	if ( ncyc .gt. 0 ) call StepESrc(ncyc)
+	if ( ncyc .gt. 0 ) call StepELumped(ncyc)
 })
 call StopTimer(3)
 
-! -------------------------- StepEMat ---------------------------------
+! -------------------------- StepESrc ---------------------------------
 
 call StartTimer(4)
 M4_MPE_SECTION(4,{
-	if ( ncyc .gt. 0 ) call StepEMat(ncyc)
+	if ( ncyc .gt. 0 ) call StepESrc(ncyc)
 })
 call StopTimer(4)
 
-! -------------------------- StepEBound -------------------------------
+! -------------------------- StepEMat ---------------------------------
 
 call StartTimer(5)
 M4_MPE_SECTION(5,{
-	if ( ncyc .gt. 0 ) call StepEBound
+	if ( ncyc .gt. 0 ) call StepEMat(ncyc)
 })
 call StopTimer(5)
+
+! -------------------------- StepEBound -------------------------------
+
+call StartTimer(6)
+M4_MPE_SECTION(6,{
+	if ( ncyc .gt. 0 ) call StepEBound
+})
+call StopTimer(6)
 
 
 ! -------------------------- COMMS E ----------------------------------
@@ -280,11 +299,11 @@ call StopTimer(10)
 
 ! use the time while comms are pending to do some useful stuff
 
-call StartTimer(6)
-M4_MPE_SECTION(6,{
+call StartTimer(7)
+M4_MPE_SECTION(7,{
 	call StepEDiag(ncyc)
 })
-call StopTimer(6)
+call StopTimer(7)
 
 ! ------------------------ WriteDataOut -------------------------------
 
@@ -332,10 +351,11 @@ M4_IFELSE_MPI(call FinalizeMPIComms)
      M4_WRITE_INFO("TIMING")
      write(6,*) "*"
      call DisplayTotalTimer("Fdtd   : ",2)
-     call DisplayTotalTimer("Src    : ",3)
-     call DisplayTotalTimer("Mat    : ",4)
-     call DisplayTotalTimer("Bound  : ",5)
-     call DisplayTotalTimer("Diag   : ",6)
+     CALL DisplayTotalTimer("Lumped : ",3)
+     call DisplayTotalTimer("Src    : ",4)
+     call DisplayTotalTimer("Mat    : ",5)
+     call DisplayTotalTimer("Bound  : ",6)
+     call DisplayTotalTimer("Diag   : ",7)
      call DisplayTotalTimer("Output : ",9)
      call DisplayTotalTimer("Comms  : ",10)
      call DisplayTotalTimer("Total  : ",1)
@@ -343,7 +363,7 @@ M4_IFELSE_MPI(call FinalizeMPIComms)
      cells = real(NCYCMAX) * real(IEIG-IBIG+1) * real(JEIG-JBIG+1) * real(KEIG-KBIG+1)
      call DisplayMcpsTimer( "Fdtd   : ",2, cells)
      cells = real(NCYCMAX) * real(IBIG-IBEG+1) * real( JBIG-JBEG+1) * real(KBIG-KBEG+1)
-     call DisplayMcpsTimer( "Bound  : ",4, cells)
+     call DisplayMcpsTimer( "Bound  : ",6, cells)
 
      write(6,*) "*"
      write(6,*) "* ----------------------------------------------------------------------- "
@@ -372,6 +392,8 @@ M4_IFELSE_MPI(call SynchronizeMPIWorld)
         call FinalizeDiag
         write(6,*) "* -> FinalizeBound"
         call FinalizeBound
+	WRITE(6,*) "* -> FinalizeLumped"
+	CALL FinalizeLumped
         write(6,*) "* -> FinalizeFdtd"
         call FinalizeFdtd
         write(6,*) "* -> FinalizeGrid"
@@ -401,7 +423,7 @@ end program meta
 ! ---------------------------------------------------------------------
 
 !
-! Authors:  J.Hamm, A.Klaedtke, S.Scholz
-! Modified: 6/1/2008
+! Authors:  J.Hamm, A.Klaedtke, S.Scholz, R.Crowter
+! Modified: 02/07/2009
 !
 !======================================================================

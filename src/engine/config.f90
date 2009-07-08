@@ -24,6 +24,7 @@ module config
   use src
   use mat 
   use diag
+  use lumped
 
   implicit none
   private
@@ -92,7 +93,10 @@ contains
             gotfdtd = .true.
          case( "(BOUND" )
             M4_WRITE_INFO({"-> ReadConfigBound"})
-            call ReadConfigBound(UNITTMP,lcount,string)    
+            call ReadConfigBound(UNITTMP,lcount,string)
+         case( "(LUMPED" )
+            M4_WRITE_INFO({"-> ReadConfigLumped"})
+            call ReadConfigLumped(UNITTMP,lcount)
          case default
             if ( string(1:4) .eq. "(SRC" ) then
                M4_WRITE_INFO({"-> ReadConfigSrc: ",TRIM(string(5:))})
@@ -138,8 +142,8 @@ contains
 
   end module config
 
-! Authors:  J.Hamm 
-! Modified: 27/12/2007
+! Authors:  J.Hamm, R.Crowter 
+! Modified: 02/07/2009
 !
 ! =====================================================================
 

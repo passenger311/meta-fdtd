@@ -25,6 +25,7 @@ module constant
   integer, parameter :: MAXVALUES  = 10
   integer, parameter :: MAXSRCOBJ  = 50
   integer, parameter :: MAXMATOBJ  = 50
+  INTEGER, PARAMETER :: MAXLUMPOBJ = 50
   integer, parameter :: MAXDIAGOBJ = 50
   integer, parameter :: MAXTIMER   = 10
 
@@ -43,7 +44,7 @@ end module constant
 
 !
 ! Authors:  J.Hamm, S.Scholz, A.Klaedtke
-! Modified: 4/12/2007
+! Modified: 02/07/2009
 !
 !======================================================================
 
