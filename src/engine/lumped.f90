@@ -116,7 +116,7 @@ contains
 	subroutine InitializeLumped
 		
 		type (T_REG) :: reg
-		integer :: err
+		integer :: err, i, j
 		
 		M4_MODLOOP_DECL({LUMPED}, lumped)									
 		
@@ -128,6 +128,12 @@ contains
 		
 			allocate(lumped%B(reg%numnodes,1:3), stat = err)
 			M4_ALLOC_ERROR(err,"InitializeLumped")
+			
+			do i = 1, reg%numnodes
+				do j = 1, 3
+					lumped%B(i,j) = 0.0d0
+				end do
+			end do
 			
 			M4_IFELSE_DBG({call EchoLumpedObj(lumped)},{call DisplayLumpedObj(lumped)})		
 		
