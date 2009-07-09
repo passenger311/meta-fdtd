@@ -6,7 +6,6 @@ neffguess = select(3,...)
 silent = select(4,...)
 
 fh = io.open("run.m","w")
-assert(fh)
 cmd = "[ Ex,Ey,Hx,Hy,range] = wgmode2j( '"..filename.."' ,"
    ..tostring(lambdainv)..",1,1,"..tostring(neffguess)..");"
 fh:write(cmd.."\n")
@@ -19,4 +18,5 @@ cmd = "quit;"
 fh:write(cmd.."\n")
 end
 fh:close()
+
 os.execute("matlab -r run -nosplash -nodesktop")
