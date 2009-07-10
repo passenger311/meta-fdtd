@@ -29,20 +29,9 @@ Nphi = zeros(max_theta,max_phi,6);
 %Sum over all faces of the NTFF-box
 for face = 1:4
    %read in data from file
-   [facerange, E, H1] = readface(1,freqnumber,face);
-   [tmp, tmp, H2] = readface(2,freqnumber,face); clear tmp;
+   [facerange, E, H] = readface(freqnumber,face);
    max_E = sqrt(size(E,1));
    E = E * exp(i*pi*invlambda*DT);
-
-%   %geometric averaging of magnetic fields H
-%   H = zeros(max_E^2,3);
-%   H = sqrt(H1).*sqrt(H2);
-%   H_mask = ~(real(H1)<=0 & real(H2)<=0 & imag(H1).*imag(H2)<=0);
-%   H = (- ~H_mask + H_mask).*H;
-
-   %arithmetic averaging of H
-   H = zeros(max_E^2,3);
-   H = 0.5*(H1+H2);
 
    %surface currents via cross products
    J = zeros(max_E^2,3); M = zeros(max_E^2,3);
@@ -106,20 +95,9 @@ fprintf(1,'\n');
 
 face = 6;
    %read in data from file
-[facerange, E, H1] = readface(1,freqnumber,face);
-[tmp, tmp, H2] = readface(2,freqnumber,face); clear tmp;
+[facerange, E, H] = readface(freqnumber,face);
 max_E = sqrt(size(E,1));
 E = E * exp(i*pi*invlambda*DT);
-
-%%geometric averaging of magnetic fields H
-%H = zeros(max_E^2,3);
-%H = sqrt(H1).*sqrt(H2);
-%H_mask = ~(real(H1)<=0 & real(H2)<=0 & imag(H1).*imag(H2)<=0);
-%H = (- ~H_mask + H_mask).*H;
-
-   %arithmetic averaging of H
-   H = zeros(max_E^2,3);
-   H = 0.5*(H1+H2);
 
 %surface currents via cross products
 J = zeros(max_E^2,3); M = zeros(max_E^2,3);
@@ -186,18 +164,9 @@ Nthetasum = squeeze(sum(Ntheta,3)); Nphisum = squeeze(sum(Nphi,3)); Lthetasum = 
 
 %normalisation
 %reading reference file
-clear E H1 H2;
-[E,H1] = readref(1,freqnumber);
-[tmp,H2] = readref(2,freqnumber); clear tmp;
+clear E H;
+[E,H] = readref(freqnumber);
 E = E * exp(i*pi*invlambda*DT);
-%%geometric averaging
-%H = zeros(1,3);
-%H = sqrt(H1).*sqrt(H2);
-5H_mask = ~(real(H1)<=0 & real(H2)<=0 & imag(H1).*imag(H2)<=0);
-%H = (- ~H_mask + H_mask).*H;
-  %arithmetic averaging of H
-  H = zeros(max_E^2,3);
-  H = 0.5*(H1+H2);
 
 S = cross(E,conj(H));
 Pinc = real(S(3))/2;
