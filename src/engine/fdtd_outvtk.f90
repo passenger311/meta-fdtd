@@ -143,6 +143,12 @@ contains
        call WriteScalar(out, Hz, 0, mode)
     case('Eps')         
        call WriteEps(out, mode)
+    case('Epsx')         
+       call WriteEpsx(out, mode)
+    case('Epsy')
+       call WriteEpsy(out, mode)
+    case('Epsz')
+       call WriteEpsz(out, mode)
     case('Mu')         
        call WriteMu(out, mode)
     case default
@@ -323,13 +329,93 @@ contains
       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
       val = 1./epsinvx(i,j,k)+1./epsinvx(i-1,j,k)+1./epsinvy(i,j,k)+1./epsinvy(i,j-1,k)+ &
-           1./epsinvz(i,j,k) + 1./epsinvz(i,j,k-1)
+            1./epsinvz(i,j,k)+1./epsinvz(i,j,k-1)
 
       write(out%funit,"(E14.6E2)") real(val/6.,4)
       
       },{}, {} )
 
     end subroutine WriteEps
+
+    ! **************************************************************** !
+
+    subroutine WriteEpsx(out,mode)
+
+      type (T_OUT) :: out
+      logical :: mode
+      real(kind=8) :: val
+
+      M4_REGLOOP_DECL(reg,p,i,j,k,w(0))  
+
+      if ( .not. mode ) return
+
+      write(out%funit,"(A)") "SCALARS scalar float 1"
+      write(out%funit,"(A)") "LOOKUP_TABLE default"
+
+      reg = regobj(out%regidx)
+      
+      M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+
+      val = 1./epsinvx(i,j,k)
+
+      write(out%funit,"(E14.6E2)") real(val,4)
+      
+      },{}, {} )
+
+    end subroutine WriteEpsx
+
+    ! **************************************************************** !
+   subroutine WriteEpsy(out,mode)
+
+      type (T_OUT) :: out
+      logical :: mode
+      real(kind=8) :: val
+
+      M4_REGLOOP_DECL(reg,p,i,j,k,w(0))  
+
+      if ( .not. mode ) return
+
+      write(out%funit,"(A)") "SCALARS scalar float 1"
+      write(out%funit,"(A)") "LOOKUP_TABLE default"
+
+      reg = regobj(out%regidx)
+      
+      M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+
+      val = 1./epsinvy(i,j,k)
+
+      write(out%funit,"(E14.6E2)") real(val,4)
+      
+      },{}, {} )
+
+    end subroutine WriteEpsy
+
+    ! **************************************************************** !
+
+   subroutine WriteEpsz(out,mode)
+
+      type (T_OUT) :: out
+      logical :: mode
+      real(kind=8) :: val
+
+      M4_REGLOOP_DECL(reg,p,i,j,k,w(0))  
+
+      if ( .not. mode ) return
+
+      write(out%funit,"(A)") "SCALARS scalar float 1"
+      write(out%funit,"(A)") "LOOKUP_TABLE default"
+
+      reg = regobj(out%regidx)
+      
+      M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+
+      val = 1./epsinvz(i,j,k)
+
+      write(out%funit,"(E14.6E2)") real(val,4)
+      
+      },{}, {} )
+
+    end subroutine WriteEpsz
 
     ! **************************************************************** !
 
