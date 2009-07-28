@@ -96,7 +96,7 @@ box_i = Box{
 
 box_c = Box{ 
    from = {- hwidth_c, height1,length_i + length_it - 1},
-   to = { hwidth_c, height2, length_i+ length_it + length_ot+1 }
+   to = { hwidth_c, height2, length_i+ length_it + length_c+1 }
 }
 
 l = length_ot / math.cos(beta)
@@ -123,7 +123,7 @@ box_os2 = Transform{
 }
 
 box_o = Box{ 
-   from = {- hwidth_o, height1, length_i+ length_it + length_ot },
+   from = {- hwidth_o, height1, length_i+ length_it + length_c },
    to = { hwidth_o, height2, kmax0+100 }
 }
 
