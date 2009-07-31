@@ -82,6 +82,7 @@ module lumped
 		
 		! Backup or Summation Fields, Linear Indexed
 		REAL (8), allocatable, dimension(:,:) :: B
+		real (8), allocatable, dimension(:,:) :: S
 	
 	end type T_LUMPED
 
@@ -127,11 +128,13 @@ contains
 			reg = regobj(lumped%regidx)
 		
 			allocate(lumped%B(reg%numnodes,1:3), stat = err)
+			ALLOCATE(lumped%S(reg%numnodes,1:3), STAT = ERR)
 			M4_ALLOC_ERROR(err,"InitializeLumped")
 			
 			do i = 1, reg%numnodes
 				do j = 1, 3
 					lumped%B(i,j) = 0.0d0
+					lumped%S(i,j) = 0.0d0
 				end do
 			end do
 			
@@ -151,7 +154,7 @@ contains
 		
 		M4_MODLOOP_EXPR({LUMPED}, lumped, {			
 
-			deallocate(lumped%B)
+			deallocate(lumped%B,lumped%S)
 
 		})
 		
@@ -197,13 +200,17 @@ contains
 			
 			M4_REGLOOP_EXPR(reg,p,i,j,k,w,{				
 		
-				lumped%B(p,1) = lumped%B(p,1) + Ex(i,j,k)
-				lumped%B(p,2) = lumped%B(p,2) + Ey(i,j,k)
-				lumped%B(p,3) = lumped%B(p,3) + Ez(i,j,k)
+				lumped%B(p,1) = Ex(i,j,k)		
+				lumped%B(p,2) = Ey(i,j,k)
+				lumped%B(p,3) = Ez(i,j,k)
+		
+				lumped%S(p,1) = lumped%S(p,1) + Ex(i,j,k)
+				lumped%S(p,2) = lumped%S(p,2) + Ey(i,j,k)
+				lumped%S(p,3) = lumped%S(p,3) + Ez(i,j,k)
 				
 			})
 			
-		CASE ("S")										! Conductivity
+		CASE ("S")										! Conductivity Pseudo-'Element'
 			
 			M4_REGLOOP_EXPR(reg,p,i,j,k,w,{				
 		
@@ -286,18 +293,19 @@ contains
 			M4_REGLOOP_EXPR(reg,p,i,j,k,w, {
 			
 				if ( w(1) .ne. 0.0d0 ) then
-					Vx = epsinvx(i,j,k) * (DT**2 * SX)/(SY * SZ * w(1))
-					Ex(i,j,k) = Ex(i,j,k) - Vx * lumped%B(p,1)
+					Vx = epsinvx(i,j,k) * (DT**2 * SX)/(2 * SY * SZ * w(1))
+					Ex(i,j,k) = Ex(i,j,k) - Vx * (2 * lumped%S(p,1) - lumped%B(p,1))
 				end if
 				
 				if ( w(2) .ne. 0.0d0 ) then
-					Vy = epsinvy(i,j,k) * (DT**2 * SY)/(SZ * SX * w(2))
-					Ey(i,j,k) = Ey(i,j,k) - Vy * lumped%B(p,2)
+					Vy = epsinvy(i,j,k) * (DT**2 * SY)/(2 * SZ * SX * w(2))
+					Ey(i,j,k) = Ey(i,j,k) - Vy * (2 * lumped%S(p,2) - lumped%B(p,2))
+			
 				end if
 				
 				if ( w(3) .ne. 0.0d0 ) then
-					Vz = epsinvz(i,j,k) * (DT**2 * SZ)/(SX * SY * w(3))
-					Ez(i,j,k) = Ez(i,j,k) - Vz * lumped%B(p,3)
+					Vz = epsinvz(i,j,k) * (DT**2 * SZ)/(2 * SX * SY * w(3))
+					Ez(i,j,k) = Ez(i,j,k) - Vz * (2 * lumped%S(p,3) - lumped%B(p,3))
 				end if
 	
 			})
