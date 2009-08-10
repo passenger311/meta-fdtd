@@ -85,7 +85,7 @@ module matbloch
   real(kind=8) :: omegal        ! lorentz frequency
 
   ! coefficients
-  real(kind=8) :: c1, c2, c3, c4, c5, c6
+  real(kind=8) :: c1, c2, c3, c4, c5, c6, c7
   
   ! polarisation field 
   M4_FTYPE, dimension(:,:), pointer :: P
@@ -186,6 +186,7 @@ M4_IFELSE_CF({
        mat%c4 = ( 2. - mat%gammanr * DT ) / ( 2. + mat%gammanr * DT )
        mat%c5 = 1. / ( 2. + mat%gammanr * DT ) * 1./(hbar * mat%omegar ) 
        mat%c6 = mat%c5  * DT * mat%gammal / 2.
+       mat%c7 = ( ( 2. * DT ) / ( 2. + mat%gammanr * DT ) ) * mat%pump
 
        mat%cyc = 1 
 
@@ -292,7 +293,7 @@ M4_IFELSE_CF({
 },{
        pem =  mat%P(p,m) * me
 })
-        mat%N(p) = mat%c4 * mat%N(p) + mat%c5 * ( pem - pen ) + mat%c6 * ( pem + pen )
+        mat%N(p) = mat%c4 * mat%N(p) + mat%c5 * ( pem - pen ) + mat%c6 * ( pem + pen ) + mat%c7
 
         ! after: J(*,m) is now P(n+1)
         ! m and n will be flipped in the next timestep!
@@ -336,7 +337,7 @@ M4_IFELSE_CF({
         pem =  mat%P(p,m) * me
 })
 
-        mat%N(p) = mat%c4 * mat%N(p) + mat%c5 * ( pem - pen ) + mat%c6 * ( pem + pen )
+        mat%N(p) = mat%c4 * mat%N(p) + mat%c5 * ( pem - pen ) + mat%c6 * ( pem + pen ) + mat%c7
 
         ! after: J(*,m) is now P(n+1)
         ! m and n will be flipped in the next timestep!
