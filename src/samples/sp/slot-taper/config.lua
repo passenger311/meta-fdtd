@@ -33,8 +33,8 @@ imin0 = imin
 imax0 = imax +pad1 + cpml
 jmin0 = jmin -pad1 - cpml
 jmax0 = jmax +pad1 + cpml
-kmin0 = kmin -pad1 - cpml
-kmax0 = kmax +pad1 + cpml
+kmin0 = kmin -pad1
+kmax0 = kmax +pad1
 
 
 --- dielectric structure!
@@ -131,60 +131,46 @@ sc_eps:add{ BinaryAndNot{ BinaryAndNot{ box_i, box_is1 }, box_is2 }, depth=1, va
 sc_eps:add{ box_c, depth=1, value=eps_si }
 sc_eps:add{ BinaryAndNot{ BinaryAndNot{ box_o, box_os1 }, box_os2 }, depth=1, value=eps_si }
 
+if cladding then
+
 --- cladding
 
 -- .. block
 
-sc_met = Scene{ value=0. }  
-
-
-if mcover then
-
-height2 = height2 + height_g
-
-box_mcov = Box{ 
-   from = { - imax0 - 1, height2, length_i1 },
-   to = { imax0 + 1, jmax0 + 1, length - length_o1 }
-}
-
-sc_eps:add{ box_mcov, depth=1, value=1 }
-
-end
-
 box_1 = Box{ 
-   from = { hwidth_i + width_g, height1, length_i1 },
-   to = { hwidth_i + width_g + width_ii, height2, length_i }
+   from = { hwidth_i + width_gi, height1, length_i1 },
+   to = { hwidth_i + width_gi + width_ii, height2, length_i }
 }
 
 box_2 = Box{ 
-   from = { -hwidth_i - width_g, height1, length_i1 },
-   to = { -hwidth_i - width_g - width_ii, height2, length_i }
+   from = { -hwidth_i - width_gi, height1, length_i1 },
+   to = { -hwidth_i - width_gi - width_ii, height2, length_i }
 }
 
 sc_eps:add{ box_1, depth=1, value=eps_si }
 sc_eps:add{ box_2, depth=1, value=eps_si }
 
 box_1 = Box{ 
-   from = { hwidth_c + width_g, height1, length_i+ length_it },
-   to = { hwidth_c + width_g + width_cc, height2, length_i+ length_it+ length_c }
+   from = { hwidth_c + width_gc, height1, length_i+ length_it },
+   to = { hwidth_c + width_gc + width_cc, height2, length_i+ length_it+ length_c }
 }
 
 box_2 = Box{ 
-   from = { -hwidth_c - width_g, height1, length_i+ length_it },
-   to = { -hwidth_c - width_g - width_cc, height2, length_i+ length_it+ length_c }
+   from = { -hwidth_c - width_gc, height1, length_i+ length_it },
+   to = { -hwidth_c - width_gc - width_cc, height2, length_i+ length_it+ length_c }
 }
 
 sc_eps:add{ box_1, depth=1, value=eps_si }
 sc_eps:add{ box_2, depth=1, value=eps_si }
 
 box_1 = Box{ 
-   from = { hwidth_o + width_g, height1, length - length_o },
-   to = { hwidth_o + width_g + width_oo, height2, length - length_o1 }
+   from = { hwidth_o + width_go, height1, length - length_o },
+   to = { hwidth_o + width_go + width_oo, height2, length - length_o1 }
 }
 
 box_2 = Box{ 
-   from = { -hwidth_o - width_g, height1, length - length_o },
-   to = { -hwidth_o - width_g - width_oo, height2, length - length_o1 }
+   from = { -hwidth_o - width_go, height1, length - length_o },
+   to = { -hwidth_o - width_go - width_oo, height2, length - length_o1 }
 }
 
 sc_eps:add{ box_1, depth=1, value=eps_si }
@@ -196,12 +182,12 @@ sc_eps:add{ box_2, depth=1, value=eps_si }
 l = length_it / math.cos(alpha)
 w = l * math.tan(alpha)
 
-box_1 = Box{ from = { hwidth_i + width_g + width_ii, height2, length_i },
-	     to = { hwidth_c + width_g, height1, length_i+ length_it } }
+box_1 = Box{ from = { hwidth_i + width_gi + width_ii, height2, length_i },
+	     to = { hwidth_c + width_gc, height1, length_i+ length_it } }
 
 
-box_2 = Box{ from = { -hwidth_i - width_g - width_ii, height2, length_i },
-	     to = { -hwidth_c - width_g, height1, length_i+ length_it } }
+box_2 = Box{ from = { -hwidth_i - width_gi - width_ii, height2, length_i },
+	     to = { -hwidth_c - width_gc, height1, length_i+ length_it } }
 
 
 box_1a =  Transform{ 
@@ -211,7 +197,7 @@ box_1a =  Transform{
    },
    axis = { 0, 1, 0},
    angle = - alpha  * 180 / math.pi,
-   move = { hwidth_i + width_g , 0, length_i  }
+   move = { hwidth_i + width_gi , 0, length_i  }
 }
 
 box_1b =  Transform{ 
@@ -221,7 +207,7 @@ box_1b =  Transform{
    },
    axis = { 0, 1, 0},
    angle = - alpha2  * 180 / math.pi,
-   move = { hwidth_i + width_g + width_ii, 0, length_i  }
+   move = { hwidth_i + width_gi + width_ii, 0, length_i  }
 }
 
 
@@ -232,7 +218,7 @@ box_2a =  Transform{
    },
    axis = { 0, 1, 0},
    angle = alpha  * 180 / math.pi,
-   move = { -hwidth_i - width_g , 0, length_i  }
+   move = { -hwidth_i - width_gi , 0, length_i  }
 }
 
 box_2b =  Transform{ 
@@ -242,18 +228,18 @@ box_2b =  Transform{
    },
    axis = { 0, 1, 0},
    angle =  alpha2  * 180 / math.pi,
-   move = { -hwidth_i - width_g - width_ii, 0, length_i  }
+   move = { -hwidth_i - width_gi - width_ii, 0, length_i  }
 }
 
 
 sc_eps:add{ BinaryAndNot{BinaryAndNot{box_1,box_1b},box_1a}, depth=1, value=eps_si }
 sc_eps:add{ BinaryAndNot{BinaryAndNot{box_2,box_2b},box_2a}, depth=1, value=eps_si }
 
-box_1 = Box{ from = { hwidth_c + width_g, height2, length_i+ length_it+ length_c },
-	     to = { hwidth_o + width_g + width_oo , height1, length - length_o } }
+box_1 = Box{ from = { hwidth_c + width_gc, height2, length_i+ length_it+ length_c },
+	     to = { hwidth_o + width_go + width_oo , height1, length - length_o } }
 
-box_2 = Box{ from = { -hwidth_c - width_g, height2, length_i+ length_it+ length_c },
-	     to = { -hwidth_o - width_g - width_oo , height1, length - length_o } }
+box_2 = Box{ from = { -hwidth_c - width_gc, height2, length_i+ length_it+ length_c },
+	     to = { -hwidth_o - width_go - width_oo , height1, length - length_o } }
 
 
 
@@ -264,7 +250,7 @@ box_1a =  Transform{
    },
    axis = { 0, 1, 0},
    angle = beta  * 180 / math.pi,
-   move = { hwidth_c + width_g , 0, length - length_o - length_ot  }
+   move = { hwidth_c + width_gc , 0, length - length_o - length_ot  }
 }
 
 box_1b =  Transform{ 
@@ -274,7 +260,7 @@ box_1b =  Transform{
    },
    axis = { 0, 1, 0},
    angle = beta2  * 180 / math.pi,
-   move = { hwidth_c + width_g + width_cc, 0, length - length_o - length_ot  }
+   move = { hwidth_c + width_gc + width_cc, 0, length - length_o - length_ot  }
 }
 
 box_2a =  Transform{ 
@@ -284,7 +270,7 @@ box_2a =  Transform{
    },
    axis = { 0, 1, 0},
    angle = - beta  * 180 / math.pi,
-   move = { -hwidth_c - width_g , 0, length - length_o - length_ot  }
+   move = { -hwidth_c - width_gc , 0, length - length_o - length_ot  }
 }
 
 box_2b =  Transform{ 
@@ -294,12 +280,13 @@ box_2b =  Transform{
    },
    axis = { 0, 1, 0},
    angle = - beta2  * 180 / math.pi,
-   move = {  -hwidth_c - width_g - width_cc, 0, length - length_o - length_ot  }
+   move = {  -hwidth_c - width_gc - width_cc, 0, length - length_o - length_ot  }
 }
 
 sc_eps:add{ BinaryAndNot{BinaryAndNot{box_1,box_1b},box_1a}, depth=1, value=eps_si }
 sc_eps:add{ BinaryAndNot{BinaryAndNot{box_2,box_2b},box_2a}, depth=1, value=eps_si }
 
+end
 
 -- create grids
 
@@ -621,7 +608,7 @@ cfg:SRC{
    REG{
 --      LOAD{"tfsfex.set"}
 --      BOX{ { -iinj-1, iinj+1, 1, jinj1-1, jinj2+1, 1, kinj, kinj, 1} } 
-        BOX{ { -iinj-pad, iinj+pad, 1, jinj1-1, jinj2+1, 1, kil, kil, 1} }
+        BOX{ { -iinj, iinj, 1, jinj1-1, jinj2+1, 1, kil, kil, 1} }
 
    },
    on = true

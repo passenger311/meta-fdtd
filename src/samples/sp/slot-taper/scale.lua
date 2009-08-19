@@ -1,10 +1,10 @@
 
-if TASKID then
+--[[if TASKID then
    print("TASKID = ",TASKID)
    TASKPAR = 0.1 + (TASKID-1) * 0.05  -- vary distance between channels
 else
    TASKPAR = 1.
-end
+end--]]
 
 --- utility function; rounds to integer number
 
@@ -35,48 +35,64 @@ end
 
 --- geometrical parameters in real units(um)
 
-mcover = false                           -- false=nometalcover, true=metal cover
+cladding = true                          -- false=nometalcover, true=metal cover
 
-real_wavelength   = 1.550               -- real wavelength 
+real_wavelength   = 1.550                -- real wavelength 
 
-real_width_edw    = 0.2                 -- evanescent decay width
+real_width_edw    = 0.2                  -- evanescent decay width
 
-real_length_i1    = 0.5                 -- length in 1
-real_length_i2    = 0.5                 -- 0.5length in 2
-real_length_it    = 2.0                 -- 2.5length in taper
-real_length_c     = 1.0                 -- 2.0length channel 
-real_length_ot    = 2.0                 -- 2.0length out taper
-real_length_o2    = 0.5                 -- 0.5length out 2
-real_length_o1    = 0.5                 -- 1.0length out 1
-real_width_i      = 3.0                 -- width in 
-real_width_c      = 0.400               -- width channel
-real_width_o      = 1.500               -- width out
-real_width_ii      = 0.2                -- width clad in 
-real_width_cc      = 0.400              -- width clad channel
-real_width_oo      = 0.2                -- width clad out
-real_width_g      = 0.05                -- width sio2 seperation gap
-real_height_g     = 0.05                -- height sio2 seperation gap
-real_width_pad    = 0.5
+real_length_i1     = 2.0                 -- length in 1
+real_length_i2     = 0.5                 -- 0.5length in 2
+real_length_it     = 5.0                 -- 2.5length in taper
+real_length_c      = 1.0                 -- 2.0length channel 
+real_length_ot     = 2.0                 -- 2.0length out taper
+real_length_o2     = 0.5                 -- 0.5length out 2
+real_length_o1     = 2.0                 -- 1.0length out 1
+real_width_i       = 3.0                 -- width in 
+real_width_c       = 0.0                 -- 0.400width channel
+real_width_o       = 0.4                 -- width out 
+real_width_ii      = 0.10               -- width clad in 
+real_width_cc      = 0.260               -- width clad channel
+real_width_oo      = 0.10                -- 0.2width clad out
+real_width_gi        = 0.05                -- 0.05width sio2 seperation gap
+real_width_go       = 0.05                -- 0.05width sio2 seperation gap
+real_width_gc       = 0.025                -- 0.05width sio2 seperation gap
+real_height_g      = 0.05                -- height sio2 seperation gap
+real_width_pad     = 0.5
 
-real_height_wg    = 0.200               -- waveguide height
-real_height_bsi   = 0.000               -- mmi height 
-real_height_pad   =  2*real_height_wg   -- upper/lower cladding height
+real_height_wg     = 0.200               -- waveguide height
+real_height_bsi    = 0.000               
+real_height_pad    =  2*real_height_wg   -- upper/lower cladding height
+
+
+--[[
+if not cladding then
+
+real_width_ii      = 0.
+real_width_cc      = 0.
+real_width_oo      = 0.
+real_width_gi        = 0.
+real_width_go       = 0.
+real_width_gc       = 0.
+
+end
+]]--
 
 real_length_i = real_length_i1 + real_length_i2
 real_length_o = real_length_o1 + real_length_o2
 real_length_t = real_length_it + real_length_c + real_length_ot
 
 real_height = real_height_pad +real_height_bsi + real_height_wg + real_height_pad
-real_width = math.max(real_width_i, real_width_c, real_width_o) + real_width_g + real_width_pad
+real_width = math.max(real_width_i+real_width_gi , real_width_c + real_width_gc, real_width_o + real_width_go) + real_width_pad
 real_length = real_length_i + real_length_t + real_length_o
 
 --- angles
 
-alpha = math.atan(  ( real_width_i - real_width_c ) / 2/ real_length_it )
-alpha2 = math.atan(  ( real_width_i/2. + real_width_ii - real_width_c/2. - real_width_cc ) / real_length_it )
+alpha = math.atan(  ( real_width_i/2. + real_width_gi - real_width_c/2. - real_width_gc ) / real_length_it )
+alpha2 = math.atan(  ( real_width_i/2. + real_width_ii + real_width_gi - real_width_c/2. - real_width_cc - real_width_gc ) / real_length_it )
 
-beta = math.atan(   ( real_width_o - real_width_c ) / 2/real_length_ot )
-beta2 = math.atan(   ( real_width_o/2. + real_width_oo - real_width_c/2. -real_width_cc ) /real_length_ot )
+beta = math.atan(   ( real_width_o/2. + real_width_go - real_width_c/2.  - real_width_gc ) /real_length_ot )
+beta2 = math.atan(   ( real_width_o/2. + real_width_oo + real_width_go - real_width_c/2. -real_width_cc  - real_width_gc ) /real_length_ot )
 
 
 --- material parameters
@@ -124,7 +140,9 @@ hwidth_o     = real_width_o/real_dx/2.       -- width out
 width_ii     = real_width_ii/real_dx         -- width in 
 width_cc     = real_width_cc/real_dx         -- width channel
 width_oo     = real_width_oo/real_dx         -- width out
-width_g      = real_width_g/real_dx          -- width sio2 seperation gap
+width_gi      = real_width_gi/real_dx          -- width sio2 seperation gap
+width_go      = real_width_go/real_dx          -- width sio2 seperation gap
+width_gc     = real_width_gc/real_dx          -- width sio2 seperation gap
 height_g     = real_height_g/real_dx         -- height sio2 seperation gap
 width_pad    = real_width_pad/real_dx
 width_edw    = real_width_edw/real_dx
@@ -169,17 +187,20 @@ pulse = {
 --pulsehwhm   = 75
 --pulsehsteps = 500
 
+--- pml cells
+
+cpml = 11      -- in real units it will be real_dx times cpml 
 
 --- setup source / diagnostic planes for ffts
 
-kil  = 15        -- its kiL
-kib  = kil - 10
+kil  = cpml+10        -- its kiL
+kib  = cpml + 5
 
 ki1  = round(length_i1-10)   -- ki1 its k i and number 1 
 ki2  = round(length_i-10)
 kc  = round(length_i + length_it + length_c/2.)
 ko2  = round(length-length_o+10)
-ko1  = round(length-10)
+ko1  = round(length-cpml-10)
 
 ---source injection position definitions
 
@@ -196,9 +217,9 @@ jc2          = round(height_bsio2 + height_bsi)
 jc3          = round(height_bsio2 + height_bsi + height_wg)
 js= 2
 
-ici = round (hwidth_i + width_edw ) 
-icc = round (hwidth_c + width_edw ) 
-ico = round (hwidth_o + width_edw ) 
+ici = round (hwidth_i + width_gi + width_ii + width_edw ) 
+icc = round (hwidth_c + width_gc + width_cc + width_edw ) 
+ico = round (hwidth_o + width_go + width_oo + width_edw ) 
 
 ich = round(hwidth_c/2)   -- center of channel (half half of channel width)
 
@@ -277,6 +298,3 @@ for i,v in ipairs(wg) do
    print("wg["..tostring(i).."] = ",v[1],v[2])
 end
 
---- pml cells
-
-cpml = 11      -- in real units it will be real_dx times cpml 
