@@ -37,6 +37,7 @@ function CONFIG(parms)
    tab.mat = {} -- subtables
    tab.src = {}
    tab.diag = {}
+   tab.lumped = {}
    if parms.scenes == nil then parms.scenes = true end
    tab.scenes_on = parms.scenes
    return setmetatable(tab,ConfigMethods)
@@ -258,6 +259,7 @@ function BLOCH(parms)
    return BLOCH
 end
 
+
 -- SRC Config-Block definition
 
 function ConfigMethods:SRC(parms)
@@ -345,6 +347,14 @@ function EBAL(parms)
    return EBAL
 end
 
+-- LUMPED Config-Block definition
+
+function ConfigMethods:LUMPED(parms)
+   local LUMPED = { block = "LUMPED" }
+   for k,v in pairs(parms) do LUMPED[k] = v end
+   LUMPED.type = parms.type or "C" 
+   table.insert(self.lumped, LUMPED)   
+end
 
 ---------------------------------------------------------------------------
 -- OUTPUT METHODS
@@ -697,6 +707,20 @@ local function writeDIAG(fh,DIAG)
    fh:write(")DIAG"..type.."\n\n");
 end
 
+
+-- LUMPED Config-Block write
+
+local function writeLUMPED(fh,LUMPED)
+   assert(LUMPED and LUMPED.block == "LUMPED", "Expected LUMPED{}")
+   if LUMPED.on == false then return end  
+   assert( LUMPED[1] , "Bad LUMPED{} structure") 
+   local type = string.upper(LUMPED.type)
+   fh:write("(LUMPED\n")
+   fh:write(type.."\n");
+   writeREG(fh, LUMPED[1])
+   fh:write(")LUMPED\n\n");
+end
+
 -- CREATE configuration file
 
 function ConfigMethods:CREATE()
@@ -710,7 +734,8 @@ function ConfigMethods:CREATE()
    for _, src in ipairs(self.src) do writeSRC(fh,src) end
    for _, mat in ipairs(self.mat) do writeMAT(fh,mat) end
    for _, diag in ipairs(self.diag) do writeDIAG(fh,diag) end
-   fh:write("! ------ END [",filename,"] \n\n");
+   for _, lumped in ipairs(self.lumped) do writeLUMPED(fh,lumped) end
+    fh:write("! ------ END [",filename,"] \n\n");
    fh:close();
 end
 
