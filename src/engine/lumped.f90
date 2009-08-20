@@ -11,16 +11,24 @@
 ! The Lumped module provides treatment of basic Lumped Elements into the FDTD algorithm.
 !
 ! 3 + 1 "Elements" are accounted for ::
-! Resistor :: "R"		E(n+1) = (E(n+1) - V*E(n))/(1+V)					V = (dT*dL)/(2*dA*eps*R)   	
-! Capacitor :: "C"	 	E(n+1) = (E(n+1) + V*E(n))/(1+V)					V = (dL*C)/(dA*eps) 			
-! Inductor :: "L"		E(n+1) = E(n+1) - V*(E(n) + E(n-1) + ..... + E(0))		V = (dL*dT^2)/(dA*L*eps)	
-! Conductivity :: "S" 	E(n+1) = (E(n+1) - V*E(n))/(1+V)					V = (dT*S)/(2*eps)
+! Resistor :: "R"		E(n+1) = (E(n+1) - V*E(n))/(1+V)					V = (dT*dL)/(2*dA*eps*R')   	
+! Capacitor :: "C"	 	E(n+1) = (E(n+1) + V*E(n))/(1+V)					V = (dL*C')/(dA*eps) 	
+! Inductor :: "L"		E(n+1) = E(n+1) - V*(2*(E(n)+E(n-1)+...+E(0)) - E(n))	V = (dL*dT^2)/(2*dA*L'*eps)	
+! Conductivity :: "S" 	E(n+1) = (E(n+1) - V*E(n))/(1+V)					V = (dT*S')/(2*eps)
 !
 ! The equations are constructed as such to provide a modification after standard FDTD steps
 ! and it is assumed that there is only one element at any unique location (one at Ex component of {i,j,k},
-! one at Ey{i,j,k}, etc. Equations will fail if elements are defined at the same location. 
+! one at Ey{i,j,k}, etc. Equations will fail if elements are defined at the same location. The inductor follows
+! the equations set forth by Sui et al. [IEEE Trans. Micro. Theory Tech. v40 #4 p724 (1992)]; the equation
+! in Taflove causes an instability. 
 !
-! Data Structure ::
+! Finally, the R', C', L' and S' values in the "V" terms above are modified values of R, C, L and S, taking into
+! account unitary convertions. 
+!
+! 	R' = R*eps0*c			S' = (S*dL)/(eps0*c)
+! 	L' = (L*eps0*c^2)/dL	C' =  C/(dL*eps0)
+!
+! config input Data Structure ::
 !
 ! (LUMPED
 ! C						- Element Type	
@@ -370,6 +378,6 @@ contains
 end module lumped
 
 ! Author: R.Crowter, J.Hamm
-! Modified: 02/07/2009
+! Modified: 18/08/2009
 !
 ! ==========================================================
