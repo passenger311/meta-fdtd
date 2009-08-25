@@ -11,16 +11,16 @@
 ! The Lumped module provides treatment of basic Lumped Elements into the FDTD algorithm.
 !
 ! 3 + 1 "Elements" are accounted for ::
-! Resistor :: "R"		E(n+1) = (E(n+1) - V*E(n))/(1+V)					V = (dT*dL)/(2*dA*eps*R')   	
-! Capacitor :: "C"	 	E(n+1) = (E(n+1) + V*E(n))/(1+V)					V = (dL*C')/(dA*eps) 	
-! Inductor :: "L"		E(n+1) = E(n+1) - V*(2*(E(n)+E(n-1)+...+E(0)) - E(n))	V = (dL*dT^2)/(2*dA*L'*eps)	
-! Conductivity :: "S" 	E(n+1) = (E(n+1) - V*E(n))/(1+V)					V = (dT*S')/(2*eps)
+! Resistor :: "R"		E(n+1) = (E(n+1) - V*E(n))/(1+V)						V = (dT*dL)/(2*dA*eps*R')   	
+! Capacitor :: "C"	 	E(n+1) = (E(n+1) + V*E(n))/(1+V)						V = (dL*C')/(dA*eps) 	
+! Inductor :: "L"		E(n+1) = E(n+1) - V*(2*(E(n)+E(n-1)+...+E(0)) + E(n+1))	V = (dL*dT^2)/(2*dA*L'*eps)	
+! Conductivity :: "S" 	E(n+1) = (E(n+1) - V*E(n))/(1+V)						V = (dT*S')/(2*eps)
 !
 ! The equations are constructed as such to provide a modification after standard FDTD steps
 ! and it is assumed that there is only one element at any unique location (one at Ex component of {i,j,k},
 ! one at Ey{i,j,k}, etc. Equations will fail if elements are defined at the same location. The inductor follows
-! the equations set forth by Sui et al. [IEEE Trans. Micro. Theory Tech. v40 #4 p724 (1992)]; the equation
-! in Taflove causes an instability. 
+! the equations set forth by Sui et al. [IEEE Trans. Micro. Theory Tech. v40 #4 p724 (1992)] using a
+! backward difference; the equation in Taflove causes an instability.
 !
 ! Finally, the R', C', L' and S' values in the "V" terms above are modified values of R, C, L and S, taking into
 ! account unitary convertions. 
@@ -208,10 +208,6 @@ contains
 			
 			M4_REGLOOP_EXPR(reg,p,i,j,k,w,{				
 		
-				lumped%B(p,1) = Ex(i,j,k)		
-				lumped%B(p,2) = Ey(i,j,k)
-				lumped%B(p,3) = Ez(i,j,k)
-		
 				lumped%S(p,1) = lumped%S(p,1) + Ex(i,j,k)
 				lumped%S(p,2) = lumped%S(p,2) + Ey(i,j,k)
 				lumped%S(p,3) = lumped%S(p,3) + Ez(i,j,k)
@@ -302,18 +298,18 @@ contains
 			
 				if ( w(1) .ne. 0.0d0 ) then
 					Vx = epsinvx(i,j,k) * (DT**2 * SX)/(2 * SY * SZ * w(1))
-					Ex(i,j,k) = Ex(i,j,k) - Vx * (2 * lumped%S(p,1) - lumped%B(p,1))
+					Ex(i,j,k) = Ex(i,j,k) - Vx * (2 * lumped%S(p,1) + Ex(i,j,k))
 				end if
 				
 				if ( w(2) .ne. 0.0d0 ) then
 					Vy = epsinvy(i,j,k) * (DT**2 * SY)/(2 * SZ * SX * w(2))
-					Ey(i,j,k) = Ey(i,j,k) - Vy * (2 * lumped%S(p,2) - lumped%B(p,2))
+					Ey(i,j,k) = Ey(i,j,k) - Vy * (2 * lumped%S(p,2) + Ey(i,j,k))
 			
 				end if
 				
 				if ( w(3) .ne. 0.0d0 ) then
 					Vz = epsinvz(i,j,k) * (DT**2 * SZ)/(2 * SX * SY * w(3))
-					Ez(i,j,k) = Ez(i,j,k) - Vz * (2 * lumped%S(p,3) - lumped%B(p,3))
+					Ez(i,j,k) = Ez(i,j,k) - Vz * (2 * lumped%S(p,3) + Ez(i,j,k))
 				end if
 	
 			})
