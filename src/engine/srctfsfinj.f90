@@ -154,7 +154,6 @@ contains
     if ( reg%js .eq. reg%je .and. DIM .ge. 2 ) src%plane = 3
     if ( reg%ks .eq. reg%ke .and. DIM .ge. 3 ) src%plane = 5
 
-
     if ( src%plane .eq. 0 ) then
        M4_FATAL_ERROR("Box region must define a proper plane!")
     end if
@@ -235,6 +234,7 @@ contains
     ! plane
 
     M4_WRITE_INFO({"plane = ",src%plane})
+    M4_WRITE_INFO({"kvec = ",src%kinc(:)})
 
     ! calculate phase velocity
 
