@@ -54,6 +54,7 @@ function ConfigMethods:GRID(parms)
    self.grid.partition = parms.partition or { 0,1 };
    self.grid.ncyc = parms.ncyc or 100;
    self.grid.dt = parms.dt or 0.9999;
+   self.grid.dx = parms.dx or { 1., 1., 1., 1. }
 end
 
 -- FDTD Config-Block definition
@@ -259,6 +260,21 @@ function BLOCH(parms)
    return BLOCH
 end
 
+-- (MAT)THREELVL Sub-Block definition
+
+function THREELVL(parms) 
+   local THREELVL = { block = "THREELVL" }
+   THREELVL.invlambda = parms.invlambda or {}
+   THREELVL.gamma = parms.gamma or { 0., 0., 0. }
+   THREELVL.sigma = parms.sigma or { 0., 0., 0. }
+   THREELVL.mx = parms.mx or { {0,0}, {0,0}, {0,0} }
+   THREELVL.my = parms.my or { {0,0}, {0,0}, {0,0} }
+   THREELVL.mz = parms.mz or { {0,0}, {0,0}, {0,0} }
+   THREELVL.densities = parms.densities or { 1., 0, 0 }
+   THREELVL.n = parms.n or 1
+   return THREELVL
+end
+
 
 -- SRC Config-Block definition
 
@@ -372,6 +388,7 @@ local function writeGRID(fh,GRID)
    fh:write("  ",GRID.irange[1], " ", GRID.irange[2]," \t! irange = (ibeg,iend)\n");
    fh:write("  ",GRID.jrange[1], " ", GRID.jrange[2]," \t! jrange = (jbeg,jend)\n");
    fh:write("  ",GRID.krange[1], " ", GRID.krange[2]," \t! krange = (kbeg,kend)\n");
+   fh:write("  ",GRID.dx[1], " ", GRID.dx[2]," ", GRID.dx[3], " ", GRID.dx[4], " \t! conv fac + step sizes\n");
    fh:write(")GRID\n\n");
 end
 
@@ -560,6 +577,28 @@ local writemat = {
 	      fh:write(BLOCH.gammanr,"\t! non-rad. recomb. [1/dt]\n")
 	      fh:write(BLOCH.pump,"\t! pump rate [1/dt]\n")
 	      fh:write(BLOCH.satmodel,"\t! sat.model 0=>(N-Ntr), 1=>Ntr*log(N/Ntr)\n")		       
+	   end,
+   THREELVL = function(fh,THREELVL)
+	      fh:write(THREELVL.invlambda[1]," ",THREELVL.invlambda[2]," ", THREELVL.invlambda[3], "\n")
+	      fh:write(THREELVL.gamma[1]," ",THREELVL.gamma[2]," ", THREELVL.gamma[3], "\n")
+	      fh:write(THREELVL.sigma[1]," ",THREELVL.sigma[2]," ", THREELVL.sigma[3], "\n")
+	      fh:write(
+		       "(",THREELVL.mx[1][1],",",THREELVL.mx[1][2],") ",
+		       "(",THREELVL.mx[2][1],",",THREELVL.mx[2][2],") ",
+		       "(",THREELVL.mx[3][1],",",THREELVL.mx[3][2],") ",
+		       "\t! mx dipole length [dx]\n")
+	      fh:write(
+		       "(",THREELVL.my[1][1],",",THREELVL.my[1][2],") ",
+		       "(",THREELVL.my[2][1],",",THREELVL.my[2][2],") ",
+		       "(",THREELVL.my[3][1],",",THREELVL.my[3][2],") ",
+		       "\t! my dipole length [dx]\n")
+	      fh:write(
+		       "(",THREELVL.mz[1][1],",",THREELVL.mz[1][2],") ",
+		       "(",THREELVL.mz[2][1],",",THREELVL.mz[2][2],") ",
+		       "(",THREELVL.mz[3][1],",",THREELVL.mz[3][2],") ",
+		       "\t! mz dipole length [dx]\n")
+	      fh:write(THREELVL.densities[1]," ", THREELVL.densities[2]," ", THREELVL.densities[3], "\t! occup. densities []\n")
+	      fh:write(THREELVL.n,"\t! systems per cell []\n")
 	   end,
 }
 

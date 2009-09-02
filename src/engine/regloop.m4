@@ -19,9 +19,9 @@ do $3 = $1%is, $1%ie, $1%di
 $2 = $2 + 1	     
 
 if ( $1%compressval ) then 
-$6(:) = $1%val(:,$1%valptr($2))
+$6(1:$1%numval) = $1%val(1:$1%numval,$1%valptr($2))
 else
-$6(:) = $1%val(:,$2)
+$6(1:$1%numval) = $1%val(1:$1%numval,$2)
 endif
 
 $7
@@ -44,9 +44,9 @@ $4 = $1%j($2) ! -> j
 $5 = $1%k($2) ! -> k
 
 if ( $1%compressval ) then 
-$6(:) = $1%val(:,$1%valptr($2))
+$6(1:$1%numval) = $1%val(1:$1%numval,$1%valptr($2))
 else
-$6(:) = $1%val(:,$2)
+$6(1:$1%numval) = $1%val(1:$1%numval,$2)
 endif
 
 $7
@@ -65,9 +65,9 @@ $2 = $1%mask($3,$4,$5) ! -> p
 if ( $2 .gt. 0 ) then
 
 if ( $1%compressval ) then 
-$6(:) = $1%val(:,$1%valptr($2))
+$6(1:$1%numval) = $1%val(1:$1%numval,$1%valptr($2))
 else
-$6(:) = $1%val(:,$2)
+$6(1:$1%numval) = $1%val(1:$1%numval,$2)
 endif
 
 $7

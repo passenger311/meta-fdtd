@@ -1,13 +1,13 @@
 !-*- F90 -*------------------------------------------------------------
 !
-!  module: mat3lvl_outgpl / meta
+!  module: matthreelvl_outgpl / meta
 !
-!  this module handles GPL output of data related to the mat3lvl module.
+!  this module handles GPL output of data related to the matthreelvl module.
 !
 !----------------------------------------------------------------------
 
 
-module mat3lvl_outgpl
+module matthreelvl_outgpl
 
   use constant
   use strings
@@ -18,7 +18,7 @@ module mat3lvl_outgpl
   use grid 
   use fdtd
   use out_calc
-  use mat3lvl
+  use matthreelvl
 
   implicit none
   private
@@ -26,38 +26,38 @@ module mat3lvl_outgpl
 
   ! --- Module Identifier
 
-  character(len=STRLNG), parameter :: modname = 'MAT3LVL_OUTGPL'
+  character(len=STRLNG), parameter :: modname = 'MATTHREELVL_OUTGPL'
 
  ! --- Public Methods
 
-  public :: InitializeMat3lvlOutgplObj
-  public :: FinalizeMat3lvlOutgplObj
-  public :: WriteDataMat3lvlOutgplObj
+  public :: InitializeMatthreelvlOutgplObj
+  public :: FinalizeMatthreelvlOutgplObj 
+  public :: WriteDataMatthreelvlOutgplObj
 
 contains
 
 !----------------------------------------------------------------------
 
-  subroutine InitializeMat3lvlOutgplObj(out)
+  subroutine InitializeMatthreelvlOutgplObj(out)
 
     type (T_OUT) :: out
 
-  end subroutine InitializeMat3lvlOutgplObj
+  end subroutine InitializeMatthreelvlOutgplObj
 
 
 !----------------------------------------------------------------------
 
-  subroutine FinalizeMat3lvlOutgplObj(out)
+  subroutine FinalizeMatthreelvlOutgplObj(out)
 
     type (T_OUT) :: out
 
-  end subroutine FinalizeMat3lvlOutgplObj
+  end subroutine FinalizeMatthreelvlOutgplObj
 
 
 !----------------------------------------------------------------------
 
 
-  subroutine WriteDataMat3lvlOutgplObj(out, mode)
+  subroutine WriteDataMatthreelvlOutgplObj(out, mode)
 
     type (T_OUT) :: out
     type (T_BUF) :: buf
@@ -84,66 +84,82 @@ contains
       integer :: mode
 
       M4_REGLOOP_DECL(reg,p,i,j,k,w(3))  
-      real(kind=8) :: val, sum
-      type(T_MAT3LVL) :: mat
+      real(kind=8) :: val1, val2, val3, sum1, sum2, sum3
+      type(T_MATTHREELVL) :: mat
       integer :: m
 
       M4_IFELSE_DBG({call EchoRegObj(regobj(out%regidx))})
 
       reg = regobj(out%regidx)
-      mat = mat3lvlobj(out%objidx)
+      mat = matthreelvlobj(out%objidx)
 
-      sum = 0.
+      sum1 = 0.
+      sum2 = 0.
+      sum3 = 0.
 
       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
       select case ( mode ) 
       case ( 1 )
 
-         val = mat%N(p)
+         val1 = mat%rho11(p)
+         val2 = mat%rho22(p)
+         val3 = mat%rho33(p)
 
          if ( out%mode .ne. 'S' ) then
  
             if ( reg%isbox ) then
-               write(out%funit,"(E15.6E3)") real(val,8)
+               write(out%funit,"(3E15.6E3)") real(val1,8), real(val2,8), real(val3,8)
             else
-               write(out%funit,"(M4_SDIM({I5}),(E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}),real(val,8)
+               write(out%funit,"(M4_SDIM({I5}),(3E15.6E3))") &
+                    M4_DIM123({i},{i,j},{i,j,k}),real(val1,8),real(val2,8),real(val3,8)
             endif
          
          else
-            sum = sum + val
+            sum1 = sum1 + val1
+            sum2 = sum2 + val2
+            sum3 = sum3 + val3
          endif
 
       case ( 2 )
 
-         val = mat%P(p,mat%cyc)
+         val1 = mat%rho12(p)
+         val2 = mat%rho13(p)
+         val3 = mat%rho23(p)
 
          if ( out%mode .ne. 'S' ) then
 
             if ( reg%isbox ) then
-               write(out%funit,"(3E15.6E3)") real(val,8)
+               write(out%funit,"(3E15.6E3)") real(val1,8), real(val2,8), real(val3,8)
             else
-               write(out%funit,"(M4_SDIM({I5}),(3E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}),real(val,8)
+               write(out%funit,"(M4_SDIM({I5}),(3E15.6E3))") &
+                    M4_DIM123({i},{i,j},{i,j,k}),real(val1,8),real(val2,8),real(val3,8)
             endif
 
          else
-            sum = sum + val
+            sum1 = sum1 + val1
+            sum2 = sum2 + val2
+            sum3 = sum3 + val3
          end if
 
       end select      
 
-      },{if ( reg%is .ne. reg%ie ) write(out%funit,*)}, {if ( reg%js .ne. reg%je ) write(out%funit,*)} )
+      },{
+      
+      if ( reg%is .ne. reg%ie ) write(out%funit,*)}, {if ( reg%js .ne. reg%je ) write(out%funit,*)
+
+      } )
    
       if ( out%mode .eq. 'S' ) then
-         write(out%funit,"(E15.6E3)") real(sum,8)
+         write(out%funit,"(3E15.6E3)") real(sum1,8), real(sum2,8), real(sum3,8)
       endif
 
     end subroutine WriteValues
 
-  end subroutine WriteDataMat3lvlOutgplObj
+  end subroutine WriteDataMatthreelvlOutgplObj
 
 
-end module mat3lvl_outgpl
+end module matthreelvl_outgpl
 
 
 !

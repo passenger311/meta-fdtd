@@ -46,6 +46,8 @@ module grid
   integer :: JBIG = 0, JEIG = 1
   integer :: KBIG = 0, KEIG = 1
 
+  real(8) :: REAL_DX = 1.0
+
   real(8) :: SX  = 1.0    
   real(8) :: SY  = 1.0
   real(8) :: SZ  = 1.0
@@ -73,6 +75,7 @@ contains
     
     character(len=LINELNG) :: line
     integer :: v(2)
+    real(kind=8) :: fv(4)
 
     M4_WRITE_DBG({". enter ReadConfigGrid"})
 
@@ -113,6 +116,12 @@ contains
     KEND=v(2)
     if ( DIM .lt. 3 ) KEND = KBEG
     M4_WRITE_DBG({"read KBEG/KEND: ", KBEG, KEND})
+
+    call readfloats(funit, lcount, fv, 4)
+    REAL_DX = fv(1)
+    SX = fv(2)
+    SY = fv(3)
+    SZ = fv(4)
     
     call readtoken(funit, lcount, ")GRID")
 

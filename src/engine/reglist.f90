@@ -553,7 +553,7 @@ contains
     end if
 
     reg%numnodes = numnodes
-
+ 
     allocate(reg%val(reg%numval,numnodes) , stat = err)
     M4_ALLOC_ERROR(err, {"CreateRegObjEnd"})
 
