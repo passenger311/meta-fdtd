@@ -157,7 +157,7 @@ M4_IFELSE_CF({
        ! field conversion factor 
 
        mat%conv = REAL_DX**(3.5)/sqrt(SI_EPS0) * SI_E / SI_HBAR
-              
+
        reg = regobj(mat%regidx)
 
        allocate(mat%rho12(reg%numnodes), mat%rho13(reg%numnodes), &
@@ -289,7 +289,7 @@ M4_IFELSE_TE({}, {
 
        ei(1) = w(1) * epsinvx(i,j,k) * mat%n * SI_4PIALPHA
        ei(2) = w(2) * epsinvy(i,j,k) * mat%n * SI_4PIALPHA
-       ei(3) = w(3) * epsinvz(i,j,k) * mat%n * SI_4PIALPHA
+       ei(3) = w(3) * epsinvz(i,j,k) * mat%n * SI_4PIAlPHA
 
        rho12o = mat%rho12(p)
        rho13o = mat%rho13(p)
