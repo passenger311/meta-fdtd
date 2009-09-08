@@ -1,0 +1,3 @@
+Three dimensional setup with two four periodic boundaries and two PMLs for transmission and reflection graphs.
+The geometry is taken from Hu et al, Optics Express, Vol. 17, Issue 19, pp. 16745-16749.
+The material response used is more accurate in the given frequency region and seems to lead to qualitatively different results.
