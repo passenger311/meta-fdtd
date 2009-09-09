@@ -1,4 +1,17 @@
 function vismode(freqnumber,fignum);
+% vismode(freqnumber,fignum)
+% The function vismode visualises the field enhancement for different modes.
+%
+% Input:
+% - freqnumber = integer number related to frequency in lambda2.in
+% - fignum = number of figure opened, so that several modes can be visualised at the same time
+%
+% Files needed:
+% - data.save containing the conversion factor between real world and computational units dx
+% - lambda2.in containing a list of wavelengths for which the modes were calculated
+% - EHT_%i.set with %i an integer number as element of the number of wavelengths
+% - ../EHT_%i.set with %i same as above
+%
 
 fid = fopen('data.save','r');
 tline = fgetl(fid);
@@ -14,7 +27,6 @@ while feof(fid1) ==0
    k=k+1;
 end
 fclose(fid1);
-
 
 filename=sprintf('EHT_%i.set',freqnumber);
 fprintf(1,'loading file: %s\n', filename);
