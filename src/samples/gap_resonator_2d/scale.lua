@@ -69,9 +69,9 @@ size_pad = 3
 
 --- Courant factor
 
-dt = .65 -- 0.574  -- time step length compared to grid step length (--> Courant stability factor)
+dt = .7 -- 0.574  -- time step length compared to grid step length (--> Courant stability factor)
 
-ncycles = 32768-1 -- number of cycles
+ncycles = 2*32768-1 -- number of cycles
 
 
 --- Drude-Lorentz material in THz
