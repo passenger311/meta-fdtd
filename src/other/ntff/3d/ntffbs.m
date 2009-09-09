@@ -1,6 +1,22 @@
 function RCS = ntffbs(invlambda,freqnumber,theta,phi,eta0);
+% RCS = ntffbs(invlambda,freqnumber,theta,phi,eta0)
+% The function ntffbs computes the differential scattering cross section of an object hit by a plane wave for objects scattering strongly in the forward direction.
+%
+% The input is:
+% - invlambda = inverse wavelength in computational units
+% - freqnumber = the count for invlambda distinguishing files belonging to different invlambdas
+% - theta = vector of spherical angle theta (inclination)
+% - phi = vector of spherical angle phi (azimuth)
+% - eta0 = free space impedance
+%
+% When calling ntff the following files have to be present:
+% dft%s_%i.set with %s element of {'+x','-x','+y','-y'}
+%                   %i all numbers covered by freqnumber
+% ../dft-ref_%i.set with %i same as above
+%
+% Sebastian Wuestner, 09.09.2009
 
-DT = 0.574;
+DT = 0.574; %Courant factor to collocate E and H in time (only minor difference if omitted)
 
 kamp = 2*pi*invlambda/eta0; % wavevector in medium with refractive index 1/eta0
 max_theta = size(theta,2);
