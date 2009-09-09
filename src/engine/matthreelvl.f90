@@ -18,11 +18,37 @@
 
 ! =====================================================================
 !
-! The Matthreelvl module calculates the reponse of an effective  3 level 
-! bloch system
+! The Matthreelvl module calculates the reponse of an effective  3 lvl 
+! bloch system with omega1 <= omega2 <= omega3.
+! All possible 3lvl schemes (lambda,cascade,V,etc.) can be simulated.
 !
+! The equations for the density matrix are given by
+! d/dt rho = i/hbar * [H,rho]
+! with H/hbar = [{omega1, -Omega12 , -Omega13},{-Omega12*, omega2, -Omega23}
+!  ,{-Omega13*,-Omega23*,omega3}]
+! and Omega_{ij} = conj(M_{ij}) * E / hbar
+! 
+! E = D - eps_{-1} * P
+! P = (M12*rho12 + M13*rho13 + M23*rho23) * n
+! n = number of 3lvl systems per grid cell.
+! 
+! The equations are solved by the 4th order Runge-Kutta method in 
+! combination with an interpolation scheme for the electric field E, 
+! which relies on the prior calculation of an effective electric 
+! displacement D taking all other polarisations at the same grid cell 
+! into account.
 !
-
+! The equations are formulated in SI-units where meters are replaced by
+! dx and seconds by dx/clight. Therefore the electric field has to be
+! converted from NHL-units into these grid units first and the
+! polarisation has to be converted as well, so that E=D-eps^{-1}P.
+! 
+! All material calculations and the calculation of the new electric
+! field E are being done in StepEMatThreeLvl.
+! In StepHMatThreeLvl the electric field is replaced by the effective
+! displacement D in order to calculate the new D out of d/dt D = rot(H)
+!
+! =====================================================================
 module matthreelvl
 
   use constant
@@ -36,21 +62,19 @@ module matthreelvl
   private
   save
 
-  real(kind=8), parameter :: hbar = 1. ! planck constant
-
 
   M4_MATHEAD_DECL({MATTHREELVL},MAXMATOBJ,{
 
   ! input parameters
   real(kind=8) :: lambdainv12, lambdainv13, lambdainv23    
-  real(kind=8) :: gamma12, gamma13, gamma23
-  real(kind=8) :: sigma12, sigma13, sigma23
+  real(kind=8) :: gamma12, gamma13, gamma23       ! polarisation dephasing 
+  real(kind=8) :: sigma12, sigma13, sigma23       ! nonradiative recombination rates
 
   complex, dimension(3) :: M12(3), M13(3), M23(3) ! dipole lengths
   
   ! calculated
 
-  real(kind=8) :: omega12, omega13, omega23 ! resonance frequency
+  real(kind=8) :: omega12, omega13, omega23 ! resonance frequencies
 
   ! coefficients
   
@@ -59,12 +83,11 @@ module matthreelvl
 
   ! densities
   real(kind=8), dimension(:), pointer :: rho11, rho22, rho33
-
+  ! starting values (have to add up to 1)
   real(kind=8) :: rho11_0, rho22_0, rho33_0
 
   ! number of 3-level atoms per unit-cell
   real(kind=8) :: n
-
 
   ! field conversion factor
   real(kind=8) :: conv
@@ -165,6 +188,7 @@ M4_IFELSE_CF({
 
        M4_ALLOC_ERROR(err,"InitializeMatthreelvl")
 
+       ! set initial polarisations to zero
        mat%rho12(:) = 0
        mat%rho13(:) = 0
        mat%rho23(:) = 0
@@ -173,7 +197,8 @@ M4_IFELSE_CF({
             mat%rho33(reg%numnodes), stat = err)
 
        M4_ALLOC_ERROR(err,"InitializeMatthreelvl")
-
+       
+       ! set initial densities
        mat%rho11(:) = mat%rho11_0
        mat%rho22(:) = mat%rho22_0
        mat%rho33(:) = mat%rho33_0
@@ -224,7 +249,7 @@ M4_IFELSE_CF({
       M4_MODOBJ_GETREG(mat,reg)
 
       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-
+      ! replace electric field with effective electric displacement
         M4_IFELSE_TM({
            Ex(i,j,k) = mat%Dold(p,1) / mat%conv
            Ey(i,j,k) = mat%Dold(p,2) / mat%conv
@@ -261,7 +286,7 @@ M4_IFELSE_CF({
 
     D = 0
     Dold = 0
-
+    ! determine which spatial field components have to be calculated
     m1 = 1
     m2 = 3
 
@@ -286,11 +311,14 @@ M4_IFELSE_TE({}, {
     M4_MODOBJ_GETREG(mat,reg)
 
     M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-
+       
+       ! set factor ei for E = D - ei*sum(Mij*rhoij)
+       ! ei includes unit conversion and number of systems per unit cell
        ei(1) = w(1) * epsinvx(i,j,k) * mat%n * SI_4PIALPHA
        ei(2) = w(2) * epsinvy(i,j,k) * mat%n * SI_4PIALPHA
        ei(3) = w(3) * epsinvz(i,j,k) * mat%n * SI_4PIAlPHA
 
+       ! save old values of rho
        rho12o = mat%rho12(p)
        rho13o = mat%rho13(p)
        rho23o = mat%rho23(p)
@@ -298,6 +326,7 @@ M4_IFELSE_TE({}, {
        rho22o = mat%rho22(p)
        rho33o = mat%rho33(p)
 
+       ! get new values of displacement and save old ones
        M4_IFELSE_TM({
           Dold(1) = mat%Dold(p,1)
           Dold(2) = mat%Dold(p,2)
@@ -314,7 +343,7 @@ M4_IFELSE_TE({}, {
 
 
        ! rk4: first step
-
+       ! D(t) needed to calculate E(t)
        D(:) = Dold(:)
 
        do m= m1, m2
@@ -329,7 +358,8 @@ M4_IFELSE_CF({
 })
 
        end do
-
+       
+       ! calculate rabi frequencies at time t
        ra12 = conjg(mat%M12(1))*Etmp(1) + conjg(mat%M12(2))*Etmp(2) + conjg(mat%M12(3))*Etmp(3)
        ra13 = conjg(mat%M13(1))*Etmp(1) + conjg(mat%M13(2))*Etmp(2) + conjg(mat%M13(3))*Etmp(3)
        ra23 = conjg(mat%M23(1))*Etmp(1) + conjg(mat%M23(2))*Etmp(2) + conjg(mat%M23(3))*Etmp(3)
@@ -340,7 +370,8 @@ M4_IFELSE_CF({
        rho11 = rho11o
        rho22 = rho22o
        rho33 = rho33o
-
+       
+       ! calculate first ks
        k12(1) = IMAG*( rho12*om12 + ra12*(rho11-rho22) + conjg(ra23)*rho13 - ra13*conjg(rho23) ) &
             - mat%gamma12 * rho12
        k13(1) = IMAG*( rho13*om13 + ra13*(rho11-rho33) + ra23*rho12 - ra12*rho23 ) &
@@ -356,8 +387,17 @@ M4_IFELSE_CF({
 
 
        ! rk4: second step
-
+       ! D interpolated to t+dt/2 in order to calculate E(t+dt/2)
        D = (Dold + Dnew)/2
+       
+       ! rho interpolated to t+dt/2 according to runge-kutta scheme
+       rho12 = rho12o + k12(1) * DT / 2
+       rho13 = rho13o + k13(1) * DT / 2
+       rho23 = rho23o + k23(1) * DT / 2
+       rho11 = rho11o + k11(1) * DT / 2
+       rho22 = rho22o + k22(1) * DT / 2
+       rho33 = rho33o + k33(1) * DT / 2
+
 
        do m= m1, m2
 
@@ -372,16 +412,11 @@ M4_IFELSE_CF({
 
        end do
 
+       ! calculate rabi frequencies at t+dt/2
        ra12 = conjg(mat%M12(1))*Etmp(1) + conjg(mat%M12(2))*Etmp(2) + conjg(mat%M12(3))*Etmp(3)
        ra13 = conjg(mat%M13(1))*Etmp(1) + conjg(mat%M13(2))*Etmp(2) + conjg(mat%M13(3))*Etmp(3)
        ra23 = conjg(mat%M23(1))*Etmp(1) + conjg(mat%M23(2))*Etmp(2) + conjg(mat%M23(3))*Etmp(3)       
 
-       rho12 = rho12o + k12(1) * DT / 2
-       rho13 = rho13o + k13(1) * DT / 2
-       rho23 = rho23o + k23(1) * DT / 2
-       rho11 = rho11o + k11(1) * DT / 2
-       rho22 = rho22o + k22(1) * DT / 2
-       rho33 = rho33o + k33(1) * DT / 2
 
        k12(2) = IMAG*( rho12*om12 + ra12*(rho11-rho22) + conjg(ra23)*rho13 - ra13*conjg(rho23) ) &
             - mat%gamma12 * rho12
@@ -398,6 +433,7 @@ M4_IFELSE_CF({
 
 
        ! rk4: third step
+       ! rho interpolated to t+dt/2 for a second time. D stays the same
        
        rho12 = rho12o + k12(2) * DT / 2
        rho13 = rho13o + k13(2) * DT / 2
@@ -405,6 +441,25 @@ M4_IFELSE_CF({
        rho11 = rho11o + k11(2) * DT / 2
        rho22 = rho22o + k22(2) * DT / 2
        rho33 = rho33o + k33(2) * DT / 2
+
+       do m= m1, m2
+
+M4_IFELSE_CF({
+         Etmp(m) = D(m) - &
+              ei(m) * ( mat%M12(m)*rho12 + mat%M13(m)*rho13 + mat%M23(m)*rho23 ) 
+},{
+         Etmp(m) = D(m) - &
+              ei(m) * real( mat%M12(m)*rho12 + &
+              mat%M13(m)*rho13 + mat%M23(m)*rho23 )
+})
+
+       end do
+       
+       ! calculate rabi frequencies at t+dt/2
+       ra12 = conjg(mat%M12(1))*Etmp(1) + conjg(mat%M12(2))*Etmp(2) + conjg(mat%M12(3))*Etmp(3)
+       ra13 = conjg(mat%M13(1))*Etmp(1) + conjg(mat%M13(2))*Etmp(2) + conjg(mat%M13(3))*Etmp(3)
+       ra23 = conjg(mat%M23(1))*Etmp(1) + conjg(mat%M23(2))*Etmp(2) + conjg(mat%M23(3))*Etmp(3)       
+
 
        k12(3) = IMAG*( rho12*om12 + ra12*(rho11-rho22) + conjg(ra23)*rho13 - ra13*conjg(rho23) ) &
             - mat%gamma12 * rho12
@@ -421,8 +476,16 @@ M4_IFELSE_CF({
 
 
        ! rk4: fourth step
-
+       ! D(t+dt) for E(t+dt)
        D(:) = Dnew(:)
+
+       ! rho(t+dt)
+       rho12 = rho12o + k12(3) * DT
+       rho13 = rho13o + k13(3) * DT
+       rho23 = rho23o + k23(3) * DT
+       rho11 = rho11o + k11(3) * DT
+       rho22 = rho22o + k22(3) * DT
+       rho33 = rho33o + k33(3) * DT   
 
        do m= m1, m2
 
@@ -437,16 +500,11 @@ M4_IFELSE_CF({
 
        end do
 
+       ! calculate rabi frequencies at t+dt
        ra12 = conjg(mat%M12(1))*Etmp(1) + conjg(mat%M12(2))*Etmp(2) + conjg(mat%M12(3))*Etmp(3)
        ra13 = conjg(mat%M13(1))*Etmp(1) + conjg(mat%M13(2))*Etmp(2) + conjg(mat%M13(3))*Etmp(3)
        ra23 = conjg(mat%M23(1))*Etmp(1) + conjg(mat%M23(2))*Etmp(2) + conjg(mat%M23(3))*Etmp(3)
  
-       rho12 = rho12o + k12(3) * DT
-       rho13 = rho13o + k13(3) * DT
-       rho23 = rho23o + k23(3) * DT
-       rho11 = rho11o + k11(3) * DT
-       rho22 = rho22o + k22(3) * DT
-       rho33 = rho33o + k33(3) * DT   
 
        k12(4) = IMAG*( rho12*om12 + ra12*(rho11-rho22) + conjg(ra23)*rho13 - ra13*conjg(rho23) ) &
             - mat%gamma12 * rho12
@@ -485,7 +543,8 @@ M4_IFELSE_CF({
 })
 
        end do
-  
+       
+       ! update density matrix
        mat%rho12(p) = rho12
        mat%rho13(p) = rho13
        mat%rho23(p) = rho23
@@ -494,7 +553,7 @@ M4_IFELSE_CF({
        mat%rho22(p) = rho22
        mat%rho33(p) = rho33
 
-
+       ! convert electric field back into NHL-units and write it back
 M4_IFELSE_TM({
        Ex(i,j,k) = Etmp(1) / mat%conv
        Ey(i,j,k) = Etmp(2) / mat%conv
@@ -580,7 +639,7 @@ M4_IFELSE_TE({
 end module matthreelvl
 
 ! Authors: J.Hamm, A.Pusch 
-! Modified: 1/9/2009
+! Modified: 9/9/2009
 !
 ! =====================================================================
 
