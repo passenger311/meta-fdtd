@@ -1,0 +1,75 @@
+#!/bin/bash
+
+# ----------------------------------------------------------
+# simple qscript
+# ----------------------------------------------------------
+
+# all documented in "man qsub"
+
+# ------- name of job
+#$ -N job-meta-res
+# ------- shell to use
+#$ -S /bin/bash
+# ------- current working directory
+#$ -cwd
+# ------- environment variables (use -V to export all)
+#$ -v PATH,LD_LIBRARY_PATH
+# ------- email notification
+# #$ -m
+# #$ -M someuser@somewhere
+# ------- redirect output streams 
+# #$ -j            
+# #$ -o logstd
+# #$ -e logerr
+# ------- specify ressources
+# #$ -l h_rt=1:00:00     
+# #$ -l h_vmem=1G        
+# ------- smp job?
+# #$ -l mp=1
+# ------- quad node? (default: false)
+# #$ -l quad=true
+# ------- specific instance?
+# #$ -q smp.q@quad10.beowulf.cluster
+# ------- split into several tasks (SGE_TASK_ID is used then)
+#$ -t 10
+
+# ------- SCRIPT
+
+#  $HOME       home directory on execution machine
+#  $USER       user ID of job owner
+#  $JOB_ID     current job ID
+#  $JOB_NAME   current job name (see -N option)
+#  $HOSTNAME   name of the execution host
+#  $TASK_ID    array job task index number
+
+
+echo "in directory: `pwd`"
+echo "on host:      `hostname`"
+echo "taskid: $SGE_TASK_ID"
+
+if [ "x$SGE_TASK_ID" == "xundefined" ]; then
+RUNDIR=.
+TASKDIR=.
+else
+RUNDIR=..
+TASKDIR="task_cap$SGE_TASK_ID"
+mkdir $TASKDIR 2>/dev/null
+cp fft_scat.m fft_abs.m scale.lua diag.lua callNTFF.m $TASKDIR
+cd $TASKDIR
+fi
+
+echo "* Resonator simulation"
+echo "running pre-processor"
+time $RUNDIR/luacfg $RUNDIR/res-config.lua  $SGE_TASK_ID
+echo "running simulation"
+time $RUNDIR/meta
+
+matlab -nodisplay -r fft_scat
+matlab -nodisplay -r fft_abs
+matlab -nodisplay -r callNTFF
+rm dft*.set
+tar --remove-files -czf RCS.tgz RCS_*
+tar --remove-files -czf RCS2.tgz RCS2_*
+tar --remove-files -czf E.vtk.tgz E_*
+gzip -f *.gpl
+rm geo* preview*
