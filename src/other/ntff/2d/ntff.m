@@ -1,6 +1,6 @@
-function RCS = ntffarith(invlambda,freqnumber,theta,phi,eta0);
+function RCS = ntff(invlambda,freqnumber,theta,phi,eta0);
 
-DT = 0.574;
+DT = 0.7;
 
 kamp = 2*pi*invlambda/eta0; % wavevector in medium with refractive index 1/eta0
 max_theta = size(theta,2);
@@ -27,25 +27,14 @@ Ntheta = zeros(max_theta,max_phi,6);
 Nphi = zeros(max_theta,max_phi,6);
 
 %Sum over all faces of the NTFF-box
-for face = 1:6
+for face = 1:4
    %read in data from file
-   [facerange, E, H1] = readface(1,freqnumber,face);
-   [tmp, tmp, H2] = readface(2,freqnumber,face); clear tmp;
-   max_E = sqrt(size(E,1));
+   [facerange, E, H] = readface(freqnumber,face);
+   max_E = size(E,1);
    E = E * exp(i*pi*invlambda*DT);
 
-%   %geometric averaging of magnetic fields H
-%   H = zeros(max_E^2,3);
-%   H = sqrt(H1).*sqrt(H2);
-%   H_mask = ~(real(H1)<=0 & real(H2)<=0 & imag(H1).*imag(H2)<=0);
-%   H = (- ~H_mask + H_mask).*H;
-
-   %arithmetic averaging of H
-   H = zeros(max_E^2,3);
-   H = 0.5*(H1+H2);
-
    %surface currents via cross products
-   J = zeros(max_E^2,3); M = zeros(max_E^2,3);
+   J = zeros(max_E,3); M = zeros(max_E,3);
    if (face==1 | face ==2)
       n = (-1)^(face-1)*[ 1 0 0 ];
    elseif (face==3 | face ==4)
@@ -53,14 +42,14 @@ for face = 1:6
    elseif (face==5 | face ==6)
       n = (-1)^(face-1)*[ 0 0 1];
    end
-   n = ones(max_E^2,1)*n;
+   n = ones(max_E,1)*n;
    M = -cross(n,E,2);
    J = cross(n,H,2);
 
    %initialse arrays
-   Jtheta = zeros(max_E^2,1); Mtheta = zeros(max_E^2,1);
-   Jphi = zeros(max_E^2,1); Mphi = zeros(max_E^2,1);
-   expR = zeros(max_E^2,1); tmpexpR = zeros(max_E^2,1);
+   Jtheta = zeros(max_E,1); Mtheta = zeros(max_E,1);
+   Jphi = zeros(max_E,1); Mphi = zeros(max_E,1);
+   expR = zeros(max_E,1); tmpexpR = zeros(max_E,1);
 
    %sum over all theta-angles
    for n_theta = 1:max_theta
@@ -76,15 +65,15 @@ for face = 1:6
 
          %exponential factors in integral
          if facerange(1,1)==facerange(1,2) %size(ni,2)==1
-            tmpexpR = exp(i.*kamp.*(ni + nj'*ones(1,sqrt(max_E^2))+ones(sqrt(max_E^2),1)*nk));
+            tmpexpR = exp(i.*kamp.*(ni + nj'*ones(1,size(nk,2))+ones(size(nj,2),1)*nk));
          elseif facerange(2,1)==facerange(2,2) %size(nj,2)==1
-            tmpexpR = exp(i.*kamp.*(ni'*ones(1,max_E)+nj+ones(max_E,1)*nk));
+            tmpexpR = exp(i.*kamp.*(ni'*ones(1,size(nk,2))+nj+ones(size(ni,2),1)*nk));
          elseif facerange(3,1)==facerange(3,2) %size(nk,2)==1
-            tmpexpR = exp(i.*kamp.*(ni'*ones(1,max_E)+ones(max_E,1)*nj+nk));
+            tmpexpR = exp(i.*kamp.*(ni'*ones(1,size(nj,2))+ones(size(ni,2),1)*nj+nk));
          end
-         tmpexpR(1,:) = .5*tmpexpR(1,:); tmpexpR(max_E,:) = .5*tmpexpR(max_E,:);
-         tmpexpR(:,1) = .5*tmpexpR(:,1); tmpexpR(:,max_E) = .5*tmpexpR(:,max_E);
-         expR=reshape(tmpexpR,max_E^2,1)*facerange(1,3)*facerange(2,3)*facerange(3,3);
+%         tmpexpR(1,:) = .5*tmpexpR(1,:); tmpexpR(size(tmpexpR,1),:) = .5*tmpexpR(size(tmpexpR,1),:);
+         tmpexpR(:,1) = .5*tmpexpR(:,1); tmpexpR(:,size(tmpexpR,2)) = .5*tmpexpR(:,size(tmpexpR,2));
+         expR=reshape(tmpexpR,max_E,1)*facerange(1,3)*facerange(2,3)*facerange(3,3);
 
          %projections of J and M on theta and phi unit vectors
          tmpetheta = squeeze(etheta(n_theta,n_phi,:));
@@ -109,21 +98,12 @@ Nthetasum = squeeze(sum(Ntheta,3)); Nphisum = squeeze(sum(Nphi,3)); Lthetasum = 
 
 %normalisation
 %reading reference file
-clear E H1 H2;
-[E,H1] = readref(1,freqnumber);
-[tmp,H2] = readref(2,freqnumber); clear tmp;
+clear E H;
+[E,H] = readref(freqnumber);
 E = E * exp(i*pi*invlambda*DT);
-%%geometric averaging
-%H = zeros(1,3);
-%H = sqrt(H1).*sqrt(H2);
-%H_mask = ~(real(H1)<=0 & real(H2)<=0 & imag(H1).*imag(H2)<=0);
-%H = (- ~H_mask + H_mask).*H;
-  %arithmetic averaging of H
-  H = zeros(max_E^2,3);
-  H = 0.5*(H1+H2);
 
 S = cross(E,conj(H));
-Pinc = real(S(3))/2;
+Pinc = -real(S(3))/2;
 
 %compute the RCS
-RCS = invlambda^2*kamp^2/(8*pi*eta0*Pinc).*(abs(Lphisum+eta0.*Nthetasum).*abs(Lphisum+eta0.*Nthetasum) + abs(Lthetasum-eta0.*Nphisum).*abs(Lthetasum-eta0.*Nphisum));
+RCS = 2*kamp/(eta0*Pinc).*(abs(Lphisum+eta0.*Nthetasum).*abs(Lphisum+eta0.*Nthetasum) + abs(Lthetasum-eta0.*Nphisum).*abs(Lthetasum-eta0.*Nphisum));
