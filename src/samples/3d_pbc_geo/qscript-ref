@@ -7,7 +7,7 @@
 # all documented in "man qsub"
 
 # ------- name of job
-#$ -N job-meta-eotref
+#$ -N job-meta-ref
 # ------- shell to use
 #$ -S /bin/bash
 # ------- current working directory

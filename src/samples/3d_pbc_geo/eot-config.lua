@@ -221,7 +221,7 @@ cfg:FDTD{
    },
 
    OUT{
-      file = { "VTK", "cap_xz_e" },
+      file = { "VTK", "E_xz" },
       type = { "E", "N" },
       time = { 200, 12000, 200 },
       REG{
@@ -233,7 +233,7 @@ cfg:FDTD{
    },
 
    OUT{
-      file = { "VTK", "cap_yz_e" },
+      file = { "VTK", "E_yz" },
       type = { "E", "N" },
       time = { 200, 12000, 200 },
       REG{

@@ -9,64 +9,54 @@ pi = 3.141592653589793116
 
 --- Real values in nm
 
-real_wavelength = 750.0    -- real wavelength
+real_wavelength = 650.0    -- real wavelength
 
-real_hdist = 200           -- half distance of capacitor plates
-real_hwidthx = 200.0      -- half width of capacitor plates
-real_hwidthy = 300.0
-real_hheight = 16          -- half height of capacitor plates (0 equals one yee cell)
-real_hdist_tfsf_i = real_hwidthx + 160
-real_hdist_tfsf_j = real_hwidthy + 160
-real_hdist_tfsf_k = real_hdist + 2*real_hheight + 160
+real_core = {200} -- total radius of shell particle
+real_shell = {50} -- size of shell
+real_xnp = {0} 
+real_ynp = {0} 
+real_znp = {0}
 
-num_np = 10; -- number of nanoparticles
+real_hdist_tfsf_i = 220
+real_hdist_tfsf_j = 220
+real_hdist_tfsf_k = 220
+real_hdist_ntff_i = real_hdist_tfsf_i + 300
+real_hdist_ntff_j = real_hdist_tfsf_j + 300
+real_hdist_ntff_k = real_hdist_tfsf_k + 300
 
-real_rnp = {}; real_xnp = {}; real_ynp = {}; real_znp = {}
-math.randomseed( 1235 )
-
-for i =1,num_np do
-  real_rnp[i] = 16
-  real_xnp[i] = math.random(-real_hwidthx + 5*real_rnp[i],real_hwidthx - 5*real_rnp[i])
-  real_ynp[i] = math.random(-real_hwidthy + 5*real_rnp[i],real_hwidthy - 5*real_rnp[i])
-  real_znp[i] = math.random(-real_hdist + 1.5*real_rnp[i],real_hdist - 1.5*real_rnp[i])
-end
-
-n_sphere = 3.
+n_shell = 3.14
 n_bg = 1.0
 n_max = n_bg  -- maximum refractive index to determine optically thickest medium
 mat = 'gold' -- gold, silver 
 
-step_dft = 4
-step_fft = 4
+step_dft = 2
+step_fft = 2
 
 
 --- conversion to computation scale
 
-resolution = 750/8 -- resolution of wavelength in optically thickest medium (even number)
+resolution = 650/10 -- resolution of wavelength in optically thickest medium (even number)
 
 conv = real_wavelength/resolution/n_max -- conversion factor between real and computation length scale
 frequ_factor = 2.99792458e5  -- change from frequency in THz (c|=1) to inverse wavelength in 1/nm (c=1)
 
 inv_wavelength = conv/real_wavelength -- inverse wavelength
 
-hdist = math.floor(real_hdist/conv+.5)
-hwidthx = math.floor(real_hwidthx/conv+.5)
-hwidthy = math.floor(real_hwidthy/conv+.5)
-hheight = math.floor(real_hheight/conv+.5)
 hdist_tfsf_i = math.floor(real_hdist_tfsf_i/conv+.5)
-hdist_ntff_i = hdist_tfsf_i + 2
+hdist_ntff_i = math.floor(real_hdist_ntff_i/conv+.5)
 hdist_tfsf_j = math.floor(real_hdist_tfsf_j/conv+.5)
-hdist_ntff_j = hdist_tfsf_j + 2
+hdist_ntff_j = math.floor(real_hdist_ntff_j/conv+.5)
 hdist_tfsf_k = math.floor(real_hdist_tfsf_k/conv+.5)
-hdist_ntff_k = hdist_tfsf_j + 2
+hdist_ntff_k = math.floor(real_hdist_ntff_k/conv+.5)
 
-
-rnp={}; inp={}; jnp={}; knp={}
-for i,v in ipairs(real_rnp) do
-  rnp[i] = math.floor(real_rnp[i]/conv+.5)
+rnp={}; shell={}; inp={}; jnp={}; knp={}
+for i,v in ipairs(real_core) do
+  rnp[i] = math.floor(real_core[i]/conv+.5)
+  shell[i] = math.floor(real_shell[i]/conv+.5)
   inp[i] = math.floor(real_xnp[i]/conv+.5)
   jnp[i] = math.floor(real_ynp[i]/conv+.5)
   knp[i] = math.floor(real_znp[i]/conv+.5)
+  
 end
 
 
@@ -86,7 +76,7 @@ size_pml = 12
 
 --- Padding size parameter
 
-size_pad = 15
+size_pad = 5
 
 
 --- Courant factor
@@ -126,7 +116,7 @@ real_C_omegaL2 = 2833.44/2/pi
 real_C_gammaL2 = 1826.16
 C_deltaepsl2 = 2.51021
 
-eps_diel = n_sphere^2
+eps_diel = n_shell^2
 
 
 --- print some parameters
@@ -142,13 +132,8 @@ print("ntff-domain y dir (grid):                 ", hdist_ntff_j)
 print("tfsf-domain y dir (grid):                 ", hdist_tfsf_j)
 print("ntff-domain z dir (grid):                 ", hdist_ntff_k)
 print("tfsf-domain z dir (grid):                 ", hdist_tfsf_k)
-print("Half distance of capacitor plates (grid): ", hdist)
-print("Half width of capacitor plates, x (grid): ", hwidthx)
-print("Half width of capacitor plates, y (grid): ", hwidthy)
-print("Height of capacitor plates (grid):        ", 2*hheight+1)
 print("Size of padding (grid):                   ", size_pad)
 print("Size of PML (grid):                       ", size_pml)
-print("The following parameters are only applicable in the case of nanoparticles")
 for i,v in ipairs(rnp) do
   print("Radius of nanoparticle (grid):            ", v)
   print("Position of nanoparticle (grid):          ", inp[i], jnp[i], knp[i])
@@ -159,7 +144,7 @@ end
 
 foutput = io.open("invlambda.in","w+")
 foutput2 = io.open("lambda.in","w+")
-for i = 600,1100,5 do
+for i = 500,1000,5 do
    foutput:write(conv/i, "\n")
    foutput2:write(i, "\n")
 end
@@ -168,7 +153,7 @@ foutput2:close()
 
 foutput = io.open("invlambda2.in","w+")
 foutput2 = io.open("lambda2.in","w+")
-for i = 600,1000,10 do
+for i = 500,900,10 do
    foutput:write(conv/i,"\n")
    foutput2:write(i, "\n")
 end
@@ -177,5 +162,5 @@ foutput2:close()
 
 foutput = io.open("data.save","w+")
 foutput:write(conv,"\n")
-foutput:write(2*(hdist_ntff_i+2)+1, " ", 2*(hdist_ntff_j+2)+1, " ", 2*(hdist_ntff_k+2)+1)
+foutput:write(2*(hdist_tfsf_i)+1, " ", 2*(hdist_tfsf_j)+1, " ", 2*(hdist_tfsf_k)+1)
 foutput:close()

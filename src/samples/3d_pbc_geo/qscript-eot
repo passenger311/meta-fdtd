@@ -66,3 +66,6 @@ time $RUNDIR/meta
 
 matlab -nodisplay -r fft_diff
 gzip -f *.gpl
+tar --remove-files -czf E_xz.vtk.tgz E_xz_*
+tar --remove-files -czf E_yz.vtk.tgz E_yz_*
+rm geo_* prev*
