@@ -7,7 +7,7 @@ cfg:DIAG{
    },
    REG{
       BOX{
-         { -hdist_ntff_i, hdist_ntff_i, 5, -hdist_ntff_j, hdist_ntff_j, 5, hsio2height+2*hholeheight, hsio2height+2*hholeheight, 1 }
+         { -hdist_ntff_i, hdist_ntff_i, 1, -hdist_ntff_j, hdist_ntff_j, 1, hsio2height+2*hholeheight, hsio2height+2*hholeheight, 1 }
       }
    }
 }

@@ -1,14 +1,13 @@
-
 cfg = CONFIG{scenes=true}
 dofile("scale.lua")
 
 hdist_ntff = 10
-hdist_tfsf = 10
+hdist_tfsf = 8
 
-imin = -hdist_ntff
-imax = hdist_ntff
-jmin = -hdist_ntff
-jmax = hdist_ntff
+imin = -hdist_ntff-size_pad
+imax = hdist_ntff+size_pad
+jmin = -hdist_ntff-size_pad
+jmax = hdist_ntff+size_pad
 kmin = -hdist_ntff-size_pad
 kmax = hdist_ntff+size_pad
 
@@ -28,9 +27,9 @@ cfg:GRID{
    partition = { 0, 1 },
    ncyc = ncycles,                  -- number of time steps
    dt = dt,                         -- time step length compared to grid step length (--> Courant stability factor)
-   irange = { imin, imax },   -- range of computational window in x direction
-   jrange = { jmin, jmax },   -- -"- in y direction
-   krange = { kmin-size_pml, kmax+size_pml }    -- -"- in z direction
+   irange = { imin-size_pml, imax+size_pml },   -- range of computational window in x direction
+   jrange = { jmin-size_pml, jmax+size_pml },   -- -"- in y direction
+   krange = { kmin-size_pml, kmax+size_pml, 0 }    -- -"- in z direction
 
 }
 
@@ -53,7 +52,7 @@ cfg:FDTD{
 
 cfg:BOUND{
 
-   config = { 3, 3, 3, 3, 1, 1 },
+   config = { 1, 1, 1, 1, 1, 1 },
 
    PML{
       cells = size_pml,
@@ -77,12 +76,11 @@ cfg:SRC{
          sustain=math.floor(sustainl*resolution*n_max+.5),
          decay=math.floor(decayl*resolution*n_max+.5)
       },
-      planewave = { phi=0, theta=0.0, psi=90.0, nrefr=nrefr },
-      config = { 0, 0, 0, 0, 1, 1}
+      planewave = { phi=0, theta=0.0, psi=0.0, nrefr=nrefr }
    },
    REG{
       BOX{
-         {-hdist_tfsf-1,hdist_tfsf+1,1,-hdist_tfsf-1,hdist_tfsf+1,1,-hdist_tfsf,hdist_tfsf,1}
+         {-hdist_tfsf,hdist_tfsf,1,-hdist_tfsf,hdist_tfsf,1,-hdist_tfsf,hdist_tfsf,1}
       }
    },
    on = true
@@ -91,10 +89,10 @@ cfg:SRC{
 cfg:DIAG{
    PSPEC{
       file = "fft_ref-zabs",
-      time = { 0, ncycles, (ncycles+1)/1024 },
+      time = { 0, ncycles, (ncycles+1)/2048 },
       phasewrap = { 1, 0 },
       mode = "S",
-      polarize = { phi=0, theta=0, psi=90.0 }
+      polarize = { phi=90, theta=90, psi=90.0 }
    },
    REG{
       BOX{
@@ -103,16 +101,47 @@ cfg:DIAG{
    }
 }
 
+
+cfg:DIAG{
+   PSPEC{
+      file = "fft_ref-Sinj",
+      time = { 0, ncycles, (ncycles+1)/2048 },
+      phasewrap = { 1, 0 },
+      mode = "S",
+      polarize = { phi=90, theta=90, psi=90.0 }   
+   },
+   REG{
+      BOX{
+         { 0, 0, 1, 0, 0, 1, -hdist_tfsf+1, -hdist_tfsf+1, 1 }
+      }
+   }
+}
+
+
 cfg:DIAG{
    MODE{
-      file = "invlambda2.in",
-      outfile = "EHT",
-      time = { 0, ncycles, (ncycles+1)/4096 },
+      file = "invlambda.in",
+      outfile = "dft-ref",
+      time = { 0, ncycles, (ncycles+1)/2048 },
       mode = "EHT"
    },
    REG{
       BOX{
-         { -1, 1 , 1, -1, 1, 1, 0, 0, 1 }
+         { 0, 1, 1, 0, 1, 1, -hdist_ntff+3, -hdist_ntff+3, 1 }
+      }
+   }
+}
+
+cfg:DIAG{
+   MODE{
+      file = "invlambda2.in",
+      outfile = "EHT",
+      time = { 0, ncycles, (ncycles+1)/2048 },
+      mode = "EHT"
+   },
+   REG{
+      BOX{
+         { -hdist_tfsf+2, hdist_tfsf-2, 1, -hdist_tfsf+2, hdist_tfsf-2, 1, 0, 0, 1 }
       }
    }
 }
