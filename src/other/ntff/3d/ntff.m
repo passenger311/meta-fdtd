@@ -87,8 +87,8 @@ for face = 1:6
          elseif facerange(3,1)==facerange(3,2) %size(nk,2)==1
             tmpexpR = exp(i.*kamp.*(ni'*ones(1,size(nj,2))+ones(size(ni,2),1)*nj+nk));
          end
-         tmpexpR(1,:) = .5*tmpexpR(1,:); tmpexpR(max_E,:) = .5*tmpexpR(max_E,:);
-         tmpexpR(:,1) = .5*tmpexpR(:,1); tmpexpR(:,max_E) = .5*tmpexpR(:,max_E);
+         tmpexpR(1,:) = .5*tmpexpR(1,:); tmpexpR(size(tmpexpR,2),:) = .5*tmpexpR(size(tmpexpR,2),:);
+         tmpexpR(:,1) = .5*tmpexpR(:,1); tmpexpR(:,size(tmpexpR,2)) = .5*tmpexpR(:,size(tmpexpR,2));
          expR=reshape(tmpexpR,max_E,1)*facerange(1,3)*facerange(2,3)*facerange(3,3);
 
          %projections of J and M on theta and phi unit vectors
