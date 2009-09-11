@@ -20,22 +20,22 @@ real_znp = {0}
 real_hdist_tfsf_i = 220
 real_hdist_tfsf_j = 220
 real_hdist_tfsf_k = 220
-real_hdist_ntff_i = real_hdist_tfsf_i + 300
-real_hdist_ntff_j = real_hdist_tfsf_j + 300
-real_hdist_ntff_k = real_hdist_tfsf_k + 300
+real_hdist_ntff_i = real_hdist_tfsf_i + 50
+real_hdist_ntff_j = real_hdist_tfsf_j + 50
+real_hdist_ntff_k = real_hdist_tfsf_k + 50
 
 n_shell = 3.14
 n_bg = 1.0
 n_max = n_bg  -- maximum refractive index to determine optically thickest medium
 mat = 'gold' -- gold, silver 
 
-step_dft = 2
-step_fft = 2
+step_dft = 3
+step_fft = 3
 
 
 --- conversion to computation scale
 
-resolution = 650/10 -- resolution of wavelength in optically thickest medium (even number)
+resolution = 650/5 -- resolution of wavelength in optically thickest medium (even number)
 
 conv = real_wavelength/resolution/n_max -- conversion factor between real and computation length scale
 frequ_factor = 2.99792458e5  -- change from frequency in THz (c|=1) to inverse wavelength in 1/nm (c=1)
@@ -71,12 +71,12 @@ nrefr = n_bg -- reference injection refractive index
 
 --- PML size parameter
 
-size_pml = 12
+size_pml = 9
 
 
 --- Padding size parameter
 
-size_pad = 5
+size_pad = 2
 
 
 --- Courant factor

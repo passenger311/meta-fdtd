@@ -25,7 +25,7 @@
 # #$ -l h_rt=1:00:00     
 # #$ -l h_vmem=1G        
 # ------- smp job?
-# #$ -l mp=1
+#$ -l mp=1
 # ------- quad node? (default: false)
 # #$ -l quad=true
 # ------- specific instance?
@@ -71,5 +71,5 @@ gzip -f *.gpl
 rm dft*
 tar --remove-files -czf RCS.tgz RCS_*
 tar --remove-files -czf RCS2.tgz RCS2_*
-tar --remove-files -czf Ez.vtk.tgz Ez_*
+# tar --remove-files -czf Ez.vtk.tgz Ez_*
 rm geo* preview*
