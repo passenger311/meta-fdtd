@@ -46,7 +46,7 @@ Ntheta = zeros(max_theta,max_phi,6);
 Nphi = zeros(max_theta,max_phi,6);
 
 %Sum over all faces of the NTFF-box
-for face = 1:6
+for face = 1:4
    %read in data from file
    [facerange, E, H1] = readface(1,freqnumber,face);
    [tmp, tmp, H2] = readface(2,freqnumber,face); clear tmp;
@@ -145,4 +145,4 @@ S = cross(E,conj(H));
 Pinc = real(S(3))/2;
 
 %compute the RCS
-RCS = invlambda^2*kamp^2/(8*pi*eta0*Pinc).*(abs(Lphisum+eta0.*Nthetasum).*abs(Lphisum+eta0.*Nthetasum) + abs(Lthetasum-eta0.*Nphisum).*abs(Lthetasum-eta0.*Nphisum));
+RCS = 2*kamp/(eta0*Pinc).*(abs(Lphisum+eta0.*Nthetasum).*abs(Lphisum+eta0.*Nthetasum) + abs(Lthetasum-eta0.*Nphisum).*abs(Lthetasum-eta0.*Nphisum));

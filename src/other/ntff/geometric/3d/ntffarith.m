@@ -145,4 +145,4 @@ S = cross(E,conj(H));
 Pinc = real(S(3))/2;
 
 %compute the RCS
-RCS = invlambda^2*kamp^2/(8*pi*eta0*Pinc).*(abs(Lphisum+eta0.*Nthetasum).*abs(Lphisum+eta0.*Nthetasum) + abs(Lthetasum-eta0.*Nphisum).*abs(Lthetasum-eta0.*Nphisum));
+RCS = kamp^2/(8*pi*eta0*Pinc).*(abs(Lphisum+eta0.*Nthetasum).*abs(Lphisum+eta0.*Nthetasum) + abs(Lthetasum-eta0.*Nphisum).*abs(Lthetasum-eta0.*Nphisum));
