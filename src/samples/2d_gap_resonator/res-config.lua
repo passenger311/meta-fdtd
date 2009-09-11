@@ -27,7 +27,8 @@ cfg:GRID{
    dt = dt,                         -- time step length compared to grid step length (--> Courant stability factor)
    irange = { imin-size_pml, imax+size_pml },   -- range of computational window in x direction
    jrange = { jmin-size_pml, jmax+size_pml },   -- -"- in y direction
-   krange = { kmin, kmax }    -- -"- in z direction
+   krange = { kmin, kmax },    -- -"- in z direction
+   dx = { conv*1e-9, 1, 1, 1 }
 
 }
 

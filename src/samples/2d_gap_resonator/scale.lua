@@ -15,8 +15,10 @@ real_hdist = 20/2          -- half distance of plates
 real_hwidth = 130/2        -- half width of plates
 real_hheight = 20/2        -- half height of plates
 real_redges = 4             -- radius of rounded edges
-real_hdist_tfsf_i = real_hwidth + 80
-real_hdist_tfsf_j = 2*real_hheight + real_hdist + 80
+real_hdist_tfsf_i = real_hwidth + 20
+real_hdist_tfsf_j = 2*real_hheight + real_hdist + 20
+real_hdist_ntff_i = real_hdist_tfsf_i + 60
+real_hdist_ntff_j = real_hdist_tfsf_j + 60 
 
 n_sphere = 3.
 n_bg = 1.0
@@ -24,7 +26,9 @@ n_max = n_bg  -- maximum refraxctive index to determine optically thickest mediu
 mat = 'silver' -- gold, silver 
 
 step_dft = 1
+sampl_dft = 4096
 step_fft = 1
+sampl_fft = 2048
 
 
 --- conversion to computation scale
@@ -41,9 +45,9 @@ hwidth = math.floor(real_hwidth/conv+.5)
 hheight = math.floor(real_hheight/conv+.5)
 redges = math.floor(real_redges/conv+.5)
 hdist_tfsf_i = math.floor(real_hdist_tfsf_i/conv+.5)
-hdist_ntff_i = hdist_tfsf_i + 2 
+hdist_ntff_i = math.floor(real_hdist_ntff_i/conv+.5)
 hdist_tfsf_j = math.floor(real_hdist_tfsf_j/conv+.5)
-hdist_ntff_j = hdist_tfsf_j + 2
+hdist_ntff_j = math.floor(real_hdist_ntff_j/conv+.5)
 
 
 --- Gaussian envelope of injection field
@@ -54,7 +58,6 @@ attackl = 4  -- attack in number of periods
 sustainl = 0   -- sustain in number of periods
 decayl = 8     -- decay in number of periods
 nrefr = n_bg -- reference injection refractive index
-field_inj = "tfsfInjProfile.set" -- file created by Matlab
 
 
 --- PML size parameter
@@ -130,7 +133,7 @@ print("Size of PML (grid):                       ", size_pml)
 
 foutput = io.open("invlambda.in","w+")
 foutput2 = io.open("lambda.in","w+")
-for i = 500,900,5 do
+for i = 500,900,2 do
    foutput:write(conv/i, "\n")
    foutput2:write(i, "\n")
 end
@@ -139,7 +142,7 @@ foutput2:close()
 
 foutput = io.open("invlambda2.in","w+")
 foutput2 = io.open("lambda2.in","w+")
-for i = 500,900,20 do
+for i = 600,800,5 do
    foutput:write(conv/i,"\n")
    foutput2:write(i, "\n")
 end
@@ -148,5 +151,6 @@ foutput2:close()
 
 foutput = io.open("data.save","w+")
 foutput:write(conv,"\n")
-foutput:write(2*(hdist_ntff_i+2)+1, " ", 2*(hdist_ntff_j+2)+1, " ", 1)
+foutput:write(2*(hdist_ntff_i+2), " ", 2*(hdist_ntff_j+2), " ", 1, "\n")
+foutput:write(2*(hdist_tfsf_i-2), " ", 2*(hdist_tfsf_j-2), " ", 1)
 foutput:close()

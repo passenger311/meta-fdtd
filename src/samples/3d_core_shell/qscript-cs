@@ -31,7 +31,7 @@
 # ------- specific instance?
 # #$ -q smp.q@quad10.beowulf.cluster
 # ------- split into several tasks (SGE_TASK_ID is used then)
-#$ -t 1-10:3
+#$ -t 1
 
 # ------- SCRIPT
 
@@ -52,7 +52,7 @@ RUNDIR=.
 TASKDIR=.
 else
 RUNDIR=..
-TASKDIR="task_sphere$SGE_TASK_ID"
+TASKDIR="task_cs$SGE_TASK_ID"
 mkdir $TASKDIR 2>/dev/null
 cp fft_scat.m fft_abs.m scale.lua diag.lua callNTFF.m $TASKDIR
 cd $TASKDIR

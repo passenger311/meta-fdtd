@@ -22,7 +22,7 @@ cfg:DIAG{
    },
    REG{
       BOX{
-         { -hdist_tfsf_i, hdist_tfsf_i, step_fft, -hdist_tfsf_j, hdist_tfsf_j, step_fft, hdist_tfsf_k-2, hdist_tfsf_k-2, 1 }
+         { -hdist_tfsf_i+1, hdist_tfsf_i, step_fft, -hdist_tfsf_j+1, hdist_tfsf_j, step_fft, hdist_tfsf_k-2, hdist_tfsf_k-2, 1 }
       }
    }
 }
@@ -37,7 +37,7 @@ cfg:DIAG{
    },
    REG{
       BOX{
-         { -hdist_tfsf_i, hdist_tfsf_i, step_fft, -hdist_tfsf_j, hdist_tfsf_j, step_fft, -hdist_tfsf_k+2, -hdist_tfsf_k+2, 1 }
+         { -hdist_tfsf_i+1, hdist_tfsf_i, step_fft, -hdist_tfsf_j+1, hdist_tfsf_j, step_fft, -hdist_tfsf_k+2, -hdist_tfsf_k+2, 1 }
       }
    }
 }
@@ -52,7 +52,7 @@ cfg:DIAG{
    },
    REG{
       BOX{
-         { -hdist_ntff_i, hdist_ntff_i, step_fft, -hdist_ntff_j, hdist_ntff_j, step_fft, hdist_ntff_k+2, hdist_ntff_k+2, 1 }
+         { -hdist_ntff_i+1, hdist_ntff_i, step_fft, -hdist_ntff_j+1, hdist_ntff_j, step_fft, hdist_ntff_k+2, hdist_ntff_k+2, 1 }
       }
    }
 }
@@ -67,7 +67,7 @@ cfg:DIAG{
    },
    REG{
       BOX{
-         { -hdist_ntff_i, hdist_ntff_i, step_fft, -hdist_ntff_j, hdist_ntff_j, step_fft, -hdist_ntff_k-2, -hdist_ntff_k-2, 1 }
+         { -hdist_ntff_i+1, hdist_ntff_i, step_fft, -hdist_ntff_j+1, hdist_ntff_j, step_fft, -hdist_ntff_k-2, -hdist_ntff_k-2, 1 }
       }
    }
 }

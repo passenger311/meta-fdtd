@@ -29,7 +29,8 @@ cfg:GRID{
    dt = dt,                         -- time step length compared to grid step length (--> Courant stability factor)
    irange = { imin-size_pml, imax+size_pml },   -- range of computational window in x direction
    jrange = { jmin-size_pml, jmax+size_pml },   -- -"- in y direction
-   krange = { 0, 0 }    -- -"- in z direction
+   krange = { 0, 0 },    -- -"- in z direction
+   dx = { conv*1e-9, 1, 1, 1 }
 
 }
 
@@ -91,7 +92,7 @@ cfg:SRC{
 cfg:DIAG{
    PSPEC{
       file = "fft_ref-zabs",
-      time = { 0, ncycles, (ncycles+1)/4096 },
+      time = { 0, ncycles, (ncycles+1)/sampl_fft },
       phasewrap = { 1, 0 },
       mode = "S",
       polarize = { phi=90, theta=90, psi=0.0 }
@@ -107,7 +108,7 @@ cfg:DIAG{
 cfg:DIAG{
    PSPEC{
       file = "fft_ref-Sinj",
-      time = { 0, ncycles, (ncycles+1)/4096 },
+      time = { 0, ncycles, (ncycles+1)/sampl_fft },
       phasewrap = { 1, 0 },
       mode = "S",
       polarize = { phi=90, theta=90, psi=0.0 }   
@@ -124,7 +125,7 @@ cfg:DIAG{
    MODE{
       file = "invlambda.in",
       outfile = "dft-ref",
-      time = { 0, ncycles, (ncycles+1)/4096 },
+      time = { 0, ncycles, (ncycles+1)/sampl_dft },
       mode = "EHT"
    },
    REG{
@@ -139,7 +140,7 @@ cfg:DIAG{
    MODE{
       file = "invlambda2.in",
       outfile = "EHT",
-      time = { 0, ncycles, (ncycles+1)/4096 },
+      time = { 0, ncycles, (ncycles+1)/sampl_dft },
       mode = "EHT"
    },
    REG{

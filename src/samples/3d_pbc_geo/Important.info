@@ -3,3 +3,4 @@ The geometry is taken from Hu et al, Optics Express, Vol. 17, Issue 19, pp. 1674
 The material response used is more accurate in the given frequency region and seems to lead to qualitatively different results.
 
 When using PBCs it is very important that the meta program is compiled to have the source extending into the PBCs for the lower values of i, j or k. Otherwise spurious reflections occur at the periodic boundaries!!!
+This is the case for the meta file saved in this directory.

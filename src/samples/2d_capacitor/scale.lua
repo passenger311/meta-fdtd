@@ -37,8 +37,9 @@ n_max = n_bg  -- maximum refractive index to determine optically thickest medium
 mat = 'gold' -- gold, silver 
 
 step_dft = 1
+sampl_dft = 2048
 step_fft = 1
-
+sampl_fft = 2048
 
 --- conversion to computation scale
 
@@ -132,10 +133,10 @@ print("Conversion factor:                   dx = ", conv, "nm")
 print("Courant factor:                      dt = ", dt, "dx")
 print("Wavelength (grid):                        ", 1/inv_wavelength)
 print("Inverse wavelength (grid):                ", inv_wavelength)
-print("ntff-domain x/y dir (grid):               ", hdist_ntff_i)
-print("tfsf-domain x/y dir(grid):                ", hdist_tfsf_i)
-print("ntff-domain z dir (grid):                 ", hdist_ntff_j)
-print("tfsf-domain z dir (grid):                 ", hdist_tfsf_j)
+print("ntff-domain x dir (grid):                 ", hdist_ntff_i)
+print("tfsf-domain x dir(grid):                  ", hdist_tfsf_i)
+print("ntff-domain y dir (grid):                 ", hdist_ntff_j)
+print("tfsf-domain y dir (grid):                 ", hdist_tfsf_j)
 print("Half distance of capacitor plates (grid): ", hdist)
 print("Half width of capacitor plates (grid):    ", hwidth)
 print("Height of capacitor plates (grid):        ", 2*hheight+1)
@@ -170,5 +171,6 @@ foutput2:close()
 
 foutput = io.open("data.save","w+")
 foutput:write(conv,"\n")
-foutput:write(2*(hdist_ntff_i+2)+1, " ", 2*(hdist_ntff_j+2)+1, " ", 1)
+foutput:write(2*(hdist_ntff_i+2), " ", 2*(hdist_ntff_j+2), " ", 1, "\n")
+foutput:write(2*(hdist_tfsf_i-2), " ", 2*(hdist_tfsf_j-2), " ", 1)
 foutput:close()

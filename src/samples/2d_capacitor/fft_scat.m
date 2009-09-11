@@ -10,7 +10,7 @@ filename=sprintf('s_scat.pspec');
 fid3 = fopen(filename,'w');
 if (fid3==-1) continue; end;
 fprintf(1,'file: %s\n', filename);
-for i = 1:3
+for i = 1:2
   filename=sprintf('fft+%sscat.pspec',s{i});
   fid = fopen(filename, 'r');
   filename=sprintf('fft-%sscat.pspec',s{i});

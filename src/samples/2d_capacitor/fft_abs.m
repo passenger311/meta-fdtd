@@ -4,13 +4,14 @@ fid = fopen('data.save','r');
 tline = fgetl(fid); 
 dx = sscanf(tline,'%e');
 tline = fgetl(fid);
+tline = fgetl(fid);
 boxsize = sscanf(tline,'%e %e %e');
 fclose(fid);
 filename=sprintf('s_abs.pspec');
 fid3 = fopen(filename,'w');
 if (fid3==-1) continue; end;
 fprintf(1,'file: %s\n', filename);
-for i = 1:3
+for i = 1:2
   filename=sprintf('fft+%sabs.pspec',s{i});
   fid = fopen(filename, 'r');
   filename=sprintf('fft-%sabs.pspec',s{i});

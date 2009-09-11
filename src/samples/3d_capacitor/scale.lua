@@ -12,12 +12,12 @@ pi = 3.141592653589793116
 real_wavelength = 750.0    -- real wavelength
 
 real_hdist = 200           -- half distance of capacitor plates
-real_hwidthx = 200.0      -- half width of capacitor plates
-real_hwidthy = 300.0
+real_hwidthx = 304.0      -- half width of capacitor plates
+real_hwidthy = 400.0
 real_hheight = 16          -- half height of capacitor plates (0 equals one yee cell)
-real_hdist_tfsf_i = real_hwidthx + 160
-real_hdist_tfsf_j = real_hwidthy + 160
-real_hdist_tfsf_k = real_hdist + 2*real_hheight + 160
+real_hdist_tfsf_i = real_hwidthx + 28
+real_hdist_tfsf_j = real_hwidthy + 28
+real_hdist_tfsf_k = real_hdist + 2*real_hheight + 42
 
 num_np = 10; -- number of nanoparticles
 
@@ -37,8 +37,9 @@ n_max = n_bg  -- maximum refractive index to determine optically thickest medium
 mat = 'gold' -- gold, silver 
 
 step_dft = 4
+sampl_dft = 2048
 step_fft = 4
-
+sampl_fft = 2048
 
 --- conversion to computation scale
 
@@ -177,5 +178,6 @@ foutput2:close()
 
 foutput = io.open("data.save","w+")
 foutput:write(conv,"\n")
-foutput:write(2*(hdist_ntff_i+2)+1, " ", 2*(hdist_ntff_j+2)+1, " ", 2*(hdist_ntff_k+2)+1)
+foutput:write(2*(hdist_ntff_i+2), " ", 2*(hdist_ntff_j+2), " ", 2*(hdist_ntff_k+2), "\n")
+foutput:write(2*(hdist_tfsf_i-2), " ", 2*(hdist_tfsf_j-2), " ", 2*(hdist_tfsf_k-2))
 foutput:close()

@@ -43,7 +43,7 @@ for i = 1:3
 end
 stotal = sum(sum(stot,1),2);
 for k=1:k_max-1
-  fprintf(fid3,'%e %e\n', dx/lambda(2,k),dx*stotal(1,1,k));
+  fprintf(fid3,'%e %e\n', dx/lambda(2,k),dx^2*stotal(1,1,k));
 end
 fclose(fid3);
 filename=sprintf('../fft_ref-zabs.pspec');
@@ -64,7 +64,7 @@ np_abs = stotal ./ s_inj;
 filename=sprintf('s_relscat.pspec');
 fid3 = fopen(filename,'w');
 for k=1:k_max-1
-  fprintf(fid3,'%e %e\n', dx/lambda(2,k),dx*abs(np_abs(k)));
+  fprintf(fid3,'%e %e\n', dx/lambda(2,k),dx^2*abs(np_abs(k)));
 end
 fclose(fid3);
 exit

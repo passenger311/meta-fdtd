@@ -11,31 +11,33 @@ pi = 3.141592653589793116
 
 real_wavelength = 650.0    -- real wavelength
 
-real_core = {200} -- total radius of shell particle
-real_shell = {50} -- size of shell
+real_core = {80} -- total radius of shell particle
+real_shell = {12} -- size of shell
 real_xnp = {0} 
 real_ynp = {0} 
 real_znp = {0}
 
-real_hdist_tfsf_i = 220
-real_hdist_tfsf_j = 220
-real_hdist_tfsf_k = 220
-real_hdist_ntff_i = real_hdist_tfsf_i + 50
-real_hdist_ntff_j = real_hdist_tfsf_j + 50
-real_hdist_ntff_k = real_hdist_tfsf_k + 50
+real_hdist_tfsf_i = 90
+real_hdist_tfsf_j = 90
+real_hdist_tfsf_k = 90
+real_hdist_ntff_i = real_hdist_tfsf_i + 4
+real_hdist_ntff_j = real_hdist_tfsf_j + 4
+real_hdist_ntff_k = real_hdist_tfsf_k + 4
 
-n_shell = 3.14
+n_shell = math.sqrt(2.04) --silica
 n_bg = 1.0
 n_max = n_bg  -- maximum refractive index to determine optically thickest medium
 mat = 'gold' -- gold, silver 
 
-step_dft = 3
-step_fft = 3
+step_dft = 5
+sampl_dft = 2048
+step_fft = 5
+sampl_fft = 2048
 
 
 --- conversion to computation scale
 
-resolution = 650/5 -- resolution of wavelength in optically thickest medium (even number)
+resolution = 650/1 -- resolution of wavelength in optically thickest medium (even number)
 
 conv = real_wavelength/resolution/n_max -- conversion factor between real and computation length scale
 frequ_factor = 2.99792458e5  -- change from frequency in THz (c|=1) to inverse wavelength in 1/nm (c=1)
@@ -76,14 +78,14 @@ size_pml = 9
 
 --- Padding size parameter
 
-size_pad = 2
+size_pad = 3
 
 
 --- Courant factor
 
 dt = 0.574  -- time step length compared to grid step length (--> Courant stability factor)
 
-ncycles = 1/2*32768-1 -- number of cycles
+ncycles = 32768-1 -- number of cycles
 
 
 --- Drude-Lorentz material in THz
@@ -162,5 +164,6 @@ foutput2:close()
 
 foutput = io.open("data.save","w+")
 foutput:write(conv,"\n")
-foutput:write(2*(hdist_tfsf_i)+1, " ", 2*(hdist_tfsf_j)+1, " ", 2*(hdist_tfsf_k)+1)
+foutput:write(2*(hdist_ntff_i+2), " ", 2*(hdist_ntff_j+2), " ", 2*(hdist_ntff_k+2), "\n")
+foutput:write(2*(hdist_tfsf_i-2), " ", 2*(hdist_tfsf_j-2), " ", 2*(hdist_tfsf_k-2))
 foutput:close()

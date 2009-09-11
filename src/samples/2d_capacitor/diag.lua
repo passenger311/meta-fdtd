@@ -3,12 +3,12 @@ cfg:DIAG{
    MODE{
       file = "invlambda2.in",
       outfile = "EHN",
-      time = { 0, ncycles, (ncycles+1)/2048 },
+      time = { 0, ncycles, (ncycles+1)/sampl_dft },
       mode = "EHN"
    },
    REG{
       BOX{
-         { -hdist_tfsf_i+2, hdist_tfsf_i-2, 10, -hdist_tfsf_j+2, hdist_tfsf_j-2, 10 }
+         { -hdist_tfsf_i+2, hdist_tfsf_i-2, 10, -hdist_tfsf_j+2, hdist_tfsf_j-2, 5 }
       }
    }
 }
@@ -16,7 +16,7 @@ cfg:DIAG{
 cfg:DIAG{
    PSPEC{
       file = "fft+xabs",
-      time = { 0, ncycles, (ncycles+1)/2048 },
+      time = { 0, ncycles, (ncycles+1)/sampl_fft },
       phasewrap = { 1, 0 },
       mode = "S",
       polarize = { phi=0, theta=90, psi=90.0 }
@@ -30,7 +30,7 @@ cfg:DIAG{
 cfg:DIAG{
    PSPEC{
       file = "fft+yabs",
-      time = { 0, ncycles, (ncycles+1)/2048 },
+      time = { 0, ncycles, (ncycles+1)/sampl_fft },
       phasewrap = { 1, 0 },
       mode = "S",
       polarize = { phi=90, theta=90, psi=90.0 }
@@ -45,7 +45,7 @@ cfg:DIAG{
 cfg:DIAG{
    PSPEC{
       file = "fft-xabs",
-      time = { 0, ncycles, (ncycles+1)/2048 },
+      time = { 0, ncycles, (ncycles+1)/sampl_fft },
       phasewrap = { 1, 0 },
       mode = "S",
       polarize = { phi=0, theta=90, psi=90.0 }
@@ -59,7 +59,7 @@ cfg:DIAG{
 cfg:DIAG{
    PSPEC{
       file = "fft-yabs",
-      time = { 0, ncycles, (ncycles+1)/2048 },
+      time = { 0, ncycles, (ncycles+1)/sampl_fft },
       phasewrap = { 1, 0 },
       mode = "S",
       polarize = { phi=90, theta=90, psi=90.0 }
@@ -74,7 +74,7 @@ cfg:DIAG{
 cfg:DIAG{
    PSPEC{
       file = "fft+xscat",
-      time = { 0, ncycles, (ncycles+1)/2048 },
+      time = { 0, ncycles, (ncycles+1)/sampl_fft },
       phasewrap = { 1, 0 },
       mode = "S",
       polarize = { phi=0, theta=90, psi=90.0 }
@@ -88,7 +88,7 @@ cfg:DIAG{
 cfg:DIAG{
    PSPEC{
       file = "fft+yscat",
-      time = { 0, ncycles, (ncycles+1)/2048 },
+      time = { 0, ncycles, (ncycles+1)/sampl_fft },
       phasewrap = { 1, 0 },
       mode = "S",
       polarize = { phi=90, theta=90, psi=90.0 }
@@ -103,7 +103,7 @@ cfg:DIAG{
 cfg:DIAG{
    PSPEC{
       file = "fft-xscat",
-      time = { 0, ncycles, (ncycles+1)/2048 },
+      time = { 0, ncycles, (ncycles+1)/sampl_fft },
       phasewrap = { 1, 0 },
       mode = "S",
       polarize = { phi=0, theta=90, psi=90.0 }
@@ -117,7 +117,7 @@ cfg:DIAG{
 cfg:DIAG{
    PSPEC{
       file = "fft-yscat",
-      time = { 0, ncycles, (ncycles+1)/2048 },
+      time = { 0, ncycles, (ncycles+1)/sampl_fft },
       phasewrap = { 1, 0 },
       mode = "S",
       polarize = { phi=90, theta=90, psi=90.0 }
@@ -135,7 +135,7 @@ cfg:DIAG{
    MODE{
       file = "invlambda.in",
       outfile = "dft+x",
-      time = { 0, ncycles, (ncycles+1)/2048 },
+      time = { 0, ncycles, (ncycles+1)/sampl_dft },
       mode = "EHT"
    },
    REG{
@@ -148,7 +148,7 @@ cfg:DIAG{
    MODE{
       file = "invlambda.in",
       outfile = "dft+y",
-      time = { 0, ncycles, (ncycles+1)/2048 },
+      time = { 0, ncycles, (ncycles+1)/sampl_dft },
       mode = "EHT"
    },
    REG{
@@ -162,7 +162,7 @@ cfg:DIAG{
    MODE{
       file = "invlambda.in",
       outfile = "dft-x",
-      time = { 0, ncycles, (ncycles+1)/2048 },
+      time = { 0, ncycles, (ncycles+1)/sampl_dft },
       mode = "EHT"
    },
    REG{
@@ -175,7 +175,7 @@ cfg:DIAG{
    MODE{
       file = "invlambda.in",
       outfile = "dft-y",
-      time = { 0, ncycles, (ncycles+1)/2048 },
+      time = { 0, ncycles, (ncycles+1)/sampl_dft },
       mode = "EHT"
    },
    REG{
