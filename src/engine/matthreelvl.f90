@@ -285,7 +285,6 @@ M4_IFELSE_CF({
     real(kind=8) :: om12, om13, om23
 
     D = 0
-    Dold = 0
     ! determine which spatial field components have to be calculated
     m1 = 1
     m2 = 3
@@ -345,7 +344,14 @@ M4_IFELSE_TE({}, {
        ! rk4: first step
        ! D(t) needed to calculate E(t)
        D(:) = Dold(:)
-
+       
+       rho12 = rho12o
+       rho13 = rho13o
+       rho23 = rho23o
+       rho11 = rho11o
+       rho22 = rho22o
+       rho33 = rho33o
+       
        do m= m1, m2
 
 M4_IFELSE_CF({
@@ -364,19 +370,13 @@ M4_IFELSE_CF({
        ra13 = conjg(mat%M13(1))*Etmp(1) + conjg(mat%M13(2))*Etmp(2) + conjg(mat%M13(3))*Etmp(3)
        ra23 = conjg(mat%M23(1))*Etmp(1) + conjg(mat%M23(2))*Etmp(2) + conjg(mat%M23(3))*Etmp(3)
        
-       rho12 = rho12o
-       rho13 = rho13o
-       rho23 = rho23o
-       rho11 = rho11o
-       rho22 = rho22o
-       rho33 = rho33o
-       
+
        ! calculate first ks
-       k12(1) = IMAG*( rho12*om12 + ra12*(rho11-rho22) + conjg(ra23)*rho13 - ra13*conjg(rho23) ) &
+       k12(1) = IMAG*( -rho12*om12 + ra12*(rho11-rho22) + conjg(ra23)*rho13 - ra13*conjg(rho23) ) &
             - mat%gamma12 * rho12
-       k13(1) = IMAG*( rho13*om13 + ra13*(rho11-rho33) + ra23*rho12 - ra12*rho23 ) &
+       k13(1) = IMAG*( -rho13*om13 + ra13*(rho11-rho33) + ra23*rho12 - ra12*rho23 ) &
             - mat%gamma13 * rho13
-       k23(1) = IMAG*( rho23*om23 + ra23*(rho22-rho33) - conjg(ra12)*rho13 + ra13*conjg(rho12) ) &
+       k23(1) = IMAG*( -rho23*om23 + ra23*(rho22-rho33) - conjg(ra12)*rho13 + ra13*conjg(rho12) ) &
             - mat%gamma23 * rho23
        k11(1) = - 2*aimag(rho12*conjg(ra12)) - 2*aimag(rho13*conjg(ra13)) &
             + mat%sigma12 * rho22 + mat%sigma13 * rho33
@@ -388,7 +388,7 @@ M4_IFELSE_CF({
 
        ! rk4: second step
        ! D interpolated to t+dt/2 in order to calculate E(t+dt/2)
-       D = (Dold + Dnew)/2
+       D(:) = (Dold(:) + Dnew(:))/2
        
        ! rho interpolated to t+dt/2 according to runge-kutta scheme
        rho12 = rho12o + k12(1) * DT / 2
@@ -418,11 +418,11 @@ M4_IFELSE_CF({
        ra23 = conjg(mat%M23(1))*Etmp(1) + conjg(mat%M23(2))*Etmp(2) + conjg(mat%M23(3))*Etmp(3)       
 
 
-       k12(2) = IMAG*( rho12*om12 + ra12*(rho11-rho22) + conjg(ra23)*rho13 - ra13*conjg(rho23) ) &
+       k12(2) = IMAG*( -rho12*om12 + ra12*(rho11-rho22) + conjg(ra23)*rho13 - ra13*conjg(rho23) ) &
             - mat%gamma12 * rho12
-       k13(2) = IMAG*( rho13*om13 + ra13*(rho11-rho33) + ra23*rho12 - ra12*rho23 ) &
+       k13(2) = IMAG*( -rho13*om13 + ra13*(rho11-rho33) + ra23*rho12 - ra12*rho23 ) &
             - mat%gamma13 * rho13
-       k23(2) = IMAG*( rho23*om23 + ra23*(rho22-rho33) - conjg(ra12)*rho13 + ra13*conjg(rho12) ) &
+       k23(2) = IMAG*( -rho23*om23 + ra23*(rho22-rho33) - conjg(ra12)*rho13 + ra13*conjg(rho12) ) &
             - mat%gamma23 * rho23
        k11(2) = - 2*aimag(rho12*conjg(ra12)) - 2*aimag(rho13*conjg(ra13)) &
             + mat%sigma12 * rho22 + mat%sigma13 * rho33
@@ -461,11 +461,11 @@ M4_IFELSE_CF({
        ra23 = conjg(mat%M23(1))*Etmp(1) + conjg(mat%M23(2))*Etmp(2) + conjg(mat%M23(3))*Etmp(3)       
 
 
-       k12(3) = IMAG*( rho12*om12 + ra12*(rho11-rho22) + conjg(ra23)*rho13 - ra13*conjg(rho23) ) &
+       k12(3) = IMAG*( -rho12*om12 + ra12*(rho11-rho22) + conjg(ra23)*rho13 - ra13*conjg(rho23) ) &
             - mat%gamma12 * rho12
-       k13(3) = IMAG*( rho13*om13 + ra13*(rho11-rho33) + ra23*rho12 - ra12*rho23 ) &
+       k13(3) = IMAG*( -rho13*om13 + ra13*(rho11-rho33) + ra23*rho12 - ra12*rho23 ) &
             - mat%gamma13 * rho13
-       k23(3) = IMAG*( rho23*om23 + ra23*(rho22-rho33) - conjg(ra12)*rho13 + ra13*conjg(rho12) ) &
+       k23(3) = IMAG*( -rho23*om23 + ra23*(rho22-rho33) - conjg(ra12)*rho13 + ra13*conjg(rho12) ) &
             - mat%gamma23 * rho23
        k11(3) = - 2*aimag(rho12*conjg(ra12)) - 2*aimag(rho13*conjg(ra13)) &
             + mat%sigma12 * rho22 + mat%sigma13 * rho33
@@ -506,11 +506,11 @@ M4_IFELSE_CF({
        ra23 = conjg(mat%M23(1))*Etmp(1) + conjg(mat%M23(2))*Etmp(2) + conjg(mat%M23(3))*Etmp(3)
  
 
-       k12(4) = IMAG*( rho12*om12 + ra12*(rho11-rho22) + conjg(ra23)*rho13 - ra13*conjg(rho23) ) &
+       k12(4) = IMAG*( -rho12*om12 + ra12*(rho11-rho22) + conjg(ra23)*rho13 - ra13*conjg(rho23) ) &
             - mat%gamma12 * rho12
-       k13(4) = IMAG*( rho13*om13 + ra13*(rho11-rho33) + ra23*rho12 - ra12*rho23 ) &
+       k13(4) = IMAG*( -rho13*om13 + ra13*(rho11-rho33) + ra23*rho12 - ra12*rho23 ) &
             - mat%gamma13 * rho13
-       k23(4) = IMAG*( rho23*om23 + ra23*(rho22-rho33) - conjg(ra12)*rho13 + ra13*conjg(rho12) ) &
+       k23(4) = IMAG*( -rho23*om23 + ra23*(rho22-rho33) - conjg(ra12)*rho13 + ra13*conjg(rho12) ) &
             - mat%gamma23 * rho23
        k11(4) = - 2*aimag(rho12*conjg(ra12)) - 2*aimag(rho13*conjg(ra13)) &
             + mat%sigma12 * rho22 + mat%sigma13 * rho33
