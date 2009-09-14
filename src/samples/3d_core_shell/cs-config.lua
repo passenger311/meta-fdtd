@@ -34,14 +34,11 @@ cfg:GRID{
 
 --- CREATE SCENE
 
-scene_shell_inf = Scene{
+scene_core_shell_inf = Scene{
    value = n_bg^2
 }
 scene_shell = Scene{
    value = 0
-}
-scene_np_inf = Scene{
-   value = n_bg^2
 }
 scene_np = Scene{
    value = 0
@@ -56,7 +53,7 @@ for i,v in ipairs(rnp) do
       radius=rnp[i]-shell[i]
    }
    shell = BinaryAndNot{sphere1,sphere2}
-   scene_shell_inf:add{
+   scene_core_shell_inf:add{
       shell,
       value = eps_infDL
    }
@@ -64,7 +61,7 @@ for i,v in ipairs(rnp) do
       shell,
       value = 1
    }
-   scene_np_inf:add{
+   scene_core_shell_inf:add{
       sphere2,
       value = eps_diel
    }
@@ -102,18 +99,6 @@ cfg:CREATE_PREVIEW{
    grid=grid_prev_np,
    on=false
 }
-cfg:CREATE_GEO{
-   "np_inf",
-   scene=scene_np_inf,
-   grid=grid_np,
---   on=false
-}
-cfg:CREATE_PREVIEW{
-   "np_inf",
-   scene=scene_np_inf,
-   grid=grid_prev_np,
---   on=false
-}
 
 cfg:CREATE_GEO{
    "shell",
@@ -128,14 +113,14 @@ cfg:CREATE_PREVIEW{
    on=false
 }
 cfg:CREATE_GEO{
-   "shell_inf",
-   scene=scene_shell_inf,
+   "core_shell_inf",
+   scene=scene_core_shell_inf,
    grid=grid_np,
 --   on=false
 }
 cfg:CREATE_PREVIEW{
-   "shell_inf",
-   scene=scene_shell_inf,
+   "core_shell_inf",
+   scene=scene_core_shell_inf,
    grid=grid_prev_np,
 --   on=false
 }
@@ -148,8 +133,7 @@ cfg:FDTD{
          BOX{
             { imin-size_pml-1, imax+size_pml+1, 1, jmin-size_pml-1, jmax+size_pml+1, 1, kmin-size_pml-1, kmax+size_pml+1, 1, ":", n_bg^2, n_bg^2, n_bg^2 }
          },
-         LOAD_GEO{ "np_inf" },
-         LOAD_GEO{ "shell_inf" }
+         LOAD_GEO{ "core_shell_inf" }
       },
       on = true
    },

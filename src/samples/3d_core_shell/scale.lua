@@ -17,21 +17,21 @@ real_xnp = {0}
 real_ynp = {0} 
 real_znp = {0}
 
-real_hdist_tfsf_i = 90
-real_hdist_tfsf_j = 90
-real_hdist_tfsf_k = 90
-real_hdist_ntff_i = real_hdist_tfsf_i + 4
-real_hdist_ntff_j = real_hdist_tfsf_j + 4
-real_hdist_ntff_k = real_hdist_tfsf_k + 4
+real_hdist_tfsf_i = 83
+real_hdist_tfsf_j = 83
+real_hdist_tfsf_k = 83
+real_hdist_ntff_i = real_hdist_tfsf_i + 3
+real_hdist_ntff_j = real_hdist_tfsf_j + 3
+real_hdist_ntff_k = real_hdist_tfsf_k + 3
 
 n_shell = math.sqrt(2.04) --silica
-n_bg = 1.0
+n_bg = 1.00
 n_max = n_bg  -- maximum refractive index to determine optically thickest medium
 mat = 'gold' -- gold, silver 
 
-step_dft = 5
+step_dft = 2
 sampl_dft = 2048
-step_fft = 5
+step_fft = 2
 sampl_fft = 2048
 
 
@@ -85,7 +85,7 @@ size_pad = 3
 
 dt = 0.574  -- time step length compared to grid step length (--> Courant stability factor)
 
-ncycles = 32768-1 -- number of cycles
+ncycles = 2*32768-1 -- number of cycles
 
 
 --- Drude-Lorentz material in THz
