@@ -43,30 +43,40 @@ scene_cap = Scene{
 }
 
 cap_box1 = Box{
-   from={-hperiod-4,-2*hperiod-4,-hsio2height},
-   to={hperiod+4,2*hperiod+4,hsio2height}
+   from={-2*hperiod-4,-2*hperiod-4,-hsio2height},
+   to={2*hperiod+4,2*hperiod+4,hsio2height}
 }
 
 cap_box2 = Box{
-   from={-hperiod-4,-2*hperiod-4,hsio2height},
-   to={hperiod+4,2*hperiod+4,hsio2height+2*hmetalheight}
+   from={-2*hperiod-4,-2*hperiod-4,hsio2height},
+   to={2*hperiod+4,2*hperiod+4,hsio2height+2*hmetalheight}
 }
 
 cap_box3 = Box{
-   from={-hperiod-4,-2*hperiod-4,-hsio2height-2*hholeheight},
-   to={hperiod+4,2*hperiod+4,-hsio2height}
+   from={-2*hperiod-4,-2*hperiod-4,-hsio2height-2*hholeheight},
+   to={2*hperiod+4,2*hperiod+4,-hsio2height}
 }
 cap_box4 = Box{
-   from={-hxhole,-hperiod-hyhole,-hsio2height-2*hholeheight-2},
-   to={hxhole,-hperiod+hyhole,-hsio2height}
+   from={-hperiod-hxhole,-hperiod-hyhole,-hsio2height-2*hholeheight-2},
+   to={-hperiod+hxhole,-hperiod+hyhole,-hsio2height}
 }
 cap_box5 = Box{
-   from={-hyhole,hperiod-hxhole,-hsio2height-2*hholeheight-2},
-   to={hyhole,hperiod+hxhole,-hsio2height}
+   from={-hperiod-hyhole,hperiod-hxhole,-hsio2height-2*hholeheight-2},
+   to={-hperiod+hyhole,hperiod+hxhole,-hsio2height}
 }
 cap_box3 = BinaryAndNot{cap_box3,cap_box4}
 cap_box3 = BinaryAndNot{cap_box3,cap_box5}
 
+cap_box4 = Box{
+   from={hperiod-hxhole,hperiod-hyhole,-hsio2height-2*hholeheight-2},
+   to={hperiod+hxhole,hperiod+hyhole,-hsio2height}
+}
+cap_box5 = Box{
+   from={hperiod-hyhole,-hperiod-hxhole,-hsio2height-2*hholeheight-2},
+   to={hperiod+hyhole,-hperiod+hxhole,-hsio2height}
+}
+cap_box3 = BinaryAndNot{cap_box3,cap_box4}
+cap_box3 = BinaryAndNot{cap_box3,cap_box5}
 scene_cap_inf:add{
    cap_box1,
    value = eps_sio2

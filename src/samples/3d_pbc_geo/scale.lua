@@ -16,7 +16,7 @@ n_max = n_bg
 eps_sio2 = 2.1
 mat = 'gold' -- gold, silver, carbon, dielectric with n_sphere
 
-step_fft = 2
+step_fft = 4
 
 --- conversion to computation scale
 
@@ -35,11 +35,11 @@ hholeheight = math.floor(real_hholeheight/conv+.5)
 hsio2height = math.floor(real_hsio2height/conv+.5)
 hmetalheight = math.floor(real_hmetalheight/conv+.5)
 
-hdist_tfsf_i = hperiod -- math.floor(real_hdist_tfsf/conv+.5)
+hdist_tfsf_i = 2*hperiod -- math.floor(real_hdist_tfsf/conv+.5)
 hdist_ntff_i = hdist_tfsf_i -- math.floor(real_hdist_ntff/conv+.5)
 hdist_tfsf_j = 2*hperiod -- math.floor(real_hdist_tfsf/conv+.5)
 hdist_ntff_j = hdist_tfsf_j -- math.floor(real_hdist_ntff/conv+.5)
-hdist_tfsf_k = hholeheight+hsio2height+hmetalheight + 70
+hdist_tfsf_k = hholeheight+hsio2height+hmetalheight + 30
 hdist_ntff_k = hdist_tfsf_k + 2
 
 --- Gaussian envelope of injection field
@@ -49,12 +49,13 @@ attackl = 8  -- attack in number of periods
 sustainl = 0   -- sustain in number of periods
 decayl = 15     -- decay in number of periods
 nrefr = n_bg -- reference injection refractive index
+field_inj = "tfsfInjProfile.set" -- file created by Matlab
 
 --- PML size parameter
-size_pml = 9
+size_pml = 12
 
 --- Padding size parameter
-size_pad = 5
+size_pad = 20
 
 --- Courant factor
 dt = 0.574  -- time step length compared to grid step length (--> Courant stability factor)
@@ -114,7 +115,7 @@ print("Size of PML (grid):                       ", size_pml)
 
 foutput = io.open("invlambda2.in","w+")
 foutput2 = io.open("lambda2.in","w+")
-for i = 400,700,20 do
+for i = 550,650,10 do
    foutput:write(conv/i,"\n")
    foutput2:write(i, "\n")
 end
