@@ -479,14 +479,16 @@ contains
        SumHph1 = 0.
        SumHph2 = 0.
 
-! integrate power flux over spatial area    
-       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-   
-          Ep1c = diag%field(2*l-1,p,1)
-          Ep2c = diag%field(2*l-1,p,2)
+       freq = l*df
 
-          Ep1s = diag%field(2*l,p,1)
-          Ep2s = diag%field(2*l,p,2)
+! integrate power flux over spatial area
+       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+
+          Ep1c = diag%field(2*l-1,p,1) * cos(PI*freq*DT) - diag%field(2*l,p,1) * sin(PI*freq*DT)
+          Ep2c = diag%field(2*l-1,p,2) * cos(PI*freq*DT) - diag%field(2*l,p,2) * sin(PI*freq*DT)
+
+          Ep1s = diag%field(2*l-1,p,1) * sin(PI*freq*DT) + diag%field(2*l,p,1) * cos(PI*freq*DT)
+          Ep2s = diag%field(2*l-1,p,2) * sin(PI*freq*DT) + diag%field(2*l,p,2) * cos(PI*freq*DT)
 
           Hp1c = diag%field(2*l-1,p,3)
           Hp2c = diag%field(2*l-1,p,4)
@@ -522,7 +524,6 @@ contains
        })
 
        norm = reg%numnodes
-       freq = l*df 
 
        if ( hasref ) then
           read(UNITTMP+1,*,iostat=ios) rfreq, (rv(m), m=1, diag%numcomp, 1 )
