@@ -258,7 +258,7 @@ cfg:SRC{
          sustain=math.floor(sustainl*resolution*n_max+.5),
          decay=math.floor(decayl*resolution*n_max+.5)
       },
-      planewave = { phi=0.0, theta=0.0+5*(taskid-1), psi=0.0, nrefr=nrefr }
+      planewave = { phi=0.0, theta=0.0+5*(taskid-1), psi=90.0, nrefr=nrefr }
    },
    REG{
       BOX{

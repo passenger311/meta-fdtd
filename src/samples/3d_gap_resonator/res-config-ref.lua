@@ -142,7 +142,7 @@ cfg:DIAG{
    },
    REG{
       BOX{
-         { -hdist_tfsf+2, hdist_tfsf-2, 1, -hdist_tfsf+2, hdist_tfsf-2, 1, 0, 0, 1 }
+         { -hdist_tfsf+2, hdist_tfsf-2, 1, 0, 0, 1, -hdist_tfsf+2, hdist_tfsf-2, 1 }
       }
    }
 }
