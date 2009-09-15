@@ -17,8 +17,8 @@ real_hheight = 20/2        -- half height of plates
 real_redges = 4             -- radius of rounded edges
 real_hdist_tfsf_i = real_hwidth + 20
 real_hdist_tfsf_j = 2*real_hheight + real_hdist + 20
-real_hdist_ntff_i = real_hdist_tfsf_i + 60
-real_hdist_ntff_j = real_hdist_tfsf_j + 60 
+real_hdist_ntff_i = real_hdist_tfsf_i + 22
+real_hdist_ntff_j = real_hdist_tfsf_j + 22 
 
 n_sphere = 3.
 n_bg = 1.0
@@ -26,7 +26,7 @@ n_max = n_bg  -- maximum refraxctive index to determine optically thickest mediu
 mat = 'silver' -- gold, silver 
 
 step_dft = 1
-sampl_dft = 4096
+sampl_dft = 2048
 step_fft = 1
 sampl_fft = 2048
 
@@ -74,7 +74,7 @@ size_pad = 3
 
 dt = .7 -- 0.574  -- time step length compared to grid step length (--> Courant stability factor)
 
-ncycles = 2*32768-1 -- number of cycles
+ncycles = 32768-1 -- number of cycles
 
 
 --- Drude-Lorentz material in THz

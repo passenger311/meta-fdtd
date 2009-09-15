@@ -17,7 +17,7 @@ real_hwidthy = 400.0
 real_hheight = 16          -- half height of capacitor plates (0 equals one yee cell)
 real_hdist_tfsf_i = real_hwidthx + 28
 real_hdist_tfsf_j = real_hwidthy + 28
-real_hdist_tfsf_k = real_hdist + 2*real_hheight + 42
+real_hdist_tfsf_k = real_hdist + 2*real_hheight + 28
 
 num_np = 10; -- number of nanoparticles
 
@@ -87,14 +87,14 @@ size_pml = 12
 
 --- Padding size parameter
 
-size_pad = 15
+size_pad = 5
 
 
 --- Courant factor
 
 dt = 0.574  -- time step length compared to grid step length (--> Courant stability factor)
 
-ncycles = 1/2*32768-1 -- number of cycles
+ncycles = *32768-1 -- number of cycles
 
 
 --- Drude-Lorentz material in THz

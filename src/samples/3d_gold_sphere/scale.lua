@@ -16,9 +16,9 @@ real_xnp = {0}
 real_ynp = {0} 
 real_znp = {0}
 
-real_hdist_tfsf_i = 44
-real_hdist_tfsf_j = 44
-real_hdist_tfsf_k = 44
+real_hdist_tfsf_i = 42
+real_hdist_tfsf_j = 42
+real_hdist_tfsf_k = 42
 real_hdist_ntff_i = real_hdist_tfsf_i + 2
 real_hdist_ntff_j = real_hdist_tfsf_j + 2
 real_hdist_ntff_k = real_hdist_tfsf_k + 2
@@ -28,14 +28,14 @@ n_bg = 1.0
 n_max = n_bg  -- maximum refractive index to determine optically thickest medium
 mat = 'gold' -- gold, silver 
 
-step_dft = 2
+step_dft = 1
 sampl_dft = 2048
 step_fft = 2
 sampl_fft = 2048
 
 --- conversion to computation scale
 
-resolution = 650/1 -- resolution of wavelength in optically thickest medium (even number)
+resolution = 650/.5-- resolution of wavelength in optically thickest medium (even number)
 
 conv = real_wavelength/resolution/n_max -- conversion factor between real and computation length scale
 frequ_factor = 2.99792458e5  -- change from frequency in THz (c|=1) to inverse wavelength in 1/nm (c=1)
@@ -82,7 +82,7 @@ size_pad = 3
 
 dt = 0.574  -- time step length compared to grid step length (--> Courant stability factor)
 
-ncycles = 32768-1 -- number of cycles
+ncycles = 2*32768-1 -- number of cycles
 
 
 --- Drude-Lorentz material in THz

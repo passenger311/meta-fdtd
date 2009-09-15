@@ -49,7 +49,6 @@ attackl = 8  -- attack in number of periods
 sustainl = 0   -- sustain in number of periods
 decayl = 15     -- decay in number of periods
 nrefr = n_bg -- reference injection refractive index
-field_inj = "tfsfInjProfile.set" -- file created by Matlab
 
 --- PML size parameter
 size_pml = 9
