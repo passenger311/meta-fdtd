@@ -358,9 +358,9 @@ if (mat == 'silver' or mat == 'carbon') then
 end
 
 
---- include diagnostics
-
-dofile("diag.lua")
+-- diagnostics DFT/FFT
+dofile("diagmode.lua")
+dofile("diagpspec.lua")
 
 --- CREATE: config.<part>.in
 cfg:CREATE()

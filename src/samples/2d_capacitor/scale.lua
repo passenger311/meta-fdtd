@@ -14,8 +14,8 @@ real_wavelength = 750.0    -- real wavelength
 real_hdist = 200           -- half distance of capacitor plates
 real_hwidth = 1600.0       -- half width of capacitor plates
 real_hheight = 16          -- half height of capacitor plates (0 equals one yee cell)
-real_hdist_tfsf_i = real_hwidth + 160
-real_hdist_tfsf_j = real_hdist + 2*real_hheight + 160
+real_hdist_tfsf_i = real_hwidth + 10
+real_hdist_tfsf_j = real_hdist + 2*real_hheight + 10
 
 num_np = 10; -- number of nanoparticles
 
@@ -37,9 +37,9 @@ n_max = n_bg  -- maximum refractive index to determine optically thickest medium
 mat = 'gold' -- gold, silver 
 
 step_dft = 1
-sampl_dft = 2048
+sampl_dft = 1024
 step_fft = 1
-sampl_fft = 2048
+sampl_fft = 1024
 
 --- conversion to computation scale
 
@@ -78,19 +78,19 @@ nrefr = n_bg -- reference injection refractive index
 
 --- PML size parameter
 
-size_pml = 12
+size_pml = 9
 
 
 --- Padding size parameter
 
-size_pad = 15
+size_pad = 3
 
 
 --- Courant factor
 
 dt = .7 -- 0.574  -- time step length compared to grid step length (--> Courant stability factor)
 
-ncycles = 2*32768-1 -- number of cycles
+ncycles = 32768-1 -- number of cycles
 
 
 --- Drude-Lorentz material in THz

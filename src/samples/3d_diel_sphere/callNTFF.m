@@ -2,7 +2,7 @@ function callNTFF;
 
 clear all
 
-addpath /home/sw00100/Documents/MATLAB/NTFF_final
+addpath /home/sw00100/Documents/MATLAB/NTFF_geometric/NTFF_final
 
 fid1 = fopen('invlambda.in', 'r');
 if (fid1==-1) error('file invlambda.in does not exits'); end;
