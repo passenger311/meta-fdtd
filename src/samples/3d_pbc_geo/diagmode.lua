@@ -4,7 +4,7 @@ cfg:DIAG{
    MODE{
       file = "invlambda2.in",
       outfile = "EHT",
-      time = { 0, ncycles, (ncycles+1)/2048 },
+      time = { 0, ncycles, (ncycles+1)/samp_dft },
       mode = "EHT"
    },
    REG{

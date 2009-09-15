@@ -26,9 +26,9 @@ n_max = n_bg  -- maximum refraxctive index to determine optically thickest mediu
 mat = 'silver' -- gold, silver 
 
 step_dft = 1
-sampl_dft = 2048
+sampl_dft = 512
 step_fft = 1
-sampl_fft = 2048
+sampl_fft = 512
 
 
 --- conversion to computation scale
@@ -74,7 +74,7 @@ size_pad = 3
 
 dt = .7 -- 0.574  -- time step length compared to grid step length (--> Courant stability factor)
 
-ncycles = 32768-1 -- number of cycles
+ncycles = 4*32768-1 -- number of cycles
 
 
 --- Drude-Lorentz material in THz

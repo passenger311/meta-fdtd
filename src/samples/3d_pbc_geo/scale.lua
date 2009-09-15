@@ -17,6 +17,8 @@ eps_sio2 = 2.1
 mat = 'gold' -- gold, silver, carbon, dielectric with n_sphere
 
 step_fft = 4
+samp_fft = 1024
+samp_dft = 1024
 
 --- conversion to computation scale
 

@@ -100,12 +100,12 @@ scene_cap:add{
 
 -- specify a grid for the scene (only objects that are inside the grid will be part of the geometry)
 grid_capmetal = Grid{
-   from = {imin-2, jmin-2,hsio2height-2},                    -- lower rear left corner of scene-object
-   to = {imax+2, jmax+2, hsio2height+2*hmetalheight+2},  -- upper front right corner of scene-object
+   from = {imin, jmin,hsio2height-2},                    -- lower rear left corner of scene-object
+   to = {imax, jmax, hsio2height+2*hmetalheight+2},  -- upper front right corner of scene-object
 }
 grid_caphole = Grid{
-   from = {imin-2, jmin-2,-hsio2height-2*hholeheight-2},                    -- lower rear left corner of scene-object
-   to = {imax+2, jmax+2, -hsio2height+2},  -- upper front right corner of scene-object
+   from = {imin, jmin,-hsio2height-2*hholeheight-2},                    -- lower rear left corner of scene-object
+   to = {imax, jmax, -hsio2height+2},  -- upper front right corner of scene-object
 }
 
 -- coarse grid for .VTK-preview

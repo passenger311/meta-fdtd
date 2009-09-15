@@ -92,7 +92,7 @@ cfg:SRC{
 cfg:DIAG{
    PSPEC{
       file = "fft_ref-zabs",
-      time = { 0, ncycles, (ncycles+1)/1024 },
+      time = { 0, ncycles, (ncycles+1)/samp_fft },
       phasewrap = { 1, 0 },
       mode = "S",
       polarize = { phi=0, theta=0, psi=90.0 }
@@ -108,7 +108,7 @@ cfg:DIAG{
    MODE{
       file = "invlambda2.in",
       outfile = "EHT",
-      time = { 0, ncycles, (ncycles+1)/4096 },
+      time = { 0, ncycles, (ncycles+1)/samp_dft },
       mode = "EHT"
    },
    REG{
