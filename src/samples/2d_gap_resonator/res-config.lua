@@ -1,5 +1,7 @@
 cfg = CONFIG{scenes=true}
 taskid = select(1,...)
+
+funcs = require "funcs"
 dofile("scale.lua")
 
 imin = -hdist_ntff_i-size_pad
@@ -41,58 +43,9 @@ scene_cap_inf = Scene{
 scene_cap = Scene{
    value = 0 -- constant background permittivity
 }
-strip = Box{
-   from = {-hwidth,-hheight,-2},
-   to = {hwidth,hheight,2}
-}
 
--- round edges by removing box edges and adding cylinders
-strip1 = Box{
-   from = {-hwidth,-hheight,-2},
-   to = {-hwidth+redges,-hheight+redges,2}
-}
-strip = BinaryAndNot{strip,strip1}
-strip1 = Box{
-   from = {hwidth-redges,-hheight,-2},
-   to = {hwidth,-hheight+redges,2}
-}
-strip = BinaryAndNot{strip,strip1}
-strip1 = Box{
-   from = {-hwidth,hheight-redges,-2},
-   to = {-hwidth+redges,hheight,2}
-}
-strip = BinaryAndNot{strip,strip1}
-strip1 = Box{
-   from = {hwidth-redges,hheight-redges,-2},
-   to = {hwidth,hheight,2}
-}
-strip = BinaryAndNot{strip,strip1}
+strip = funcs.roundstrip(hwidth,hheight,redges)
 
-cyl = Cylinder{
-   at = {-hwidth+redges,-hheight+redges,0},
-   radius = redges,
-   height = 4
-}
-strip = BinaryOr{strip,cyl}
-cyl = Cylinder{
-   at = {-hwidth+redges,hheight-redges,0},
-   radius = redges,
-   height = 4
-}
-strip = BinaryOr{strip,cyl}
-cyl = Cylinder{
-   at = {hwidth-redges,-hheight+redges,0},
-   radius = redges,
-   height = 4
-}
-strip = BinaryOr{strip,cyl}
-cyl = Cylinder{
-   at = {hwidth-redges,hheight-redges,0},
-   radius = redges,
-   height = 4
-}
-strip = BinaryOr{strip,cyl}
--- finished rounding edges
 
 -- push strips to desired positions
 strip1 = Transform{
