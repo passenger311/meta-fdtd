@@ -54,7 +54,7 @@ else
 RUNDIR=..
 TASKDIR="task_mcs$SGE_TASK_ID"
 mkdir $TASKDIR 2>/dev/null
-cp fft_scat.m fft_abs.m scale.lua modediag.lua modepspec.lua callNTFF.m $TASKDIR
+cp fft_scat.m fft_abs.m scale.lua diagmode.lua diagpspec.lua callNTFF.m $TASKDIR
 cd $TASKDIR
 fi
 
