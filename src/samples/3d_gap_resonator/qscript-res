@@ -58,7 +58,7 @@ cp fft_scat.m fft_abs.m scale.lua  diagmode.lua diagpspec.lua callNTFF.m funcs.l
 cd $TASKDIR
 fi
 
-echo "* Resonator simulation"
+echo "* Capacitor simulation"
 echo "running pre-processor"
 time $RUNDIR/luacfg $RUNDIR/res-config.lua  $SGE_TASK_ID
 echo "running simulation"
@@ -67,9 +67,9 @@ time $RUNDIR/meta
 matlab -nodisplay -r fft_scat
 matlab -nodisplay -r fft_abs
 matlab -nodisplay -r callNTFF
-rm dft*.set
+gzip -f *.gpl
+rm dft*
 tar --remove-files -czf RCS.tgz RCS_*
 tar --remove-files -czf RCS2.tgz RCS2_*
-tar --remove-files -czf E.vtk.tgz E_*
-gzip -f *.gpl
+tar --remove-files -czf Ez.vtk.tgz Ez_*
 rm geo* preview*
