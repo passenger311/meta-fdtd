@@ -40,7 +40,7 @@ scene_core_shell_inf = Scene{
 scene_shell = Scene{
    value = 0
 }
-scene_np = Scene{
+scene_core = Scene{
    value = 0
 }
 for i,v in ipairs(rnp) do
@@ -65,7 +65,7 @@ for i,v in ipairs(rnp) do
       sphere2,
       value = eps_diel
    }
-   scene_np:add{
+   scene_core:add{
       sphere2,
       value = 1   -- filling factor for metal!!!!!!!!!!!!
    }
@@ -88,14 +88,14 @@ grid_prev_np = Grid{
 
 -- create geometry
 cfg:CREATE_GEO{
-   "np",
-   scene=scene_np,
+   "core",
+   scene=scene_core,
    grid=grid_np,
 --   on=false
 }
 cfg:CREATE_PREVIEW{
-   "np",
-   scene=scene_np,
+   "core",
+   scene=scene_core,
    grid=grid_prev_np,
    on=false
 }
