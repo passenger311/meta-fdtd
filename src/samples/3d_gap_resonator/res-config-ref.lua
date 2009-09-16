@@ -77,7 +77,7 @@ cfg:SRC{
          sustain=math.floor(sustainl*resolution*n_max+.5),
          decay=math.floor(decayl*resolution*n_max+.5)
       },
-      planewave = { phi=0, theta=0.0, psi=0.0, nrefr=nrefr }
+      planewave = { phi=0, theta=0.0, psi=90.0, nrefr=nrefr }
    },
    REG{
       BOX{
@@ -93,7 +93,7 @@ cfg:DIAG{
       time = { 0, ncycles, (ncycles+1)/sampl_fft },
       phasewrap = { 1, 0 },
       mode = "S",
-      polarize = { phi=0, theta=0, psi=0 }
+      polarize = { phi=0, theta=0, psi=90 }
    },
    REG{
       BOX{
@@ -109,7 +109,7 @@ cfg:DIAG{
       time = { 0, ncycles, (ncycles+1)/sampl_fft },
       phasewrap = { 1, 0 },
       mode = "S",
-      polarize = { phi=0, theta=0, psi=0 }   
+      polarize = { phi=0, theta=0, psi=90 }   
    },
    REG{
       BOX{

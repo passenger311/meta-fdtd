@@ -162,12 +162,23 @@ cfg:FDTD{
    },
 
    OUT{
-      file = { "VTK", "Ez" },
-      type = { "Ez", "N" },
+      file = { "VTK", "E_xz" },
+      type = { "E", "N" },
       time = { 0, math.floor(ncycles/10), 20 },
       REG{
          BOX{
-            { -hdist_tfsf_i+2, hdist_tfsf_i-2, 5, -hdist_tfsf_j+2, hdist_tfsf_j-2, 5, 0, 0, 1 }
+            { -hdist_tfsf_i+2, hdist_tfsf_i-2, 5, 0, 0, 1, -hdist_tfsf_k+2, hdist_tfsf_k-2, 5 }
+         }
+      }
+   },
+
+   OUT{
+      file = { "VTK", "E_yz" },
+      type = { "E", "N" },
+      time = { 0, math.floor(ncycles/10), 20 },
+      REG{
+         BOX{
+            { 0, 0, 1, -hdist_tfsf_j+2, hdist_tfsf_j-2, 5, -hdist_tfsf_k+2, hdist_tfsf_k-2, 5 }
          }
       }
    },

@@ -9,8 +9,8 @@ function vismode(freqnumber,fignum);
 % Files needed:
 % - data.save containing the conversion factor between real world and computational units dx
 % - lambda2.in containing a list of wavelengths for which the modes were calculated
-% - EHT_%i.set with %i an integer number as element of the number of wavelengths
-% - ../EHT_%i.set with %i same as above
+% - EHN_%i.set with %i an integer number as element of the number of wavelengths
+% - ../EHN_%i.set with %i same as above
 %
 
 fid = fopen('data.save','r');
@@ -28,11 +28,11 @@ while feof(fid1) ==0
 end
 fclose(fid1);
 
-filename=sprintf('EHT_%i.set',freqnumber);
+filename=sprintf('EHN_%i.set',freqnumber);
 fprintf(1,'loading file: %s\n', filename);
 fid = fopen(filename, 'r');
 if (fid==-1) error('file does not exist'); end;
-filename=sprintf('../EHT_%i.set',freqnumber);
+filename=sprintf('../EHN_%i.set',freqnumber);
 fprintf(1,'loading file: %s\n', filename);
 fid1 = fopen(filename, 'r');
 if (fid1==-1) error('file does not exist'); end;
@@ -49,8 +49,8 @@ for j = 1 : size(tmp,2)
 end
 facerange(:,:)=reshape(range,3,3)';
 clear tmp; clear tmp1;
-tmp2 = textscan(fid, '%n %n %n %n %n %n %n %n');
-tmp3 = textscan(fid1, '%n %n %n %n %n %n %n %n');
+tmp2 = textscan(fid, '%n %n %n %n');
+tmp3 = textscan(fid1, '%n %n %n %n');
 fclose(fid); fclose(fid1);
 
 tmp = zeros(size(tmp2{1},1),size(tmp2,2));
@@ -61,12 +61,12 @@ for j = 1 : size(tmp2,2)
 end
 
 Ex = tmp(:,1)+i*tmp(:,2);
-Ey = tmp(:,3)+i*tmp(:,4);
-Hx = tmp(:,5)+i*tmp(:,6);
-Hy = tmp(:,7)+i*tmp(:,8);
+Ey = 0;%tmp(:,3)+i*tmp(:,4);
+Hx = 0;%tmp(:,5)+i*tmp(:,6);
+Hy = tmp(:,3)+i*tmp(:,4);
 Erefx = tmp1(:,1)+i*tmp1(:,2);
-Erefy = tmp1(:,3)+i*tmp1(:,4);
-Hrefx = tmp1(:,5)+i*tmp1(:,6);
+Erefy = 0;%tmp1(:,3)+i*tmp1(:,4);
+Hrefx = 0;%tmp1(:,5)+i*tmp1(:,6);
 Hrefy = tmp1(:,7)+i*tmp1(:,8);
 
 Erx = sum(Erefx)/size(Erefx,1);
