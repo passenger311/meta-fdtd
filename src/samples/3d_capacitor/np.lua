@@ -1,6 +1,3 @@
-scene_np_inf = Scene{
-   value =n_bg^2
-}
 scene_np = Scene{
    value =0.
 }
@@ -9,7 +6,7 @@ for i,v in ipairs(rnp) do
       at={inp[i],jnp[i],knp[i]},
       radius=rnp[i]
    }
-   scene_np_inf:add{
+   scene_cap_inf:add{
       sphere1,
       value = eps_infDL
    }
@@ -36,6 +33,9 @@ cfg:CREATE_GEO{
    "np",
    scene=scene_np,
    grid=grid_np,
+   method="default",
+   comps=3,
+   silent=false,
 --   on=false
 }
 cfg:CREATE_PREVIEW{
@@ -46,13 +46,16 @@ cfg:CREATE_PREVIEW{
 }
 cfg:CREATE_GEO{
    "np_inf",
-   scene=scene_np_inf,
+   scene=scene_cap_inf,
    grid=grid_np,
+   method="default",
+   comps=3,
+   silent=false,
 --   on=false
 }
 cfg:CREATE_PREVIEW{
    "np_inf",
-   scene=scene_np_inf,
+   scene=scene_cap_inf,
    grid=grid_prev_np,
    on=false
 }

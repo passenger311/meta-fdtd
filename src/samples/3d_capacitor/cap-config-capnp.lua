@@ -35,7 +35,7 @@ cfg:GRID{
 
 --- CREATE SCENE
 
-scene_cap1_inf = Scene{
+scene_cap_inf = Scene{
    value = n_bg^2 -- constant background permittivity
 }
 scene_cap1 = Scene{
@@ -45,7 +45,7 @@ cap_box1 = Box{
    from={-hwidthx,-hwidthy,-hdist-2*hheight},
    to={hwidthx,hwidthy,-hdist}
 }
-scene_cap1_inf:add{
+scene_cap_inf:add{
    cap_box1,
    value = eps_infDL
 }
@@ -54,9 +54,6 @@ scene_cap1:add{
    value = 1.
 }
 
-scene_cap2_inf = Scene{
-   value = n_bg^2 -- constant background permittivity
-}
 scene_cap2 = Scene{
    value = 0 -- constant background permittivity
 }
@@ -64,7 +61,7 @@ cap_box2 = Box{
    from={-hwidthx,-hwidthy,hdist},
    to={hwidthx,hwidthy,hdist+2*hheight}
 }
-scene_cap2_inf:add{
+scene_cap_inf:add{
    cap_box2,
    value = eps_infDL
 }
@@ -73,6 +70,9 @@ scene_cap2:add{
    value = 1.
 }
 
+-- include nanoparticles
+dofile("np.lua")
+-- remember to include "np_inf" into EPSILON
 -- specify a grid for the scene (only objects that are inside the grid will be part of the geometry)
 grid_cap1 = Grid{
    from = {-hwidthx-2,-hwidthy-2,-hdist-2*hheight-2},                    -- lower rear left corner of scene-object
@@ -105,7 +105,7 @@ cfg:CREATE_GEO{      -- add the scene to the geometry
 }
 cfg:CREATE_GEO{      -- add the scene to the geometry
    "cap1_inf",         -- filename: geo_"***".in
-   scene=scene_cap1_inf,     -- scene to be added
+   scene=scene_cap_inf,     -- scene to be added
    grid=grid_cap1,       -- grid to be used
    method="default", -- ???
    comps=3,          -- number of components of permittivy (or permittivity + permeability)
@@ -129,7 +129,7 @@ cfg:CREATE_GEO{      -- add the scene to the geometry
 }
 cfg:CREATE_GEO{      -- add the scene to the geometry
    "cap2_inf",         -- filename: geo_"***".in
-   scene=scene_cap2_inf,     -- scene to be added
+   scene=scene_cap_inf,     -- scene to be added
    grid=grid_cap2,       -- grid to be used
    method="default", -- ???
    comps=3,          -- number of components of permittivy (or permittivity + permeability)
@@ -142,9 +142,6 @@ cfg:CREATE_PREVIEW{  -- create a preview of the scene
    grid=grid_prev_cap2,        -- grid to be used
 --   on=false
 }
--- include nanoparticles
-dofile("np.lua")
--- when updating file remember to put LOAD_GEO{ "np" } in EPSILON structure
 
 --- FDTD Definition
 eps_bg = n_bg^2
@@ -157,7 +154,7 @@ cfg:FDTD{
          },
          LOAD_GEO{ "cap1_inf" },
          LOAD_GEO{ "cap2_inf" },
-         LOAD_GEO{ "np" }
+         LOAD_GEO{ "np_inf" }
       },
       on = true
    },

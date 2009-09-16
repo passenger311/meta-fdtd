@@ -28,7 +28,7 @@ cfg:GRID{
    irange = { imin, imax },   -- range of computational window in x direction
    jrange = { jmin, jmax },   -- -"- in y direction
    krange = { kmin-size_pml, kmax+size_pml },    -- -"- in z direction
-   dx = { conv*1e-9, 1, 1, 1 }
+--   dx = { conv*1e-9, 1, 1, 1 }
 
 }
 

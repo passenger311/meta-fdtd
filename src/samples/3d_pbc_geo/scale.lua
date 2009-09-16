@@ -17,8 +17,8 @@ eps_sio2 = 2.1
 mat = 'gold' -- gold, silver, carbon, dielectric with n_sphere
 
 step_fft = 4
-samp_fft = 1024
-samp_dft = 1024
+samp_fft = 512
+samp_dft = 512
 
 --- conversion to computation scale
 
@@ -51,7 +51,6 @@ attackl = 8  -- attack in number of periods
 sustainl = 0   -- sustain in number of periods
 decayl = 15     -- decay in number of periods
 nrefr = n_bg -- reference injection refractive index
-field_inj = "tfsfInjProfile.set" -- file created by Matlab
 
 --- PML size parameter
 size_pml = 12
