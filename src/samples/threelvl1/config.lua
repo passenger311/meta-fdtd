@@ -1,5 +1,5 @@
 
-cfg = CONFIG{scenes=true}  -- scences takes either true or false 
+cfg = CONFIG{scenes=true}  -- scenes takes either true or false 
 
 funcs = require "funcs"
 round = funcs.round
@@ -14,7 +14,7 @@ ncyc        = 20000
 --- setup source / diagnostic planes for ffts
 
 pulse = { 
-   shape   = "Gaussian",
+   shape   = "Sech",
    width   = 200,
    offset  = 0,                    
    attack  = 10000,        
@@ -22,7 +22,7 @@ pulse = {
    decay   = 10000,   
 }
 
-planewave = { phi=0, theta=90, psi=00, nrefr=1 }
+planewave = { phi=00, theta=90, psi=00, nrefr=1 }
 
 
 --- GRID Definition
@@ -89,7 +89,7 @@ cfg:BOUND{
 cfg:SRC{
    TFSFINJ{ 
       invlambda = invwavelength,
-      amplitude = 1.,
+      amplitude = 5760000,
       pulse = pulse,
       planewave = planewave
    },
@@ -100,22 +100,27 @@ cfg:SRC{
    },
 }
 
+
+--- Definition of a three level system with E1 <= E2 <= E3
+--- dipole matrix elements in units of dx and rates in units of 1/dt
+
 cfg:MAT{
    THREELVL{ 
-      invlambda = { invwavelength, invwavelength, 0 },
-      gamma = { 0, 0, 0 },
-      sigma = { 0, 0, 0 },
-      mx = { { 0,0 }, { 0,0 }, { 0,0 } },
-      my = { { 0.1,0 }, { 0.1,0 }, { 0,0 } },
-      mz = { { 0,0 }, { 0,0 }, { 0,0 } },
-      densities = { 1., 0., 0. },
-      n = 10 
+      invlambda = { 0, invwavelength, invwavelength }, --- { f12, f13, f23 }; f12+f23=f13!
+      gamma = { 1e-7, 1e-7, 1e-7 }, --- dephasing constants (broadening) { gamma12, gamma13, gamma23 } 
+      sigma = { 0, 1e-8, 1.e-8 },   --- relaxation constants {lvl2 -> lvl1 , lvl3 -> lvl1 , lvl3 -> lvl2 }
+      mx = { { 0,0 }, { 0,0 }, { 0,0 } },  
+      --- dipole matrix in x-direction { {Re(mu12),Im(mu12)}, {Re(mu13),Im(mu13)}, {Re(mu23),Im(mu23)} }
+      my = { { 0,0 }, { 0.01,0 }, { 0.01,0 } }, --- y-direction
+      mz = { { 0,0 }, { 0,0 }, { 0,0 } }, --- z-direction
+      densities = { 1, 0, 0 }, --- initial occupation of three lvl system {n1,n2,n3}
+      n = 10 --- number of three level systems per grid cell
    },
    REG{
 	POINT{
-	  { 500 , ":", 1, 1, 1 }	
+	  { 500, ":", 1, 1, 1 }
 	}
-   },
+	},
    OUT{
       file = { "GPL", "dens" },
       type = { "N", "N", ".F." },
