@@ -7,7 +7,7 @@
 # all documented in "man qsub"
 
 # ------- name of job
-#$ -N job-meta-res
+#$ -N job-meta-mcs
 # ------- shell to use
 #$ -S /bin/bash
 # ------- current working directory
@@ -25,13 +25,13 @@
 # #$ -l h_rt=1:00:00     
 # #$ -l h_vmem=1G        
 # ------- smp job?
-# #$ -l mp=1
+#$ -l mp=1
 # ------- quad node? (default: false)
 # #$ -l quad=true
 # ------- specific instance?
 # #$ -q smp.q@quad10.beowulf.cluster
 # ------- split into several tasks (SGE_TASK_ID is used then)
-#$ -t 10
+#$ -t 1
 
 # ------- SCRIPT
 
@@ -52,15 +52,15 @@ RUNDIR=.
 TASKDIR=.
 else
 RUNDIR=..
-TASKDIR="task_cap$SGE_TASK_ID"
+TASKDIR="task_mcs$SGE_TASK_ID"
 mkdir $TASKDIR 2>/dev/null
-cp fft_scat.m fft_abs.m scale.lua  diagmode.lua diagpspec.lua callNTFF.m funcs.lua $TASKDIR
+cp fft_scat.m fft_abs.m scale.lua diagmode.lua diagpspec.lua callNTFF.m $TASKDIR
 cd $TASKDIR
 fi
 
-echo "* Capacitor simulation"
+echo "* Core-shell simulation"
 echo "running pre-processor"
-time $RUNDIR/luacfg $RUNDIR/res-config.lua  $SGE_TASK_ID
+time $RUNDIR/luacfg $RUNDIR/mcs-config.lua  $SGE_TASK_ID
 echo "running simulation"
 time $RUNDIR/meta
 
@@ -71,6 +71,5 @@ gzip -f *.gpl
 rm dft*
 tar --remove-files -czf RCS.tgz RCS_*
 tar --remove-files -czf RCS2.tgz RCS2_*
-tar --remove-files -czf E_xz.vtk.tgz E_xz*
-tar --remove-files -czf E_yz.vtk.tgz E_yz*
+tar --remove-files -czf E.vtk.tgz E_*
 rm geo* preview*

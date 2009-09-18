@@ -71,12 +71,12 @@ Hrefy = tmp1(:,7)+i*tmp1(:,8);
 
 Erx = sum(Erefx)/size(Erefx,1);
 Ery = sum(Erefy)/size(Erefy,1);
-Efx = reshape(Ex(:,1),floor((facerange(1,2)-facerange(1,1))/facerange(1,3)+1),floor((facerange(3,2)-facerange(3,1))/facerange(3,3)+1));
-Efy = reshape(Ey(:,1),floor((facerange(1,2)-facerange(1,1))/facerange(1,3)+1),floor((facerange(3,2)-facerange(3,1))/facerange(3,3)+1));
+Efx = reshape(Ex(:,1),floor((facerange(1,2)-facerange(1,1))/facerange(1,3)+1),floor((facerange(2,2)-facerange(2,1))/facerange(2,3)+1));
+Efy = reshape(Ey(:,1),floor((facerange(1,2)-facerange(1,1))/facerange(1,3)+1),floor((facerange(2,2)-facerange(2,1))/facerange(2,3)+1));
 
 
 x = dx*(facerange(1,1):facerange(1,3):facerange(1,2));
-y = dx*(facerange(3,1):facerange(3,3):facerange(3,2));
+y = dx*(facerange(2,1):facerange(2,3):facerange(2,2));
 figure(fignum);
 surf(y,x,sqrt(abs(Efx.*Efx)+abs(Efy.*Efy))/sqrt(abs(Erx)^2+abs(Ery)^2));
 a=get(gca,'zlim');

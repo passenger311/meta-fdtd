@@ -17,22 +17,22 @@ real_xnp = {0}
 real_ynp = {0} 
 real_znp = {0}
 
-real_hdist_tfsf_i = 42
-real_hdist_tfsf_j = 42
-real_hdist_tfsf_k = 42
-real_hdist_ntff_i = real_hdist_tfsf_i + 2
-real_hdist_ntff_j = real_hdist_tfsf_j + 2
-real_hdist_ntff_k = real_hdist_tfsf_k + 2
+real_hdist_tfsf_i = 48
+real_hdist_tfsf_j = 48
+real_hdist_tfsf_k = 48
+--real_hdist_ntff_i = real_hdist_tfsf_i + 1
+--real_hdist_ntff_j = real_hdist_tfsf_j + 1
+--real_hdist_ntff_k = real_hdist_tfsf_k + 1
 
 n_shell = math.sqrt(2.04) --silica
 n_bg = 1.00
 n_max = n_bg  -- maximum refractive index to determine optically thickest medium
 mat = 'gold' -- gold, silver 
 
-step_dft = 1
-sampl_dft = 2048
+step_dft = 2
+sampl_dft = 512
 step_fft = 2
-sampl_fft = 2048
+sampl_fft = 512
 
 
 --- conversion to computation scale
@@ -45,11 +45,11 @@ frequ_factor = 2.99792458e5  -- change from frequency in THz (c|=1) to inverse w
 inv_wavelength = conv/real_wavelength -- inverse wavelength
 
 hdist_tfsf_i = math.floor(real_hdist_tfsf_i/conv+.5)
-hdist_ntff_i = math.floor(real_hdist_ntff_i/conv+.5)
+hdist_ntff_i = hdist_tfsf_i + 2 --math.floor(real_hdist_ntff_i/conv+.5)
 hdist_tfsf_j = math.floor(real_hdist_tfsf_j/conv+.5)
-hdist_ntff_j = math.floor(real_hdist_ntff_j/conv+.5)
+hdist_ntff_j = hdist_tfsf_j + 2 --math.floor(real_hdist_ntff_j/conv+.5)
 hdist_tfsf_k = math.floor(real_hdist_tfsf_k/conv+.5)
-hdist_ntff_k = math.floor(real_hdist_ntff_k/conv+.5)
+hdist_ntff_k = hdist_tfsf_k + 2 --math.floor(real_hdist_ntff_k/conv+.5)
 
 rnp={}; shell={}; inp={}; jnp={}; knp={}
 for i,v in ipairs(real_core) do

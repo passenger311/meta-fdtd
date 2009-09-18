@@ -21,19 +21,6 @@ real_hdist_tfsf_j = real_hwidthy + 4
 real_hdist_tfsf_k = real_hdist + 2*real_hheight + 4
 
 
-num_np = 0; -- number of nanoparticles
-
-real_rnp = {}; real_xnp = {}; real_ynp = {}; real_znp = {}
-math.randomseed( 1235 )
-
-for i =1,num_np do
-  real_rnp[i] = 2
-  real_xnp[i] = math.random(-real_hwidthx + 1.5*real_rnp[i],real_hwidthx - 1.5*real_rnp[i])
-  real_ynp[i] = math.random(-real_hwidthy + 1.5*real_rnp[i],real_hwidthy - 1.5*real_rnp[i])
-  real_znp[i] = math.random(-real_hdist + 1.5*real_rnp[i],real_hdist - 1.5*real_rnp[i])
-end
-
-
 n_sphere = 3.
 n_bg = 1.0
 n_max = n_bg  -- maximum refractive index to determine optically thickest medium
@@ -64,15 +51,6 @@ hdist_tfsf_j = math.floor(real_hdist_tfsf_j/conv+.5)
 hdist_ntff_j = hdist_tfsf_j + 2
 hdist_tfsf_k = math.floor(real_hdist_tfsf_k/conv+.5)
 hdist_ntff_k = hdist_tfsf_j + 2
-
-
-rnp={}; inp={}; jnp={}; knp={}
-for i,v in ipairs(real_rnp) do
-  rnp[i] = math.floor(real_rnp[i]/conv+.5)
-  inp[i] = math.floor(real_xnp[i]/conv+.5)
-  jnp[i] = math.floor(real_ynp[i]/conv+.5)
-  knp[i] = math.floor(real_znp[i]/conv+.5)
-end
 
 
 --- Gaussian envelope of injection field
@@ -154,18 +132,13 @@ print("Height of capacitor plates (grid):        ", 2*hheight+1)
 print("Rounding of corners (grid):               ", redges)
 print("Size of padding (grid):                   ", size_pad)
 print("Size of PML (grid):                       ", size_pml)
-print("The following parameters are only applicable in the case of nanoparticles")
-for i,v in ipairs(rnp) do
-  print("Radius of nanoparticle (grid):            ", v)
-  print("Position of nanoparticle (grid):          ", inp[i], jnp[i], knp[i])
-end
 
 
 --- Write invlambda.in file for DFT
 
 foutput = io.open("invlambda.in","w+")
 foutput2 = io.open("lambda.in","w+")
-for i = 600,1100,5 do
+for i = 500,800,5 do
    foutput:write(conv/i, "\n")
    foutput2:write(i, "\n")
 end
@@ -174,7 +147,7 @@ foutput2:close()
 
 foutput = io.open("invlambda2.in","w+")
 foutput2 = io.open("lambda2.in","w+")
-for i = 600,1000,10 do
+for i = 600,700,5 do
    foutput:write(conv/i,"\n")
    foutput2:write(i, "\n")
 end
