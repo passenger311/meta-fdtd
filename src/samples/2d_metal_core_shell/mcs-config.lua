@@ -1,7 +1,6 @@
 cfg = CONFIG{scenes=true}
 taskid = select(1,...)
 
-funcs = require "funcs"
 dofile("scale.lua")
 
 imin = -hdist_ntff_i-size_pad
@@ -37,110 +36,95 @@ cfg:GRID{
 
 --- CREATE SCENE
 
-scene_cap_inf = Scene{
-   value = n_bg^2 -- constant background permittivity
+scene_core_shell_inf = Scene{
+   value = n_bg^2
 }
-scene_cap = Scene{
-   value = 0 -- constant background permittivity
+scene_shell = Scene{
+   value = 0
 }
+scene_core = Scene{
+   value = 0
+}
+for i,v in ipairs(rnp) do
+   sphere1 = Sphere{
+      at={inp[i],jnp[i],knp[i]},
+      radius=rnp[i]
+   }
+   sphere2 = Sphere{
+      at={inp[i],jnp[i],knp[i]},
+      radius=rnp[i]-shell[i]
+   }
+   shell = BinaryAndNot{sphere1,sphere2}
+   scene_core_shell_inf:add{
+      shell,
+      value = eps_diel
+   }
+   scene_shell:add{
+      shell,
+      value = 1
+   }
+   scene_core_shell_inf:add{
+      sphere2,
+      value = eps_infDL
+   }
+   scene_core:add{
+      sphere2,
+      value = 1   -- filling factor for metal!!!!!!!!!!!!
+   }
+end
 
-strip = funcs.roundstrip(hwidth,hheight,redges)
 
+-- specify a grid for the scene (only objects that are inside the grid will be part of the geometry)
+table.sort(rnp); table.sort(inp); table.sort(jnp); table.sort(knp)
+maxntab = table.maxn(rnp);
 
--- push strips to desired positions
-strip1 = Transform{
-   strip,
-   move = {0,-hdist-hheight,0}
+grid_np = Grid{
+   from={inp[1]-rnp[maxntab]-2,jnp[1]-rnp[maxntab]-2,-1},
+   to={inp[maxntab]+rnp[maxntab]+2,jnp[maxntab]+rnp[maxntab]+2,1}
 }
-strip = Transform{
-   strip,
-   move = {0,hdist+hheight,0}
-}
-
--- add strips to geometry
-scene_cap:add{
-   strip,
-   value = 1
-}
-scene_cap_inf:add{
-   strip,
-   value = eps_infDL
-}
-scene_cap:add{
-   strip1,
-   value = 1
-}
-scene_cap_inf:add{
-   strip1,
-   value = eps_infDL
-}
-
--- define grids
-grid_strip1 = Grid{
-   from = {-hwidth-3,-hdist-2*hheight-3,-1},
-   to = {hwidth+3,-hdist+3,1}
-}
-grid_strip2 = Grid{
-   from = {-hwidth-3,hdist-3,-1},
-   to = {hwidth+3,hdist+2*hheight+3,1}
-}
-grid_prev_strip = Grid{
+grid_prev_np = Grid{
    yee = false,
-   from = {-hwidth-3,-hdist-2*hheight-3,-1},
-   to = {hwidth+3,hdist+2*hheight+3,1}
+   from={inp[1]-rnp[maxntab]-2,jnp[1]-rnp[maxntab]-2,-1},
+   to={inp[maxntab]+rnp[maxntab]+2,jnp[maxntab]+rnp[maxntab]+2,1}
 }
 
+-- create geometry
+cfg:CREATE_GEO{
+   "core",
+   scene=scene_core,
+   grid=grid_np,
+--   on=false
+}
+cfg:CREATE_PREVIEW{
+   "core",
+   scene=scene_core,
+   grid=grid_prev_np,
+   on=false
+}
 
--- create geometries
-cfg:CREATE_GEO{      -- add the scene to the geometry
-   "strip1",         -- filename: geo_"***".in
-   scene=scene_cap,     -- scene to be added
-   grid=grid_strip1,       -- grid to be used
-   method="default", 
-   comps=3,          -- number of components of permittivy (or permittivity + permeability)
-   silent=false,     -- silent computation
--- on=false          -- will the scene be updated
+cfg:CREATE_GEO{
+   "shell",
+   scene=scene_shell,
+   grid=grid_np,
+--   on=false
 }
-cfg:CREATE_GEO{      -- add the scene to the geometry
-   "strip1_inf",         -- filename: geo_"***".in
-   scene=scene_cap_inf,     -- scene to be added
-   grid=grid_strip1,       -- grid to be used
-   method="default", 
-   comps=3,          -- number of components of permittivy (or permittivity + permeability)
-   silent=false,     -- silent computation
---   on=false          -- will the scene be updated
+cfg:CREATE_PREVIEW{
+   "shell",
+   scene=scene_shell,
+   grid=grid_prev_np,
+   on=false
 }
-cfg:CREATE_GEO{      -- add the scene to the geometry
-   "strip2",         -- filename: geo_"***".in
-   scene=scene_cap,     -- scene to be added
-   grid=grid_strip2,       -- grid to be used
-   method="default",
-   comps=3,          -- number of components of permittivy (or permittivity + permeability)
-   silent=false,     -- silent computation
--- on=false          -- will the scene be updated
+cfg:CREATE_GEO{
+   "core_shell_inf",
+   scene=scene_core_shell_inf,
+   grid=grid_np,
+--   on=false
 }
-cfg:CREATE_GEO{      -- add the scene to the geometry
-   "strip2_inf",         -- filename: geo_"***".in
-   scene=scene_cap_inf,     -- scene to be added
-   grid=grid_strip2,       -- grid to be used
-   method="default",
-   comps=3,          -- number of components of permittivy (or permittivity + permeability)
-   silent=false,     -- silent computation
---   on=false          -- will the scene be updated
-}
-cfg:CREATE_PREVIEW{      -- add the scene to the geometry
-   "resonator_inf",         -- filename: geo_"***".in
-   scene=scene_cap_inf,     -- scene to be added
-   grid=grid_prev_strip,       -- grid to be used
-   silent=false,     -- silent computation
---   on=false          -- will the scene be updated
-}
-cfg:CREATE_PREVIEW{      -- add the scene to the geometry
-   "resonator",         -- filename: geo_"***".in
-   scene=scene_cap,     -- scene to be added
-   grid=grid_prev_strip,       -- grid to be used
-   silent=false,     -- silent computation
---   on=false          -- will the scene be updated
+cfg:CREATE_PREVIEW{
+   "core_shell_inf",
+   scene=scene_core_shell_inf,
+   grid=grid_prev_np,
+--   on=false
 }
 
 --- FDTD Definition
@@ -152,8 +136,7 @@ cfg:FDTD{
          BOX{
             { imin-size_pml-1, imax+size_pml+1, 1, jmin-size_pml-1, jmax+size_pml+1, 1, -1, 1, 1, ":", eps_bg, eps_bg, eps_bg }
          },
-         LOAD_GEO{ "strip1_inf" },
-         LOAD_GEO{ "strip2_inf" },
+         LOAD_GEO{ "core_shell_inf" }
       },
       on = true
    },
@@ -164,7 +147,7 @@ cfg:FDTD{
       time = { 0, math.floor(ncycles/10), 20 },
       REG{
          BOX{
-            { -hdist_tfsf_i+2, hdist_tfsf_i-2, 10, -hdist_tfsf_j+2, hdist_tfsf_j-2, 10, 0, 0, 1 }
+            { -hdist_tfsf_i+2, hdist_tfsf_i-2, 4, -hdist_tfsf_j+2, hdist_tfsf_j-2, 4, 0, 0, 1 }
          }
       }
    },
@@ -262,7 +245,7 @@ if (mat == 'gold' or mat == 'silver' or mat == 'carbon') then
          order = 2
       },
       REG{                                -- region where material is defined
-         LOAD_GEO{ "strip1" }
+         LOAD_GEO{ "core" }
       }
    }
    cfg:MAT{
@@ -272,7 +255,7 @@ if (mat == 'gold' or mat == 'silver' or mat == 'carbon') then
          deltaepsl = deltaepsl            -- delta epsilon
       },
       REG{                                -- region where material is defined
-         LOAD_GEO{ "strip1" }
+         LOAD_GEO{ "core" }
       }
    }
 end
@@ -284,45 +267,11 @@ if (mat == 'silver' or mat == 'carbon') then
          deltaepsl = deltaepsl2            -- delta epsilon
       },
       REG{                                -- region where material is defined
-         LOAD_GEO{ "strip1" }
+         LOAD_GEO{ "core" }
       }
    }
 end
 
-if (mat == 'gold' or mat == 'silver' or mat == 'carbon') then
-   cfg:MAT{                               -- define material with frequency/time-dependent answer
-      DRUDE{                              -- define a Drude material
-         invlambdapl = conv*real_omegaDL/frequ_factor, -- inverse wavelength of plasma frequency
-         gammapl = conv*real_gammaDL/frequ_factor,     -- plasma decay rate
-         order = 2
-      },
-      REG{                                -- region where material is defined
-         LOAD_GEO{ "strip2" }
-      }
-   }
-   cfg:MAT{
-      LORENTZ{                            -- define a Lorentzian material
-         invlambdal = conv*real_omegaL/frequ_factor,   -- inverse plasma wavelength
-         gammal = conv*real_gammaL/frequ_factor,       -- resonance width
-         deltaepsl = deltaepsl            -- delta epsilon
-      },
-      REG{                                -- region where material is defined
-         LOAD_GEO{ "strip2" }
-      }
-   }
-end
-if (mat == 'silver' or mat == 'carbon') then
-   cfg:MAT{
-      LORENTZ{                            -- define a Lorentzian material
-         invlambdal = conv*real_omegaL2/frequ_factor,   -- inverse plasma wavelength
-         gammal = conv*real_gammaL2/frequ_factor,       -- resonance width
-         deltaepsl = deltaepsl2            -- delta epsilon
-      },
-      REG{                                -- region where material is defined
-         LOAD_GEO{ "strip2" }
-      }
-   }
-end
 
 -- diagnostics DFT/FFT
 dofile("diagmode.lua")
