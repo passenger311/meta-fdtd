@@ -89,6 +89,12 @@ module matthreelvl
   ! number of 3-level atoms per unit-cell
   real(kind=8) :: n
 
+  ! local field effect is included unless LFE==0
+  real(kind=8) :: LFE
+  
+  ! E = D - lfeval*P (lfeval = 2/3 for LFE and lfeval=1 for no LFE)
+  real(kind=8) :: lfeval
+
   ! field conversion factor
   real(kind=8) :: conv
 
@@ -150,8 +156,10 @@ M4_IFELSE_CF({
     mat%rho11_0 = v(1)
     mat%rho22_0 = v(2)
     mat%rho33_0 = v(3)
-
+    
     call readfloat(funit, lcount, mat%n)
+
+    call readfloat(funit, lcount, mat%LFE)
 
     })
 
@@ -180,6 +188,14 @@ M4_IFELSE_CF({
        ! field conversion factor 
 
        mat%conv = REAL_DX**(3.5)/sqrt(SI_EPS0) * SI_E / SI_HBAR
+       
+       ! Is local field effect included
+       if (mat%LFE==0) THEN
+          mat%lfeval = 1.
+       else
+          mat%lfeval = 2./3.
+       end if
+          
 
        reg = regobj(mat%regidx)
 
@@ -317,7 +333,7 @@ M4_IFELSE_TE({}, {
        eps_ly = (1./epsinvy(i,j,k) + 2.)/3.
        eps_lz = (1./epsinvz(i,j,k) + 2.)/3.
 
-       ! set factor ei for E = D - ei*sum(Mij*rhoij)
+       ! set factor ei for E = D - ei*sum(real(Mij*rhoij))
        ! ei includes unit conversion and number of systems per unit cell
        ei(1) = 2 * w(1) * epsinvx(i,j,k) * mat%n * SI_4PIALPHA
        ei(2) = 2 * w(2) * epsinvy(i,j,k) * mat%n * SI_4PIALPHA
@@ -335,7 +351,7 @@ M4_IFELSE_TE({}, {
        M4_IFELSE_TM({
           Dold(1) = mat%Dold(p,1)
           Dold(2) = mat%Dold(p,2)
-          Dnew(1) = mat%conv * Ex(i,j,k) 
+          Dnew(1) = mat%conv * Ex(i,j,k)
           Dnew(2) = mat%conv * Ey(i,j,k)
           mat%Dold(p,1) = Dnew(1) 
           mat%Dold(p,2) = Dnew(2)
@@ -360,15 +376,9 @@ M4_IFELSE_TE({}, {
        
        do m= m1, m2
 
-       ! Local field effect E(loc) = E(macroscopic) + P/3 = D - 2/3*P
-M4_IFELSE_CF({
-         Etmp(m) = D(m) - &
-              2./3. * ei(m) * ( mat%M12(m)*rho12 + mat%M13(m)*rho13 + mat%M23(m)*rho23 ) 
-},{
-         Etmp(m) = D(m) - &
-              2./3. * ei(m) * real( mat%M12(m)*rho12 + &
+       ! Local field effect E(loc) = E(macroscopic) + P/3 = D - 2/3*P 
+          Etmp(m) = D(m) - mat%lfeval * ei(m) * real( mat%M12(m)*rho12 + &
               mat%M13(m)*rho13 + mat%M23(m)*rho23 )
-})
 
        end do
        
@@ -412,14 +422,8 @@ M4_IFELSE_CF({
        do m= m1, m2
 
        ! Local field effect E(loc) = E(macroscopic) + P/3 = D - 2/3*P
-M4_IFELSE_CF({
-         Etmp(m) = D(m) - &
-              2./3. * ei(m) * ( mat%M12(m)*rho12 + mat%M13(m)*rho13 + mat%M23(m)*rho23 ) 
-},{
-         Etmp(m) = D(m) - &
-              2./3. * ei(m) * real( mat%M12(m)*rho12 + &
+          Etmp(m) = D(m) - mat%lfeval * ei(m) * real( mat%M12(m)*rho12 + &
               mat%M13(m)*rho13 + mat%M23(m)*rho23 )
-})
 
        end do
 
@@ -459,14 +463,8 @@ M4_IFELSE_CF({
        do m= m1, m2
 
        ! Local field effect E(loc) = E(macroscopic) + P/3 = D - 2/3*P
-M4_IFELSE_CF({
-         Etmp(m) = D(m) - &
-              2./3. * ei(m) * ( mat%M12(m)*rho12 + mat%M13(m)*rho13 + mat%M23(m)*rho23 ) 
-},{
-         Etmp(m) = D(m) - &
-              2./3. * ei(m) * real( mat%M12(m)*rho12 + &
+          Etmp(m) = D(m) - mat%lfeval * ei(m) * real( mat%M12(m)*rho12 + &
               mat%M13(m)*rho13 + mat%M23(m)*rho23 )
-})
 
        end do
        
@@ -508,14 +506,8 @@ M4_IFELSE_CF({
        do m= m1, m2
 
        ! Local field effect E(loc) = E(macroscopic) + P/3 = D - 2/3*P
-M4_IFELSE_CF({
-         Etmp(m) = D(m) - &
-              2./3. * ei(m) * ( mat%M12(m)*rho12 + mat%M13(m)*rho13 + mat%M23(m)*rho23 ) 
-},{
-         Etmp(m) = D(m) - &
-              2./3. * ei(m) * real( mat%M12(m)*rho12 + &
+       Etmp(m) = D(m) - mat%lfeval * ei(m) * real( mat%M12(m)*rho12 + &
               mat%M13(m)*rho13 + mat%M23(m)*rho23 )
-})
 
        end do
 
@@ -555,14 +547,9 @@ M4_IFELSE_CF({
        ! update fields
 
        do m= m1, m2
-
-M4_IFELSE_CF({
-         Etmp(m) = D(m) - ei(m) * &
-            ( mat%M12(m)*rho12 + mat%M13(m)*rho13 + mat%M23(m)*rho23 ) 
-},{
-         Etmp(m) = D(m) - ei(m) * &
+       
+          Etmp(m) = D(m) - ei(m) * &
             real( mat%M12(m)*rho12 + mat%M13(m)*rho13 + mat%M23(m)*rho23 )
-})
 
        end do
        

@@ -271,6 +271,7 @@ function THREELVL(parms)
    THREELVL.my = parms.my or { {0,0}, {0,0}, {0,0} }
    THREELVL.mz = parms.mz or { {0,0}, {0,0}, {0,0} }
    THREELVL.densities = parms.densities or { 1., 0, 0 }
+   THREELVL.LFE = parms.LFE or 0
    THREELVL.n = parms.n or 1
    return THREELVL
 end
@@ -599,6 +600,7 @@ local writemat = {
 		       "\t! mz dipole length [dx]\n")
 	      fh:write(THREELVL.densities[1]," ", THREELVL.densities[2]," ", THREELVL.densities[3], "\t! occup. densities []\n")
 	      fh:write(THREELVL.n,"\t! systems per cell []\n")
+	      fh:write(THREELVL.LFE,"\t! include LFE-effect?\n")
 	   end,
 }
 
