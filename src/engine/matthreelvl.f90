@@ -141,15 +141,10 @@ contains
     do m=1,3
 
        call readcomplexs(funit,lcount, c, 3)
-M4_IFELSE_CF({
        mat%M12(m) = c(1)
        mat%M13(m) = c(2)
        mat%M23(m) = c(3)
-},{
-       mat%M12(m) = complex( real(c(1)), 0 )
-       mat%M13(m) = complex( real(c(2)), 0 )
-       mat%M23(m) = complex( real(c(3)), 0 )
-})
+
     end do
 
     call readfloats(funit, lcount, v, 3)
