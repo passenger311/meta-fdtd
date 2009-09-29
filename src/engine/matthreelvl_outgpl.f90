@@ -86,12 +86,15 @@ contains
       M4_REGLOOP_DECL(reg,p,i,j,k,w(3))  
       real(kind=8) :: val1, val2, val3, sum1, sum2, sum3
       type(T_MATTHREELVL) :: mat
-      integer :: m
+      integer :: m, q
+      type(T_REG) :: reg2
+
 
       M4_IFELSE_DBG({call EchoRegObj(regobj(out%regidx))})
 
       reg = regobj(out%regidx)
       mat = matthreelvlobj(out%objidx)
+      M4_MODOBJ_GETREG(mat,reg2)
 
       sum1 = 0.
       sum2 = 0.
@@ -99,12 +102,16 @@ contains
 
       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
+      if ( reg2%mask(i,j,k) .ne. 0 ) then 
+
+     q = reg2%mask(i,j,k)
+
       select case ( mode ) 
       case ( 1 )
 
-         val1 = mat%rho11(p)
-         val2 = mat%rho22(p)
-         val3 = mat%rho33(p)
+         val1 = mat%rho11(q)
+         val2 = mat%rho22(q)
+         val3 = mat%rho33(q)
 
          if ( out%mode .ne. 'S' ) then
  
@@ -116,16 +123,18 @@ contains
             endif
          
          else
+
             sum1 = sum1 + val1
             sum2 = sum2 + val2
             sum3 = sum3 + val3
+
          endif
 
       case ( 2 )
 
-         val1 = mat%rho12(p)
-         val2 = mat%rho13(p)
-         val3 = mat%rho23(p)
+         val1 = mat%rho12(q)
+         val2 = mat%rho13(q)
+         val3 = mat%rho23(q)
 
          if ( out%mode .ne. 'S' ) then
 
@@ -137,12 +146,16 @@ contains
             endif
 
          else
+
             sum1 = sum1 + val1
             sum2 = sum2 + val2
             sum3 = sum3 + val3
+
          end if
 
       end select      
+
+      endif
 
       },{
       
