@@ -21,7 +21,7 @@
 ! The MatChi3 module calculates the reponse of a Chi3 pole consisting of 
 ! a combined Raman/Kerr nonlinearity:
 !
-! d/dt d/dt S + 2 * gammar * d/dt S + omegar**2 S = omegar**2 * chi3r * E
+! d/dt d/dt S + 2 * gammar * d/dt S + omegar**2 S = omegar**2 * chi3r * E^2
 !
 ! P = chi3k * E^3 + S * E
 !
