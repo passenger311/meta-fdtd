@@ -6,5 +6,6 @@ matlorentz
 matlhm
 matbloch
 matlhmgrad
-! this must be last!
+! these must be last and cannot be combined
+matchi3
 matthreelvl
