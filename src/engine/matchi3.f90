@@ -257,21 +257,22 @@ M4_IFELSE_TE({
 ! 
 ! E(n) = E'(n) / ( 1 + epsinv * ( S(n) + chi3k * E(n)^2 ) )
 
-       exh = Ex(i,j,k)
-       eyh = Ey(i,j,k)
-       ezh = Ez(i,j,k)
-
-       exo = exh
-       eyo = eyh
-       ezo = ezh
-
+M4_IFELSE_TM({
+       exo = Ex(i,j,k)
+       eyo = Ey(i,j,k)
        sxh = mat%Sx(p,m)
        syh = mat%Sy(p,m)
-       szh = mat%Sz(p,m)
-
        eix = epsinvx(i,j,k)
        eiy = epsinvy(i,j,k)
+       exh = exo / ( 1 + eix * sxh )
+       eyh = eyo / ( 1 + eiy * syh )
+})
+M4_IFELSE_TE({
+       ezo = Ez(i,j,k)
+       szh = mat%Sz(p,m)
        eiz = epsinvz(i,j,k)
+       ezh = ezo / ( 1 + eiz * szh )
+})
 
        do it = 1, mat%maxit
 
@@ -281,16 +282,19 @@ M4_IFELSE_TM({
 })
 M4_IFELSE_TE({
          ezh = ezo / ( 1 + eiz * ( szh + mat%chi3k * ezh**2 ) )
-})
-
+})    
 
        end do
        
+M4_IFELSE_TM({
        Ex(i,j,k) = exh
        Ey(i,j,k) = eyh
+})
+M4_IFELSE_TE({
        Ez(i,j,k) = ezh
 
        })      
+})
        
 
 
