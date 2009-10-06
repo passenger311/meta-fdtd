@@ -87,24 +87,18 @@ contains
       real(kind=8) :: val1, val2, val3, sum1, sum2, sum3
       type(T_MATTHREELVL) :: mat
       integer :: m, q
-      type(T_REG) :: reg2
 
 
       M4_IFELSE_DBG({call EchoRegObj(regobj(out%regidx))})
 
       reg = regobj(out%regidx)
       mat = matthreelvlobj(out%objidx)
-      M4_MODOBJ_GETREG(mat,reg2)
 
       sum1 = 0.
       sum2 = 0.
       sum3 = 0.
 
       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-
-      if ( reg2%mask(i,j,k) .ne. 0 ) then 
-
-     q = reg2%mask(i,j,k)
 
       select case ( mode ) 
       case ( 1 )
