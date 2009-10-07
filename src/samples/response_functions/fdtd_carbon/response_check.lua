@@ -2,8 +2,8 @@ cfg = CONFIG{scenes=true}
 taskid = select(1,...)
 dofile("scale.lua")
 
-imin = -hdist_tfsf_k-size_pad
-imax = 100*hdist_tfsf_k+size_pad
+imin = tfsf_inj-size_pad
+imax = 100*(-tfsf_inj)+size_pad
 
 print("Computational window without PML:         ", imin, imax, 0, 0, 0, 0)
 print("Time steps:                               ", ncycles)
@@ -28,65 +28,6 @@ cfg:GRID{
 }
 
 
---- CREATE SCENE
-
-scene_np_inf = Scene{
-   value =n_bg^2
-}
-scene_np = Scene{
-   value =0.
-}
-box1 = Box{
-   from={-rnp,-3,-3},
-   to = {imax,3,3},
-}
-scene_np_inf:add{
-   box1,
-   value = eps_C_infDL
-}
-scene_np:add{
-   box1,
-   value = 1   -- filling factor for metal!!!!!!!!!!!!
-}
-
-
--- specify a grid for the scene (only objects that are inside the grid will be part of the geometry)
-
-grid_np = Grid{
-   from={-rnp-2,-1,-1},
-   to={imax+size_pml+3,1,1}
-}
-grid_prev_np = Grid{
-   yee = false,
-   from={-rnp-2,-1,-1},
-   to={imax+size_pml+3,1,1}
-}
-
-
-cfg:CREATE_GEO{
-   "np",
-   scene=scene_np,
-   grid=grid_np
-}
-cfg:CREATE_PREVIEW{
-   "np",
-   scene=scene_np,
-   grid=grid_prev_np,
-   on=false
-}
-cfg:CREATE_GEO{
-   "np_inf",
-   scene=scene_np_inf,
-   grid=grid_np
-}
-cfg:CREATE_PREVIEW{
-   "np_inf",
-   scene=scene_np_inf,
-   grid=grid_prev_np,
-   on=false
-}
-
-
 --- FDTD Definition
 eps_bg = n_bg^2
 cfg:FDTD{
@@ -94,9 +35,11 @@ cfg:FDTD{
    EPSILON{
       REG{
          BOX{
-            { imin-size_pml-1, imax+size_pml+1, 1, -3,3, 1, -3,3, 1, ":", eps_bg, eps_bg, eps_bg }
+            { imin-size_pml-1, imax+size_pml+1, 1, ":", eps_bg, eps_bg, eps_bg }
          },
-         LOAD_GEO{ "np_inf" },
+         BOX{
+            { 0, imax+size_pml, 1, ":", eps_infDL, eps_infDL, eps_infDL  }
+         }
       },
       on = true
    },
@@ -107,7 +50,7 @@ cfg:FDTD{
       time = { 0, ncycles, 10 },
       REG{
          BOX{
-            { -2,-2,1 ,0,0,1,0,0,1}
+            { 2, 2, 1 }
          }
       }
    },
@@ -117,7 +60,7 @@ cfg:FDTD{
       time = { 0, ncycles, 10 },
       REG{
          BOX{
-            { 2, 2, 1 }
+            { 4, 4, 1 }
          }
       }
    }
@@ -140,7 +83,7 @@ cfg:BOUND{
 --- SRC Definition(s)
 
 cfg:SRC{
-   TFSFBOX{
+   TFSFINJ{
       invlambda = inv_wavelength,
       amplitude = 1.0,
       pulse = { 
@@ -156,7 +99,7 @@ cfg:SRC{
    },
    REG{
       BOX{
-         {-hdist_tfsf_k,hdist_tfsf_k+1,1,-hdist_tfsf_k,hdist_tfsf_k,1,-hdist_tfsf_k,hdist_tfsf_k,1}
+         { tfsf_inj, tfsf_inj, 1 }
       }
    },
    on = true
@@ -164,37 +107,46 @@ cfg:SRC{
 
 --- MAT Definition(s)
 
+if (mat == 'gold' or mat == 'silver' or mat == 'carbon') then
    cfg:MAT{                               -- define material with frequency/time-dependent answer
       DRUDE{                              -- define a Drude material
-         invlambdapl = conv*real_C_omegaDL/frequ_factor, -- inverse wavelength of plasma frequency
-         gammapl = conv*real_C_gammaDL/frequ_factor,     -- plasma decay rate
+         invlambdapl = conv*real_omegaDL/frequ_factor, -- inverse wavelength of plasma frequency
+         gammapl = conv*real_gammaDL/frequ_factor,     -- plasma decay rate
          order = 2
       },
-      REG{                                -- region where material is defined
-         LOAD_GEO{ "np" }
-      }
-   }
-
-   cfg:MAT{
-      LORENTZ{                            -- define a Lorentzian material
-         invlambdal = conv*real_C_omegaL/frequ_factor,   -- inverse plasma wavelength
-         gammal = conv*real_C_gammaL/frequ_factor,       -- resonance width
-         deltaepsl = C_deltaepsl            -- delta epsilon
-      },
-      REG{                                -- region where material is defined
-         LOAD_GEO{ "np" }
+      REG{
+         BOX{
+            { 0, imax+size_pml, 1  }
+         }
       }
    }
    cfg:MAT{
       LORENTZ{                            -- define a Lorentzian material
-         invlambdal = conv*real_C_omegaL2/frequ_factor,   -- inverse plasma wavelength
-         gammal = conv*real_C_gammaL2/frequ_factor,       -- resonance width
-         deltaepsl = C_deltaepsl2            -- delta epsilon
+         invlambdal = conv*real_omegaL/frequ_factor,   -- inverse plasma wavelength
+         gammal = conv*real_gammaL/frequ_factor,       -- resonance width
+         deltaepsl = deltaepsl            -- delta epsilon
       },
-      REG{                                -- region where material is defined
-         LOAD_GEO{ "np" }
+      REG{
+         BOX{
+            { 0, imax+size_pml, 1  }
+         }
       }
    }
+end
+if (mat == 'silver' or mat == 'carbon') then
+   cfg:MAT{
+      LORENTZ{                            -- define a Lorentzian material
+         invlambdal = conv*real_omegaL2/frequ_factor,   -- inverse plasma wavelength
+         gammal = conv*real_gammaL2/frequ_factor,       -- resonance width
+         deltaepsl = deltaepsl2            -- delta epsilon
+      },
+      REG{
+         BOX{
+            { 0, imax+size_pml, 1  }
+         }
+      }
+   }
+end
 
 
 cfg:DIAG{
@@ -207,7 +159,7 @@ cfg:DIAG{
    },
    REG{
       BOX{
-         { -2, -2, 1 }
+         { 2, 2, 1 }
       }
    }
 }
@@ -222,7 +174,7 @@ cfg:DIAG{
    },
    REG{
       BOX{
-         { 2, 2, 1 }
+         { 4, 4, 1 }
       }
    }
 }

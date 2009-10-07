@@ -4,9 +4,9 @@
 (GRID
   1 	! dim
   0 1 	! partition (i of n)
-  32767 	! ncyc (# of timesteps)
+  131071 	! ncyc (# of timesteps)
   0.9 	! dt
-  -97 8215 	! irange = (ibeg,iend)
+  -25 1015 	! irange = (ibeg,iend)
   0 0 	! jrange = (jbeg,jend)
   0 0 	! krange = (kbeg,kend)
 )GRID
@@ -15,30 +15,30 @@
 (EPSILON
   (REG
     (BOX
-	-98 8216 1 -3 3 1 -3 3 1 : 1 1 1 
+	-26 1016 1 : 1 1 1 
     )BOX
-    (LOAD
-	geo_np_inf.in	! scene file to load
-    )LOAD
+    (BOX
+	0 1015 1 : 2.554 2.554 2.554 
+    )BOX
   )REG
 )EPSILON
 (OUT
   GPL ey_1	! file type and name
   Ey N .F.	! file type and name
-  0 32767 10	! time
+  0 131071 10	! time
   (REG
     (BOX
-	-2 -2 1 0 0 1 0 0 1 
+	2 2 1 
     )BOX
   )REG
 )OUT
 (OUT
   GPL ey_2	! file type and name
   Ey N .F.	! file type and name
-  0 32767 10	! time
+  0 131071 10	! time
   (REG
     (BOX
-	2 2 1 
+	4 4 1 
     )BOX
   )REG
 )OUT
@@ -54,29 +54,28 @@
 )PML
 )BOUND
 
-(SRCTFSFBOX
+(SRCTFSFINJ
 0.002 	! invlambda [2 pi c]
 1 	! amplitude []
 Gaussian 	! pulse shape
 500 	! pulse width [hwhm]
 0 7500 0 50000 	! offset attack sustain decay [dt]
 0 90 0 1 	! planewave: phi, theta, psi, nrefr
-1 0 0 0 0 0 	! active planes
   (REG
     (BOX
-	-82 83 1 -82 82 1 -82 82 1 
+	-10 -10 1 
     )BOX
   )REG
-)SRCTFSFBOX
+)SRCTFSFINJ
 
 (MATDRUDE
 0.0011412779503968	! invlambdapl [2 pi c]
 0.031607466255872	! gammapl (damping) [1/dt]
 2	! order: 1 (J ode) or 2 (P ode)
   (REG
-    (LOAD
-	geo_np.in	! scene file to load
-    )LOAD
+    (BOX
+	0 1015 1 
+    )BOX
   )REG
 )MATDRUDE
 
@@ -85,9 +84,9 @@ Gaussian 	! pulse shape
 0.016008975115712	! gammal (damping) [1/dt]
 3.56779	! deltaepsl coupling coeff.
   (REG
-    (LOAD
-	geo_np.in	! scene file to load
-    )LOAD
+    (BOX
+	0 1015 1 
+    )BOX
   )REG
 )MATLORENTZ
 
@@ -96,9 +95,9 @@ Gaussian 	! pulse shape
 0.0060914140808706	! gammal (damping) [1/dt]
 2.51021	! deltaepsl coupling coeff.
   (REG
-    (LOAD
-	geo_np.in	! scene file to load
-    )LOAD
+    (BOX
+	0 1015 1 
+    )BOX
   )REG
 )MATLORENTZ
 
@@ -106,11 +105,11 @@ Gaussian 	! pulse shape
 fft_1 	! filename (.pspec)
 Eap  	! mode ( S,Ecs,Hcs,Eap,Hap) and [ref. file]
 1 1 	! unwrap phase forward / backward
-0 32767 4 	! time window [from to step]
+0 131071 4 	! time window [from to step]
 0 90 0 	! polarize: phi, theta, psi
   (REG
     (BOX
-	-2 -2 1 
+	2 2 1 
     )BOX
   )REG
 )DIAGPSPEC
@@ -119,11 +118,11 @@ Eap  	! mode ( S,Ecs,Hcs,Eap,Hap) and [ref. file]
 fft_2 	! filename (.pspec)
 Eap fft_1 	! mode ( S,Ecs,Hcs,Eap,Hap) and [ref. file]
 1 1 	! unwrap phase forward / backward
-0 32767 4 	! time window [from to step]
+0 131071 4 	! time window [from to step]
 0 90 0 	! polarize: phi, theta, psi
   (REG
     (BOX
-	2 2 1 
+	4 4 1 
     )BOX
   )REG
 )DIAGPSPEC
