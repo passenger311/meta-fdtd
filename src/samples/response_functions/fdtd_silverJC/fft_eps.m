@@ -34,7 +34,7 @@ eps_th = eps_inf - o_D^2./(2.*pi.*fft1(:,1).*2.*pi.*fft1(:,1)-i.*g_D.*2.*pi.*fft
 eps_th = conj(eps_th);
 n_th2 = sqrt(eps_th);
 
-n=(log(fft1(:,2))./i+fft1(:,3))./(2.*pi.*fft1(:,1).*4);
+n=(log(fft1(:,2))./i+fft1(:,3))./(2.*pi.*fft1(:,1).*2);
 eps=n.*n;
 
 figure(1)
