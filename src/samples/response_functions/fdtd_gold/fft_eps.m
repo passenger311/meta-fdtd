@@ -29,28 +29,27 @@ fft1 = zeros(size(tmp2{1},1),size(tmp2,2));
 for j = 1 : size(tmp2,2)
    fft1(:,j) = tmp2{j};
 end
-eps_th = eps_inf - o_D^2./(2.*pi.*fft1(:,1).*2.*pi.*fft1(:,1)-i.*g_D.*2.*pi.*fft1(:,1)) - de_L1.*o_L1^2./(2.*pi.*fft1(:,1).*2.*pi.*fft1(:,1)-i.*2.*g_L1.*2.*pi.*fft1(:,1)-o_L1^2);% -  de_L2.*o_L2^2./(2.*pi.*fft1(:,1).*2.*pi.*fft1(:,1)-i.*2.*g_L2.*2.*pi.*fft1(:,1)-o_L2^2);
+n=(log(fft1(:,2))./i+fft1(:,3))./(2.*pi.*fft1(:,1).*2);
+eps=n.*n;
 
+eps_th = eps_inf - o_D^2./(2.*pi.*fft1(:,1).*2.*pi.*fft1(:,1)-i.*g_D.*2.*pi.*fft1(:,1)) - de_L1.*o_L1^2./(2.*pi.*fft1(:,1).*2.*pi.*fft1(:,1)-i.*2.*g_L1.*2.*pi.*fft1(:,1)-o_L1^2);% -  de_L2.*o_L2^2./(2.*pi.*fft1(:,1).*2.*pi.*fft1(:,1)-i.*2.*g_L2.*2.*pi.*fft1(:,1)-o_L2^2);
 eps_th = conj(eps_th);
 n_th2 = sqrt(eps_th);
 
-n=(log(fft1(:,2))./i+fft1(:,3))./(2.*pi.*fft1(:,1).*4);
-eps=n.*n;
-
 figure(1)
-plot(dx./fft1(:,1),real(eps),dx./fft1(:,1),real(eps_th),'o');
+plot(dx./fft1(:,1),real(eps),'o',dx./fft1(:,1),real(eps_th));
 axis([300 800 -10 10])
 axis 'auto y'
 figure(2)
-plot(dx./fft1(:,1),imag(eps),dx./fft1(:,1),imag(eps_th),'o');
+plot(dx./fft1(:,1),imag(eps),'o',dx./fft1(:,1),imag(eps_th));
 axis([300 800 -10 10])
 axis 'auto y'
 figure(3)
-plot(dx./fft1(:,1),real(n),dx./fft1(:,1),real(n_th2),'o');
+plot(dx./fft1(:,1),real(n),'o',dx./fft1(:,1),real(n_th2));
 axis([300 800 -.5 0]);
 axis 'auto y'
 figure(4)
-plot(dx./fft1(:,1),imag(n),dx./fft1(:,1),imag(n_th2),'o');
+plot(dx./fft1(:,1),imag(n),'o',dx./fft1(:,1),imag(n_th2));
 axis([300 800 -10 10])
 axis 'auto y'
 

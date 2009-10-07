@@ -4,12 +4,11 @@ pi = 3.141592653589793116
 
 real_wavelength = 500.0    -- real wavelength
 
-real_hdist = 70 -- half distance of capacitor plates
-real_rnp = 10
+real_tfsf_inj = -10 -- half distance of capacitor plates
 
 n_bg = 1.0
 n_max = n_bg  -- maximum refraxctive index to determine optically thickest medium
-mat = 'gold' -- gold, silver 
+mat = 'gold' -- gold, silver, carbon 
 
 --- conversion to computation scale
 
@@ -20,10 +19,7 @@ frequ_factor = 2.99792458e5  -- change from frequency in THz (c|=1) to inverse w
 
 inv_wavelength = conv/real_wavelength -- inverse wavelength
 
-hdist = math.floor(real_hdist/conv+.5)
-hdist_tfsf_k = hdist + 12
-
-rnp = math.floor(real_rnp/conv+.5)
+tfsf_inj = math.floor(real_tfsf_inj/conv+.5)
 
 -- Gaussian envelope of injection field
 widthl = 1    -- width in number of periods
@@ -42,7 +38,7 @@ size_pad = 3
 -- Courant factor
 dt = .9 -- 0.574  -- time step length compared to grid step length (--> Courant stability factor)
 
-ncycles = 1*32768-1 -- number of cycles
+ncycles = 4*32768-1 -- number of cycles
 
 
 --- Drude-Lorentz material in THz
@@ -64,6 +60,16 @@ elseif (mat == 'silver') then
   real_omegaL2 = 3057.07/2/pi 
   real_gammaL2 = 852.675
   deltaepsl2 = 0.222651
+elseif (mat == 'carbon') then
+  eps_infDL = 2.554
+  real_omegaDL = 2149.77/2/pi
+  real_gammaDL = 9475.68
+  real_omegaL = 6820.0/2/pi
+  real_gammaL = 4799.37
+  deltaepsl = 3.56779
+  real_omegaL2 = 2833.44/2/pi
+  real_gammaL2 = 1826.16
+  deltaepsl2 = 2.51021
 end
 
 --- print some parameters
@@ -72,7 +78,7 @@ print("Conversion factor:                   dx = ", conv, "nm")
 print("Courant factor:                      dt = ", dt, "dx")
 print("Wavelength (grid):                        ", 1/inv_wavelength)
 print("Inverse wavelength (grid):                ", inv_wavelength)
-print("tfsf-domain (grid):                       ", hdist_tfsf_k)
+print("tfsf-injection plane (grid):              ", tfsf_inj)
 print("Size of padding (grid):                   ", size_pad)
 print("Size of PML (grid):                       ", size_pml)
 
@@ -85,7 +91,7 @@ foutput:write(real_gammaDL/frequ_factor*conv,"\n")
 foutput:write(deltaepsl,"\n")
 foutput:write(real_omegaL/frequ_factor*conv,"\n")
 foutput:write(real_gammaL/frequ_factor*conv,"\n")
-if (mat == 'silver') then
+if ( (mat == 'silver') or (mat == 'carbon') ) then
 foutput:write(deltaepsl2,"\n")
 foutput:write(real_omegaL2/frequ_factor*conv,"\n")
 foutput:write(real_gammaL2/frequ_factor*conv,"\n")
