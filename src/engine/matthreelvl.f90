@@ -317,11 +317,11 @@ M4_IFELSE_TE({}, {
     om13 = mat%omega13
     om23 = mat%omega23
 
-
     M4_MODOBJ_GETREG(mat,reg)
 
     M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
        
+
        ! If the electric permittivity is not equal to 1 the electric field acting on the particle is
        ! strengthened by a factor l = (eps + 2)/3. In effect Etmp(diel.) = Etmp * l.
        eps_lx = (1./epsinvx(i,j,k) + 2.)/3.
