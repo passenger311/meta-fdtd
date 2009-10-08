@@ -33,10 +33,14 @@ mat4 rotation3D(const mat3& m);
 //	rotation3D -- convert 3x3 rotation matrix to 4x4
 //
 inline mat4 rotation3D(const mat3& m)
-{	return(mat4(vec4(m[0][0],m[0][1],m[0][2],0.0),
-				vec4(m[1][0],m[1][1],m[1][2],0.0),
-				vec4(m[2][0],m[2][1],m[2][2],0.0),
-				vec4(0.0,0.0,0.0,1.0)));
+{	
+    return
+	mat4(
+	    vec4(m[0][0],m[0][1],m[0][2],0.0),
+	    vec4(m[1][0],m[1][1],m[1][2],0.0),
+	    vec4(m[2][0],m[2][1],m[2][2],0.0),
+	    vec4(0.0,0.0,0.0,1.0)
+	    );
 }
 //
 //	Matrix utilities for affine matrices.
@@ -75,10 +79,10 @@ inline mat3 ExtractRotation(const mat4& pose)
 	//	Apply inverse of scaling as a transformation, to get unit scaling.
 	mat4 unscaled(pose*scaling3D(invscale));// unscale pose
 	//	Return pure rotation matrix
-	return(mat3(						// drop last column and row
+	return mat3(						// drop last column and row
 		vec3(unscaled[0],VW),
 		vec3(unscaled[1],VW),
-		vec3(unscaled[2],VW)));
+		vec3(unscaled[2],VW));
 }
 //
 //	PointToPlane  --  signed distance from a point to a plane

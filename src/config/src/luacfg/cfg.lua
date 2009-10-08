@@ -245,6 +245,18 @@ function DEBYE(parms)
    return DEBYE
 end
 
+-- (MAT)CHI3 Sub-Block definition
+
+function CHI3(parms) 
+   local CHI3 = { block = "CHI3" }
+   CHI3.invlambdar = parms.invlambdar
+   CHI3.gammar = parms.gammar
+   CHI3.chi3r = parms.chi3r
+   CHI3.chi3k = parms.chi3k or 0
+   CHI3.maxit = parms.maxit or 0
+   return CHI3
+end
+
 
 -- (MAT)BLOCH Sub-Block definition
 
@@ -271,7 +283,6 @@ function THREELVL(parms)
    THREELVL.my = parms.my or { {0,0}, {0,0}, {0,0} }
    THREELVL.mz = parms.mz or { {0,0}, {0,0}, {0,0} }
    THREELVL.densities = parms.densities or { 1., 0, 0 }
-   THREELVL.LFE = parms.LFE or 0
    THREELVL.n = parms.n or 1
    return THREELVL
 end
@@ -579,6 +590,13 @@ local writemat = {
 	      fh:write(BLOCH.pump,"\t! pump rate [1/dt]\n")
 	      fh:write(BLOCH.satmodel,"\t! sat.model 0=>(N-Ntr), 1=>Ntr*log(N/Ntr)\n")		       
 	   end,
+   CHI3 = function(fh,CHI3)
+	      fh:write(CHI3.invlambdar,"\t! invlambdar [2 pi c]\n")
+	      fh:write(CHI3.gammar,"\t! gammar (damping) [1/dt]\n")
+	      fh:write(CHI3.chi3r,"\t! chi3 for raman\n")
+	      fh:write(CHI3.chi3k,"\t! chi3 for kerr\n")
+	      fh:write(CHI3.maxit,"\t! maximum iterations for kerr\n")
+	  end,
    THREELVL = function(fh,THREELVL)
 	      fh:write(THREELVL.invlambda[1]," ",THREELVL.invlambda[2]," ", THREELVL.invlambda[3], "\n")
 	      fh:write(THREELVL.gamma[1]," ",THREELVL.gamma[2]," ", THREELVL.gamma[3], "\n")
@@ -600,7 +618,6 @@ local writemat = {
 		       "\t! mz dipole length [dx]\n")
 	      fh:write(THREELVL.densities[1]," ", THREELVL.densities[2]," ", THREELVL.densities[3], "\t! occup. densities []\n")
 	      fh:write(THREELVL.n,"\t! systems per cell []\n")
-	      fh:write(THREELVL.LFE,"\t! include LFE-effect?\n")
 	   end,
 }
 
