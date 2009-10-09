@@ -149,8 +149,6 @@ contains
 
       end select      
 
-      endif
-
       },{
       
       if ( reg%is .ne. reg%ie ) write(out%funit,*)}, {if ( reg%js .ne. reg%je ) write(out%funit,*)
