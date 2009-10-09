@@ -15,7 +15,7 @@ mat = 'gold' -- gold, silver
 
 resolution = 500/1 -- resolution of wavelength in optically thickest medium (even number)
 
-conv = real_wavelength/resolution/n_max -- conversion factor between real and computation length scale
+conv = real_wavelength/resolution -- conversion factor between real and computation length scale
 frequ_factor = 2.99792458e5  -- change from frequency in THz (c|=1) to inverse wavelength in 1/nm (c=1)
 
 inv_wavelength = conv/real_wavelength -- inverse wavelength
@@ -25,6 +25,7 @@ fft = math.floor(real_fft/conv+.5)
 
 
 -- Gaussian envelope of injection field
+ampl = 10    -- electric field strength in V/m
 widthl = 1    -- width in number of periods
 offsetl = 0    -- offset in number of periods
 attackl = 15  -- attack in number of periods
@@ -55,6 +56,7 @@ print("Size of PML (grid):                       ", size_pml)
 
 foutput = io.open("data.save","w+")
 foutput:write(real_fft-2,"\n")
+foutput:write(n_bg,"\n")
 foutput:write(conv,"\n")
 foutput:write(inv_wavelength,"\n")
 foutput:close()

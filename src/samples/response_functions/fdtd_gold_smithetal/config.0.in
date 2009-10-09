@@ -4,7 +4,7 @@
 (GRID
   1 	! dim
   0 1 	! partition (i of n)
-  32767 	! ncyc (# of timesteps)
+  131071 	! ncyc (# of timesteps)
   0.9 	! dt
   -19 167 	! irange = (ibeg,iend)
   0 0 	! jrange = (jbeg,jend)
@@ -26,7 +26,7 @@
 (OUT
   GPL ey_fft_r	! file type and name
   Ey N .F.	! file type and name
-  0 32767 10	! time
+  0 131071 40	! time
   (REG
     (BOX
 	-4 -4 1 
@@ -36,7 +36,7 @@
 (OUT
   GPL ey_fft_t	! file type and name
   Ey N .F.	! file type and name
-  0 32767 10	! time
+  0 131071 40	! time
   (REG
     (BOX
 	152 152 1 
@@ -55,19 +55,20 @@
 )PML
 )BOUND
 
-(SRCTFSFINJ
+(SRCTFSFBOX
 0.002 	! invlambda [2 pi c]
 1 	! amplitude []
 Gaussian 	! pulse shape
 500 	! pulse width [hwhm]
 0 7500 0 50000 	! offset attack sustain decay [dt]
 0 90 0 1 	! planewave: phi, theta, psi, nrefr
+1 0 0 0 0 0 	! active planes
   (REG
     (BOX
-	-2 -2 1 
+	-2 2 1 -2 2 1 -2 2 1 
     )BOX
   )REG
-)SRCTFSFINJ
+)SRCTFSFBOX
 
 (MATDRUDE
 0.0070502107161081	! invlambdapl [2 pi c]
@@ -95,7 +96,7 @@ Gaussian 	! pulse shape
 fft_t 	! filename (.pspec)
 Eap fft_ref 	! mode ( S,Ecs,Hcs,Eap,Hap) and [ref. file]
 1 1 	! unwrap phase forward / backward
-0 32767 4 	! time window [from to step]
+0 131071 64 	! time window [from to step]
 0 90 0 	! polarize: phi, theta, psi
   (REG
     (BOX
@@ -108,7 +109,7 @@ Eap fft_ref 	! mode ( S,Ecs,Hcs,Eap,Hap) and [ref. file]
 fft_r 	! filename (.pspec)
 Eap fft_ref 	! mode ( S,Ecs,Hcs,Eap,Hap) and [ref. file]
 1 1 	! unwrap phase forward / backward
-0 32767 4 	! time window [from to step]
+0 131071 64 	! time window [from to step]
 0 90 0 	! polarize: phi, theta, psi
   (REG
     (BOX

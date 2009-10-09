@@ -25,7 +25,7 @@
 (OUT
   GPL ey_1	! file type and name
   Ey N .F.	! file type and name
-  0 131071 10	! time
+  0 131071 50	! time
   (REG
     (BOX
 	2 2 1 
@@ -35,7 +35,7 @@
 (OUT
   GPL ey_2	! file type and name
   Ey N .F.	! file type and name
-  0 131071 10	! time
+  0 131071 50	! time
   (REG
     (BOX
 	4 4 1 
@@ -54,19 +54,20 @@
 )PML
 )BOUND
 
-(SRCTFSFINJ
+(SRCTFSFBOX
 0.002 	! invlambda [2 pi c]
 1 	! amplitude []
 Gaussian 	! pulse shape
 500 	! pulse width [hwhm]
 0 7500 0 50000 	! offset attack sustain decay [dt]
 0 90 0 1 	! planewave: phi, theta, psi, nrefr
+1 0 0 0 0 0 	! active planes
   (REG
     (BOX
-	-10 -10 1 
+	-10 10 1 -10 10 1 -10 10 1 
     )BOX
   )REG
-)SRCTFSFINJ
+)SRCTFSFBOX
 
 (MATDRUDE
 0.0070502107161081	! invlambdapl [2 pi c]
@@ -94,7 +95,7 @@ Gaussian 	! pulse shape
 fft_1 	! filename (.pspec)
 Eap  	! mode ( S,Ecs,Hcs,Eap,Hap) and [ref. file]
 1 1 	! unwrap phase forward / backward
-0 131071 4 	! time window [from to step]
+0 131071 64 	! time window [from to step]
 0 90 0 	! polarize: phi, theta, psi
   (REG
     (BOX
@@ -107,7 +108,7 @@ Eap  	! mode ( S,Ecs,Hcs,Eap,Hap) and [ref. file]
 fft_2 	! filename (.pspec)
 Eap fft_1 	! mode ( S,Ecs,Hcs,Eap,Hap) and [ref. file]
 1 1 	! unwrap phase forward / backward
-0 131071 4 	! time window [from to step]
+0 131071 64 	! time window [from to step]
 0 90 0 	! polarize: phi, theta, psi
   (REG
     (BOX

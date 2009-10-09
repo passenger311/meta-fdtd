@@ -1,4 +1,4 @@
-The setup implemented here computes the effective refractive index of a material slab.
+The setup implemented here computes the effective refractive index of a material slab in vacuum.
 In order to do this the complex transmission and reflection coefficients are measured within fdtd.
 Then Matlab is used to compute the refractive index and the permittivity from these coefficients.
 

@@ -1,6 +1,7 @@
 clear all;
 fid = fopen('data.save','r');
 tline = fgetl(fid); d_mat = sscanf(tline,'%e');
+tline = fgetl(fid); n_bg = sscanf(tline,'%e');
 tline = fgetl(fid); dx = sscanf(tline,'%e');
 tline = fgetl(fid); invl = sscanf(tline,'%e');
 fclose(fid);
@@ -47,28 +48,27 @@ tp= zeros(size(fft_t,1),1);
 t(:) = fft_t(:,2).*exp(i*fft_t(:,3));
 fft1(:,1) = fft_t(:,1);
 
-rp(:) = r(:).*exp(-i.*2.*pi.*fft1(:,1).*4);
-tp(:) = t(:).*exp(-i.*2.*pi.*fft1(:,1).*2);
-
+rp(:) = r(:).*exp(-i.*2.*pi.*n_bg.*fft1(:,1).*4);
+tp(:) = t(:).*exp(-i.*2.*pi.*n_bg.*fft1(:,1).*2);
 
 n = ( acos ( ( 1- ( rp(:).*rp(:) - tp(:).*tp(:) ) ) ./ ( 2.*tp(:)) ) + 2.*pi.*0 ) ./ ( 2.*pi.*fft1(:,1).*d_mat);
 eps=n.*n;
 
 figure(1)
 plot(dx./fft1(:,1),real(eps),'o');
-axis([350 800 -10 10])
+axis([400 800 -10 10])
 axis 'auto y'
 figure(2)
 plot(dx./fft1(:,1),imag(eps),'o');
-axis([350 800 -10 10])
+axis([400 800 -10 10])
 axis 'auto y'
 figure(3)
 plot(dx./fft1(:,1),real(n),'o');
-axis([350 800 -.5 0]);
+axis([400 800 -.5 0]);
 axis 'auto y'
 figure(4)
 plot(dx./fft1(:,1),imag(n),'o');
-axis([350 800 -10 10])
+axis([400 800 -10 10])
 axis 'auto y'
 
 

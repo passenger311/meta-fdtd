@@ -47,7 +47,7 @@ cfg:FDTD{
    OUT{
       file = { "GPL", "ey_1" },
       type = { "Ey", "N", ".F." },
-      time = { 0, ncycles, 10 },
+      time = { 0, ncycles, 50 },
       REG{
          BOX{
             { 2, 2, 1 }
@@ -57,7 +57,7 @@ cfg:FDTD{
    OUT{
       file = { "GPL", "ey_2" },
       type = { "Ey", "N", ".F." },
-      time = { 0, ncycles, 10 },
+      time = { 0, ncycles, 50 },
       REG{
          BOX{
             { 4, 4, 1 }
@@ -83,7 +83,7 @@ cfg:BOUND{
 --- SRC Definition(s)
 
 cfg:SRC{
-   TFSFINJ{
+   TFSFBOX{
       invlambda = inv_wavelength,
       amplitude = 1.0,
       pulse = { 
@@ -99,7 +99,7 @@ cfg:SRC{
    },
    REG{
       BOX{
-         { tfsf_inj, tfsf_inj, 1 }
+         { tfsf_inj, -tfsf_inj, 1, tfsf_inj, -tfsf_inj, 1, tfsf_inj, -tfsf_inj, 1 }
       }
    },
    on = true
@@ -152,7 +152,7 @@ end
 cfg:DIAG{
    PSPEC{
       file = "fft_1",
-      time = { 0, ncycles, 4 },
+      time = { 0, ncycles, 64 },
       phasewrap = { 1, 1 },
       mode = "Eap",
       polarize = { phi=0, theta=90, psi=0.0 }
@@ -167,7 +167,7 @@ cfg:DIAG{
    PSPEC{
       file = "fft_2",
       reffile = "fft_1",
-      time = { 0, ncycles, 4 },
+      time = { 0, ncycles, 64 },
       phasewrap = { 1, 1 },
       mode = "Eap",
       polarize = { phi=0, theta=90, psi=0.0 }

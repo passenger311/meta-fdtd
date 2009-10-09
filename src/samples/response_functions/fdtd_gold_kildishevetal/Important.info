@@ -1,0 +1,41 @@
+The setup implemented here computes the effective refractive index of a material slab embedded 
+in a material of arbitrary refractive index on both sides.
+In order to do this the complex transmission and reflection coefficients are measured within fdtd.
+Then Matlab is used to compute the refractive index and the permittivity from these coefficients.
+
+Files:
+ meta
+ luacfg
+ run
+
+ scale.lua
+ response_check.lua
+ response_check_ref.lua
+
+ fft_eps.m
+
+
+Output files:
+ eps_imag.dat
+ eps_real.dat
+
+
+The formula implemented in the Matlab program fft_eps.m is taken from Smith et al; PRB 65, 195104 (2009)
+taking into account the background refractive index when calculating the normalised transmission coefficient.
+The formula by Smith et al is restored when using t_E,1 = 1+r, t_H,1 = n_s(1-r), t_E,2 = t and t_H,2 = n_s t
+in formula (10) in Kildishev et al J. Opt. Soc. Am. B 23 (3) 2006.
+
+
+Execution:
+ First use ./run
+ then start Matlab and type fft_eps
+
+
+Tips:
+ - In order to get a higher frequency resolution increase n_cycles in scale.lua.
+ - The accuracy is higher if fft in scale.lua is increased, though this can lead to 
+   phase shifts of more than 2pi in the material which in turn makes a branch selection
+   necessary. This is not implemented.
+ 
+
+
