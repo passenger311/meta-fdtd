@@ -54,6 +54,7 @@ module srchardj
 
      real(kind=8) :: noffs, natt, nsus, ndcy   ! generic signal parameters [dt]
      real(kind=8) :: nend                      ! end of signal [dt]
+     real(kind=8) :: alpha
 
      real(kind=8) :: theta, phi, psi           ! angles of incident wavefront
 
@@ -96,7 +97,7 @@ contains
 
 
     M4_MODREAD_DECL({SRCHARDJ}, funit,lcount,src,reg,out)
-    real(kind=8) :: v(4)
+    real(kind=8) :: v(5)
     logical :: eof, err
     character(len=LINELNG) :: line
 
@@ -113,11 +114,12 @@ contains
     call readfloat(funit, lcount, src%amp)          ! amplitude 
     call readstring(funit, lcount, src%sigshape)     ! signal shape
     call readfloat(funit,lcount,src%nhwhm)          ! half width half max in time domain [dt]
-    call readfloats(funit,lcount,v,4)               ! generic signal parameters [dt] 
+    call readfloats(funit,lcount,v,5)               ! generic signal parameters [dt] 
     src%noffs = v(1)
     src%natt =  v(2)
     src%nsus =  v(3)
     src%ndcy =  v(4)
+    src%alpha = v(5)
     
     ! optional: configure plane wave source? 
 
@@ -394,7 +396,7 @@ M4_IFELSE_TE({
          ncyc1 = 1.0*ncyc
          
          src%wavefct = src%amp * GenericWave(src%sigshape, ncyc1, src%noffs, src%natt, src%nsus, src%ndcy, &
-              src%nhwhm, src%omega0)
+              src%nhwhm, src%omega0, src%alpha)
          
       else
 
@@ -405,7 +407,7 @@ M4_IFELSE_TE({
             ncyc1 = 1.0*ncyc  + l * ddt 
           
             src%wavefct =  src%amp * GenericWave(src%sigshape, ncyc1, src%noffs, src%natt, src%nsus, src%ndcy, & 
-                 src%nhwhm, src%omega0)
+                 src%nhwhm, src%omega0, src%alpha)
 
             ! store time signal for delayed e-field modulation
 

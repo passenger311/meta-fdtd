@@ -25,10 +25,13 @@ SRCLIST=$(shell ./scripts/mlist.lua -s src.def 2>/dev/null)
 MATLIST=$(shell ./scripts/mlist.lua -s mat.def 2>/dev/null)
 DIAGLIST=$(shell ./scripts/mlist.lua -s diag.def 2>/dev/null)
 OUTGPLLIST=$(shell ./scripts/mlist.lua -s outgpl.def 2>/dev/null)
+OUTRLIST=$(shell ./scripts/mlist.lua -s outr.def 2>/dev/null)
+OUTVTKLIST=$(shell ./scripts/mlist.lua -s outvtk.def 2>/dev/null)
 SRCOBJ= $(patsubst %,%.o,$(SRCLIST))
 MATOBJ= $(patsubst %,%.o,$(MATLIST))
 DIAGOBJ= $(patsubst %,%.o,$(DIAGLIST))
 OUTGPLOBJ= $(patsubst %,%_outgpl.o,$(OUTGPLLIST))
+OUTROBJ= $(patsubst %,%_outr.o,$(OUTRLIST))
 OUTVTKOBJ= $(patsubst %,%_outgpl.o,$(OUTVTKLIST))
 ifneq ($(HD5),)
 OUTHD5OBJ= $(patsubst %,%_outgpl.o,$(OUTHD5LIST))
@@ -70,6 +73,7 @@ pml.o\
 out_calc.o\
 fdtd_outset.o\
 fdtd_outgpl.o\
+fdtd_outr.o\
 fdtd_outvtk.o\
 $(FDTD_OUTHD5)\
 $(SRCOBJ)\
@@ -79,11 +83,13 @@ mat.o\
 $(DIAGOBJ)\
 diag.o\
 $(OUTGPLOBJ)\
+$(OUTROBJ)\
 $(OUTVTKOBJ)\
 $(OUTHD5OBJ)\
 outset.o\
 outgpl.o\
 outvtk.o\
+outr.o\
 $(OUTHD5)\
 mpicomms.o
 

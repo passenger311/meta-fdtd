@@ -53,18 +53,18 @@ contains
 !----------------------------------------------------------------------
 
 
-real(kind=8) function GenericWave(sigshape ,ncyc, noffs, natt, nsus, ndcy, nhwhm, omega) 
+real(kind=8) function GenericWave(sigshape ,ncyc, noffs, natt, nsus, ndcy, nhwhm, omega, alpha) 
 
   character(len=20) :: sigshape
-  real(kind=8) :: ncyc, noffs, natt, nsus, ndcy, nhwhm, omega
+  real(kind=8) :: ncyc, noffs, natt, nsus, ndcy, nhwhm, omega, alpha
 
   select case ( sigshape ) 
 
   case( "Sech" )
-     GenericWave = SechWave(ncyc, noffs, natt, nsus, ndcy, nhwhm, omega)
+     GenericWave = SechWave(ncyc, noffs, natt, nsus, ndcy, nhwhm, omega, alpha)
 
   case default
-     GenericWave = GaussianWave(ncyc, noffs, natt, nsus, ndcy, nhwhm, omega)
+     GenericWave = GaussianWave(ncyc, noffs, natt, nsus, ndcy, nhwhm, omega, alpha)
 
   end select
 
@@ -74,9 +74,9 @@ end function GenericWave
 !----------------------------------------------------------------------
 
 
-  real(kind=8) function GaussianWave(ncyc, noffs, natt, nsus, ndcy, nhwhm, omega)
+  real(kind=8) function GaussianWave(ncyc, noffs, natt, nsus, ndcy, nhwhm, omega, alpha)
 
-    real(kind=8) :: ncyc, noffs, natt, nsus, ndcy, nhwhm, omega
+    real(kind=8) :: ncyc, noffs, natt, nsus, ndcy, nhwhm, omega, alpha
     real(kind=8) :: gamma
     real(kind=8) :: ncyc0, nend, amp
 
@@ -102,7 +102,7 @@ end function GenericWave
           amp =  exp ( - gamma**2 * ( ( ncyc0 - natt - nsus ) * DT )**2 )
        end if
        
-       GaussianWave = amp * cos( omega * (ncyc0 - natt) * DT ) ! cos will peak at noffs+natt
+       GaussianWave = amp * cos( omega * (ncyc0 - natt) * DT + DEG*alpha) ! cos will peak at noffs+natt
 
     end if
 
@@ -111,9 +111,9 @@ end function GenericWave
 !----------------------------------------------------------------------
 
 
-  real(kind=8) function SechWave(ncyc, noffs, natt, nsus, ndcy, nhwhm, omega)
+  real(kind=8) function SechWave(ncyc, noffs, natt, nsus, ndcy, nhwhm, omega, alpha)
 
-    real(kind=8) :: ncyc, noffs, natt, nsus, ndcy, nhwhm, omega
+    real(kind=8) :: ncyc, noffs, natt, nsus, ndcy, nhwhm, omega, alpha
     real(kind=8) :: gamma
     real(kind=8) :: ncyc0, nend, amp
 
@@ -139,7 +139,7 @@ end function GenericWave
           amp =  1./cosh( gamma * ( ncyc0 - natt - nsus ) * DT )
        end if
        
-       SechWave = amp * cos( omega * (ncyc0 - natt) * DT ) ! cos will peak at noffs+natt
+       SechWave = amp * cos( omega * (ncyc0 - natt) * DT + DEG*alpha) ! cos will peak at noffs+natt
 
 
     end if

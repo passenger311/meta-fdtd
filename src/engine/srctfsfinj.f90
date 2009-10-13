@@ -50,6 +50,7 @@ module srctfsfinj
      real(kind=8) :: nend                      ! end of signal [dt]
 
      real(kind=8) :: theta, phi, psi           ! angles of incident wavefront
+     real(kind=8) :: alpha                     ! relative phase between pulse and pulse envelop
 
      integer :: plane                          ! active plane
 
@@ -105,11 +106,12 @@ contains
     call readfloat(funit, lcount, src%amp)          ! amplitude 
     call readstring(funit, lcount, src%sigshape)     ! signal shape
     call readfloat(funit,lcount,src%nhwhm)          ! half width half max in time domain [dt]
-    call readfloats(funit,lcount,v,4)               ! generic signal parameters [dt] 
+    call readfloats(funit,lcount,v,5)               ! generic signal parameters [dt] 
     src%noffs = v(1)
     src%natt =  v(2)
     src%nsus =  v(3)
     src%ndcy =  v(4)
+    src%alpha = v(5)
     
     call readline(funit,lcount,eof,line)
 
@@ -187,6 +189,7 @@ contains
 
     src%phi = mod(real(src%phi+360.), real(360.))
     src%psi = mod(real(src%psi+360.), real(360.))
+    src%alpha = mod(real(src%alpha+360.),real(360.))
 
     if ( DIM .eq. 3 ) then
        if ( src%theta .ge. 0. .and. src%theta .lt. 90. ) then
@@ -464,7 +467,7 @@ contains
           ncyc1 = 1.0*ncyc  - 0.5 + l * ddt  ! signal: n-1/2 -> n+1/2
           
           src%wavefct = src%amp * GenericWave(src%sigshape, ncyc1, src%noffs, src%natt, src%nsus, src%ndcy, & 
-               src%nhwhm, src%omega0)
+               src%nhwhm, src%omega0, src%alpha)
 
           ! store time signal for delayed e-field modulation
 

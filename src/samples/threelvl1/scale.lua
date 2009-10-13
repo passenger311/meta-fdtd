@@ -14,7 +14,7 @@ nref = math.sqrt(eps_bg)
 
 resolution = 30
 
-dt = 1.
+dt = 0.99
 
 real_dx       = real_wavelength / resolution 
 

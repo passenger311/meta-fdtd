@@ -284,6 +284,7 @@ function THREELVL(parms)
    THREELVL.mz = parms.mz or { {0,0}, {0,0}, {0,0} }
    THREELVL.densities = parms.densities or { 1., 0, 0 }
    THREELVL.n = parms.n or 1
+   THREELVL.LFE = parms.LFE or 0
    return THREELVL
 end
 
@@ -303,7 +304,7 @@ function HARDJ(parms)
    HARDJ.invlambda = parms.invlambda
    HARDJ.amplitude = parms.amplitude or 1.
    HARDJ.pulse = parms.pulse or { shape="Gaussian", width=0, 
-				  offset=0, attack=0, sustain=0, decay=0 }
+				  offset=0, attack=0, sustain=0, decay=0, alpha=0 }
    HARDJ.planewave = parms.planewave or { on=false, phi=0, theta=0, psi=0, nrefr=1 }
    if not HARDJ.planewave.on then HARDJ.planewave.on=true end
    return HARDJ
@@ -316,7 +317,7 @@ function TFSFINJ(parms)
    TFSFINJ.invlambda = parms.invlambda
    TFSFINJ.amplitude = parms.amplitude or 1.
    TFSFINJ.pulse = parms.pulse or { shape="Gaussian", width=0, 
-				    offset=0, attack=0, sustain=0, decay=0 }
+				    offset=0, attack=0, sustain=0, decay=0, alpha=0 }
    TFSFINJ.planewave = parms.planewave or { on=true, phi=0, theta=0, psi=0, nrefr=1 }
    return TFSFINJ
 end
@@ -328,7 +329,7 @@ function TFSFBOX(parms)
    TFSFBOX.invlambda = parms.invlambda
    TFSFBOX.amplitude = parms.amplitude or 1.
    TFSFBOX.pulse = parms.pulse or { shape="Gaussian", width=0, 
-				    offset=0, attack=0, sustain=0, decay=0 }
+				    offset=0, attack=0, sustain=0, decay=0, alpha=0 }
    TFSFBOX.planewave = parms.planewave or { on=true, phi=0, theta=0, psi=0, nrefr=1 }
    TFSFBOX.config = parms.config or { 1,1,1,1,1,1 }
    return TFSFBOX
@@ -618,6 +619,7 @@ local writemat = {
 		       "\t! mz dipole length [dx]\n")
 	      fh:write(THREELVL.densities[1]," ", THREELVL.densities[2]," ", THREELVL.densities[3], "\t! occup. densities []\n")
 	      fh:write(THREELVL.n,"\t! systems per cell []\n")
+	      fh:write(THREELVL.LFE,"\t! local field effect included?\n")
 	   end,
 }
 
@@ -653,7 +655,8 @@ local writesrc = {
 	      fh:write(HARDJ.pulse.offset or 0," ",
 		       HARDJ.pulse.attack or 0," ",
 		       HARDJ.pulse.sustain or 0," ",
-		       HARDJ.pulse.decay or 0," \t! offset attack sustain decay [dt]\n")
+		       HARDJ.pulse.decay or 0," ",
+		       HARDJ.pulse.alpha or 0," \t! offset attack sustain decay [dt]\n")
 	      if HARDJ.planewave.on then
 		 fh:write(".T."," \t! plane wave mode?\n ")
 	      else
@@ -672,7 +675,8 @@ local writesrc = {
 	      fh:write(TFSFINJ.pulse.offset or 0," ",
 		       TFSFINJ.pulse.attack or 0," ",
 		       TFSFINJ.pulse.sustain or 0," ",
-		       TFSFINJ.pulse.decay or 0," \t! offset attack sustain decay [dt]\n")
+		       TFSFINJ.pulse.decay or 0," ",
+		       TFSFINJ.pulse.alpha or 0," \t! offset attack sustain decay [dt]\n")
 	      fh:write(TFSFINJ.planewave.phi, " ",
 		       TFSFINJ.planewave.theta, " ",
 		       TFSFINJ.planewave.psi, " ",
@@ -686,7 +690,8 @@ local writesrc = {
 	      fh:write(TFSFBOX.pulse.offset or 0," ",
 		       TFSFBOX.pulse.attack or 0," ",
 		       TFSFBOX.pulse.sustain or 0," ",
-		       TFSFBOX.pulse.decay or 0," \t! offset attack sustain decay [dt]\n")
+		       TFSFBOX.pulse.decay or 0," ",
+		       TFSFBOX.pulse.alpha or 0," \t! offset attack sustain decay [dt]\n")
 	      fh:write(TFSFBOX.planewave.phi, " ",
 		       TFSFBOX.planewave.theta, " ",
 		       TFSFBOX.planewave.psi, " ",

@@ -10,7 +10,7 @@
 
 !======================================================================
 !
-! Note: currently supports GPL, VTK and HD5 formats.
+! Note: currently supports GPL, VTK, R and HD5 formats.
 !
 
 module out
@@ -27,6 +27,7 @@ module out
   use outset
   use outgpl
   use outvtk
+  use outR
 M4_IFELSE_HD5({
   use outhd5
 })
@@ -79,6 +80,8 @@ contains
           call InitializeOutgplObj(outobj(n))
        case ( "VTK" ) 
           call InitializeOutvtkObj(outobj(n))
+       case ( "R" )
+          call InitializeOutRObj(outobj(n))
 M4_IFELSE_HD5({
        case ( "HD5" ) 
           call InitializeOuthd5Obj(outobj(n))
@@ -115,6 +118,8 @@ M4_IFELSE_HD5({
           call FinalizeOutgplObj(outobj(n))
        case ( "VTK" ) 
           call FinalizeOutvtkObj(outobj(n))
+       case ( "R" )
+          call FinalizeOutRObj(outobj(n))
 M4_IFELSE_HD5({
        case ( "HD5" ) 
           call FinalizeOuthd5Obj(outobj(n))
@@ -158,6 +163,8 @@ M4_IFELSE_HD5({
           call WriteDataOutgplObj(outobj(n), ncyc, mode)
        case ( "VTK" ) 
           call WriteDataOutvtkObj(outobj(n), ncyc, mode)
+       case ( "R" )
+          call WriteDataOutRObj(outobj(n), ncyc, mode)
 M4_IFELSE_HD5({
        case ( "HD5" ) 
           call WriteDataOuthd5Obj(outobj(n), ncyc, mode)
@@ -177,7 +184,7 @@ M4_IFELSE_HD5({
 end module out
 
 !
-! Authors:  J.Hamm 
-! Modified: 6/1/2008
+! Authors:  J.Hamm
+! Modified: 24/09/2009
 !
 !======================================================================
