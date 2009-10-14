@@ -97,7 +97,7 @@ contains
 
 
     M4_MODREAD_DECL({SRCHARDJ}, funit,lcount,src,reg,out)
-    real(kind=8) :: v(5)
+    real(kind=8) :: v(4)
     logical :: eof, err
     character(len=LINELNG) :: line
 
@@ -114,12 +114,11 @@ contains
     call readfloat(funit, lcount, src%amp)          ! amplitude 
     call readstring(funit, lcount, src%sigshape)     ! signal shape
     call readfloat(funit,lcount,src%nhwhm)          ! half width half max in time domain [dt]
-    call readfloats(funit,lcount,v,5)               ! generic signal parameters [dt] 
+    call readfloats(funit,lcount,v,4)               ! generic signal parameters [dt] 
     src%noffs = v(1)
     src%natt =  v(2)
     src%nsus =  v(3)
     src%ndcy =  v(4)
-    src%alpha = v(5)
     
     ! optional: configure plane wave source? 
 
@@ -141,7 +140,9 @@ contains
     src%theta = v(2)
     src%psi = v(3)
     src%nrefr = v(4)
-     
+    
+    call readfloat(funit,lcount,src%alpha)
+    
     })
 
     M4_WRITE_DBG(". exit ReadSrcHardJObj")

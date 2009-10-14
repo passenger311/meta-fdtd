@@ -333,7 +333,7 @@ M4_IFELSE_TE({}, {
        ei(1) = 2 * w(1) * epsinvx(i,j,k) * mat%n * SI_4PIALPHA
        ei(2) = 2 * w(2) * epsinvy(i,j,k) * mat%n * SI_4PIALPHA
        ei(3) = 2 * w(3) * epsinvz(i,j,k) * mat%n * SI_4PIAlPHA
-
+       
        ! save old values of rho
        rho12o = mat%rho12(p)
        rho13o = mat%rho13(p)
@@ -542,7 +542,7 @@ M4_IFELSE_TE({}, {
        ! update fields
 
        do m= m1, m2
-       
+
           Etmp(m) = D(m) - ei(m) * &
             real( mat%M12(m)*rho12 + mat%M13(m)*rho13 + mat%M23(m)*rho23 )
 

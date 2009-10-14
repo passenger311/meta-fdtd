@@ -19,46 +19,13 @@ pulse1 = {
    offset  = 0,                    
    attack  = 10000,        
    sustain = 0, 
-   decay   = 10000,
-   alpha   = -90,   
-}
-
-pulse2 = {
-   shape = "Sech",
-   width = 200,
-   offset = 0,
-   attack = 10000,
-   sustain = 0,
-   decay = 10000,
-   alpha = 0,
+   decay   = 10000,   
 }
 
 planewave1 = { phi=00, theta=90, psi=00, nrefr=1 }
 planewave2 = { phi=00, theta=90, psi=90, nrefr=1 }
-
-pulse3 = {
-   shape   = "Sech",
-   width   = 200,
-   offset  = 0,
-   attack  = 10000,
-   sustain = 0,
-   decay   = 10000,
-   alpha   = -90,
-}
-
-pulse4 = {
-   shape = "Sech",
-   width = 200,
-   offset = 0,
-   attack = 10000,
-   sustain = 0,
-   decay = 10000,
-   alpha = 0,
-}
-
 planewave3 = { phi=180, theta=90, psi=00, nrefr=1 }
 planewave4 = { phi=180, theta=90, psi=90, nrefr=1 }
-
 
 --- GRID Definition
 
@@ -113,7 +80,7 @@ cfg:FDTD{
    },
 
    OUT{
-      file = { "R", "efield" },
+      file = { "GPL", "efield" },
       type = { "E", "N" },
       time = { 0, ncyc, 500 },
       REG{
@@ -145,7 +112,8 @@ cfg:SRC{
       invlambda = invwavelength,
       amplitude = 3640000,
       pulse = pulse1,
-      planewave = planewave1
+      planewave = planewave1,
+      alpha = -90
    },
    REG{
       POINT{ 
@@ -158,8 +126,9 @@ cfg:SRC{
    TFSFINJ{
       invlambda = invwavelength,
       amplitude = 3640000,
-      pulse = pulse2,
-      planewave = planewave2,
+      pulse = pulse1,
+      planewave = planewave1,
+      alpha = 0
    },
    REG{
       POINT{
@@ -172,8 +141,9 @@ cfg:SRC{
    TFSFINJ{
       invlambda = invwavelength,
       amplitude = 3640000,
-      pulse = pulse3,
-      planewave = planewave3
+      pulse = pulse1,
+      planewave = planewave2,
+      alpha = -90
    },
    REG{
       POINT{
@@ -186,8 +156,9 @@ cfg:SRC{
    TFSFINJ{
       invlambda = invwavelength,
       amplitude = 3640000,
-      pulse = pulse4,
-      planewave = planewave4,
+      pulse = pulse1,
+      planewave = planewave2,
+      alpha = 0
    },
    REG{
       POINT{
@@ -212,11 +183,11 @@ cfg:MAT{
       mz = { { 0,0.01 }, { 0,0.01 }, { 0,0 } }, --- z-direction
       densities = { 1, 0, 0 }, --- initial occupation of three lvl system {n1,n2,n3}
       LFE = 0,
-      n = 1000000 --- number of three level systems per grid cell
+      n = 1000 --- number of three level systems per grid cell
    },
    REG{
 	BOX{
-	  { 500, 9500, 1, ":" , 0, 0, 0 }
+	  { 500, 9500, 1, ":" , 1, 1, 1 }
 	}
 	},
    OUT{

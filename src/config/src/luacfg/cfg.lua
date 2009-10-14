@@ -304,8 +304,9 @@ function HARDJ(parms)
    HARDJ.invlambda = parms.invlambda
    HARDJ.amplitude = parms.amplitude or 1.
    HARDJ.pulse = parms.pulse or { shape="Gaussian", width=0, 
-				  offset=0, attack=0, sustain=0, decay=0, alpha=0 }
+				  offset=0, attack=0, sustain=0, decay=0 }
    HARDJ.planewave = parms.planewave or { on=false, phi=0, theta=0, psi=0, nrefr=1 }
+   HARDJ.alpha = parms.alpha or 0
    if not HARDJ.planewave.on then HARDJ.planewave.on=true end
    return HARDJ
 end
@@ -317,8 +318,9 @@ function TFSFINJ(parms)
    TFSFINJ.invlambda = parms.invlambda
    TFSFINJ.amplitude = parms.amplitude or 1.
    TFSFINJ.pulse = parms.pulse or { shape="Gaussian", width=0, 
-				    offset=0, attack=0, sustain=0, decay=0, alpha=0 }
+				    offset=0, attack=0, sustain=0, decay=0 }
    TFSFINJ.planewave = parms.planewave or { on=true, phi=0, theta=0, psi=0, nrefr=1 }
+   TFSFINJ.alpha = parms.alpha or 0
    return TFSFINJ
 end
 
@@ -329,9 +331,10 @@ function TFSFBOX(parms)
    TFSFBOX.invlambda = parms.invlambda
    TFSFBOX.amplitude = parms.amplitude or 1.
    TFSFBOX.pulse = parms.pulse or { shape="Gaussian", width=0, 
-				    offset=0, attack=0, sustain=0, decay=0, alpha=0 }
+				    offset=0, attack=0, sustain=0, decay=0 }
    TFSFBOX.planewave = parms.planewave or { on=true, phi=0, theta=0, psi=0, nrefr=1 }
    TFSFBOX.config = parms.config or { 1,1,1,1,1,1 }
+   TFSFBOX.alpha = parms.alpha or 0
    return TFSFBOX
 end
 
@@ -655,8 +658,7 @@ local writesrc = {
 	      fh:write(HARDJ.pulse.offset or 0," ",
 		       HARDJ.pulse.attack or 0," ",
 		       HARDJ.pulse.sustain or 0," ",
-		       HARDJ.pulse.decay or 0," ",
-		       HARDJ.pulse.alpha or 0," \t! offset attack sustain decay [dt]\n")
+		       HARDJ.pulse.decay or 0,"\t! offset attack sustain decay [dt]\n")
 	      if HARDJ.planewave.on then
 		 fh:write(".T."," \t! plane wave mode?\n ")
 	      else
@@ -666,6 +668,7 @@ local writesrc = {
 		       HARDJ.planewave.theta, " ",
 		       HARDJ.planewave.psi, " ",
 		       HARDJ.planewave.nrefr, " \t! planewave: phi, theta, psi, nrefr\n")
+	      fh:write(HARDJ.alpha,"\n")
 	   end,
    TFSFINJ = function(fh,TFSFINJ)
 	      fh:write(TFSFINJ.invlambda," \t! invlambda [2 pi c]\n")
@@ -675,12 +678,12 @@ local writesrc = {
 	      fh:write(TFSFINJ.pulse.offset or 0," ",
 		       TFSFINJ.pulse.attack or 0," ",
 		       TFSFINJ.pulse.sustain or 0," ",
-		       TFSFINJ.pulse.decay or 0," ",
-		       TFSFINJ.pulse.alpha or 0," \t! offset attack sustain decay [dt]\n")
+		       TFSFINJ.pulse.decay or 0," \t! offset attack sustain decay [dt]\n")
 	      fh:write(TFSFINJ.planewave.phi, " ",
 		       TFSFINJ.planewave.theta, " ",
 		       TFSFINJ.planewave.psi, " ",
 		       TFSFINJ.planewave.nrefr, " \t! planewave: phi, theta, psi, nrefr\n")
+	      fh:write(TFSFINJ.alpha,"\n")
 	   end,
    TFSFBOX = function(fh,TFSFBOX)
 	      fh:write(TFSFBOX.invlambda," \t! invlambda [2 pi c]\n")
@@ -690,8 +693,7 @@ local writesrc = {
 	      fh:write(TFSFBOX.pulse.offset or 0," ",
 		       TFSFBOX.pulse.attack or 0," ",
 		       TFSFBOX.pulse.sustain or 0," ",
-		       TFSFBOX.pulse.decay or 0," ",
-		       TFSFBOX.pulse.alpha or 0," \t! offset attack sustain decay [dt]\n")
+		       TFSFBOX.pulse.decay or 0," \t! offset attack sustain decay [dt]\n")
 	      fh:write(TFSFBOX.planewave.phi, " ",
 		       TFSFBOX.planewave.theta, " ",
 		       TFSFBOX.planewave.psi, " ",
@@ -699,6 +701,7 @@ local writesrc = {
 	      fh:write(TFSFBOX.config[1]," ", TFSFBOX.config[2]," ",
 		        TFSFBOX.config[3]," ", TFSFBOX.config[4]," ",
 			TFSFBOX.config[5]," ", TFSFBOX.config[6]," \t! active planes\n")
+              fh:write(TFSFBOX.alpha,"\n")
 	   end,
 
 }
