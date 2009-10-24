@@ -8,7 +8,7 @@ dofile("scale.lua")
 
 --- set time steps 
 
-ncyc        = 25000
+ncyc        = 15000
 
 
 --- setup source / diagnostic planes for ffts
@@ -31,7 +31,7 @@ planewave4 = { phi=180, theta=90, psi=90, nrefr=1 }
 
 cpml = 11
 imin = 0
-imax = 10000
+imax = 1000
 
 imin0 = imin - cpml
 imax0 = imax + cpml
@@ -80,7 +80,7 @@ cfg:FDTD{
    },
 
    OUT{
-      file = { "GPL", "efield" },
+      file = { "R", "efield" },
       type = { "E", "N" },
       time = { 0, ncyc, 500 },
       REG{
@@ -147,7 +147,7 @@ cfg:SRC{
    },
    REG{
       POINT{
-         { 9900, ":", 0, 1 }
+         { 900, ":", 0, 1 }
       }
    },
 }
@@ -162,7 +162,7 @@ cfg:SRC{
    },
    REG{
       POINT{
-        { 9900, ":", 0, 1 }
+        { 900, ":", 0, 1 }
       }
    },
 }
@@ -186,8 +186,8 @@ cfg:MAT{
       n = 1000 --- number of three level systems per grid cell
    },
    REG{
-	BOX{
-	  { 500, 9500, 1, ":" , 1, 1, 1 }
+	POINT{
+	  { 500, ":" , 1, 1, 1 }
 	}
 	},
    OUT{
@@ -195,8 +195,8 @@ cfg:MAT{
       type = { "N", "N", ".T." },
       time = { 0, ncyc, 500 },
       REG{
-	 BOX{ 
-	    { 500, 9500, 1 }   -- middle point of the structure  
+	 POINT{ 
+	    { 500 }   -- middle point of the structure  
 	 }
       },
       on = true
