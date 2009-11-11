@@ -3,13 +3,13 @@
 cfg:DIAG{
    MODE{
       file = "invlambda2.in",
-      outfile = "F",
+      outfile = "EHT",
       time = { 0, ncycles, (ncycles+1)/sampl_dft },
-      mode = "F"
+      mode = "EHT"
    },
    REG{
       BOX{
-         { -hdist_tfsf_i+1, hdist_tfsf_i-1, 10, 0, 0, 1, -hdist_tfsf_k+1, hdist_tfsf_k-1, 10 }
+         { -hdist_tfsf_i+1, hdist_tfsf_i-1, 4, -hdist_tfsf_j+1, hdist_tfsf_j-1, 4, 0, 0, 1 }
       }
    }
 }

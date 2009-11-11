@@ -39,7 +39,6 @@ while i <= num_np do --true do
     real_xnp[i] = tmp_xnp
     real_ynp[i] = tmp_ynp
     real_znp[i] = tmp_znp
-    print(i,":",l)
     i=i+1; l=0;
   end
 end
@@ -48,7 +47,7 @@ n_sphere = 3.
 n_bg = 1.0
 n_max = n_bg  -- maximum refractive index to determine optically thickest medium -> not used atm resolution is set to specific value
 mat = 'gold' -- gold, silver 
-closed = true
+closed = false
 polarisation = 's' -- p (parallel), s (perpendicular)
 
 step_dft = 1

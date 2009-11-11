@@ -54,27 +54,6 @@ cfg:FDTD{
 
 }
 
-cfg:SRC{
-   TFSFINJ{
-      invlambda = inv_wavelength+conv*real_omegaR/frequ_factor,
-      amplitude = 1/100*ampl*(math.sqrt(8.854187817e-12)/((conv*1e-9)^(3/2)*frequ_factor*1000)),
-      pulse = {
-         shape="Gaussian",
-         width=math.floor(widthl*resolution*n_max+.5),
-         offset=math.floor(offsetl*resolution*n_max+.5),
-         attack=math.floor(attackl*resolution*n_max+.5),
-         sustain=math.floor(sustainl*resolution*n_max+.5),
-         decay=math.floor(decayl*resolution*n_max+.5)
-      },
-      planewave = { phi=0., theta=90.0, psi=0.0, nrefr=nrefr },
-   },
-   REG{
-      BOX{
-         { tfsf_inj, tfsf_inj, 1 }
-      }
-   },
-   on = false
-}
 
 --- BOUND Definition
 
@@ -112,6 +91,28 @@ cfg:SRC{
       }
    },
    on = true
+}
+
+cfg:SRC{
+   TFSFINJ{
+      invlambda = inv_wavelength+conv*real_omegaR/frequ_factor,
+      amplitude = 1/100*ampl*(math.sqrt(8.854187817e-12)/((conv*1e-9)^(3/2)*frequ_factor*1000)),
+      pulse = {
+         shape="Gaussian",
+         width=math.floor(widthl*resolution*n_max+.5),
+         offset=math.floor(offsetl*resolution*n_max+.5),
+         attack=math.floor(attackl*resolution*n_max+.5),
+         sustain=math.floor(sustainl*resolution*n_max+.5),
+         decay=math.floor(decayl*resolution*n_max+.5)
+      },
+      planewave = { phi=0., theta=90.0, psi=0.0, nrefr=nrefr },
+   },
+   REG{
+      BOX{
+         { tfsf_inj, tfsf_inj, 1 }
+      }
+   },
+   on = false
 }
 
 

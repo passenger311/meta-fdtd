@@ -42,7 +42,7 @@ cfg:CREATE_PREVIEW{
    "np",
    scene=scene_np,
    grid=grid_prev_np,
-   on=true
+--   on=false
 }
 cfg:CREATE_GEO{
    "np_inf",
@@ -95,3 +95,6 @@ if (mat == 'silver' or mat == 'carbon') then
       }
    }
 end
+
+table.insert(geo,LOAD_GEO{ "np_inf" })
+

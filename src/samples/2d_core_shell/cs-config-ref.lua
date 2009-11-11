@@ -31,7 +31,6 @@ cfg:GRID{
    jrange = { jmin-size_pml, jmax+size_pml },   -- -"- in y direction
    krange = { 0, 0 },    -- -"- in z direction
    dx = { conv*1e-9, 1, 1, 1 }
-
 }
 
 --- FDTD Definition
@@ -93,7 +92,7 @@ cfg:DIAG{
       time = { 0, ncycles, (ncycles+1)/sampl_fft },
       phasewrap = { 1, 0 },
       mode = "S",
-      polarize = { phi=90, theta=90, psi=90.0 }
+      polarize = { phi=90, theta=90, psi=90 }
    },
    REG{
       BOX{
@@ -109,7 +108,7 @@ cfg:DIAG{
       time = { 0, ncycles, (ncycles+1)/sampl_fft },
       phasewrap = { 1, 0 },
       mode = "S",
-      polarize = { phi=90, theta=90, psi=90.0 }   
+      polarize = { phi=90, theta=90, psi=90 }   
    },
    REG{
       BOX{
@@ -136,13 +135,13 @@ cfg:DIAG{
 cfg:DIAG{
    MODE{
       file = "invlambda2.in",
-      outfile = "F",
+      outfile = "EHT",
       time = { 0, ncycles, (ncycles+1)/sampl_dft },
-      mode = "F"
+      mode = "EHT"
    },
    REG{
       BOX{
-         { 0, 0, 1, -hdist_tfsf+1, -hdist_tfsf+1, 1 }
+         { 0, 1, 1,  -hdist_tfsf+1, -hdist_tfsf+1, 1 }
       }
    }
 }

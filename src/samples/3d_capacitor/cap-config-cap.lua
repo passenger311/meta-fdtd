@@ -35,43 +35,43 @@ cfg:GRID{
 
 --- CREATE SCENE
 
-scene_cap1_inf = Scene{
+scene_cap_inf = Scene{
    value = n_bg^2 -- constant background permittivity
 }
-scene_cap1 = Scene{
+scene_cap = Scene{
    value = 0 -- constant background permittivity
 }
 cap_box1 = Box{
    from={-hwidthx,-hwidthy,-hdist-2*hheight},
    to={hwidthx,hwidthy,-hdist}
 }
-scene_cap1_inf:add{
+scene_cap_inf:add{
    cap_box1,
    value = eps_infDL
 }
-scene_cap1:add{
+scene_cap:add{
    cap_box1,
    value = 1.
 }
 
-scene_cap2_inf = Scene{
-   value = n_bg^2 -- constant background permittivity
-}
-scene_cap2 = Scene{
-   value = 0 -- constant background permittivity
-}
 cap_box2 = Box{
    from={-hwidthx,-hwidthy,hdist},
    to={hwidthx,hwidthy,hdist+2*hheight}
 }
-scene_cap2_inf:add{
+scene_cap_inf:add{
    cap_box2,
    value = eps_infDL
 }
-scene_cap2:add{
+scene_cap:add{
    cap_box2,
    value = 1.
 }
+geo = {
+   BOX{
+      { imin-size_pml-1, imax+size_pml+1, 1, jmin-size_pml-1, jmax+size_pml+1, 1, kmin-size_pml-1, kmax+size_pml+1, 1, ":", n_bg^2, n_bg^2, n_bg^2 }
+   }
+}
+if (closed) then dofile("closed.lua") end
 
 -- specify a grid for the scene (only objects that are inside the grid will be part of the geometry)
 grid_cap1 = Grid{
@@ -96,7 +96,7 @@ grid_prev_cap2 = Grid{
 
 cfg:CREATE_GEO{      -- add the scene to the geometry
    "cap1",         -- filename: geo_"***".in
-   scene=scene_cap1,     -- scene to be added
+   scene=scene_cap,     -- scene to be added
    grid=grid_cap1,       -- grid to be used
    method="default", -- ???
    comps=3,          -- number of components of permittivy (or permittivity + permeability)
@@ -105,7 +105,7 @@ cfg:CREATE_GEO{      -- add the scene to the geometry
 }
 cfg:CREATE_GEO{      -- add the scene to the geometry
    "cap1_inf",         -- filename: geo_"***".in
-   scene=scene_cap1_inf,     -- scene to be added
+   scene=scene_cap_inf,     -- scene to be added
    grid=grid_cap1,       -- grid to be used
    method="default", -- ???
    comps=3,          -- number of components of permittivy (or permittivity + permeability)
@@ -114,13 +114,13 @@ cfg:CREATE_GEO{      -- add the scene to the geometry
 }
 cfg:CREATE_PREVIEW{  -- create a preview of the scene
    "cap1",         -- filename: preview_"***".vtk
-   scene=scene_cap1,     -- scene to be added
+   scene=scene_cap,     -- scene to be added
    grid=grid_prev_cap1,        -- grid to be used
 --   on=false
 }
 cfg:CREATE_GEO{      -- add the scene to the geometry
    "cap2",         -- filename: geo_"***".in
-   scene=scene_cap2,     -- scene to be added
+   scene=scene_cap,     -- scene to be added
    grid=grid_cap2,       -- grid to be used
    method="default", -- ???
    comps=3,          -- number of components of permittivy (or permittivity + permeability)
@@ -129,7 +129,7 @@ cfg:CREATE_GEO{      -- add the scene to the geometry
 }
 cfg:CREATE_GEO{      -- add the scene to the geometry
    "cap2_inf",         -- filename: geo_"***".in
-   scene=scene_cap2_inf,     -- scene to be added
+   scene=scene_cap_inf,     -- scene to be added
    grid=grid_cap2,       -- grid to be used
    method="default", -- ???
    comps=3,          -- number of components of permittivy (or permittivity + permeability)
@@ -138,23 +138,20 @@ cfg:CREATE_GEO{      -- add the scene to the geometry
 }
 cfg:CREATE_PREVIEW{  -- create a preview of the scene
    "cap2",         -- filename: preview_"***".vtk
-   scene=scene_cap2,     -- scene to be added
+   scene=scene_cap,     -- scene to be added
    grid=grid_prev_cap2,        -- grid to be used
 --   on=false
 }
+
+table.insert(geo,LOAD_GEO{ "cap1_inf" })
+table.insert(geo,LOAD_GEO{ "cap2_inf" })
 
 --- FDTD Definition
 eps_bg = n_bg^2
 cfg:FDTD{
 
    EPSILON{
-      REG{
-         BOX{
-            { imin-size_pml-1, imax+size_pml+1, 1, jmin-size_pml-1, jmax+size_pml+1, 1, kmin-size_pml-1, kmax+size_pml+1, 1, ":", eps_bg, eps_bg, eps_bg }
-         },
-         LOAD_GEO{ "cap1_inf" },
-         LOAD_GEO{ "cap2_inf" },
-      },
+      REG(geo),
       on = true
    },
 
@@ -266,7 +263,7 @@ cfg:SRC{
          sustain=math.floor(sustainl*resolution*n_max+.5),
          decay=math.floor(decayl*resolution*n_max+.5)
       },
-      planewave = { phi=0.0, theta=0.0+5*(taskid-1), psi=0.0, nrefr=nrefr }
+      planewave = { phi=phi, theta=theta, psi=psi, nrefr=nrefr }
    },
    REG{
       BOX{
@@ -350,7 +347,7 @@ end
 
 -- diagnostics DFT/FFT
 dofile("diagmode.lua")
--- dofile("diagpspec.lua")
+dofile("diagpspec.lua")
 
 --- CREATE: config.<part>.in
 cfg:CREATE()

@@ -128,7 +128,7 @@ cfg:DIAG{
    },
    REG{
       BOX{
-         { 0, 1, 1, 0, 1, 1, -hdist_ntff+3, -hdist_ntff+3, 1 }
+         { 0, 1, 1, 0, 1, 1, -hdist_tfsf+1, -hdist_tfsf+1, 1 }
       }
    }
 }
@@ -136,13 +136,13 @@ cfg:DIAG{
 cfg:DIAG{
    MODE{
       file = "invlambda2.in",
-      outfile = "EHN",
+      outfile = "F",
       time = { 0, ncycles, (ncycles+1)/sampl_dft },
-      mode = "EHN"
+      mode = "F"
    },
    REG{
       BOX{
-         { -hdist_tfsf+2, hdist_tfsf-2, 1, 0, 0, 1, -hdist_tfsf+2, hdist_tfsf-2, 1 }
+         { 0, 0, 1, 0, 0, 1, -hdist_tfsf+1, -hdist_tfsf+1, 1 }
       }
    }
 }

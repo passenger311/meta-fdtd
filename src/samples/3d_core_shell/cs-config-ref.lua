@@ -23,15 +23,14 @@ print("propagate wave through structure:         ", max_tstep)
 
 cfg:GRID{
 
-   dim = 2,                         -- number of dimensions
+   dim = 3,                         -- number of dimensions
    partition = { 0, 1 },
    ncyc = ncycles,                  -- number of time steps
    dt = dt,                         -- time step length compared to grid step length (--> Courant stability factor)
    irange = { imin-size_pml, imax+size_pml },   -- range of computational window in x direction
    jrange = { jmin-size_pml, jmax+size_pml },   -- -"- in y direction
-   krange = { 0, 0 },    -- -"- in z direction
+   krange = { kmin-size_pml, kmax+size_pml },    -- -"- in z direction
    dx = { conv*1e-9, 1, 1, 1 }
-
 }
 
 --- FDTD Definition
@@ -77,7 +76,7 @@ cfg:SRC{
          sustain=math.floor(sustainl*resolution*n_max+.5),
          decay=math.floor(decayl*resolution*n_max+.5)
       },
-      planewave = { phi=90, theta=90.0, psi=90.0, nrefr=nrefr }
+      planewave = { phi=0, theta=0.0, psi=0.0, nrefr=nrefr }
    },
    REG{
       BOX{
@@ -93,11 +92,11 @@ cfg:DIAG{
       time = { 0, ncycles, (ncycles+1)/sampl_fft },
       phasewrap = { 1, 0 },
       mode = "S",
-      polarize = { phi=90, theta=90, psi=90.0 }
+      polarize = { phi=0, theta=0, psi=0 }
    },
    REG{
       BOX{
-         { -hdist_tfsf+2, hdist_tfsf-2, 1, -hdist_tfsf+2, -hdist_tfsf+2, 1 }
+         { -hdist_tfsf+2, hdist_tfsf-2, 1, -hdist_tfsf+2, hdist_tfsf-2, 1, -hdist_tfsf+2, -hdist_tfsf+2, 1 }
       }
    }
 }
@@ -109,11 +108,11 @@ cfg:DIAG{
       time = { 0, ncycles, (ncycles+1)/sampl_fft },
       phasewrap = { 1, 0 },
       mode = "S",
-      polarize = { phi=90, theta=90, psi=90.0 }   
+      polarize = { phi=0, theta=0, psi=0 }   
    },
    REG{
       BOX{
-         { 0, 0, 1, -hdist_tfsf+1, -hdist_tfsf+1, 1 }
+         { 0, 0, 1, 0, 0, 1, -hdist_tfsf+1, -hdist_tfsf+1, 1 }
       }
    }
 }
@@ -128,7 +127,7 @@ cfg:DIAG{
    },
    REG{
       BOX{
-         { 0, 1, 1, -hdist_tfsf+1, -hdist_tfsf+1, 1 }
+         { 0, 1, 1, 0, 1, 1, -hdist_tfsf+1, -hdist_tfsf+1, 1 }
       }
    }
 }
@@ -136,13 +135,13 @@ cfg:DIAG{
 cfg:DIAG{
    MODE{
       file = "invlambda2.in",
-      outfile = "F",
+      outfile = "EHT",
       time = { 0, ncycles, (ncycles+1)/sampl_dft },
-      mode = "F"
+      mode = "EHT"
    },
    REG{
       BOX{
-         { 0, 0, 1, -hdist_tfsf+1, -hdist_tfsf+1, 1 }
+         { 0, 1, 1, 0, 1, 1, -hdist_tfsf+1, -hdist_tfsf+1, 1 }
       }
    }
 }
