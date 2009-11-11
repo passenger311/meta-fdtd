@@ -74,7 +74,7 @@ hdist_ntff_i = hdist_tfsf_i + 2
 hdist_tfsf_j = math.floor(real_hdist_tfsf_j/conv+.5)
 hdist_ntff_j = hdist_tfsf_j + 2
 hdist_tfsf_k = math.floor(real_hdist_tfsf_k/conv+.5)
-hdist_ntff_k = hdist_tfsf_j + 2
+hdist_ntff_k = hdist_tfsf_k + 2
 
 
 rnp={}; inp={}; jnp={}; knp={}
