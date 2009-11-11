@@ -52,9 +52,9 @@ closed = true
 polarisation = 's' -- p (parallel), s (perpendicular)
 
 step_dft = 4
-sampl_dft = 1024
+sampl_dft = 2048
 step_fft = 4
-sampl_fft = 1024
+sampl_fft = 2048
 
 --- conversion to computation scale
 
