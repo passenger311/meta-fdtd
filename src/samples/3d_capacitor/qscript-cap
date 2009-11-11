@@ -25,7 +25,7 @@
 # #$ -l h_rt=1:00:00     
 # #$ -l h_vmem=1G        
 # ------- smp job?
-# #$ -l mp=1
+#$ -l mp=1
 # ------- quad node? (default: false)
 # #$ -l quad=true
 # ------- specific instance?
@@ -54,7 +54,7 @@ else
 RUNDIR=..
 TASKDIR="task_cap$SGE_TASK_ID"
 mkdir $TASKDIR 2>/dev/null
-cp fft_scat.m fft_abs.m scale.lua  diagmode.lua diagpspec.lua callNTFF.m $TASKDIR
+cp fft_scat.m fft_abs.m scale.lua closed.lua diagmode.lua diagpspec.lua callNTFF.m $TASKDIR
 cd $TASKDIR
 fi
 
