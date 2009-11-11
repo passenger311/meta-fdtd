@@ -17,24 +17,39 @@ real_hheight = 16          -- half height of capacitor plates (0 equals one yee 
 real_hdist_tfsf_i = real_hwidth + 10
 real_hdist_tfsf_j = real_hdist + 2*real_hheight + 10
 
-num_np = 10; -- number of nanoparticles
 
+num_np = 1; -- number of nanoparticles
 real_rnp = {}; real_xnp = {}; real_ynp = {}; real_znp = {}
 math.randomseed( 1235 )
 
-for i =1,num_np do
-  real_rnp[i] = 20
-  real_xnp[i] = math.random(-real_hwidth + 5*real_rnp[i],real_hwidth - 5*real_rnp[i])
-  real_znp[i] = 0
-end
-for i = 1, num_np do
-  real_ynp[i] = math.random(-real_hdist + 1.5*real_rnp[i],real_hdist - 1.5*real_rnp[i])
+i=1;l=0
+while i <= num_np do --true do
+  tmp_rnp = 20
+  tmp_xnp = math.random(-(real_hwidth-4*tmp_rnp),real_hwidth-4*tmp_rnp)
+  tmp_ynp = math.random(-(real_hdist-2*tmp_rnp),real_hdist-2*tmp_rnp)
+  tmp_znp = 0
+  k=0; l=l+1
+  for j = 1,i-1 do
+    if (math.sqrt((real_xnp[j]-tmp_xnp)^2+(real_ynp[j]-tmp_ynp)^2+(real_znp[j]-tmp_znp)^2)-tmp_rnp-real_rnp[j] >= 0 ) then
+      k=k+1;
+    end
+  end
+  if k==i-1 then
+    real_rnp[i] = tmp_rnp
+    real_xnp[i] = tmp_xnp
+    real_ynp[i] = tmp_ynp
+    real_znp[i] = tmp_znp
+    print(i,":",l)
+    i=i+1; l=0;
+  end
 end
 
 n_sphere = 3.
 n_bg = 1.0
-n_max = n_bg  -- maximum refractive index to determine optically thickest medium
+n_max = n_bg  -- maximum refractive index to determine optically thickest medium -> not used atm resolution is set to specific value
 mat = 'gold' -- gold, silver 
+closed = true
+polarisation = 's' -- p (parallel), s (perpendicular)
 
 step_dft = 1
 sampl_dft = 1024
@@ -43,7 +58,7 @@ sampl_fft = 1024
 
 --- conversion to computation scale
 
-resolution = 750/4 -- resolution of wavelength in optically thickest medium (even number)
+resolution = real_wavelength/4 -- resolution of wavelength in optically thickest medium (even number)
 
 conv = real_wavelength/resolution/n_max -- conversion factor between real and computation length scale
 frequ_factor = 2.99792458e5  -- change from frequency in THz (c|=1) to inverse wavelength in 1/nm (c=1)
@@ -74,6 +89,15 @@ attackl = 4  -- attack in number of periods
 sustainl = 0   -- sustain in number of periods
 decayl = 8     -- decay in number of periods
 nrefr = n_bg -- reference injection refractive index
+phi=90.0+5*(taskid-1)
+theta=90.0
+if (polarisation == 's') then
+  psi = 90.0 
+elseif (polarisation == 'p') then
+  psi = 0.0
+else
+  error('polarisation not chosen correctly (p/s)!')
+end
 
 
 --- PML size parameter
@@ -153,7 +177,7 @@ end
 
 foutput = io.open("invlambda.in","w+")
 foutput2 = io.open("lambda.in","w+")
-for i = 600,1100,5 do
+for i = 600,950,2 do
    foutput:write(conv/i, "\n")
    foutput2:write(i, "\n")
 end
@@ -162,7 +186,7 @@ foutput2:close()
 
 foutput = io.open("invlambda2.in","w+")
 foutput2 = io.open("lambda2.in","w+")
-for i = 600,1000,10 do
+for i = 600,920,5 do
    foutput:write(conv/i,"\n")
    foutput2:write(i, "\n")
 end
@@ -172,5 +196,6 @@ foutput2:close()
 foutput = io.open("data.save","w+")
 foutput:write(conv,"\n")
 foutput:write(2*(hdist_ntff_i+2), " ", 2*(hdist_ntff_j+2), " ", 1, "\n")
-foutput:write(2*(hdist_tfsf_i-2), " ", 2*(hdist_tfsf_j-2), " ", 1)
+foutput:write(2*(hdist_tfsf_i-2), " ", 2*(hdist_tfsf_j-2), " ", 1, "\n")
+foutput:write(theta, " ", phi, " ", psi, "\n")
 foutput:close()

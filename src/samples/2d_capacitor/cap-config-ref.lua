@@ -128,7 +128,7 @@ cfg:DIAG{
    },
    REG{
       BOX{
-         { 0, 1, 1, -hdist_ntff+3, -hdist_ntff+3, 1 }
+         { 0, 1, 1, -hdist_tfsf+1, -hdist_tfsf+1, 1 }
       }
    }
 }

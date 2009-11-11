@@ -35,65 +35,46 @@ cfg:GRID{
 
 --- CREATE SCENE
 
-scene_cap1_inf = Scene{
+
+scene_cap_inf = Scene{
    value = n_bg^2 -- constant background permittivity
 }
-scene_cap1 = Scene{
+scene_cap = Scene{
    value = 0 -- constant background permittivity
 }
 cap_box1 = Box{
    from={-hwidth,-hdist-2*hheight,-3},
    to={hwidth,-hdist,3}
 }
-scene_cap1_inf:add{
+scene_cap_inf:add{
    cap_box1,
    value = eps_infDL
 }
-scene_cap1:add{
+scene_cap:add{
    cap_box1,
    value = 1.
 }
 
-scene_cap2_inf = Scene{
-   value = n_bg^2 -- constant background permittivity
-}
-scene_cap2 = Scene{
-   value = 0 -- constant background permittivity
-}
 cap_box2 = Box{
    from={-hwidth,hdist,-3},
    to={hwidth,hdist+2*hheight,3}
 }
-scene_cap2_inf:add{
+scene_cap_inf:add{
    cap_box2,
    value = eps_infDL
 }
-scene_cap2:add{
+scene_cap:add{
    cap_box2,
    value = 1.
 }
 
-scene_np_inf = Scene{
-   value =n_bg^2
+geo = {
+  BOX{
+     { imin-size_pml-1, imax+size_pml+1, 1, jmin-size_pml-1, jmax+size_pml+1, 1, kmin-size_pml-1, kmax+size_pml+1, 1, ":", n_bg^2, n_bg^2, n_bg^2 }
+  },
 }
-scene_np = Scene{
-   value =0.
-}
-for i,v in ipairs(rnp) do
-   sphere1 = Sphere{
-      at={inp[i],jnp[i],knp[i]},
-      radius=rnp[i]
-   }
-   scene_np_inf:add{
-      sphere1,
-      value = eps_infDL
-   }
-   scene_np:add{
-      sphere1,
-      value = 1   -- filling factor for metal!!!!!!!!!!!!
-   }
-end
-
+if (closed) then dofile("closed.lua") end
+dofile("np.lua")
 
 -- specify a grid for the scene (only objects that are inside the grid will be part of the geometry)
 grid_cap1 = Grid{
@@ -116,23 +97,9 @@ grid_prev_cap2 = Grid{
    to = {hwidth+2,hdist+2*hheight+2,2},  -- upper front right corner of scene-object
 }
 
-table.sort(rnp); table.sort(inp); table.sort(jnp); table.sort(knp)
-maxntab = table.maxn(rnp);
-
-grid_np = Grid{
-   from={inp[1]-rnp[maxntab]-2,jnp[1]-rnp[maxntab]-2,knp[1]-rnp[maxntab]-2},
-   to={inp[maxntab]+rnp[maxntab]+2,jnp[maxntab]+rnp[maxntab]+2,knp[maxntab]+rnp[maxntab]+2}
-}
-grid_prev_np = Grid{
-   yee = false,
-   from={inp[1]-rnp[maxntab]-2,jnp[1]-rnp[maxntab]-2,knp[1]-rnp[maxntab]-2},
-   to={inp[maxntab]+rnp[maxntab]+2,jnp[maxntab]+rnp[maxntab]+2,knp[maxntab]+rnp[maxntab]+2}
-}
-
-
 cfg:CREATE_GEO{      -- add the scene to the geometry
    "cap1",         -- filename: geo_"***".in
-   scene=scene_cap1,     -- scene to be added
+   scene=scene_cap,     -- scene to be added
    grid=grid_cap1,       -- grid to be used
    method="default", -- ???
    comps=3,          -- number of components of permittivy (or permittivity + permeability)
@@ -141,7 +108,7 @@ cfg:CREATE_GEO{      -- add the scene to the geometry
 }
 cfg:CREATE_GEO{      -- add the scene to the geometry
    "cap1_inf",         -- filename: geo_"***".in
-   scene=scene_cap1_inf,     -- scene to be added
+   scene=scene_cap_inf,     -- scene to be added
    grid=grid_cap1,       -- grid to be used
    method="default", -- ???
    comps=3,          -- number of components of permittivy (or permittivity + permeability)
@@ -150,13 +117,13 @@ cfg:CREATE_GEO{      -- add the scene to the geometry
 }
 cfg:CREATE_PREVIEW{  -- create a preview of the scene
    "cap1",         -- filename: preview_"***".vtk
-   scene=scene_cap1,     -- scene to be added
+   scene=scene_cap,     -- scene to be added
    grid=grid_prev_cap1,        -- grid to be used
 --   on=false
 }
 cfg:CREATE_GEO{      -- add the scene to the geometry
    "cap2",         -- filename: geo_"***".in
-   scene=scene_cap2,     -- scene to be added
+   scene=scene_cap,     -- scene to be added
    grid=grid_cap2,       -- grid to be used
    method="default", -- ???
    comps=3,          -- number of components of permittivy (or permittivity + permeability)
@@ -165,7 +132,7 @@ cfg:CREATE_GEO{      -- add the scene to the geometry
 }
 cfg:CREATE_GEO{      -- add the scene to the geometry
    "cap2_inf",         -- filename: geo_"***".in
-   scene=scene_cap2_inf,     -- scene to be added
+   scene=scene_cap_inf,     -- scene to be added
    grid=grid_cap2,       -- grid to be used
    method="default", -- ???
    comps=3,          -- number of components of permittivy (or permittivity + permeability)
@@ -174,49 +141,20 @@ cfg:CREATE_GEO{      -- add the scene to the geometry
 }
 cfg:CREATE_PREVIEW{  -- create a preview of the scene
    "cap2",         -- filename: preview_"***".vtk
-   scene=scene_cap2,     -- scene to be added
+   scene=scene_cap,     -- scene to be added
    grid=grid_prev_cap2,        -- grid to be used
 --   on=false
 }
 
-cfg:CREATE_GEO{
-   "np",
-   scene=scene_np,
-   grid=grid_np,
---   on=false
-}
-cfg:CREATE_PREVIEW{
-   "np",
-   scene=scene_np,
-   grid=grid_prev_np,
-   on=true
-}
-cfg:CREATE_GEO{
-   "np_inf",
-   scene=scene_np_inf,
-   grid=grid_np,
---   on=false
-}
-cfg:CREATE_PREVIEW{
-   "np_inf",
-   scene=scene_np_inf,
-   grid=grid_prev_np,
-   on=false
-}
+table.insert(geo,LOAD_GEO{ "cap1_inf" })
+table.insert(geo,LOAD_GEO{ "cap2_inf" })
 
 --- FDTD Definition
 eps_bg = n_bg^2
 cfg:FDTD{
 
    EPSILON{
-      REG{
-         BOX{
-            { imin-size_pml-1, imax+size_pml+1, 1, jmin-size_pml-1, jmax+size_pml+1, 1, kmin-size_pml-1, kmax+size_pml+1, 1, ":", eps_bg, eps_bg, eps_bg }
-         },
-         LOAD_GEO{ "cap1_inf" },
-         LOAD_GEO{ "cap2_inf" },
-         LOAD_GEO{ "np_inf" }
-      },
+      REG(geo),
       on = true
    },
 
@@ -228,7 +166,8 @@ cfg:FDTD{
          BOX{
             { -hdist_tfsf_i+2, hdist_tfsf_i-2, 5, -hdist_tfsf_j+2, hdist_tfsf_j-2, 5, 0, 0, 1 }
          }
-      }
+      },
+      on = false
    },
 
    OUT{
@@ -317,7 +256,7 @@ cfg:SRC{
          sustain=math.floor(sustainl*resolution*n_max+.5),
          decay=math.floor(decayl*resolution*n_max+.5)
       },
-      planewave = { phi=90.0+5*(taskid-1), theta=90.0, psi=90.0, nrefr=nrefr }
+      planewave = { phi=phi, theta=theta, psi=psi, nrefr=nrefr }
    },
    REG{
       BOX{
@@ -399,45 +338,9 @@ if (mat == 'silver' or mat == 'carbon') then
    }
 end
 
-if (mat == 'gold' or mat == 'silver' or mat == 'carbon') then
-   cfg:MAT{                               -- define material with frequency/time-dependent answer
-      DRUDE{                              -- define a Drude material
-         invlambdapl = conv*real_omegaDL/frequ_factor, -- inverse wavelength of plasma frequency
-         gammapl = conv*real_gammaDL/frequ_factor,     -- plasma decay rate
-         order = 2
-      },
-      REG{                                -- region where material is defined
-         LOAD_GEO{ "np" }
-      }
-   }
-   cfg:MAT{
-      LORENTZ{                            -- define a Lorentzian material
-         invlambdal = conv*real_omegaL/frequ_factor,   -- inverse plasma wavelength
-         gammal = conv*real_gammaL/frequ_factor,       -- resonance width
-         deltaepsl = deltaepsl            -- delta epsilon
-      },
-      REG{                                -- region where material is defined
-         LOAD_GEO{ "np" }
-      }
-   }
-end
-if (mat == 'silver' or mat == 'carbon') then
-   cfg:MAT{
-      LORENTZ{                            -- define a Lorentzian material
-         invlambdal = conv*real_omegaL2/frequ_factor,   -- inverse plasma wavelength
-         gammal = conv*real_gammaL2/frequ_factor,       -- resonance width
-         deltaepsl = deltaepsl2            -- delta epsilon
-      },
-      REG{                                -- region where material is defined
-         LOAD_GEO{ "np" }
-      }
-   }
-end
-
-
 -- diagnostics DFT/FFT
 dofile("diagmode.lua")
--- dofile("diagpspec.lua")
+dofile("diagpspec.lua")
 
 --- CREATE: config.<part>.in
 cfg:CREATE()

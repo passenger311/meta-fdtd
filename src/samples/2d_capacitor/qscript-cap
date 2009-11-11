@@ -31,7 +31,7 @@
 # ------- specific instance?
 # #$ -q smp.q@quad10.beowulf.cluster
 # ------- split into several tasks (SGE_TASK_ID is used then)
-#$ -t 1-10:3
+#$ -t 1-9:3
 
 # ------- SCRIPT
 
