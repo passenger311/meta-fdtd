@@ -71,6 +71,10 @@ for i,v in ipairs(rnp) do
          scene_metal_core_shell:add{
             sphere1,
             value = 1
+         }
+         scene_core_shell_inf:add{
+            sphere1,
+            value = eps_infDL
          } 
       else
          scene_core_shell_inf:add{
