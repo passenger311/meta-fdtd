@@ -34,7 +34,7 @@ for freqnumber = 1:kmax
    saveRCS('',freqnumber,theta,phi,dx^2*RCS);
 %   saveRCS2('',theta,phi,dx/invlambda,dx^2*RCS);
    RCS(:,1)=RCS(:,1)/2; RCS(:,size(phi,2))=RCS(:,size(phi,2))/2;
-   RCS(1,:)=RCS(1,:)/2; RCS(size(theta,2),:)=RCS(size(theta,2),:))/2;
+   RCS(1,:)=RCS(1,:)/2; RCS(size(theta,2),:)=RCS(size(theta,2),:)/2;
    Csca = dx^2/(4*pi)*(2*pi/(size(phi,2)-1))*(pi/(size(theta,2)-1))*sum(sind(theta)*RCS,2);
    fprintf(fid_Csca,'%e %e\n', dx/invlambda,Csca);
 
