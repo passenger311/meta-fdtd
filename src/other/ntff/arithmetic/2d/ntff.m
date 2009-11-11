@@ -1,13 +1,17 @@
-function RCS = ntff(invlambda,freqnumber,theta,phi,eta0);
-% RCS = ntff(invlambda,freqnumber,theta,phi,eta0)
-% The function ntff computes the differential scattering cross section of an object hit by a plane wave.
-%  
+function varargout = ntff(invlambda,freqnumber,theta,phi,eta0,varargin);
+% varargout = ntff(invlambda,freqnumber,theta,phi,eta0,varargin)
+% The function ntff computes the scattering cross sections of an object hit by a plane wave.
+%
 % The input is:
 % - invlambda = inverse wavelength in computational units
 % - freqnumber = the count for invlambda distinguishing files belonging to different invlambdas
 % - theta = vector of spherical angle theta (inclination)
 % - phi = vector of spherical angle phi (azimuth)
 % - eta0 = free space impedance
+% - varargin = variable input arguments (to keep backwards compatibility)
+%   used to include the forward scattering direction and the field direction given as vector in spherical angles
+%   [theta, phi, psi]. It also includes the distance between the NTFF plane and the 0 point. It can also
+%   include the Courant factor DT
 %
 % When calling ntff the following files have to be present:
 % dft%s_%i.set with %s element of {'+x','-x','+y','-y'}
@@ -15,8 +19,38 @@ function RCS = ntff(invlambda,freqnumber,theta,phi,eta0);
 % ../dft-ref_%i.set with %i same as above
 %
 % Sebastian Wuestner, 09.09.2009
+% added extinction and absorption cross section on 06.11.2009
+
 
 DT = 0.7; %Courant factor to collocate E and H in time (only minor difference if omitted)
+if (size(varargin,2)==0) 
+   psi=-1;
+elseif (size(varargin,2)==2) 
+   angles = varargin{1};
+   theta_forw = angles(1);
+   phi_forw = angles(2);
+   psi = angles(3);
+   tfsf_dist = varargin{2};
+   n_theta_forw=find(theta==theta_forw);
+   n_phi_forw=find(phi==phi_forw);
+   if (size(n_theta_forw,1)==0 || size(n_phi_forw,1)==0) error('forward direction not probed'); end;
+   l = sqrt(tfsf_dist(1)^2+tfsf_dist(2)^2)*sind(phi(n_phi_forw)-atand(tfsf_dist(1)/tfsf_dist(2)))-1;
+   phase = exp(i*2*pi*invlambda*l); 
+elseif (size(varargin,2)==3)
+   DT = varargin{1}; 
+   angles = varargin{2};
+   theta_forw = angles(1);
+   phi_forw = angles(2);
+   psi = angles(3);
+   tfsf_dist = varargin{3};
+   n_theta_forw=find(theta==theta_forw);
+   n_phi_forw=find(phi==phi_forw);
+   if (size(n_theta_forw,1)==0 || size(n_phi_forw,1)==0) error('forward direction not probed'); end;
+   l = sqrt(tfsf_dist(1)^2+tfsf_dist(2)^2)*sind(phi(n_phi_forw)-atand(tfsf_dist(1)/tfsf_dist(2)))-1;
+   phase = exp(i*2*pi*invlambda*l);
+else
+   error('Invalid number of variable input arguments; 0,2 or 3 input parameters.')
+end;
 
 kamp = 2*pi*invlambda/eta0; % wavevector in medium with refractive index 1/eta0
 max_theta = size(theta,2);
@@ -47,6 +81,7 @@ for face = 1:4
    %read in data from file
    [facerange, E, H] = readface(freqnumber,face);
    max_E = size(E,1);
+   %phase correction to correct for leapfrog scheme
    E = E * exp(i*pi*invlambda*DT);
 
    %surface currents via cross products
@@ -70,15 +105,15 @@ for face = 1:4
    %sum over all theta-angles
    for n_theta = 1:max_theta
 %      fprintf(1,'\ntheta = %f',theta(n_theta));
+
        %sum over all phi-angles
-       for n_phi = 1:max_phi
+      for n_phi = 1:max_phi
 %         fprintf(1,', phi = %f',phi(n_phi));
 %         if mod(n_phi,5)==0 fprintf(1,'\n'); end
 
          ni = (facerange(1,1):facerange(1,3):facerange(1,2))*er(n_theta,n_phi,1);
          nj = (facerange(2,1):facerange(2,3):facerange(2,2))*er(n_theta,n_phi,2);
          nk = (facerange(3,1):facerange(3,3):facerange(3,2))*er(n_theta,n_phi,3);
-
          %exponential factors in integral
          if facerange(1,1)==facerange(1,2) %size(ni,2)==1
             tmpexpR = exp(i.*kamp.*(ni + nj'*ones(1,size(nk,2))+ones(size(nj,2),1)*nk));
@@ -87,8 +122,10 @@ for face = 1:4
          elseif facerange(3,1)==facerange(3,2) %size(nk,2)==1
             tmpexpR = exp(i.*kamp.*(ni'*ones(1,size(nj,2))+ones(size(ni,2),1)*nj+nk));
          end
-%         tmpexpR(1,:) = .5*tmpexpR(1,:); tmpexpR(size(tmpexpR,1),:) = .5*tmpexpR(size(tmpexpR,1),:);
-         tmpexpR(:,1) = .5*tmpexpR(:,1); tmpexpR(:,size(tmpexpR,2)) = .5*tmpexpR(:,size(tmpexpR,2));
+         tmpexpR(1,:) = .5*tmpexpR(1,:); tmpexpR(size(tmpexpR,1),:) = .5*tmpexpR(size(tmpexpR,1),:);
+%         tmpexpR(:,1) = .5*tmpexpR(:,1); tmpexpR(:,size(tmpexpR,2)) = .5*tmpexpR(:,size(tmpexpR,2));
+% this line would multiply tmpexpR by 1/4!
+
          expR=reshape(tmpexpR,max_E,1)*facerange(1,3)*facerange(2,3)*facerange(3,3);
 
          %projections of J and M on theta and phi unit vectors
@@ -116,10 +153,39 @@ Nthetasum = squeeze(sum(Ntheta,3)); Nphisum = squeeze(sum(Nphi,3)); Lthetasum = 
 %reading reference file
 clear E H;
 [E,H] = readref(freqnumber);
+%phase correction to correct for leapfrog scheme
 E = E * exp(i*pi*invlambda*DT);
 
 S = cross(E,conj(H));
 Pinc = -real(S(3))/2;
 
-%compute the RCS
-RCS = 2*kamp/(eta0*Pinc).*(abs(Lphisum+eta0.*Nthetasum).*abs(Lphisum+eta0.*Nthetasum) + abs(Lthetasum-eta0.*Nphisum).*abs(Lthetasum-eta0.*Nphisum));
+atheta = exp(i*pi/2)*sqrt(kamp/(8*pi))*(Lphisum+eta0*Nthetasum);
+aphi = -exp(i*pi/2)*sqrt(kamp/(8*pi))*(Lthetasum-eta0*Nphisum);
+
+%compute extinction cross section
+if psi==0
+   E = E * phase;
+   Cext = imag(-sqrt(8*pi/kamp)*aphi(n_theta_forw,n_phi_forw)/E(2));% parallel (p) polarisation
+elseif psi==90
+   E = E * phase;
+   Cext = imag(-sqrt(8*pi/kamp)*atheta(n_theta_forw,n_phi_forw)/E(2));% perpendicular (s) polarisation
+elseif psi==-1
+else
+   error('Invalid psi-value! Extinction cross section cannot be evaluated.')
+end;
+
+%compute RCS
+RCS = 2*pi/(2*eta0*Pinc)*(atheta.*conj(atheta)+aphi.*conj(aphi));
+
+switch nargout
+   case 1
+      %Differential scattering cross section
+      varargout{1} = RCS;
+   case 2
+      %Differential scattering cross section
+      varargout{1} = RCS;
+      %Extinction cross section
+      varargout{2} = Cext;
+   otherwise
+      error('Invalid number of output variables; 1 or 2 output variables.')
+end;
