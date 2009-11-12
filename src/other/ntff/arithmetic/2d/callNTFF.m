@@ -45,7 +45,7 @@ for freqnumber = 1:kmax
    Csca = dx/(2*pi)*(2*pi/(size(phi,2)-1))*sum(sind(theta)*RCS,2);
    fprintf(fid_Csca,'%e %e\n', dx/invlambda,Csca);
    fprintf(fid_g,'%e %e\n',dx/invlambda,sind(theta)*(RCS*cosd(phi-angles(2))')/sum(sind(theta)*RCS,2));
-   fprintf(fid_g_geo,'%e %e\n',dx/invlambda,sind(theta)*(RCS*cosd(phi)')/sum(sind(theta)*RCS,2));
+   fprintf(fid_g_geo,'%e %e\n',dx/invlambda,sind(theta)*(RCS*cosd(phi-90)')/sum(sind(theta)*RCS,2));
    fprintf(fid_Cext,'%e %e\n', dx/invlambda,dx*Cext);
    fprintf(fid_Cabs,'%e %e\n', dx/invlambda,dx*Cext-Csca);
 end
