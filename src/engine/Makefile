@@ -73,6 +73,7 @@ pml.o\
 out_calc.o\
 fdtd_outset.o\
 fdtd_outgpl.o\
+fdtd_outr.o\
 fdtd_outvtk.o\
 $(FDTD_OUTHD5)\
 $(SRCOBJ)\
