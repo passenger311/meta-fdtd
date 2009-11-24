@@ -93,7 +93,7 @@ module matchi3
   real(kind=8) :: c1, c2, c3
   
   ! raman response field 
-  M4_FTYPE, dimension(:,:), pointer :: Sx, Sy, Sz
+  M4_FTYPE, dimension(:,:), pointer :: S, Sx, Sy, Sz
 
   })
 
@@ -141,12 +141,15 @@ contains
 
        reg = regobj(mat%regidx)
 
-       allocate(mat%Sx(reg%numnodes,2),mat%Sy(reg%numnodes,2),mat%Sz(reg%numnodes,2), stat = err)
+       allocate(mat%S(reg%numnodes,2), stat = err)
+
+!       allocate(mat%Sx(reg%numnodes,2),mat%Sy(reg%numnodes,2),mat%Sz(reg%numnodes,2), stat = err)
        M4_ALLOC_ERROR(err,"InitializeMatChi3")
 
-       mat%Sx = 0.
-       mat%Sy = 0.
-       mat%Sz = 0.
+       mat%S = 0.
+!       mat%Sx = 0.
+!       mat%Sy = 0.
+!       mat%Sz = 0.
        
        mat%c1 = ( 2. - mat%omegar**2 * DT**2 ) / ( 1. + DT * mat%gammar )
        mat%c2 = ( -1. + DT * mat%gammar ) / ( 1. + DT * mat%gammar )
@@ -168,7 +171,8 @@ contains
     M4_MODLOOP_EXPR({MATCHI3},mat,{
 
     ! finalize mat object here
-    deallocate(mat%Sx,mat%Sy,mat%Sz)
+!    deallocate(mat%Sx,mat%Sy,mat%Sz)
+    deallocate(mat%S)
 
     })
     M4_WRITE_DBG(". exit FinalizeMatChi3")
@@ -180,7 +184,7 @@ contains
   subroutine StepHMatChi3(ncyc)
 
     integer :: ncyc, m, n
-    M4_FTYPE :: exh, eyh, ezh
+    M4_FTYPE :: exh, eyh, ezh, esq
     M4_MODLOOP_DECL({MATCHI3},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
 
@@ -199,15 +203,20 @@ contains
       eyh = Ey(i,j,k)
       ezh = Ez(i,j,k)
 
+      esq = exh*exh + eyh*eyh + ezh*ezh
+
       ! A) calculate S(n+1) from S(n),S(n-1) and E(n)
 
-M4_IFELSE_TM({
-      mat%Sx(p,m) = mat%c1 * mat%Sx(p,n) + mat%c2 * mat%Sx(p,m) + mat%c3 * exh**2
-      mat%Sy(p,m) = mat%c1 * mat%Sy(p,n) + mat%c2 * mat%Sy(p,m) + mat%c3 * eyh**2
-})
-M4_IFELSE_TE({
-      mat%Sz(p,m) = mat%c1 * mat%Sz(p,n) + mat%c2 * mat%Sz(p,m) + mat%c3 * ezh**2
-})      
+      mat%S(p,m) = mat%c1 * mat%S(p,n) + mat%c2 * mat%S(p,m) + mat%c3 * esq
+
+
+!M4_IFELSE_TM({
+!      mat%Sx(p,m) = mat%c1 * mat%Sx(p,n) + mat%c2 * mat%Sx(p,m) + mat%c3 * exh**2
+!      mat%Sy(p,m) = mat%c1 * mat%Sy(p,n) + mat%c2 * mat%Sy(p,m) + mat%c3 * eyh**2
+!})
+!M4_IFELSE_TE({
+!      mat%Sz(p,m) = mat%c1 * mat%Sz(p,n) + mat%c2 * mat%Sz(p,m) + mat%c3 * ezh**2
+!})      
 
       ! NOTE: m and n will be flipped in the next timestep!
 
@@ -217,11 +226,11 @@ M4_IFELSE_TE({
       ! with P(n) = chi3k * E(n)^3 + S(n) * E(n)
 
 M4_IFELSE_TM({
-      Ex(i,j,k) = exh + epsinvx(i,j,k) * ( mat%chi3k * exh**3 + mat%Sx(p,n) * exh )
-      Ey(i,j,k) = eyh + epsinvy(i,j,k) * ( mat%chi3k * eyh**3 + mat%Sy(p,n) * eyh )
+      Ex(i,j,k) = exh + epsinvx(i,j,k) * ( mat%chi3k * exh**3 + mat%S(p,n) * exh )
+      Ey(i,j,k) = eyh + epsinvy(i,j,k) * ( mat%chi3k * eyh**3 + mat%S(p,n) * eyh )
 })
 M4_IFELSE_TE({
-      Ez(i,j,k) = ezh + epsinvz(i,j,k) * ( mat%chi3k * ezh**3 + mat%Sz(p,n) * ezh )
+      Ez(i,j,k) = ezh + epsinvz(i,j,k) * ( mat%chi3k * ezh**3 + mat%S(p,n) * ezh )
 })      
 
 
@@ -260,8 +269,8 @@ M4_IFELSE_TE({
 M4_IFELSE_TM({
        exo = Ex(i,j,k)
        eyo = Ey(i,j,k)
-       sxh = mat%Sx(p,m)
-       syh = mat%Sy(p,m)
+       sxh = mat%S(p,m)  !mat%Sx(p,m)
+       syh = mat%S(p,m)  !mat%Sy(p,m)
        eix = epsinvx(i,j,k)
        eiy = epsinvy(i,j,k)
        exh = exo / ( 1 + eix * sxh )
@@ -269,7 +278,7 @@ M4_IFELSE_TM({
 })
 M4_IFELSE_TE({
        ezo = Ez(i,j,k)
-       szh = mat%Sz(p,m)
+       szh = mat%S(p,m) !mat%Sz(p,m)
        eiz = epsinvz(i,j,k)
        ezh = ezo / ( 1 + eiz * szh )
 })
