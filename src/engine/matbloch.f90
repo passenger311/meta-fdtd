@@ -21,8 +21,8 @@
 ! The MatBloch module calculates the reponse of an effective  2 level 
 ! bloch system
 !
-! d/dt d/dt P + 2 * gammal * d/dt P + omegal**2 P =  - 4 * omegar * 1/hbar * M (M * E) f(N,Ntr)
-! d/dt N = E/(hbar * omegar ) * ( d/dt P + gammal * P ) - gammanr * N 
+! d/dt d/dt P + 2 * gammal * d/dt P + omegal**2 P =  - 4 * omegar * conv1 * M (M * E) f(N,Ntr)
+! d/dt N = conv2 * E/ (omegar ) * ( d/dt P + gammal * P ) - gammanr * N 
 ! d/dt E = d/dt E* - epsinv * d/dt P 
 !
 ! where E* is the electric field as calculated without the sources.  
@@ -65,16 +65,13 @@ module matbloch
   private
   save
 
-  real(kind=8), parameter :: hbar = 1. ! planck constant
-
-
   M4_MATHEAD_DECL({MATBLOCH},MAXMATOBJ,{
 
   ! input parameters
   real(kind=8) :: lambdarinv    ! inv. vac. plasma wavelength
   real(kind=8) :: gammal        ! resonance width
 
-  M4_FTYPE :: M(3)          ! dipole matrix vector [1/dt]
+  real(kind=8) :: M(3)          ! dipole matrix vector [1/dt]
   real(kind=8) :: N0, Ntr       ! transparency density
   real(kind=8) :: gammanr, pump
   integer :: napprox, cyc
@@ -104,7 +101,7 @@ contains
 
     M4_MODREAD_DECL({MATBLOCH}, funit,lcount,mat,reg,out)
     real(kind=8) :: v(2)
-    complex(kind=8) :: c(3)
+    real(kind=8) :: c(3)
     logical :: eof,err
     character(len=LINELNG) :: line
 
@@ -116,16 +113,12 @@ contains
     ! read mat parameters here, as defined in mat data structure
     call readfloat(funit,lcount, mat%lambdarinv)
     call readfloat(funit,lcount, mat%gammal)
-    call readcomplexs(funit,lcount, c, 3)
-M4_IFELSE_CF({
+    call readfloats(funit,lcount, c, 3)
+
     mat%M(1) = c(1)
     mat%M(2) = c(2)
     mat%M(3) = c(3)
-},{
-    mat%M(1) = real(c(1))
-    mat%M(2) = real(c(2))
-    mat%M(3) = real(c(3))
-})
+
 
     call readline(funit, lcount, eof, line)
     M4_EOF_ERROR(eof, lcount)
@@ -137,11 +130,6 @@ M4_IFELSE_CF({
     if ( err ) mat%N0 = mat%Ntr
     call readfloat(funit,lcount, mat%gammanr)
     call readfloat(funit,lcount, mat%pump)
-
-    call readint(funit,lcount, mat%napprox) 
-    ! napprox = 0 -> N - Ntr
-    ! napprox = 1 -> Ntr * ln(N/Ntr)
-    
 
     })
 
@@ -157,6 +145,7 @@ M4_IFELSE_CF({
 
     type (T_REG) :: reg
     integer :: err
+    real (kind=8) :: conv1, conv2
     M4_MODLOOP_DECL({MATBLOCH},mat) 
     M4_WRITE_DBG(". enter InitializeMatBloch")
     M4_MODLOOP_EXPR({MATBLOCH},mat,{
@@ -177,14 +166,19 @@ M4_IFELSE_CF({
 
        mat%N = mat%N0
 
+! From unit conversion of polarisation equation -  SI to Computational units 
+       conv1 = SI_4PIALPHA
+! From unit conversion of population equation - SI to Computation units
+       conv2 = ( ( REAL_DX * SI_C ) / ( SI_HBAR ) )
+
 ! for polarisation integration
        mat%c1 = ( 2. - mat%omegal**2 * DT**2 ) / ( 1. + DT * mat%gammal )
        mat%c2 = ( -1. + DT * mat%gammal ) / ( 1. + DT * mat%gammal )
-       mat%c3 = - 4./hbar * DT**2 * mat%omegar  / ( 1. + DT * mat%gammal )
+       mat%c3 = ( - 4. ) * conv1 * DT**2 * mat%omegar  / ( 1. + DT * mat%gammal )
 
 ! for density integration
        mat%c4 = ( 2. - mat%gammanr * DT ) / ( 2. + mat%gammanr * DT )
-       mat%c5 = 1. / ( 2. + mat%gammanr * DT ) * 1./(hbar * mat%omegar ) 
+       mat%c5 = 1. / ( 2. + mat%gammanr * DT ) * 1. / ( mat%omegar ) * conv2 
        mat%c6 = mat%c5  * DT * mat%gammal / 2.
        mat%c7 = ( ( 2. * DT ) / ( 2. + mat%gammanr * DT ) ) * mat%pump
 
@@ -253,71 +247,18 @@ M4_IFELSE_TM({},{
       m = mod(ncyc+2,2) + 1
 
       mat%cyc = m
-    
-      select case ( mat%napprox )
       
-      case ( 1 ) ! ---- LOGARITHMIC DENSITY DEPENDENCY
-
         M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-M4_IFELSE_CF({
-        me = conjg(mat%M(1)) * Ex(i,j,k) + conjg(mat%M(2)) * Ey(i,j,k) + conjg(mat%M(3)) * Ez(i,j,k)
-},{
+
         me = mat%M(1) * Ex(i,j,k) + mat%M(2) * Ey(i,j,k) + mat%M(3) * Ez(i,j,k)
-})
 
         ! calculate second part of the density response (after the new E field got calculated)
         
-M4_IFELSE_CF({
-        pem =  real( mat%P(p,m) * conjg(me) )
-        pen =  real( mat%P(p,n) * conjg(me) )
-},{
+
         pem =  mat%P(p,m) * me
         pen =  mat%P(p,n) * me
-})
-        
-        mat%N(p) = mat%N(p) + mat%c5 * ( pen - pem ) + mat%c6 * ( pen + pem )
-        
-        ! calculate P(n+1) from P(n),P(n-1),E(n) and N(n)
-        
-        ! before: P(*,m) is P(n-1), P(*,n) is P(n)
-        
-        ninv = mat%Ntr * log( mat%N(p)/mat%Ntr )
-       
-        mat%P(p,m) = mat%c1 * mat%P(p,n) + mat%c2 * mat%P(p,m) + mat%c3 * me * ninv 
 
-        ! calculate first part of the density response
-        
-M4_IFELSE_CF({
-       pem =  real( mat%P(p,m) * conjg(me) )
-},{
-       pem =  mat%P(p,m) * me
-})
-        mat%N(p) = mat%c4 * mat%N(p) + mat%c5 * ( pem - pen ) + mat%c6 * ( pem + pen ) + mat%c7
-
-        ! after: J(*,m) is now P(n+1)
-        ! m and n will be flipped in the next timestep!
-
-        })      
-   
-     case default ! ---- LINEAR DENSITY DEPENDENCY
-        
-        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-
-M4_IFELSE_CF({
-        me = conjg(mat%M(1)) * Ex(i,j,k) + conjg(mat%M(2)) * Ey(i,j,k) + conjg(mat%M(3)) * Ez(i,j,k)
-},{
-        me = mat%M(1) * Ex(i,j,k) + mat%M(2) * Ey(i,j,k) + mat%M(3) * Ez(i,j,k)
-})
-        ! calculate second part of the density response (after the new E field got calculated)
-        
-M4_IFELSE_CF({
-        pem =  real( mat%P(p,m) * conjg(me) )
-        pen =  real( mat%P(p,n) * conjg(me) )
-},{
-        pem =  mat%P(p,m) * me
-        pen =  mat%P(p,n) * me
-})
       
         mat%N(p) = mat%N(p) + mat%c5 * ( pen - pem ) + mat%c6 * ( pen + pem )
         
@@ -331,11 +272,9 @@ M4_IFELSE_CF({
 
         ! calculate first part of the density response
         
-M4_IFELSE_CF({
-        pem =  real( mat%P(p,m) * conjg(me) )
-},{
+
         pem =  mat%P(p,m) * me
-})
+
 
         mat%N(p) = mat%c4 * mat%N(p) + mat%c5 * ( pem - pen ) + mat%c6 * ( pem + pen ) + mat%c7
 
@@ -343,8 +282,6 @@ M4_IFELSE_CF({
         ! m and n will be flipped in the next timestep!
 
         })      
-
-     end select
 
 
     })
