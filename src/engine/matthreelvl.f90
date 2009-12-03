@@ -182,7 +182,7 @@ contains
 
        ! field conversion factor 
 
-       mat%conv = REAL_DX**(3.5)/sqrt(SI_EPS0) * SI_E / SI_HBAR
+       mat%conv = REAL_DX**(0.5)/sqrt(SI_EPS0) * SI_E / SI_HBAR
        
        ! Is local field effect included
        if (mat%LFE==0) THEN
