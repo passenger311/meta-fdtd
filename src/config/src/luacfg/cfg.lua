@@ -264,11 +264,10 @@ function BLOCH(parms)
    local BLOCH = { block = "BLOCH" }
    BLOCH.invlambdal = parms.invlambdal
    BLOCH.gammal = parms.gammal or 0
-   BLOCH.dipole = parms.dipole or { {1.,0.},{1.,0.},{1.,0.} }
+   BLOCH.dipole = parms.dipole or { 0.1, 0.1, 0.1 }
    BLOCH.carrier = parms.carrier or { 1., 0.5 }
    BLOCH.gammanr = parms.gammanr or 0
    BLOCH.pump = parms.pump or 0
-   BLOCH.satmodel = parms.satmodel or 0
    return BLOCH
 end
 
@@ -583,16 +582,11 @@ local writemat = {
    BLOCH = function(fh,BLOCH)
 	      fh:write(BLOCH.invlambdal,"\t! invlambdal [2 pi c]\n")
 	      fh:write(BLOCH.gammal,"\t! gammal (damping) [1/dt]\n")
-	      fh:write(
-		       "(",BLOCH.dipole[1][1],",",BLOCH.dipole[1][2],") ",
-		       "(",BLOCH.dipole[2][1],",",BLOCH.dipole[2][2],") ",
-		       "(",BLOCH.dipole[3][1],",",BLOCH.dipole[3][2],") ",
-		       "\t! dipole matrix elem. []\n")
+	      fh:write(BLOCH.dipole[1], " " , BLOCH.dipole[2]," ", BLOCH.dipole[3],"\t! dipole matrix elem. [1/dx]\n")
 	      fh:write(BLOCH.carrier[1]," ", BLOCH.carrier[2],
-		       "\t! carrier numbers transp./initial  []\n")
+		       "\t! carrier numbers transp./initial  [1/(dx^3)]\n")
 	      fh:write(BLOCH.gammanr,"\t! non-rad. recomb. [1/dt]\n")
-	      fh:write(BLOCH.pump,"\t! pump rate [1/dt]\n")
-	      fh:write(BLOCH.satmodel,"\t! sat.model 0=>(N-Ntr), 1=>Ntr*log(N/Ntr)\n")		       
+	      fh:write(BLOCH.pump,"\t! pump rate [1/dt]\n")		       
 	   end,
    CHI3 = function(fh,CHI3)
 	      fh:write(CHI3.invlambdar,"\t! invlambdar [2 pi c]\n")
