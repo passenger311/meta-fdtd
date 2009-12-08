@@ -154,6 +154,7 @@ cfg:CREATE_GEO{
    "metal_core",
    scene=scene_metal_core,
    grid=grid_np,
+   comps=3,
 --   on=false
 }
 cfg:CREATE_PREVIEW{
@@ -167,6 +168,7 @@ cfg:CREATE_GEO{
    "metal_shell",
    scene=scene_metal_shell,
    grid=grid_np,
+   comps=3,
 --   on=false
 }
 cfg:CREATE_PREVIEW{
@@ -180,6 +182,7 @@ cfg:CREATE_GEO{
    "core_shell_inf",
    scene=scene_core_shell_inf,
    grid=grid_np,
+   comps=3,
 --   on=false
 }
 cfg:CREATE_PREVIEW{

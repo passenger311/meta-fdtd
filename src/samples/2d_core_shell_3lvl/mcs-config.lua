@@ -93,6 +93,7 @@ cfg:CREATE_GEO{
    "core",
    scene=scene_core,
    grid=grid_np,
+   comps=3,
 --   on=false
 }
 cfg:CREATE_PREVIEW{
@@ -106,6 +107,7 @@ cfg:CREATE_GEO{
    "shell",
    scene=scene_shell,
    grid=grid_np,
+   comps=3,
 --   on=false
 }
 cfg:CREATE_PREVIEW{
@@ -118,6 +120,7 @@ cfg:CREATE_GEO{
    "core_shell_inf",
    scene=scene_core_shell_inf,
    grid=grid_np,
+   comps=3,
 --   on=false
 }
 cfg:CREATE_PREVIEW{

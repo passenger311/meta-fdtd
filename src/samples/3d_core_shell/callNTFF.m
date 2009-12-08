@@ -39,7 +39,7 @@ fid_Cabs = fopen('Cabs_norm.dat','w');
 for freqnumber = 1:kmax
 
    invlambda = inv_lambda(freqnumber)
-   [RCS,Cext] = ntff(invlambda,freqnumber,theta,phi,eta0,angles,(boxsize(3)/2+2));
+   [RCS,Cext] = ntff(invlambda,freqnumber,theta,phi,eta0,angles,(boxsize./2+2));
    saveRCS('',freqnumber,theta,phi,dx^2*RCS);
 %   saveRCS2('',theta,phi,dx/invlambda,dx^2*RCS);
    RCS(:,1)=RCS(:,1)/2; RCS(:,size(phi,2))=RCS(:,size(phi,2))/2;

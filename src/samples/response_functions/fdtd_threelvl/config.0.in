@@ -71,9 +71,9 @@ Gaussian 	! pulse shape
 0.0016 0.002 0.0004
 4e-05 2e-05 2e-05
 0 0 4e-05
-(0.1,0) (0.1,0) (0,0) 	! mx dipole length [dx]
+(0,0) (0,0) (0,0) 	! mx dipole length [dx]
 (0.1,0) (0.1,0) (0,0) 	! my dipole length [dx]
-(0.1,0) (0.1,0) (0,0) 	! mz dipole length [dx]
+(0,0) (0,0) (0,0) 	! mz dipole length [dx]
 1 0 0	! occup. densities []
 0.001	! systems per cell []
 0	! include LFE-effect?

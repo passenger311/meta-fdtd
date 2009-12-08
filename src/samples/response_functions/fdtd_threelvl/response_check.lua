@@ -109,9 +109,9 @@ cfg:MAT{
       invlambda = { 0.8*inv_wavelength, inv_wavelength, 0.2*inv_wavelength },
       gamma = { inv_wavelength/50, inv_wavelength/100, inv_wavelength/100 },
       sigma = { 0, 0, 1/50*inv_wavelength },
-      mx = { { 0.1/conv,0 }, { 0.1/conv,0 }, { 0,0 } },
+      mx = { { 0/conv,0 }, { 0/conv,0 }, { 0,0 } },
       my = { { 0.1/conv,0 }, { 0.1/conv,0 }, { 0,0 } },
-      mz = { { 0.1/conv,0 }, { 0.1/conv,0 }, { 0,0 } },
+      mz = { { 0/conv,0 }, { 0/conv,0 }, { 0,0 } },
       densities = { 1., 0., 0. },
       n = .001
    },

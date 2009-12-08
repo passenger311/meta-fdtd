@@ -101,7 +101,7 @@ end
 
 --- PML size parameter
 
-size_pml = 9
+size_pml = 12
 
 
 --- Padding size parameter
