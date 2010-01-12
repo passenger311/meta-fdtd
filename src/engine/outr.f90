@@ -71,8 +71,8 @@ contains
 ! call various finalization methods
     select case ( out%modl ) 
     
-    !case ("FDTD")
-     !  call  InitializeFdtdOutRObj(out)
+    case ("FDTD")
+       call  InitializeFdtdOutRObj(out)
 
     M4_FOREACH_OUTR2({case ("},{")
        call Initialize},{OutRObj(out)
@@ -99,8 +99,8 @@ contains
     select case ( out%modl ) 
 
 ! call various finalization methods   
-    !case ("FDTD")
-     !  call FinalizeFdtdOutRObj(out)
+    case ("FDTD")
+       call FinalizeFdtdOutRObj(out)
        M4_FOREACH_OUTR2({case ("},{")
              call Finalize},{OutRObj(out)
              })
@@ -195,14 +195,14 @@ contains
 
 ! call various output methods
 
-   !case ("FDTD")
+   case ("FDTD")
 
-    !   if ( mode ) then 
-    !      call OpenOutRObj(out, ncyc, out%snap)
-    !      if ( out%numnodes .gt. 1 .and. out%mode .ne. 'S' ) write(out%funit,*)
-    !   end if
-    !   call WriteDataFdtdOutRObj(out,mode)
-    !   if ( mode ) call CloseOutRObj(out)
+       if ( mode ) then 
+          call OpenOutRObj(out, ncyc, out%snap)
+          if ( out%numnodes .gt. 1 .and. out%mode .ne. 'S' ) write(out%funit,*)
+       end if
+       call WriteDataFdtdOutRObj(out,mode)
+       if ( mode ) call CloseOutRObj(out)
     
     M4_FOREACH_OUTR2({case ("},{")
        if ( mode ) then 
