@@ -5,7 +5,9 @@ matdebye
 matlorentz
 matlhm
 matbloch
+matfourlvl
 matlhmgrad
 ! these must be last and cannot be combined
 matchi3
 matthreelvl
+matrandthreelvl

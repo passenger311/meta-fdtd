@@ -271,6 +271,20 @@ function BLOCH(parms)
    return BLOCH
 end
 
+-- (MAT)FOURLVL Sub-Block definition
+
+function FOURLVL(parms)
+   local FOURLVL = { block = "FOURLVL" }
+   FOURLVL.invlambdal = parms.invlambdal
+   FOURLVL.gammal = parms.gammal or {0,0}
+   FOURLVL.dipole12 = parms.dipole12 or 0.1
+   FOURLVL.dipole03 = parms.dipole03 or 0.1
+   FOURLVL.dens = parms.dens or 1
+   FOURLVL.start = parms.start or {0,0,0}
+   FOURLVL.gamma = parms.gamma or {0,0,0}
+   return FOURLVL
+end
+
 -- (MAT)THREELVL Sub-Block definition
 
 function THREELVL(parms) 
@@ -283,10 +297,25 @@ function THREELVL(parms)
    THREELVL.mz = parms.mz or { {0,0}, {0,0}, {0,0} }
    THREELVL.densities = parms.densities or { 1., 0, 0 }
    THREELVL.n = parms.n or 1
-   THREELVL.LFE = parms.LFE or 0
+   THREELVL.LFE = parms.LFE or 1
    return THREELVL
 end
 
+-- (MAT)RANDTHREELVL Sub-Block definition
+
+function RANDTHREELVL(parms)
+   local RANDTHREELVL = { block = "RANDTHREELVL" }
+   RANDTHREELVL.invlambda = parms.invlambda or {}
+   RANDTHREELVL.gamma = parms.gamma or { 0., 0., 0. }
+   RANDTHREELVL.sigma = parms.sigma or { 0., 0., 0. }
+   RANDTHREELVL.Mvals = parms.Mvals or { 0.1, 0.1, 0.}
+   RANDTHREELVL.angle = parms.angle or 0.
+   RANDTHREELVL.densities = parms.densities or { 1., 0., 0. }
+   RANDTHREELVL.n = parms.n or 1
+   RANDTHREELVL.LFE = parms.LFE or 1
+   RANDTHREELVL.seed = parms.seed or 1734920
+   return RANDTHREELVL
+end
 
 -- SRC Config-Block definition
 
@@ -588,6 +617,15 @@ local writemat = {
 	      fh:write(BLOCH.gammanr,"\t! non-rad. recomb. [1/dt]\n")
 	      fh:write(BLOCH.pump,"\t! pump rate [1/dt]\n")		       
 	   end,
+   FOURLVL = function(fh,FOURLVL)
+              fh:write(FOURLVL.invlambdal[1]," ", FOURLVL.invlambdal[2],"\t! invlambdal [2 pi c]\n")
+	      fh:write(FOURLVL.gammal[1]," ", FOURLVL.gammal[2],"\t! gammal [1/dt]\n")
+	      fh:write(FOURLVL.dipole12,"\t! DPME 1<->2 [1/dx]\n")
+	      fh:write(FOURLVL.dipole03,"\t! DPME 0<->3 [1/dx]\n")
+	      fh:write(FOURLVL.dens,"\t! density of four lvl systems [1/dx^3]\n")
+	      fh:write(FOURLVL.start[1]," ", FOURLVL.start[2]," ",FOURLVL.start[3],"\t! values for N3_0,N2_0,N1_0 [1/dx^3]\n")
+	      fh:write(FOURLVL.gamma[1]," ",FOURLVL.gamma[2]," ",FOURLVL.gamma[3],"\t! non rad. recomb. rates [1/dt]\n")
+	  end,
    CHI3 = function(fh,CHI3)
 	      fh:write(CHI3.invlambdar,"\t! invlambdar [2 pi c]\n")
 	      fh:write(CHI3.gammar,"\t! gammar (damping) [1/dt]\n")
@@ -617,6 +655,17 @@ local writemat = {
 	      fh:write(THREELVL.densities[1]," ", THREELVL.densities[2]," ", THREELVL.densities[3], "\t! occup. densities []\n")
 	      fh:write(THREELVL.n,"\t! systems per cell []\n")
 	      fh:write(THREELVL.LFE,"\t! local field effect included?\n")
+	   end,
+   RANDTHREELVL = function(fh,RANDTHREELVL)
+              fh:write(RANDTHREELVL.invlambda[1]," ",RANDTHREELVL.invlambda[2]," ",RANDTHREELVL.invlambda[3], "\n")
+	      fh:write(RANDTHREELVL.gamma[1]," ",RANDTHREELVL.gamma[2]," ",RANDTHREELVL.gamma[3], "\n")
+	      fh:write(RANDTHREELVL.sigma[1]," ",RANDTHREELVL.sigma[2]," ",RANDTHREELVL.sigma[3], "\n")
+	      fh:write(RANDTHREELVL.Mvals[1]," ",RANDTHREELVL.Mvals[2]," ",RANDTHREELVL.Mvals[3], "\n")
+	      fh:write(RANDTHREELVL.angle, "\n")
+	      fh:write(RANDTHREELVL.densities[1]," ",RANDTHREELVL.densities[2]," ",RANDTHREELVL.densities[3], "\n")
+	      fh:write(RANDTHREELVL.n, "\n")
+	      fh:write(RANDTHREELVL.LFE, "\n")
+	      fh:write(RANDTHREELVL.seed, "\n")
 	   end,
 }
 

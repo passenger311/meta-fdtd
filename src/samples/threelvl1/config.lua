@@ -8,19 +8,47 @@ dofile("scale.lua")
 
 --- set time steps 
 
-ncyc        = 15000
+ncyc        = 40000
 
 
 --- setup source / diagnostic planes for ffts
 
 pulse1 = { 
    shape   = "Sech",
-   width   = 200,
+   width   = tau,
    offset  = 0,                    
-   attack  = 10000,        
+   attack  = 20000,        
    sustain = 0, 
-   decay   = 10000,   
+   decay   = 20000,   
 }
+
+pulse2  = {
+   shape = "Sech",
+   width = tau,
+   offset = 20000,
+   attack = 20000,
+   sustain = 0,
+   decay = 20000,
+}
+
+pulse3 = {
+  shape = "Sech",
+  width = tau,
+  offset = 40000,
+  attack = 20000,
+  sustain = 0,
+  decay = 20000,
+}
+
+pulse4 = {
+  shape = "Sech",
+  width = tau,
+  offset = 60000,
+  attack = 20000,
+  sustain = 0,
+  decay = 20000,
+}
+
 
 planewave1 = { phi=00, theta=90, psi=00, nrefr=1 }
 planewave2 = { phi=00, theta=90, psi=90, nrefr=1 }
@@ -31,7 +59,7 @@ planewave4 = { phi=180, theta=90, psi=90, nrefr=1 }
 
 cpml = 11
 imin = 0
-imax = 1000
+imax = 200
 
 imin0 = imin - cpml
 imax0 = imax + cpml
@@ -82,7 +110,7 @@ cfg:FDTD{
    OUT{
       file = { "R", "efield" },
       type = { "E", "N" },
-      time = { 0, ncyc, 500 },
+      time = { 0, ncyc, 100000 },
       REG{
 	 BOX{ 
 	    { imin, imax, 1 }   -- middle point of the structure  
@@ -110,10 +138,10 @@ cfg:BOUND{
 cfg:SRC{
    TFSFINJ{ 
       invlambda = invwavelength,
-      amplitude = 3640000,
+      amplitude = 0.5*ENHL,
       pulse = pulse1,
-      planewave = planewave1,
-      alpha = -90
+      planewave = planewave2,
+      alpha = 0
    },
    REG{
       POINT{ 
@@ -125,10 +153,10 @@ cfg:SRC{
 cfg:SRC{
    TFSFINJ{
       invlambda = invwavelength,
-      amplitude = 3640000,
+      amplitude = 0.5*ENHL,
       pulse = pulse1,
       planewave = planewave1,
-      alpha = 0
+      alpha = 90
    },
    REG{
       POINT{
@@ -140,14 +168,14 @@ cfg:SRC{
 cfg:SRC{
    TFSFINJ{
       invlambda = invwavelength,
-      amplitude = 3640000,
-      pulse = pulse1,
-      planewave = planewave2,
-      alpha = -90
+      amplitude = 0*ENHL,
+      pulse = pulse3,
+      planewave = planewave1,
+      alpha = 0
    },
    REG{
       POINT{
-         { 900, ":", 0, 1 }
+         { 10, ":", 0, 1 }
       }
    },
 }
@@ -155,14 +183,14 @@ cfg:SRC{
 cfg:SRC{
    TFSFINJ{
       invlambda = invwavelength,
-      amplitude = 3640000,
-      pulse = pulse1,
-      planewave = planewave2,
+      amplitude = 0*ENHL,
+      pulse = pulse4,
+      planewave = planewave1,
       alpha = 0
    },
    REG{
       POINT{
-        { 900, ":", 0, 1 }
+        { 10, ":", 0, 1 }
       }
    },
 }
@@ -174,29 +202,29 @@ cfg:SRC{
 
 cfg:MAT{
    THREELVL{ 
-      invlambda = { invwavelength, invwavelength, 0 }, --- { f12, f13, f23 }; f12+f23=f13!
-      gamma = { 1e-7, 1e-7, 1e-7 }, --- dephasing constants (broadening) { gamma12, gamma13, gamma23 } 
+      invlambda = { 0*invwavelength, invwavelength, invwavelength }, --- { f12, f13, f23 }; f12+f23=f13!
+      gamma = { 0, 0, 0 }, --- dephasing constants (broadening) { gamma12, gamma13, gamma23 } 
       sigma = { 0, 0, 0 },   --- relaxation constants {lvl2 -> lvl1 , lvl3 -> lvl1 , lvl3 -> lvl2 }
       mx = { { 0,0 }, { 0,0 }, { 0,0 } },  
       --- dipole matrix in x-direction { {Re(mu12),Im(mu12)}, {Re(mu13),Im(mu13)}, {Re(mu23),Im(mu23)} }
-      my = { { 0.01,0 }, { -0.01,0 }, { 0,0 } }, --- y-direction
-      mz = { { 0,0.01 }, { 0,0.01 }, { 0,0 } }, --- z-direction
+      my = { { 0,0 }, { mu,0 }, { 0,0 } }, --- y-direction
+      mz = { { 0,0 }, { 0,-mu }, { 0,0 } }, --- z-direction
       densities = { 1, 0, 0 }, --- initial occupation of three lvl system {n1,n2,n3}
       LFE = 0,
-      n = 1000 --- number of three level systems per grid cell
+      n = 1 --- number of three level systems per grid cell
    },
    REG{
 	POINT{
-	  { 500, ":" , 1, 1, 1 }
+	  { 100, ":" , 1, 1, 1 }
 	}
 	},
    OUT{
       file = { "R", "dens" },
-      type = { "N", "N", ".T." },
-      time = { 0, ncyc, 500 },
+      type = { "N", "N", ".F." },
+      time = { 0, ncyc, 2 },
       REG{
 	 POINT{ 
-	    { 500 }   -- middle point of the structure  
+	    { 100 }   -- middle point of the structure  
 	 }
       },
       on = true

@@ -210,7 +210,7 @@ contains
        end if
        call WriteDataFdtdOutgplObj(out,mode)
        if ( mode ) call CloseOutgplObj(out)
-    
+
     M4_FOREACH_OUTGPL2({case ("},{")
        if ( mode ) then 
           call OpenOutgplObj(out, ncyc, out%snap)
