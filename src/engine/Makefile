@@ -32,9 +32,9 @@ MATOBJ= $(patsubst %,%.o,$(MATLIST))
 DIAGOBJ= $(patsubst %,%.o,$(DIAGLIST))
 OUTGPLOBJ= $(patsubst %,%_outgpl.o,$(OUTGPLLIST))
 OUTROBJ= $(patsubst %,%_outr.o,$(OUTRLIST))
-OUTVTKOBJ= $(patsubst %,%_outgpl.o,$(OUTVTKLIST))
+OUTVTKOBJ= $(patsubst %,%_outvtk.o,$(OUTVTKLIST))
 ifneq ($(HD5),)
-OUTHD5OBJ= $(patsubst %,%_outgpl.o,$(OUTHD5LIST))
+OUTHD5OBJ= $(patsubst %,%_outhd5.o,$(OUTHD5LIST))
 OUTHD5= outhd5.o
 FDTD_OUTHD5= fdtd_outhd5.o
 endif
