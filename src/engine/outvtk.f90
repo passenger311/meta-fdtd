@@ -163,7 +163,7 @@ contains
   subroutine WriteHeaderOutvtkObj(out,ncyc)
 
     type(T_OUT) :: out
-    integer :: ncyc
+    integer :: ncyc, l
     character(len=STRLNG) :: dataset
     M4_REGLOOP_DECL(reg,p,i,j,k,w(0))
 
@@ -200,11 +200,14 @@ contains
        write(out%funit,"(A)") "DATASET UNSTRUCTURED_GRID"
        write(out%funit,"(3A)") "POINTS ",TRIM(i2str(reg%numnodes))," float"
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-       write(out%funit,"(M4_SDIM({I5}))") M4_DIM123({i},{i,j},{i,j,k})
+       write(out%funit,"(3I5)") i,j,k 
+!(M4_SDIM({I5}))") i,j,k
        })
        write(out%funit,"(4A)") "CELLS ",TRIM(i2str(reg%numnodes))," ", TRIM(i2str(2*reg%numnodes))
+       l=0
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-       write(out%funit,*) "1 ",p-1
+       write(out%funit,*) "1 ", l
+       l=l+1
        })
        write(out%funit,"(2A)") "CELL_TYPES ",TRIM(i2str(reg%numnodes))
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{

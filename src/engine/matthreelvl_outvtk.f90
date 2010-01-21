@@ -1,13 +1,13 @@
 !-*- F90 -*------------------------------------------------------------
 !
-!  module: matthreelvl_outgpl / meta
+!  module: matthreelvl_outvtk / meta
 !
-!  this module handles GPL output of data related to the matthreelvl module.
+!  this module handles VTK output of data related to the matthreelvl module.
 !
 !----------------------------------------------------------------------
 
 
-module matthreelvl_outgpl
+module matthreelvl_outvtk
 
   use constant
   use strings
@@ -16,9 +16,8 @@ module matthreelvl_outgpl
   use buflist
   use mpiworld
   use grid 
-  use fdtd
-  use out_calc
   use matthreelvl
+  use out_calc
 
   implicit none
   private
@@ -26,38 +25,37 @@ module matthreelvl_outgpl
 
   ! --- Module Identifier
 
-  character(len=STRLNG), parameter :: modname = 'MATTHREELVL_OUTGPL'
+  character(len=STRLNG), parameter :: modname = 'MATTHREELVL_OUTVTK'
 
  ! --- Public Methods
 
-  public :: InitializeMatthreelvlOutgplObj
-  public :: FinalizeMatthreelvlOutgplObj 
-  public :: WriteDataMatthreelvlOutgplObj
+  public :: InitializeMatthreelvlOutvtkObj
+  public :: FinalizeMatthreelvlOutvtkObj
+  public :: WriteDataMatthreelvlOutvtkObj
 
 contains
 
 !----------------------------------------------------------------------
 
-  subroutine InitializeMatthreelvlOutgplObj(out)
+  subroutine InitializeMatthreelvlOutvtkObj(out)
 
     type (T_OUT) :: out
 
-  end subroutine InitializeMatthreelvlOutgplObj
+  end subroutine InitializeMatthreelvlOutvtkObj
 
 
 !----------------------------------------------------------------------
 
-  subroutine FinalizeMatthreelvlOutgplObj(out)
+  subroutine FinalizeMatthreelvlOutvtkObj(out)
 
     type (T_OUT) :: out
 
-  end subroutine FinalizeMatthreelvlOutgplObj
+  end subroutine FinalizeMatthreelvlOutvtkObj
 
 
 !----------------------------------------------------------------------
 
-
-  subroutine WriteDataMatthreelvlOutgplObj(out, mode)
+  subroutine WriteDataMatthreelvlOutvtkObj(out, mode)
 
     type (T_OUT) :: out
     type (T_BUF) :: buf
@@ -71,9 +69,9 @@ contains
     case('P')
        call WriteValues(out, 2)
     case default
-       write(out%funit,*) "OUTPUT FUNCTION NOT IMPLEMENTED" 
+       write(out%funit,*) "OUTPUT FUNCTION NOT IMPLEMENTED"
     end select
-    
+
   contains
 
     ! **************************************************************** !
@@ -83,10 +81,10 @@ contains
       type (T_OUT) :: out
       integer :: mode
 
-      M4_REGLOOP_DECL(reg,p,i,j,k,w(3))  
+      M4_WRITE_DBG({"WriteScalars!"})
+      M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
       real(kind=8) :: val1, val2, val3, sum1, sum2, sum3
       type(T_MATTHREELVL) :: mat
-      integer :: m
 
       M4_IFELSE_DBG({call EchoRegObj(regobj(out%regidx))})
 
@@ -96,10 +94,14 @@ contains
       sum1 = 0.
       sum2 = 0.
       sum3 = 0.
+      write(out%funit,"(A,A)") "SCALARS scalars float 3"
+      write(out%funit,*) "LOOKUP_TABLE default"
+
+!      write(out%funit,"(A)") "VECTORS vectors float"
 
       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-      select case ( mode ) 
+      select case ( mode )
       case ( 1 )
 
          val1 = mat%rho11(p)
@@ -107,18 +109,15 @@ contains
          val3 = mat%rho33(p)
 
          if ( out%mode .ne. 'S' ) then
- 
-            if ( reg%isbox ) then
-               write(out%funit,"(3E15.6E3)") real(val1,8), real(val2,8), real(val3,8)
-            else
-               write(out%funit,"(M4_SDIM({I5}),(3E15.6E3))") &
-                    M4_DIM123({i},{i,j},{i,j,k}),real(val1,8),real(val2,8),real(val3,8)
-            endif
-         
+
+           write(out%funit,"(3E15.6E3)") real(val1,8), real(val2,8), real(val3,8)
+
          else
+
             sum1 = sum1 + val1
             sum2 = sum2 + val2
             sum3 = sum3 + val3
+
          endif
 
       case ( 2 )
@@ -129,41 +128,38 @@ contains
 
          if ( out%mode .ne. 'S' ) then
 
-            if ( reg%isbox ) then
-               write(out%funit,"(3E15.6E3)") real(val1,8), real(val2,8), real(val3,8)
-            else
-               write(out%funit,"(M4_SDIM({I5}),(3E15.6E3))") &
-                    M4_DIM123({i},{i,j},{i,j,k}),real(val1,8),real(val2,8),real(val3,8)
-            endif
+            write(out%funit,"(3E15.6E3)") real(val1,8), real(val2,8), real(val3,8)
 
          else
+
             sum1 = sum1 + val1
             sum2 = sum2 + val2
             sum3 = sum3 + val3
+
          end if
 
-      end select      
+      end select
 
       },{
-      
+
       if ( reg%is .ne. reg%ie ) write(out%funit,*)}, {if ( reg%js .ne. reg%je ) write(out%funit,*)
 
       } )
-   
+
       if ( out%mode .eq. 'S' ) then
          write(out%funit,"(3E15.6E3)") real(sum1,8), real(sum2,8), real(sum3,8)
       endif
 
     end subroutine WriteValues
 
-  end subroutine WriteDataMatthreelvlOutgplObj
+  end subroutine WriteDataMatthreelvlOutvtkObj
 
 
-end module matthreelvl_outgpl
-
+end module matthreelvl_outvtk
 
 !
-! Authors:  J.Hamm
-! Modified: 28/05/2008
+! Authors:  J.Hamm, S.Wuestner
+
+! Modified: 20/01/2010
 !
 !======================================================================

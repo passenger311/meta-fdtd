@@ -120,24 +120,24 @@ contains
          call readline(funit,lcount,eof,line)
          call getstring(line,string,err)
          M4_SYNTAX_ERROR({string .ne. "(REG"},lcount,{"(REG"})
-         call ReadRegObj(reg, fdtdreg, funit, lcount, 6)
+         call ReadRegObj(reg, fdtdreg, funit, lcount, 6, .false.)
          reginitidx = reg%idx
       case("(EPSILON")
          call readline(funit,lcount,eof,line)
          call getstring(line,string,err)
          M4_SYNTAX_ERROR({string .ne. "(REG"},lcount,{"(REG"})
-         call ReadRegObj(reg, fdtdreg, funit, lcount, 3)
+         call ReadRegObj(reg, fdtdreg, funit, lcount, 3, .false.)
          regepsidx = reg%idx
       M4_IFELSE_WMU({           
       case("(MU") 
          call readline(funit,lcount,eof,line)
          call getstring(line,string,err)
          M4_SYNTAX_ERROR({string .ne. "(REG"},lcount,{"(REG"})
-         call ReadRegObj(reg, fdtdreg, funit, lcount, 3)
+         call ReadRegObj(reg, fdtdreg, funit, lcount, 3, .false.)
          regmuidx = reg%idx
       })
       case("(OUT") 
-         call ReadOutObj(out, fdtdreg, funit, lcount, modname)
+         call ReadOutObj(out, fdtdreg, funit, lcount, modname, .false.)
       case(")FDTD")
          exit
       case default	

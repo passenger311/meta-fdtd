@@ -367,7 +367,6 @@ contains
 
     M4_WRITE_INFO({"performing fft #",TRIM(i2str(diag%idx))})
     
-
     call RFFTMF(diag%lot, diag%numsteps, diag%numsteps, 1, diag%field, &
          diag%lot*diag%numsteps, diag%wsave, diag%lensav, diag%work, diag%lenwrk, ier)
     if ( ier .ne. 0 ) then

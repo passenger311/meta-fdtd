@@ -328,12 +328,15 @@ contains
       
       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-      val = 1./epsinvx(i,j,k)+1./epsinvx(i-1,j,k)+1./epsinvy(i,j,k)+1./epsinvy(i,j-1,k)+ &
-            1./epsinvz(i,j,k)+1./epsinvz(i,j,k-1)
+      val = &
+           1./epsinvx(M4_COORD(i,j,k))+1./epsinvx(M4_COORD(i-1,j,k)) + &
+           1./epsinvy(M4_COORD(i,j,k))+1./epsinvy(M4_COORD(i,j-1,k)) + &
+           1./epsinvz(M4_COORD(i,j,k))+1./epsinvz(M4_COORD(i,j,k-1))
 
       write(out%funit,"(E14.6E2)") real(val/6.,4)
       
       },{}, {} )
+
 
     end subroutine WriteEps
 

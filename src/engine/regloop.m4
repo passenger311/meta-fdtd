@@ -18,11 +18,13 @@ do $4 = $1%js, $1%je, $1%dj
 do $3 = $1%is, $1%ie, $1%di
 $2 = $2 + 1	     
 
+if ( .not. $1%isref ) then
 if ( $1%compressval ) then 
 $6(1:$1%numval) = $1%val(1:$1%numval,$1%valptr($2))
 else
 $6(1:$1%numval) = $1%val(1:$1%numval,$2)
 endif
+endif 
 
 $7
 	   
@@ -34,27 +36,6 @@ enddo !k
 
 else !isbox
 
-if ( $1%islist ) then ! list loop mode
- 
-!$OMP PARALLEL DO PRIVATE($3,$4,$5,$6)
-do $2 = 1, $1%pe ! -> p
-
-$3 = $1%i($2) ! -> i
-$4 = $1%j($2) ! -> j
-$5 = $1%k($2) ! -> k
-
-if ( $1%compressval ) then 
-$6(1:$1%numval) = $1%val(1:$1%numval,$1%valptr($2))
-else
-$6(1:$1%numval) = $1%val(1:$1%numval,$2)
-endif
-
-$7
-
-enddo ! p
-
-else ! mask loop mode
-
 M4_IFELSE_3D({!$OMP PARALLEL DO PRIVATE($2,$6)})
 do $5 = $1%ks, $1%ke, $1%dk ! -> k
 M4_IFELSE_2D({!$OMP PARALLEL DO PRIVATE($2,$6)})
@@ -64,10 +45,12 @@ do $3 = $1%is, $1%ie, $1%di ! -> i
 $2 = $1%mask($3,$4,$5) ! -> p
 if ( $2 .gt. 0 ) then
 
+if ( .not. $1%isref ) then
 if ( $1%compressval ) then 
 $6(1:$1%numval) = $1%val(1:$1%numval,$1%valptr($2))
 else
 $6(1:$1%numval) = $1%val(1:$1%numval,$2)
+endif
 endif
 
 $7
@@ -76,8 +59,6 @@ endif
 enddo ! i
 enddo ! j
 enddo ! k
-
-endif !islist
 
 endif !isbox
 

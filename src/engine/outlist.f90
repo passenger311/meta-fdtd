@@ -93,13 +93,13 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine ReadOutObj(out, regdef, funit, lcount, modl)
+  subroutine ReadOutObj(out, regdef, funit, lcount, modl, isref)
 
     integer :: funit, lcount
     type(T_REG) :: regdef ! default region
     type(T_OUT) :: out
     character(len=*) :: modl
-    logical :: err, eof
+    logical :: err, eof, isref
     character(len=LINELNG) :: line
 
     character (len=STRLNG) :: fmt, fn, mode, filename, string, line2
@@ -166,7 +166,7 @@ contains
 
     if ( string .eq. "(REG" ) then
        M4_WRITE_DBG({"r-> ReadRegObj"})
-       call ReadRegObj(reg, regdef, funit, lcount, 0) ! spatial regobj
+       call ReadRegObj(reg, regdef, funit, lcount, 0, isref) ! spatial regobj
        call readtoken(funit, lcount, ")OUT")
        call SetOutObj(out, fmt, snap, modl, filename, fn, mode, ns, ne, dn, reg)
     else

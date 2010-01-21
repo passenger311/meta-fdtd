@@ -106,7 +106,7 @@ define({M4_MODREAD_EXPR},{
     M4_WRITE_DBG({"got token: ",TRIM(m4_string)})
     M4_SYNTAX_ERROR({m4_string .ne. "(REG"},$3,{"(REG"})
     M4_WRITE_DBG({"got token (REG -> ReadRegObj"})
-    call ReadRegObj($5, fdtdreg, $2, $3, $6)
+    call ReadRegObj($5, fdtdreg, $2, $3, $6, .false.)
     $4%regidx = reg%idx
 
 ! get terminator
@@ -117,7 +117,7 @@ define({M4_MODREAD_EXPR},{
       select case (m4_string)
       case("(OUT") 
 	M4_WRITE_DBG({"got token (OUT -> ReadOutObj"})
-       call ReadOutObj($7, $5, $2, $3, modname)
+       call ReadOutObj($7, $5, $2, $3, modname, .true.)
        outobj($7%idx)%objidx = num$1obj
        $4%regidx = $5%idx
       case(")$1")
