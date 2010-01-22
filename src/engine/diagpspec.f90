@@ -277,9 +277,7 @@ contains
        if ( ncyc .ge. diag%ns .and. ncyc .le. diag%ne .and. &
             mod(ncyc-diag%ns,diag%dn) .eq. 0) then
           
-          
           M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-       
           ! store E field projections
           
           Exh = real( 0.5 * ( Ex(M4_COORD(i,j,k)) + Ex(M4_COORD(i-1,j,k)) ) )
@@ -366,7 +364,7 @@ contains
     integer :: ier = 0
 
     M4_WRITE_INFO({"performing fft #",TRIM(i2str(diag%idx))})
-    
+ 
     call RFFTMF(diag%lot, diag%numsteps, diag%numsteps, 1, diag%field, &
          diag%lot*diag%numsteps, diag%wsave, diag%lensav, diag%work, diag%lenwrk, ier)
     if ( ier .ne. 0 ) then
@@ -482,7 +480,6 @@ contains
 
 ! integrate power flux over spatial area
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-
           Ep1c = diag%field(2*l-1,p,1) * cos(PI*freq*DT) - diag%field(2*l,p,1) * sin(PI*freq*DT)
           Ep2c = diag%field(2*l-1,p,2) * cos(PI*freq*DT) - diag%field(2*l,p,2) * sin(PI*freq*DT)
 
@@ -521,7 +518,6 @@ contains
           SumHph2 = SumHph2 + atan2(Hp2s,Hp2c)
 
        })
-
        norm = reg%numnodes
 
        if ( hasref ) then
@@ -555,8 +551,8 @@ contains
              SumEph1 = SumEph1 - rv(2)
              SumEph2 = SumEph1 - rv(4)
           end if
-          write(UNITTMP,*) freq, sqrt(SumEa1)/norm/rv(1), SumEph1-PI,  &
-               sqrt(SumEa2)/norm/rv(3),SumEph2-PI
+          write(UNITTMP,*) freq, sqrt(SumEa1/norm)/rv(1), SumEph1-PI,  &
+               sqrt(SumEa2/norm)/rv(3),SumEph2-PI
        case( "Hap" ) 
           SumHph1 = SumHph1/norm
           SumHph2 = SumHph2/norm
