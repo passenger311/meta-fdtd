@@ -81,10 +81,11 @@ contains
       type (T_OUT) :: out
       integer :: mode
 
-      M4_WRITE_DBG({"WriteScalars!"})
       M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
       real(kind=8) :: val1, val2, val3, val4, val5, val6, sum
       type(T_MATFOURLVL) :: mat
+
+      M4_WRITE_DBG({"WriteScalars!"})
 
       M4_IFELSE_DBG({call EchoRegObj(regobj(out%regidx))})
 
