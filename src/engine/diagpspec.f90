@@ -570,8 +570,8 @@ contains
              SumHph1 = SumHph1 - rv(2)
              SumHph2 = SumHph1 - rv(4)
           end if
-          write(UNITTMP,*) freq, sqrt(SumHa1)/norm/rv(1), SumHph1-PI, &
-               sqrt(SumHa2)/norm/rv(3), SumHph2-PI
+          write(UNITTMP,*) freq, sqrt(SumHa1/norm)/rv(1), SumHph1-PI, &
+               sqrt(SumHa2/norm)/rv(3), SumHph2-PI
        case ("S")
           write(UNITTMP,*) freq, SumS1/(norm*rv(1)), SumS2/(norm*rv(2))
        end select
