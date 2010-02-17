@@ -323,7 +323,7 @@ contains
         mat%N3(p) = mat%N3(p) - n32 + mat%c5b * ( pemb - penb ) + mat%c6b * ( pemb + penb )
         mat%N2(p) = mat%N2(p) - n21 + n32 + mat%c5a * ( pema - pena ) + mat%c6a * ( pema + pena )
         mat%N1(p) = mat%N1(p) - n10 + n21 - mat%c5a * ( pema - pena ) - mat%c6a * ( pema + pena )
-        mat%N0(p) = mat%N0(p) + n10 - mat%c5b * ( pemb - penb ) - mat%c6b * ( pema + pena )
+        mat%N0(p) = mat%N0(p) + n10 - mat%c5b * ( pemb - penb ) - mat%c6b * ( pemb + penb )
 
         ! after: J(*,m) is now P(n+1)
         ! m and n will be flipped in the next timestep!
