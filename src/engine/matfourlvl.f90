@@ -283,9 +283,9 @@ contains
         M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
         ! calculate local field enhancement due to dielectric
-        lEx = Ex(i,j,k) * ( 2. + epsinvx(i,j,k) ) / 3.
-        lEy = Ey(i,j,k) * ( 2. + epsinvy(i,j,k) ) / 3.
-        lEz = Ez(i,j,k) * ( 2. + epsinvz(i,j,k) ) / 3.
+        lEx = Ex(i,j,k) * ( 2. + 1./epsinvx(i,j,k) ) / 3.
+        lEy = Ey(i,j,k) * ( 2. + 1./epsinvy(i,j,k) ) / 3.
+        lEz = Ez(i,j,k) * ( 2. + 1./epsinvz(i,j,k) ) / 3.
 
         ! calculate second part of the density response (after the new E field got calculated)
         
