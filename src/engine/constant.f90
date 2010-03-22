@@ -17,14 +17,14 @@ module constant
   public
   save 
 
-  integer, parameter :: MAXOUTOBJ  = 500
-  integer, parameter :: MAXREGOBJ  = 500
+  integer, parameter :: MAXOUTOBJ  = 1000
+  integer, parameter :: MAXREGOBJ  = 1000
   integer, parameter :: MAXINITOBJ = 100
   integer, parameter :: MAXVALOBJ  = 100
   integer, parameter :: MAXBUFOBJ  = 100
   integer, parameter :: MAXVALUES  = 10
   integer, parameter :: MAXSRCOBJ  = 50
-  integer, parameter :: MAXMATOBJ  = 50
+  integer, parameter :: MAXMATOBJ  = 1000
   INTEGER, PARAMETER :: MAXLUMPOBJ = 50
   integer, parameter :: MAXDIAGOBJ = 50
   integer, parameter :: MAXTIMER   = 10

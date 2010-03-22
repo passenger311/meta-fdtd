@@ -48,6 +48,8 @@
 ! In StepHMatThreeLvl the electric field is replaced by the effective
 ! displacement D in order to calculate the new D out of d/dt D = rot(H)
 !
+! Nota bene: rho_ij is actually rho_ij* (mistake made in equations cancels out in the end)
+! 
 ! =====================================================================
 module matthreelvl
 
@@ -378,12 +380,12 @@ M4_IFELSE_TE({}, {
        end do
        
        ! calculate rabi frequencies at time t
-       ra12 = conjg(mat%M12(1))*Etmp(1)*eps_lx + conjg(mat%M12(2))*Etmp(2)*eps_ly + &
-            conjg(mat%M12(3))*Etmp(3)*eps_lz
-       ra13 = conjg(mat%M13(1))*Etmp(1)*eps_lx + conjg(mat%M13(2))*Etmp(2)*eps_ly + & 
-            conjg(mat%M13(3))*Etmp(3)*eps_lz
-       ra23 = conjg(mat%M23(1))*Etmp(1)*eps_lx + conjg(mat%M23(2))*Etmp(2)*eps_ly + & 
-            conjg(mat%M23(3))*Etmp(3)
+       ra12 = mat%M12(1)*Etmp(1)*eps_lx + mat%M12(2)*Etmp(2)*eps_ly + &
+            mat%M12(3)*Etmp(3)*eps_lz
+       ra13 = mat%M13(1)*Etmp(1)*eps_lx + mat%M13(2)*Etmp(2)*eps_ly + & 
+            mat%M13(3)*Etmp(3)*eps_lz
+       ra23 = mat%M23(1)*Etmp(1)*eps_lx + mat%M23(2)*Etmp(2)*eps_ly + & 
+            mat%M23(3)*Etmp(3)
        
 
        ! calculate first ks
@@ -417,18 +419,18 @@ M4_IFELSE_TE({}, {
        do m= m1, m2
 
        ! Local field effect E(loc) = E(macroscopic) + P/3 = D - 2/3*P
-          Etmp(m) = D(m) - mat%lfeval * ei(m) * real( mat%M12(m)*rho12 + &
-              mat%M13(m)*rho13 + mat%M23(m)*rho23 )
+          Etmp(m) = D(m) - mat%lfeval * ei(m) * real( conjg(mat%M12(m))*rho12 + &
+              conjg(mat%M13(m))*rho13 + conjg(mat%M23(m))*rho23 )
 
        end do
 
        ! calculate rabi frequencies at t+dt/2
-       ra12 = conjg(mat%M12(1))*Etmp(1)*eps_lx + conjg(mat%M12(2))*Etmp(2)*eps_ly + &
-            conjg(mat%M12(3))*Etmp(3)*eps_lz
-       ra13 = conjg(mat%M13(1))*Etmp(1)*eps_lx + conjg(mat%M13(2))*Etmp(2)*eps_ly + &
-            conjg(mat%M13(3))*Etmp(3)*eps_lz
-       ra23 = conjg(mat%M23(1))*Etmp(1)*eps_lx + conjg(mat%M23(2))*Etmp(2)*eps_ly + &
-            conjg(mat%M23(3))*Etmp(3)*eps_lz       
+       ra12 = mat%M12(1)*Etmp(1)*eps_lx + mat%M12(2)*Etmp(2)*eps_ly + &
+            mat%M12(3)*Etmp(3)*eps_lz
+       ra13 = mat%M13(1)*Etmp(1)*eps_lx + mat%M13(2)*Etmp(2)*eps_ly + &
+            mat%M13(3)*Etmp(3)*eps_lz
+       ra23 = mat%M23(1)*Etmp(1)*eps_lx + mat%M23(2)*Etmp(2)*eps_ly + &
+            mat%M23(3)*Etmp(3)*eps_lz       
 
 
        k12(2) = IMAG*( -rho12*om12 + ra12*(rho11-rho22) + conjg(ra23)*rho13 - ra13*conjg(rho23) ) &
@@ -458,18 +460,18 @@ M4_IFELSE_TE({}, {
        do m= m1, m2
 
        ! Local field effect E(loc) = E(macroscopic) + P/3 = D - 2/3*P
-          Etmp(m) = D(m) - mat%lfeval * ei(m) * real( mat%M12(m)*rho12 + &
-              mat%M13(m)*rho13 + mat%M23(m)*rho23 )
+          Etmp(m) = D(m) - mat%lfeval * ei(m) * real( conjg(mat%M12(m))*rho12 + &
+              conjg(mat%M13(m))*rho13 + conjg(mat%M23(m))*rho23 )
 
        end do
        
        ! calculate rabi frequencies at t+dt/2
-       ra12 = conjg(mat%M12(1))*Etmp(1)*eps_lx + conjg(mat%M12(2))*Etmp(2)*eps_ly + & 
-            conjg(mat%M12(3))*Etmp(3)*eps_lz
-       ra13 = conjg(mat%M13(1))*Etmp(1)*eps_lx + conjg(mat%M13(2))*Etmp(2)*eps_ly + & 
-            conjg(mat%M13(3))*Etmp(3)*eps_lz
-       ra23 = conjg(mat%M23(1))*Etmp(1)*eps_lx + conjg(mat%M23(2))*Etmp(2)*eps_ly + &
-            conjg(mat%M23(3))*Etmp(3)*eps_lz       
+       ra12 = mat%M12(1)*Etmp(1)*eps_lx + mat%M12(2)*Etmp(2)*eps_ly + & 
+            mat%M12(3)*Etmp(3)*eps_lz
+       ra13 = mat%M13(1)*Etmp(1)*eps_lx + mat%M13(2)*Etmp(2)*eps_ly + & 
+            mat%M13(3)*Etmp(3)*eps_lz
+       ra23 = mat%M23(1)*Etmp(1)*eps_lx + mat%M23(2)*Etmp(2)*eps_ly + &
+            mat%M23(3)*Etmp(3)*eps_lz       
 
 
        k12(3) = IMAG*( -rho12*om12 + ra12*(rho11-rho22) + conjg(ra23)*rho13 - ra13*conjg(rho23) ) &
@@ -501,18 +503,18 @@ M4_IFELSE_TE({}, {
        do m= m1, m2
 
        ! Local field effect E(loc) = E(macroscopic) + P/3 = D - 2/3*P
-       Etmp(m) = D(m) - mat%lfeval * ei(m) * real( mat%M12(m)*rho12 + &
-              mat%M13(m)*rho13 + mat%M23(m)*rho23 )
+       Etmp(m) = D(m) - mat%lfeval * ei(m) * real( conjg(mat%M12(m))*rho12 + &
+              conjg(mat%M13(m))*rho13 + conjg(mat%M23(m))*rho23 )
 
        end do
 
        ! calculate rabi frequencies at t+dt
-       ra12 = conjg(mat%M12(1))*Etmp(1)*eps_lx + conjg(mat%M12(2))*Etmp(2)*eps_ly + &
-            conjg(mat%M12(3))*Etmp(3)*eps_lz
-       ra13 = conjg(mat%M13(1))*Etmp(1)*eps_lx + conjg(mat%M13(2))*Etmp(2)*eps_ly + &
-            conjg(mat%M13(3))*Etmp(3)*eps_lz
-       ra23 = conjg(mat%M23(1))*Etmp(1)*eps_lx + conjg(mat%M23(2))*Etmp(2)*eps_ly + &
-            conjg(mat%M23(3))*Etmp(3)*eps_lz
+       ra12 = mat%M12(1)*Etmp(1)*eps_lx + mat%M12(2)*Etmp(2)*eps_ly + &
+            mat%M12(3)*Etmp(3)*eps_lz
+       ra13 = mat%M13(1)*Etmp(1)*eps_lx + mat%M13(2)*Etmp(2)*eps_ly + &
+            mat%M13(3)*Etmp(3)*eps_lz
+       ra23 = mat%M23(1)*Etmp(1)*eps_lx + mat%M23(2)*Etmp(2)*eps_ly + &
+            mat%M23(3)*Etmp(3)*eps_lz
  
 
        k12(4) = IMAG*( -rho12*om12 + ra12*(rho11-rho22) + conjg(ra23)*rho13 - ra13*conjg(rho23) ) &
@@ -544,7 +546,7 @@ M4_IFELSE_TE({}, {
        do m= m1, m2
 
           Etmp(m) = D(m) - ei(m) * &
-            real( mat%M12(m)*rho12 + mat%M13(m)*rho13 + mat%M23(m)*rho23 )
+            real( conjg(mat%M12(m))*rho12 + conjg(mat%M13(m))*rho13 + conjg(mat%M23(m))*rho23 )
 
        end do
        

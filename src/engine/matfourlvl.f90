@@ -99,7 +99,7 @@ module matfourlvl
   real(kind=8) :: Mb             ! dipole strength of transition 0 <-> 3 [1/dt]
   real(kind=8) :: Nstart(3)      ! start density
   real(kind=8) :: N              ! number of 4lvl systems per grid cell
-  real(kind=8) :: gamma32, gamma21, gamma10 ! nonradiative transition rates
+  real(kind=8) :: gamma32, gamma21, gamma10, gamma30 ! nonradiative transition rates
   integer :: napprox, cyc
   
   ! calculated
@@ -110,8 +110,10 @@ module matfourlvl
   real(kind=8) :: omegalb        ! lorentz frequency 0 <-> 3
 
   ! coefficients
-  real(kind=8) :: c1a, c2a, c3a, c5a, c6a, c1b, c2b, c3b, c5b, c6b
-  real(kind=8) :: c43, c42, c41
+  real(kind=8) :: c1a, c2a, c3a, c1b, c2b, c3b
+  real(kind=8) :: ab11, ab21, ab22, ab31, ab32, ab33, ab41, ab42, ab43, ab44
+  real(kind=8) :: ac11, ac21, ac22, ac31, ac32, ac33, ac41, ac42, ac43, ac44
+  real(kind=8) :: x1fac1, x1fac2, x2fac1, x2fac2
   
   ! polarisation field 
   M4_FTYPE, dimension(:,:), pointer :: Pax, Pay, Paz
@@ -134,6 +136,7 @@ contains
     M4_MODREAD_DECL({MATFOURLVL}, funit,lcount,mat,reg,out)
     real(kind=8) :: v(2)
     real(kind=8) :: c(3)
+    real(kind=8) :: d(4)
     logical :: eof,err
     character(len=LINELNG) :: line
 
@@ -160,10 +163,11 @@ contains
     mat%Nstart(2) = c(2)
     mat%Nstart(3) = c(3)
 
-    call readfloats(funit,lcount,c,3) 
-    mat%gamma32 = c(1)
-    mat%gamma21 = c(2)
-    mat%gamma10 = c(3)
+    call readfloats(funit,lcount,d,4)
+    mat%gamma30 = d(1) 
+    mat%gamma32 = d(2)
+    mat%gamma21 = d(3)
+    mat%gamma10 = d(4)
 
     })
 
@@ -179,7 +183,7 @@ contains
 
     type (T_REG) :: reg
     integer :: err
-    real (kind=8) :: conv1, conv2
+    real (kind=8) :: conv1, conv2, g32, g30, g21, g10
     M4_MODLOOP_DECL({MATFOURLVL},mat) 
     M4_WRITE_DBG(". enter InitializeMatFourlvl")
     M4_MODLOOP_EXPR({MATFOURLVL},mat,{
@@ -227,13 +231,38 @@ contains
        mat%c3b = 2. * mat%omegarb * conv1 * mat%Mb**2 / ( 1/DT**2 + mat%gammalb * DT )
 
 ! for density integration
-       mat%c43 = ( 2. - mat%gamma32 * DT ) / ( 2. + mat%gamma32 * DT )
-       mat%c42 = ( 2. - mat%gamma21 * DT ) / ( 2. + mat%gamma21 * DT )
-       mat%c41 = ( 2. - mat%gamma10 * DT ) / ( 2. + mat%gamma10 * DT )
-       mat%c5a = 1. / ( 2. + ( mat%gamma21 + mat%gamma10 ) * DT ) * 1. / ( mat%omegara ) * conv2 
-       mat%c6a = mat%c5a  * DT * mat%gammala / 2.
-       mat%c5b = 1. / ( 2. + ( mat%gamma32 + mat%gamma10 ) * DT ) * 1. / ( mat%omegarb ) * conv2
-       mat%c6b = mat%c5b * DT * mat%gammalb / 2.
+       mat%x1fac1 = 1. / 2. / mat%omegarb / DT * conv2
+       mat%x1fac2 = mat%x1fac1 * DT * mat%gammala / 2.
+       mat%x2fac1 = 1. / 2. / mat%omegara / DT * conv2
+       mat%x2fac2 = mat%x2fac2 * DT * mat%gammalb / 2.
+       g10 = mat%gamma10 * DT
+       g21 = mat%gamma21 * DT
+       g32 = mat%gamma32 * DT
+       g30 = mat%gamma30 * DT
+! relaxation terms
+       mat%ab11 = - ( - 2. + g32 + g30 )/( 2. + g32 + g30)
+       mat%ab21 = 4. * g32 / ( 2. + g32 + g30 ) / ( 2. + g21 )
+       mat%ab31 = 4. * g32 * g21 / ( 2. + g10 ) / ( 2. + g21 ) / ( 2. + g32 + g30 )
+       mat%ab41 = 2. * ( 4. * g30 + 2. * g30 * g21 + 2. * g30 * g10 + g30 * g10 * g21 + g10 * g21 * g32 ) &
+                  / ( 2. + g10 ) / ( 2. + g21 ) / ( 2. + g32 + g30 )
+       mat%ab22 = - ( - 2. + g21 ) / ( 2 + g21 )
+       mat%ab32 = 4. * g21 / ( 2. + g10 ) / ( 2. + g21 )
+       mat%ab42 = 2. * g10 * g21 / ( 2. + g10 ) / ( 2. + g21 )
+       mat%ab33 = - ( - 2. + g10 ) / ( 2. + g10 )
+       mat%ab43 = 2. * g10 / ( 2. + g10 )
+       mat%ab44 = 1.
+! stimulated emission and absorption
+       mat%ac11 = 2. * DT / ( 2. + g32 + g30 )
+       mat%ac21 = 2. * DT * g32 / ( 2. + g32 + g30 ) / ( 2. + g21 )
+       mat%ac31 = 2. * DT * g21 * g32 / ( 2. + g21 ) / ( 2. + g10 ) / ( 2. + g32 + g30 )
+       mat%ac41 = DT * ( 4. * g30 + 2. * g30 * g21 + 2. * g30 * g10 + g30 * g10 * g21 + g10 * g21 * g32 ) &
+                   / ( 2. + g10 ) / ( 2. + g21 ) / ( 2. + g32 + g30 )
+       mat%ac22 = 2. * DT / ( 2. + g21 )
+       mat%ac32 = 2. * DT * g21 / ( 2. + g21 ) / ( 2. + g10 )
+       mat%ac42 = g10 * DT * g21 / ( 2. + g10 ) / ( 2. + g21 )
+       mat%ac33 = - 2. * DT / ( 2. + g10 )
+       mat%ac43 = - g10 * DT / ( 2. + g10 )
+       mat%ac44 = - DT
 
        mat%cyc = 1
 
@@ -268,7 +297,7 @@ contains
     M4_MODLOOP_DECL({MATFOURLVL},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
     real(kind=8) :: pema, pena, pemb, penb
-    real(kind=8) :: lEx, lEy, lEz, n32, n21, n10, ninva, ninvb
+    real(kind=8) :: lEx, lEy, lEz, n3, n2, n1, ninva, ninvb, x1 ,x2
     M4_MODLOOP_EXPR({MATFOURLVL},mat,{
 
     ! this loops over all mat structures, setting mat
@@ -288,22 +317,22 @@ contains
         lEz = Ez(i,j,k) * ( 2. + 1./epsinvz(i,j,k) ) / 3.
 
         ! calculate second part of the density response (after the new E field got calculated)
-        
         pema = mat%Pax(p,m) * lEx + mat%Pay(p,m) * lEy + mat%Paz(p,m) * lEz
         pena = mat%Pax(p,n) * lEx + mat%Pay(p,n) * lEy + mat%Paz(p,n) * lEz
         pemb = mat%Pbx(p,m) * lEx + mat%Pby(p,m) * lEy + mat%Pbz(p,m) * lEz
         penb = mat%Pbx(p,m) * lEx + mat%Pby(p,n) * lEy + mat%Pbz(p,n) * lEz
-      
-        mat%N3(p) = mat%N3(p) + mat%c5b * ( penb - pemb ) + mat%c6b * ( penb + pemb )
-        mat%N2(p) = mat%N2(p) + mat%c5a * ( pena - pema ) + mat%c6a * ( pena + pema )
-        mat%N1(p) = mat%N1(p) - mat%c5a * ( pena - pema ) - mat%c6a * ( pena + pema )
-        mat%N0(p) = mat%N0(p) - mat%c5b * ( penb - pemb ) - mat%c6b * ( penb + pemb )
+        x1 = mat%x1fac1 * ( penb - pemb ) + mat%x1fac2 * ( penb + pemb ) 
+        x2 = mat%x2fac1 * ( pena - pema ) + mat%x2fac2 * ( pena + pema )
+        mat%N3(p) = mat%N3(p) + mat%ac11 * x1
+        mat%N2(p) = mat%N2(p) + mat%ac21 * x1 + mat%ac22 * x2
+        mat%N1(p) = mat%N1(p) + mat%ac31 * x1 + mat%ac32 * x2 + mat%ac33 * x2
+        mat%N0(p) = mat%N0(p) + mat%ac41 * x1 + mat%ac42 * x2 + mat%ac43 * x2 + mat%ac44 * x1
         ! calculate P(n+1) from P(n),P(n-1),E(n) and N(n)
         
         ! before: P(*,m) is P(n-1), P(*,n) is P(n)
         ninva = mat%N1(p) - mat%N2(p)
         ninvb = mat%N0(p) - mat%N3(p)
-
+  
         mat%Pax(p,m) = mat%c1a * mat%Pax(p,n) + mat%c2a * mat%Pax(p,m) + mat%c3a * lEx * ninva
         mat%Pay(p,m) = mat%c1a * mat%Pay(p,n) + mat%c2a * mat%Pay(p,m) + mat%c3a * lEy * ninva
         mat%Paz(p,m) = mat%c1a * mat%Paz(p,n) + mat%c2a * mat%Paz(p,m) + mat%c3a * lEz * ninva
@@ -312,18 +341,20 @@ contains
         mat%Pbz(p,m) = mat%c1b * mat%Pbz(p,n) + mat%c2b * mat%Pbz(p,m) + mat%c3b * lEz * ninvb
 
         ! calculate first part of the density response
-
         pema = mat%Pax(p,m) * lEx + mat%Pay(p,m) * lEy + mat%Paz(p,m) * lEz
         pemb = mat%Pbx(p,m) * lEx + mat%Pby(p,m) * lEy + mat%Pbz(p,m) * lEz
-
-        n32 = (1 - mat%c43) * mat%N3(p)
-        n21 = (1 - mat%c42) * mat%N2(p)
-        n10 = (1 - mat%c41) * mat%N1(p)
-
-        mat%N3(p) = mat%N3(p) - n32 + mat%c5b * ( pemb - penb ) + mat%c6b * ( pemb + penb )
-        mat%N2(p) = mat%N2(p) - n21 + n32 + mat%c5a * ( pema - pena ) + mat%c6a * ( pema + pena )
-        mat%N1(p) = mat%N1(p) - n10 + n21 - mat%c5a * ( pema - pena ) - mat%c6a * ( pema + pena )
-        mat%N0(p) = mat%N0(p) + n10 - mat%c5b * ( pemb - penb ) - mat%c6b * ( pemb + penb )
+        x1 = mat%x1fac1 * ( pemb - penb ) + mat%x1fac2 * ( penb + pemb ) 
+        x2 = mat%x2fac1 * ( pema - pena ) + mat%x2fac2 * ( pena + pema )
+        n3 = mat%N3(p)
+        n2 = mat%N2(p)
+        n1 = mat%N1(p)
+        
+        mat%N3(p) = mat%ab11 * n3 + mat%ac11 * x1
+        mat%N2(p) = mat%ab21 * n3 + mat%ab22 * n2 + mat%ac21 * x1 + mat%ac22 * x2
+        mat%N1(p) = mat%ab31 * n3 + mat%ab32 * n2 + mat%ab33 * n1 + mat%ac31 * x1 &
+                    + mat%ac32 * x2 + mat%ac33 * x2
+        mat%N0(p) = mat%ab41 * n3 + mat%ab42 * n2 + mat%ab43 * n1 + mat%ab44 * mat%N0(p) &
+                    + mat%ac41 * x1 + mat%ac42 * x2 + mat%ac43 * x2 + mat%ac44 * x1
 
         ! after: J(*,m) is now P(n+1)
         ! m and n will be flipped in the next timestep!
@@ -472,10 +503,7 @@ M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * Ez(i,j,k) * mat%N * (  ( mat%Paz(p,m) - 
     M4_WRITE_INFO({"c1b = ",mat%c1b })
     M4_WRITE_INFO({"c2b = ",mat%c2b })
     M4_WRITE_INFO({"c3b = ",mat%c3b })
-    M4_WRITE_INFO({"c5a = ",mat%c5a })
-    M4_WRITE_INFO({"c5b = ",mat%c5b })
-    M4_WRITE_INFO({"c6a = ",mat%c6a })
-    M4_WRITE_INFO({"c6b = ",mat%c6b })
+    M4_WRITE_INFO({"gamma30 = ",mat%gamma30 })
     M4_WRITE_INFO({"gamma32 = ",mat%gamma32 })
     M4_WRITE_INFO({"gamma21 = ",mat%gamma21 })
     M4_WRITE_INFO({"gamma10 = ",mat%gamma10 })

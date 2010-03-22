@@ -281,7 +281,7 @@ function FOURLVL(parms)
    FOURLVL.dipole03 = parms.dipole03 or 0.1
    FOURLVL.dens = parms.dens or 1
    FOURLVL.start = parms.start or {0,0,0}
-   FOURLVL.gamma = parms.gamma or {0,0,0}
+   FOURLVL.gamma = parms.gamma or {0,0,0,0}
    return FOURLVL
 end
 
@@ -624,7 +624,7 @@ local writemat = {
 	      fh:write(FOURLVL.dipole03,"\t! DPME 0<->3 [1/dx]\n")
 	      fh:write(FOURLVL.dens,"\t! density of four lvl systems [1/dx^3]\n")
 	      fh:write(FOURLVL.start[1]," ", FOURLVL.start[2]," ",FOURLVL.start[3],"\t! values for N3_0,N2_0,N1_0 [1/dx^3]\n")
-	      fh:write(FOURLVL.gamma[1]," ",FOURLVL.gamma[2]," ",FOURLVL.gamma[3],"\t! non rad. recomb. rates [1/dt]\n")
+	      fh:write(FOURLVL.gamma[1]," ",FOURLVL.gamma[2]," ",FOURLVL.gamma[3]," ",FOURLVL.gamma[4],"\t! non rad. recomb. rates [1/dt]\n")
 	  end,
    CHI3 = function(fh,CHI3)
 	      fh:write(CHI3.invlambdar,"\t! invlambdar [2 pi c]\n")

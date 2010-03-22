@@ -227,7 +227,8 @@ contains
          !if ( reg%isbox ) then
           !  write(out%funit,"(3E15.6E3)") real(vx,8), real(vy,8), real(vz,8)
          !else
-            write(out%funit,"(M4_SDIM({I5}),(3E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}),real(vx,8),real(vy,8),real(vz,8)
+            !write(out%funit,"(M4_SDIM({I5}),(3E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}),real(vx,8),real(vy,8),real(vz,8)
+         write(out%funit,"(M4_SDIM({I5}),(3E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}),real(vy,8),real(vz,8)
          !endif
       else
          sx = sx + vx
