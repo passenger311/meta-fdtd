@@ -22,10 +22,10 @@
 !
 ! d/dt d/dt Pa_i + 2 * gammala * d/dt Pa_i + omegala**2 Pa_i = 2 * omegara * conv1 * Ma^2 * E_i (N1 - N2)
 ! d/dt d/dt Pb_i + 2 * gammalb * d/dt Pb_i + omegalb**2 Pb_i = 2 * omegarb * conv1 * Mb^2 * E_i (N0 - N3)
-! d/dt N3 = conv2 / omegarb * sum ( ( d/dt Pb_i + gammal * Pb_i ) * E_i ) - gammanr32 * N3
+! d/dt N3 = conv2 / omegarb * sum ( ( d/dt Pb_i + gammal * Pb_i ) * E_i ) - gammanr32 * N3 - gammanr30 * N3
 ! d/dt N2 = conv2 / omegara * sum ( ( d/dt Pa_i + gammal * Pa_i ) * E_i ) - gammanr21 * N2 + gammanr32 * N3  
 ! d/dt N1 = - conv2 / omegara * sum( ( d/dt Pa_i + gammal * Pa_i ) * E_i ) - gammanr10 * N1 + gammanr21 * N2
-! d/dt N0 = - conv2 / omegarb * sum( ( d/dt Pb_i + gammal * Pb_i ) * E_i ) + gammanr10 * N1
+! d/dt N0 = - conv2 / omegarb * sum( ( d/dt Pb_i + gammal * Pb_i ) * E_i ) + gammanr10 * N1 + gammanr30 * N3
 ! d/dt E = d/dt E* - epsinv * N * ( Ma d/dt Pa + Mb d/dt Pb )  
 !
 ! where E* is the electric field as calculated without the sources.  
@@ -45,33 +45,45 @@
 ! c2a = ( gammala*dt - 1 ) / ( 1 + gammala*dt )
 ! c3a = 2 * omegara * Ma / hbar / ( 1/dt^2 + gammala/dt )
 ! 
-! N update eq:
-! N3(n+1) = c43 * N3(n) + c5b * ( Pb(n+1) - Pb(n) )*( E(n+1) + E(n) ) + c6b * ( Pb(n+1) + Pb(n) )*( E(n+1) + E(n) )
-! N2(n+1) = c42 * N2(n) + c5a * ( Pa(n+1) - Pa(n) )*( E(n+1) + E(n) ) + c6a * ( Pa(n+1) + Pa(n) )*( E(n+1) + E(n) )
-! N1(n+1) = c41 * N1(n) - c5a * ( Pa(n+1) - Pa(n) )*( E(n+1) + E(n) ) - c6a * ( Pa(n+1) + Pa(n) )*( E(n+1) + E(n) )
-! N0(n+1) = c40 * N0(n) - c5b * ( Pb(n+1) - Pb(n) )*( E(n+1) + E(n) ) - c6b * ( Pb(n+1) + Pb(n) )*( E(n+1) + E(n) )
-! is calculated in StepHMatFourlvl in two steps. The first bit depends on E(n+1) and must be 
+! N update eq: ( 4 x 4 matrix equation  A * N(n+1) = B * N(n) + C )
+!
+! A11 * N3(n+1) = B11 * N3(n) + x1
+! A21 * N3(n+1) + A22 * N2(n+1) = B21 * N3(n) + B22 * N2(n) + x2
+! A31 *  N3(n+1) + A32 * N2(n+1) + A33 * N1(n+1) =
+!                     B31 * N3(n) + B32 * N2(n) + B33 * N1(n) - x2
+! A41 * N3(n+1) + A42 * N2(n+1) + A43 * N1(n+1) + A44 * N0(n+1) = 
+!                     B41 * N3(n) + B42 * N2(n) + B43 * N1(n) + B44 * N0(n) - x1
+! 
+! With Matrices A and B and polarisation couplings x1 and x2
+! These equations have to be transformed to a diagonal form in N(n+1) by multiplying with the inverse of A.
+! The resulting equations are calculated in StepHMatFourlvl in two steps. The first bit depends on E(n+1) and must be 
 ! calculated *after* StepEMat updated E to the proper E(n+1). However,
 ! n+1 -> n, so that
-!
-! N3(n) = N3(n)_p1 + c5b * ( Pb(n) - Pb(n-1) )*( E(n) ) + c6b * ( Pb(n) + Pb(n-1) )*( E(n) )
-! N2(n) = N2(n)_p1 + c5a * ( Pa(n) - Pa(n-1) )*( E(n) ) + c6a * ( Pa(n) + Pa(n-1) )*( E(n) )
-! N1(n) = N1(n)_p1 - c5a * ( Pa(n) - Pa(n-1) )*( E(n) ) - c6a * ( Pa(n) + Pa(n-1) )*( E(n) )
-! N0(n) = N0(n)_p1 - c5b * ( Pb(n) - Pb(n-1) )*( E(n) ) - c6b * ( Pb(n) + Pb(n-1) )*( E(n) )
+! 
+! AC = inv(A)*C with C = {{x1,0,0,0},{0,x2,0,0},{0,0,-x2,0},{0,0,0,-x1}}
+! x1 = ( 1. / 2. / omegarb * conv2 / DT * ( Pb(n) - Pb(n-1) ) + gammalb / 4 . / omegarb * conv2 * ( Pb(n) - Pb(n-1) ) ) * 
+!      * E(n)
+! x2 = ( 1. / 2. / omegara * conv2 / DT * ( Pa(n) - Pa(n-1) ) + gammala / 4 . / omegara * conv2 * ( Pa(n) - Pa(n-1) ) ) * 
+!      * E(n)
+! N3(n) = N3(n)_p1 + AC11 * x1
+! N2(n) = N2(n)_p1 + AC21 * x1 + AC22 * x2
+! N1(n) = N1(n)_p1 + AC31 * x1 + AC32 * x2 + AC33 * x2
+! N0(n) = N0(n)_p1 + AC41 * x1 + AC42 * x2 + AC43 * x2 + AC44 * x1
 !
 ! The second bit (after calculating P) is actually the first part of the N calculation:
+! 
+! AB = inv(A)*B
 !
-! N3(n+1)_p1 = c43 * N3(n) + c5b * ( Pb(n+1) - Pb(n) )*( E(n) ) + c6b * ( Pb(n+1) + Pb(n) )*( E(n) ) 
-! N2(n+1)_p1 = c42 * N2(n) + N3(n)*(1 - c43) + c5a * ( Pa(n+1) - Pa(n) )*( E(n) ) + c6a * ( Pa(n+1) + Pb(n) )*( E(n) )
-! N1(n+1)_p1 = c41 * N1(n) + N2(n)*(1 - c42) - c5a * ( Pa(n+1) - Pa(n) )*( E(n) ) + c6a * ( Pa(n+1) + Pa(n) )*( E(n) )
-! N0(n+1)_p1 = N0(n) + N1(n)*(1 - c41) - c5b * ( Pb(n+1) - Pb(n) )*( E(n) ) + c6b * ( Pb(n+1) + Pb(n) )*( E(n) )
+! x1 = E(n) * (1. / 2. / omegarb * conv2 / DT * ( Pb(n+1) - Pb(n) ) + gammalb / 4 . / omegalb * conv2 * ( Pb(n+1) - Pb(n) ))
+! x2 = E(n) * (1. / 2. / omegara * conv2 / DT * ( Pa(n+1) - Pa(n) ) + gammala / 4 . / omegala * conv2 * ( Pa(n+1) - Pa(n) ))
+! N3(n+1)_p1 = AB11 * N3(n) + AC11 * x1
+! N2(n+1)_p1 = AB21 * N3(n) + AB22 * N2(n) + AC21 * x1 + AC22 * x2
+! N1(n+1)_p1 = AB31 * N3(n) + AB32 * N2(n) + AB33 * N1(n) + AC31 * x1 + AC32 * x2 + AC33 * x2 
+! N0(n+1)_p1 = AB41 * N3(n) + AB42 * N2(n) + AB43 * N1(n) + AB44 * N0(n) + AC41 * x1 + AC42 * x2 + AC43 * x2 + AC44 * x1
 !
 ! In all Nj update eqs. P * E denotes the scalar product of vectors P and E
 !
-! c43 = ( 2. - gamma32 * dt ) / ( 2. + gamma32 * DT )
-! c5a = 1. / ( 2. + gamma21 * DT ) * 1. / ( omegara ) * conv2
-! c6a = c5a  * DT * mat%gammala / 2.
-!
+
 
 
 module matfourlvl
@@ -520,7 +532,7 @@ M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * Ez(i,j,k) * mat%N * (  ( mat%Paz(p,m) - 
 end module matfourlvl
 
 ! Authors:  A.Pusch, J.Hamm 
-! Modified: 11/01/2010
+! Modified: 22/03/2010
 !
 ! =====================================================================
 
