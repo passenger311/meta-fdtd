@@ -23,6 +23,9 @@ if nmodes==1,
    en = hn/neff;
    %en = hn/ncore;
    figure(1);
+
+   if 1 == 1
+   
    subplot(231);
    imagemode(x,y,Hx/hn,sprintf('Hx (mode %d)',ii));
    hold on;
@@ -49,8 +52,11 @@ if nmodes==1,
    v = xlim();
    %line(v,[h1,h1]);
    %line([0,w/2,w/2],[h1+h2,h1+h2,h1]);
-
+   
    subplot(235);
+   
+   end;
+   
    imagemode(xc,yc,Ex/en,sprintf('Ex (mode %d)',ii));
    hold on;
    contourmode(xc,yc,Ex/en,1,3,60,sprintf('Ex (mode %d)',ii));
@@ -59,6 +65,8 @@ if nmodes==1,
    %line(v,[h1,h1]);
    %line([0,w/2,w/2],[h1+h2,h1+h2,h1]);
 
+   if 1 == 1
+   
    subplot(232);
    imagemode(xc,yc,Ey/en,sprintf('Ey (mode %d)',ii));
    hold on;
@@ -78,4 +86,7 @@ if nmodes==1,
    %line([0,w/2,w/2],[h1+h2,h1+h2,h1]);
    figure(2)
    imagemode(xc,yc,log(real(eps))/log(max(max(abs(eps)))),'Epsilon structure');
-end;
+
+   end;
+   
+   end;
