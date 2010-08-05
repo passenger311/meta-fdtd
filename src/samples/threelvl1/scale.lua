@@ -22,9 +22,9 @@ invwavelength  = real_dx / real_wavelength
 
 pi = 3.14159265
 
-mu = 0.001
+mu = 0.01
 
-tau = 2000
+tau = 400
 area = 1 --- in units of 2 pi
 unitCharge = 1.602176487e-19
 
@@ -33,8 +33,8 @@ clight = 299792458
 eps0 = 8.85418781e-12
 
 tauSI = tau * real_dx * 1.e-6 * dt / clight
-muSI = mu * real_dx * 1.e-6 * unitCharge
-ESI = area * 2 * hbar / muSI / tauSI
+muSI = mu * real_dx * 1.e-6 * unitCharge * math.sqrt(2)
+ESI = area * hbar / muSI / tauSI / math.sqrt(2) 
 ENHL = ESI * real_dx * math.sqrt(real_dx) * 1.e-9 * math.sqrt(eps0) / clight * 2 * math.log(2+math.sqrt(3))
 
 

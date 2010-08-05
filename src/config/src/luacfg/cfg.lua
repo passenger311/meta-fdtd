@@ -285,6 +285,24 @@ function FOURLVL(parms)
    return FOURLVL
 end
 
+-- (Mat) QW Sub-Block definition
+
+function QW(parms)
+   local QW = { block = "QW" }
+   QW.ks = parms.ks or { 0., 1. }
+   QW.kCount = parms.kCount or 100
+   QW.bandgap = parms.bandgap or 1.5
+   QW.masses = parms.masses or { 0.06, 0.3 }
+   QW.dcv = parms.dcv or { 0.1 }
+   QW.nr = parms.nr or 1
+   QW.ninitial = parms.ninitial or 1.
+   QW.T = parms.T or 300
+   QW.pump = parms.pump or 0.0001
+   QW.intragammas = parms.intragammas or { 0.001, 0.001, 0.001 }
+   QW.gammamac = parms.gammamac or { 0.0001, 1.e-8, 1.e-8 }
+   return QW
+end
+
 -- (MAT)THREELVL Sub-Block definition
 
 function THREELVL(parms) 
@@ -625,6 +643,19 @@ local writemat = {
 	      fh:write(FOURLVL.dens,"\t! density of four lvl systems [1/dx^3]\n")
 	      fh:write(FOURLVL.start[1]," ", FOURLVL.start[2]," ",FOURLVL.start[3],"\t! values for N3_0,N2_0,N1_0 [1/dx^3]\n")
 	      fh:write(FOURLVL.gamma[1]," ",FOURLVL.gamma[2]," ",FOURLVL.gamma[3]," ",FOURLVL.gamma[4],"\t! non rad. recomb. rates [1/dt]\n")
+	  end,
+   QW = function(fh,QW)
+              fh:write(QW.ks[1]," ", QW.ks[2],"\t! { k0, kmax } [1/dx]\n")
+	      fh:write(QW.kCount,"\t! number of momentum states\n")
+	      fh:write(QW.bandgap,"\t! bandgap in eV\n")
+	      fh:write(QW.masses[1]," ", QW.masses[2],"\t! { me, mh} [m_0]\n")
+	      fh:write(QW.dcv,"\t! dipole matrix element [dx]\n")
+	      fh:write(QW.nr,"\t! number of quantum wells per dx\n")
+	      fh:write(QW.ninitial,"\t! initial electron density [1/dx^2]\n")
+	      fh:write(QW.T,"\t! temperature in Kelvin\n")
+	      fh:write(QW.pump,"\t! pump rate [1/dt]\n")
+	      fh:write(QW.intragammas[1]," ",QW.intragammas[2]," ",QW.intragammas[3],"\t! {gamma_p, gamma_e, gamma_h} [1/dt]\n")
+	      fh:write(QW.gammamac[1]," ",QW.gammamac[2]," ",QW.gammamac[3],"\t! {gamma_nr, gamma_sp, gamma_aug} [1/dt]\n")
 	  end,
    CHI3 = function(fh,CHI3)
 	      fh:write(CHI3.invlambdar,"\t! invlambdar [2 pi c]\n")

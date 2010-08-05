@@ -108,6 +108,7 @@ module reglist
   public :: SetBoxRegObj
   public :: SetPointRegObj
   public :: SetMaskRegObj
+  public :: RegtoBox
 
   ! --- Public Data
 
@@ -966,6 +967,46 @@ contains
     tmpval = 0.0
 
   end subroutine MaskInit
+
+!----------------------------------------------------------------------
+ 
+  subroutine RegtoBox(reg)
+    
+    integer :: ni, nj, nk, ri, rj, rk, rp, err
+    real, dimension(:,:), pointer :: new_w
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(6))
+    
+    
+    if ( .not. reg%isbox ) then
+
+      ni = reg%ie - reg%is + 1  ! get size of bounding box
+      nj = reg%je - reg%js + 1
+      nk = reg%ke - reg%ks + 1
+      allocate(new_w(reg%numval,ni*nj*nk),stat=err) ! new box-sized weight field
+      M4_ALLOC_ERROR(err,"WeightField")
+      new_w = 0 ! initialize all weight entries to zero
+
+      M4_REGLOOP_EXPR(reg,p,i,j,k,w,{ ! use REGLOOP macro (only walks i,j,k where reg%mask is >0 )
+
+        ri = (i-reg%is)
+        rj = (j-reg%js)
+        rk = (k-reg%ks)
+
+        rp = ri+ni*(rj+nj*rk)+1  ! calculate linear index from (i,j,k)
+        new_w(1:reg%numval,rp) = w(1:reg%numval)
+
+      })
+      reg%isbox = .true.
+      deallocate(reg%mask) ! no mask for box
+      deallocate(reg%val)
+      allocate(reg%val(reg%numval,ni*nj*nk),stat=err) ! new box-sized weight field
+      reg%val(:,:) = new_w(:,:)      
+      deallocate(new_w) 
+
+   end if
+
+  end subroutine RegtoBox
+
 
 !----------------------------------------------------------------------
 

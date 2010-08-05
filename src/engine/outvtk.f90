@@ -124,9 +124,9 @@ contains
  
     if ( out%snap ) then
        stepstr = TRIM(i2str(ncyc))
-       name = cat5(out%filename,"_",TRIM(i2str(ncyc)),mpi_sfx,outvtksfx)
+       name = cat4(out%filename,"_",TRIM(i2str(ncyc)),outvtksfx)!,mpi_sfx,outvtksfx)
     else
-       name = cat3(out%filename,mpi_sfx,outvtksfx)
+       name = cat2(out%filename,outvtksfx)!mpi_sfx,outvtksfx)
     endif
    
     if ( writehdr ) then 

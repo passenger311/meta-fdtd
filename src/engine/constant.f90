@@ -50,6 +50,8 @@ module constant
   real(8), parameter :: SI_C = 299792458             ! speed of light in SI
   real(8), parameter :: SI_HBAR = 1.054571682364E-34 ! hbar in SI
   real(8), parameter :: SI_EPS0 = 8.85418781762E-12  ! eps0 in SI
+  real(8), parameter :: SI_KB = 1.3806503E-23        ! boltzmann constant in SI
+  real(8), parameter :: SI_ME = 9.10938188E-31       ! electron mass in SI (kg)
   real(8), parameter :: SI_E = 1.6021773E-19         ! elementary charge in SI
   real(8), parameter :: SI_4PIALPHA = 0.09170123649  ! 4 pi * finestructure constant
   

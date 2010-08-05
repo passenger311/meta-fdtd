@@ -143,11 +143,13 @@ contains
 
     M4_WRITE_DBG(". enter InitializeSrcTfsfInj")
     M4_MODLOOP_EXPR({SRCTFSFINJ},src,{
-    
+
     M4_MODOBJ_GETREG(src,reg)
  
     if ( .not. reg%isbox ) then
-       M4_FATAL_ERROR("Region must be a single box!")
+       write(6,*) "transform region to Box.."
+       call RegtoBox(regobj(src%regidx))  
+       write(6,*) "..done"
     endif
 
     src%plane = 0
@@ -257,7 +259,6 @@ contains
           do i = reg%is-1, reg%ie+1, reg%di
 
              ! project (i,j,k) location vector on kinc to create a distance field
-
              rk(1) = M4_DISTX(src%orig(1),i)
              rk(2) = M4_DISTY(src%orig(2),j)
              rk(3) = M4_DISTZ(src%orig(3),k)

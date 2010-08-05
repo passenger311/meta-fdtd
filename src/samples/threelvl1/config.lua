@@ -8,7 +8,7 @@ dofile("scale.lua")
 
 --- set time steps 
 
-ncyc        = 40000
+ncyc        = 10000
 
 
 --- setup source / diagnostic planes for ffts
@@ -17,9 +17,9 @@ pulse1 = {
    shape   = "Sech",
    width   = tau,
    offset  = 0,                    
-   attack  = 20000,        
+   attack  = 4000,        
    sustain = 0, 
-   decay   = 20000,   
+   decay   = 4000,   
 }
 
 pulse2  = {
@@ -80,7 +80,7 @@ cfg:GRID{
 
 iminb = imin0+20
 eps1 = 1.
-eps2 = 1.2
+eps2 = 1
 
 d1 = math.floor(1/invwavelength/eps1*0.25)
 d2 = math.floor(1/invwavelength/eps2*0.25)
@@ -102,7 +102,7 @@ cfg:FDTD{
    EPSILON{
      REG{
        BOX{
-	{imin0-1,imax0+1,1,":",eps_bg,eps_bg,eps_bg}
+	{imin0-1,imax0+1,1,":",eps2,eps2,eps2}
       }
      } 
    },
@@ -138,14 +138,14 @@ cfg:BOUND{
 cfg:SRC{
    TFSFINJ{ 
       invlambda = invwavelength,
-      amplitude = 0.5*ENHL,
+      amplitude = ENHL,
       pulse = pulse1,
       planewave = planewave2,
       alpha = 0
    },
    REG{
       POINT{ 
-	 { 10, ":", 0, 1 } 
+	 { 10, ":", 1, 1 } 
       } 
    },
 }
@@ -153,14 +153,14 @@ cfg:SRC{
 cfg:SRC{
    TFSFINJ{
       invlambda = invwavelength,
-      amplitude = 0.5*ENHL,
+      amplitude = ENHL,
       pulse = pulse1,
       planewave = planewave1,
       alpha = 90
    },
    REG{
       POINT{
-	{ 10, ":", 0, 1 }
+	{ 10, ":", 1, 1 }
       }
    },
 }
@@ -175,7 +175,7 @@ cfg:SRC{
    },
    REG{
       POINT{
-         { 10, ":", 0, 1 }
+         { 10, ":", 1, 1 }
       }
    },
 }
@@ -190,7 +190,7 @@ cfg:SRC{
    },
    REG{
       POINT{
-        { 10, ":", 0, 1 }
+        { 10, ":", 1, 1 }
       }
    },
 }
@@ -202,13 +202,13 @@ cfg:SRC{
 
 cfg:MAT{
    THREELVL{ 
-      invlambda = { 0*invwavelength, invwavelength, invwavelength }, --- { f12, f13, f23 }; f12+f23=f13!
+      invlambda = { invwavelength, invwavelength, 0*invwavelength }, --- { f12, f13, f23 }; f12+f23=f13!
       gamma = { 0, 0, 0 }, --- dephasing constants (broadening) { gamma12, gamma13, gamma23 } 
       sigma = { 0, 0, 0 },   --- relaxation constants {lvl2 -> lvl1 , lvl3 -> lvl1 , lvl3 -> lvl2 }
       mx = { { 0,0 }, { 0,0 }, { 0,0 } },  
       --- dipole matrix in x-direction { {Re(mu12),Im(mu12)}, {Re(mu13),Im(mu13)}, {Re(mu23),Im(mu23)} }
-      my = { { 0,0 }, { mu,0 }, { 0,0 } }, --- y-direction
-      mz = { { 0,0 }, { 0,-mu }, { 0,0 } }, --- z-direction
+      my = { { mu,0 }, { mu,0 }, { 0,0 } }, --- y-direction
+      mz = { { 0,mu }, { 0,-mu }, { 0,0 } }, --- z-direction
       densities = { 1, 0, 0 }, --- initial occupation of three lvl system {n1,n2,n3}
       LFE = 0,
       n = 1 --- number of three level systems per grid cell

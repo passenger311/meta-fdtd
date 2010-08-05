@@ -130,7 +130,7 @@ contains
 
          if ( out%mode .ne. 'S' ) then
                        
-            write(out%funit,"(M4_SDIM({I5}),(3E15.6E3))") &
+            write(out%funit,"(M4_SDIM({I5}),(6E15.6E3))") &
                     M4_DIM123({i},{i,j},{i,j,k}),real(val1,8),real(val2,8),real(val3,8)& 
                     ,real(val4,8),real(val5,8),real(val6,8)
 
