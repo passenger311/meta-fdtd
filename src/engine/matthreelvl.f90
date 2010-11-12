@@ -97,6 +97,9 @@ module matthreelvl
   ! E = D - lfeval*P (lfeval = 2/3 for LFE and lfeval=1 for no LFE)
   real(kind=8) :: lfeval
 
+  ! Lorenz-Lorentz fioeld due to epsilon included?
+  real(kind=8) :: epsLFE
+  
   ! field conversion factor
   real(kind=8) :: conv
 
@@ -157,7 +160,9 @@ contains
     call readfloat(funit, lcount, mat%n)
 
     call readfloat(funit, lcount, mat%LFE)
-
+    
+    call readfloat(funit, lcount, mat%epsLFE)
+    
     })
 
     call CompressValRegObj(reg) ! compress filling factors
@@ -326,10 +331,15 @@ M4_IFELSE_TE({}, {
 
        ! If the electric permittivity is not equal to 1 the electric field acting on the particle is
        ! strengthened by a factor l = (eps + 2)/3. In effect Etmp(diel.) = Etmp * l.
-       eps_lx = (1./epsinvx(i,j,k) + 2.)/3.
-       eps_ly = (1./epsinvy(i,j,k) + 2.)/3.
-       eps_lz = (1./epsinvz(i,j,k) + 2.)/3.
-
+       if ( mat%epsLFE == 0 ) then
+          eps_lx = 1.
+          eps_ly = 1.
+          eps_lz = 1.
+       else
+          eps_lx = (1./epsinvx(i,j,k) + 2.)/3.
+          eps_ly = (1./epsinvy(i,j,k) + 2.)/3.
+          eps_lz = (1./epsinvz(i,j,k) + 2.)/3.
+       end if
        ! set factor ei for E = D - ei*sum(real(Mij*rhoij))
        ! ei includes unit conversion and number of systems per unit cell
        ei(1) = 2 * w(1) * epsinvx(i,j,k) * mat%n * SI_4PIALPHA

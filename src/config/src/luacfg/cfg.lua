@@ -316,6 +316,7 @@ function THREELVL(parms)
    THREELVL.densities = parms.densities or { 1., 0, 0 }
    THREELVL.n = parms.n or 1
    THREELVL.LFE = parms.LFE or 1
+   THREELVL.epsLFE = parms.epsLFE or 1
    return THREELVL
 end
 
@@ -334,6 +335,22 @@ function RANDTHREELVL(parms)
    RANDTHREELVL.seed = parms.seed or 1734920
    return RANDTHREELVL
 end
+
+-- (MAT)TWOLVL Sub-Block definition
+
+function TWOLVL(parms) 
+   local TWOLVL = { block = "TWOLVL" }
+   TWOLVL.invlambda = parms.invlambda or {}
+   TWOLVL.gamma = parms.gamma or 0.
+   TWOLVL.sigma = parms.sigma or 0.
+   TWOLVL.m = parms.m or { {0,0}, {0,0}, {0,0} }
+   TWOLVL.inversion = parms.inversion or -1.
+   TWOLVL.n = parms.n or 1
+   TWOLVL.LFE = parms.LFE or 1
+   TWOLVL.Lorentz = parms.Lorentz or 1
+   return TWOLVL
+end
+
 
 -- SRC Config-Block definition
 
@@ -686,6 +703,7 @@ local writemat = {
 	      fh:write(THREELVL.densities[1]," ", THREELVL.densities[2]," ", THREELVL.densities[3], "\t! occup. densities []\n")
 	      fh:write(THREELVL.n,"\t! systems per cell []\n")
 	      fh:write(THREELVL.LFE,"\t! local field effect included?\n")
+	      fh:write(THREELVL.epsLFE,"\t! local field effect due to epsilon included?\n")
 	   end,
    RANDTHREELVL = function(fh,RANDTHREELVL)
               fh:write(RANDTHREELVL.invlambda[1]," ",RANDTHREELVL.invlambda[2]," ",RANDTHREELVL.invlambda[3], "\n")
@@ -697,6 +715,20 @@ local writemat = {
 	      fh:write(RANDTHREELVL.n, "\n")
 	      fh:write(RANDTHREELVL.LFE, "\n")
 	      fh:write(RANDTHREELVL.seed, "\n")
+	   end,
+	  TWOLVL = function(fh,TWOLVL)
+	      fh:write(TWOLVL.invlambda, "\n")
+	      fh:write(TWOLVL.gamma, "\n")
+	      fh:write(TWOLVL.sigma, "\n")
+	      fh:write(
+		       "(",TWOLVL.m[1][1],",",TWOLVL.m[1][2],") ",
+		       "(",TWOLVL.m[2][1],",",TWOLVL.m[2][2],") ",
+		       "(",TWOLVL.m[3][1],",",TWOLVL.m[3][2],") ",
+		       "\t! m dipole length [dx]\n")
+	      fh:write(TWOLVL.inversion, "\t! occupation inversion []\n")
+	      fh:write(TWOLVL.n,"\t! systems per cell []\n")
+	      fh:write(TWOLVL.LFE,"\t! local field effect included?\n")
+		  fh:write(TWOLVL.Lorentz,"\t! Lorentz local field correction included?\n")
 	   end,
 }
 
@@ -757,7 +789,7 @@ local writesrc = {
 		       TFSFINJ.planewave.theta, " ",
 		       TFSFINJ.planewave.psi, " ",
 		       TFSFINJ.planewave.nrefr, " \t! planewave: phi, theta, psi, nrefr\n")
-	      fh:write(TFSFINJ.alpha,"\n")
+	      fh:write(TFSFINJ.alpha," \t! relative phase between envelope and carrier \n")
 	   end,
    TFSFBOX = function(fh,TFSFBOX)
 	      fh:write(TFSFBOX.invlambda," \t! invlambda [2 pi c]\n")

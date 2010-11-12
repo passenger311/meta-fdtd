@@ -8,7 +8,7 @@ dofile("scale.lua")
 
 --- set time steps 
 
-ncyc        = 10000
+ncyc        = 40000
 
 
 --- setup source / diagnostic planes for ffts
@@ -17,9 +17,9 @@ pulse1 = {
    shape   = "Sech",
    width   = tau,
    offset  = 0,                    
-   attack  = 4000,        
+   attack  = 10000,        
    sustain = 0, 
-   decay   = 4000,   
+   decay   = 10000,   
 }
 
 pulse2  = {
@@ -59,7 +59,7 @@ planewave4 = { phi=180, theta=90, psi=90, nrefr=1 }
 
 cpml = 11
 imin = 0
-imax = 200
+imax = 5000
 
 imin0 = imin - cpml
 imax0 = imax + cpml
@@ -80,7 +80,7 @@ cfg:GRID{
 
 iminb = imin0+20
 eps1 = 1.
-eps2 = 1
+eps2 = 4.
 
 d1 = math.floor(1/invwavelength/eps1*0.25)
 d2 = math.floor(1/invwavelength/eps2*0.25)
@@ -110,7 +110,7 @@ cfg:FDTD{
    OUT{
       file = { "R", "efield" },
       type = { "E", "N" },
-      time = { 0, ncyc, 100000 },
+      time = { 0, ncyc, 2000 },
       REG{
 	 BOX{ 
 	    { imin, imax, 1 }   -- middle point of the structure  
@@ -140,7 +140,7 @@ cfg:SRC{
       invlambda = invwavelength,
       amplitude = ENHL,
       pulse = pulse1,
-      planewave = planewave2,
+      planewave = planewave1,
       alpha = 0
    },
    REG{
@@ -153,7 +153,7 @@ cfg:SRC{
 cfg:SRC{
    TFSFINJ{
       invlambda = invwavelength,
-      amplitude = ENHL,
+      amplitude = 0*ENHL,
       pulse = pulse1,
       planewave = planewave1,
       alpha = 90
@@ -207,24 +207,25 @@ cfg:MAT{
       sigma = { 0, 0, 0 },   --- relaxation constants {lvl2 -> lvl1 , lvl3 -> lvl1 , lvl3 -> lvl2 }
       mx = { { 0,0 }, { 0,0 }, { 0,0 } },  
       --- dipole matrix in x-direction { {Re(mu12),Im(mu12)}, {Re(mu13),Im(mu13)}, {Re(mu23),Im(mu23)} }
-      my = { { mu,0 }, { mu,0 }, { 0,0 } }, --- y-direction
-      mz = { { 0,mu }, { 0,-mu }, { 0,0 } }, --- z-direction
+      my = { { mu,0 }, { 0,0 }, { 0,0 } }, --- y-direction
+      mz = { { 0,0 }, { mu,0 }, { 0,0 } }, --- z-direction
       densities = { 1, 0, 0 }, --- initial occupation of three lvl system {n1,n2,n3}
       LFE = 0,
-      n = 1 --- number of three level systems per grid cell
+      epsLFE = 0,
+      n = 10 --- number of three level systems per grid cell
    },
    REG{
-	POINT{
-	  { 100, ":" , 1, 1, 1 }
+	BOX{
+	  { 500, 4500, 1, ":" , 1, 1, 1 }
 	}
 	},
    OUT{
       file = { "R", "dens" },
-      type = { "N", "N", ".F." },
-      time = { 0, ncyc, 2 },
+      type = { "N", "N", ".T." },
+      time = { 0, ncyc, 2000 },
       REG{
-	 POINT{ 
-	    { 100 }   -- middle point of the structure  
+	 BOX{ 
+	    { 500, 4500, 1 }   -- middle point of the structure  
 	 }
       },
       on = true
