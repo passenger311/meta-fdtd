@@ -50,10 +50,10 @@ pulse4 = {
 }
 
 
-planewave1 = { phi=00, theta=90, psi=00, nrefr=1 }
-planewave2 = { phi=00, theta=90, psi=90, nrefr=1 }
-planewave3 = { phi=180, theta=90, psi=00, nrefr=1 }
-planewave4 = { phi=180, theta=90, psi=90, nrefr=1 }
+planewave1 = { phi=00, theta=90, psi=00, nrefr=math.sqrt(epsbg) }
+planewave2 = { phi=00, theta=90, psi=90, nrefr=math.sqrt(epsbg) }
+planewave3 = { phi=180, theta=90, psi=00, nrefr=math.sqrt(epsbg) }
+planewave4 = { phi=180, theta=90, psi=90, nrefr=math.sqrt(epsbg) }
 
 --- GRID Definition
 
@@ -80,7 +80,7 @@ cfg:GRID{
 
 iminb = imin0+20
 eps1 = 1.
-eps2 = 4.
+eps2 = 1
 
 d1 = math.floor(1/invwavelength/eps1*0.25)
 d2 = math.floor(1/invwavelength/eps2*0.25)
@@ -102,7 +102,7 @@ cfg:FDTD{
    EPSILON{
      REG{
        BOX{
-	{imin0-1,imax0+1,1,":",eps2,eps2,eps2}
+	{imin0-1,imax0+1,1,":",epsbg,epsbg,epsbg}
       }
      } 
    },
@@ -145,7 +145,7 @@ cfg:SRC{
    },
    REG{
       POINT{ 
-	 { 10, ":", 1, 1 } 
+	 { 10, ":", 1, math.sqrt(epsbg) } 
       } 
    },
 }
@@ -208,7 +208,7 @@ cfg:MAT{
       mx = { { 0,0 }, { 0,0 }, { 0,0 } },  
       --- dipole matrix in x-direction { {Re(mu12),Im(mu12)}, {Re(mu13),Im(mu13)}, {Re(mu23),Im(mu23)} }
       my = { { mu,0 }, { 0,0 }, { 0,0 } }, --- y-direction
-      mz = { { 0,0 }, { mu,0 }, { 0,0 } }, --- z-direction
+      mz = { { 0,0 }, { 0,0 }, { 0,0 } }, --- z-direction
       densities = { 1, 0, 0 }, --- initial occupation of three lvl system {n1,n2,n3}
       LFE = 0,
       epsLFE = 0,

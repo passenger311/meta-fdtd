@@ -6,9 +6,9 @@ print("---- scale")
 
 real_wavelength = 0.525   
 
-eps_bg = 4.
+epsbg = 4.
 
-nref = math.sqrt(eps_bg)
+nref = math.sqrt(epsbg)
 
 --- scaling parameters (in micrometers)
 
@@ -18,7 +18,7 @@ dt = 0.999
 
 real_dx       = real_wavelength / resolution 
 
-invwavelength  = real_dx / real_wavelength
+invwavelength  = 1 / resolution
 
 pi = 3.14159265
 

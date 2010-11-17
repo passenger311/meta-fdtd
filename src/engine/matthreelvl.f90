@@ -331,15 +331,9 @@ M4_IFELSE_TE({}, {
 
        ! If the electric permittivity is not equal to 1 the electric field acting on the particle is
        ! strengthened by a factor l = (eps + 2)/3. In effect Etmp(diel.) = Etmp * l.
-       if ( mat%epsLFE == 0 ) then
-          eps_lx = 1.
-          eps_ly = 1.
-          eps_lz = 1.
-       else
-          eps_lx = (1./epsinvx(i,j,k) + 2.)/3.
-          eps_ly = (1./epsinvy(i,j,k) + 2.)/3.
-          eps_lz = (1./epsinvz(i,j,k) + 2.)/3.
-       end if
+       eps_lx = mat%epsLFE * (1./epsinvx(i,j,k) + 2.)/3. + (1. - mat%epsLFE)
+       eps_ly = mat%epsLFE * (1./epsinvy(i,j,k) + 2.)/3. + (1. - mat%epsLFE)
+       eps_lz = mat%epsLFE * (1./epsinvz(i,j,k) + 2.)/3. + (1. - mat%epsLFE)
        ! set factor ei for E = D - ei*sum(real(Mij*rhoij))
        ! ei includes unit conversion and number of systems per unit cell
        ei(1) = 2 * w(1) * epsinvx(i,j,k) * mat%n * SI_4PIALPHA
@@ -384,8 +378,8 @@ M4_IFELSE_TE({}, {
        do m= m1, m2
 
        ! Local field effect E(loc) = E(macroscopic) + P/3 = D - 2/3*P 
-          Etmp(m) = D(m) - mat%lfeval * ei(m) * real( mat%M12(m)*rho12 + &
-              mat%M13(m)*rho13 + mat%M23(m)*rho23 )
+          Etmp(m) = D(m) - mat%lfeval * ei(m) * real( conjg(mat%M12(m))*rho12 + &
+              conjg(mat%M13(m))*rho13 + conjg(mat%M23(m))*rho23 )
 
        end do
        
