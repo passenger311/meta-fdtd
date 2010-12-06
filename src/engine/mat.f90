@@ -17,6 +17,7 @@
 
 module mat
 
+  use checkpoint
   use strings
   use constant
   use reglist
@@ -76,7 +77,7 @@ contains
 
     M4_FOREACH_MAT({call Initialize}, {
     })
-        
+
   end subroutine InitializeMat
     
 !----------------------------------------------------------------------

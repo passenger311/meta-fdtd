@@ -13,6 +13,7 @@
 program meta
 
   use strings
+  use checkpoint
   use list
   use mpiworld
   use grid
@@ -65,7 +66,18 @@ M4_IFELSE_MPI(call SynchronizeMPIWorld)
         write(6,*) "*"
         write(6,*) "* initialising modules: myrank = ", ranklbl
         call CheckTimer
-        write(6,*) "* -> InitializeList"
+
+        if ( load_state ) then
+           write(6,*) "* loading checkpoint file"
+           inquire(file=checkpoint_fn, EXIST = load_state )
+           if ( load_state ) then
+              write(6,*) "* checkpoint.in found (loading)"
+              open(unit=UNITCHK, file=checkpoint_fn, status = "old", form = "unformatted"  ) 
+           else
+              write(6,*) "* checkpoint.in not found (skipping)"
+           end if
+        end if
+         write(6,*) "* -> InitializeList"
         call InitializeList
         write(6,*) "* -> ReadConfig(M4_SDIM{})"
         call ReadConfig(M4_SDIM{})
@@ -85,7 +97,11 @@ M4_IFELSE_MPI(call SynchronizeMPIWorld)
         call InitializeDiag
         write(6,*) "* -> InitializeOut"
         call InitializeOut
-       
+
+        if ( load_state ) then
+           close(UNITCHK) 
+        end if
+
      end if
 
   end do
@@ -155,7 +171,8 @@ M4_IFELSE_ARCH({PGI}, {
         end select
         write(6,*) busychar," running ... ", str
 
-     end if
+        call flush()
+      end if
 
 ! ------------------------------ StepH --------------------------------
 
@@ -382,6 +399,11 @@ M4_IFELSE_MPI(call SynchronizeMPIWorld)
  
         write(6,*) "* process finalising, rank = ", ranklbl
 
+        if ( save_state ) then
+           write(6,*) "* writing checkpoint file"
+           open(unit=UNITCHK, file=checkpoint_fn, status = "unknown", form = "unformatted" ) 
+        end if
+
         write(6,*) "* -> FinalizeOut"
         call FinalizeOut
         write(6,*) "* -> FinalizeSrc"
@@ -400,6 +422,10 @@ M4_IFELSE_MPI(call SynchronizeMPIWorld)
         call FinalizeGrid
         write(6,*) "* -> FinalizeList"
         call FinalizeList
+
+        if ( save_state ) then
+           close(UNITCHK) 
+        end if
 
         write(6,*) "*"
 

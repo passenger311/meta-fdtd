@@ -43,6 +43,7 @@ endif
 # basic objects
 BASIC_OBJ=\
 constant.o\
+checkpoint.o\
 strings.o\
 parse.o\
 utils.o\

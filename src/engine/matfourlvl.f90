@@ -89,6 +89,7 @@
 module matfourlvl
 
   use constant
+  use checkpoint
   use parse
   use reglist
   use outlist
@@ -193,10 +194,12 @@ contains
 
   subroutine InitializeMatFourlvl
 
-    type (T_REG) :: reg
     integer :: err
     real (kind=8) :: conv1, conv2, g32, g30, g21, g10
+
     M4_MODLOOP_DECL({MATFOURLVL},mat) 
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
+
     M4_WRITE_DBG(". enter InitializeMatFourlvl")
     M4_MODLOOP_EXPR({MATFOURLVL},mat,{
     
@@ -278,6 +281,25 @@ contains
 
        mat%cyc = 1
 
+! load from checkpoint file
+
+       if ( load_state ) then
+
+          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+
+          read(UNITCHK) mat%Pax(p,1), mat%Pax(p,2)
+          read(UNITCHK) mat%Pay(p,1), mat%Pay(p,2)
+          read(UNITCHK) mat%Paz(p,1), mat%Paz(p,2)
+          read(UNITCHK) mat%Pbx(p,1), mat%Pbx(p,2)
+          read(UNITCHK) mat%Pby(p,1), mat%Pby(p,2)
+          read(UNITCHK) mat%Pbz(p,1), mat%Pbz(p,2)
+          read(UNITCHK) mat%Pbz(p,1), mat%Pbz(p,2)
+          read(UNITCHK) mat%N0(p), mat%N1(p), mat%N2(p), mat%N3(p)
+
+          })
+
+       end if
+
        M4_IFELSE_DBG({call EchoMatFourlvlObj(mat)},{call DisplayMatFourlvlObj(mat)})
 
     })
@@ -290,8 +312,30 @@ contains
   subroutine FinalizeMatFourlvl
 
     M4_MODLOOP_DECL({MATFOURLVL},mat)
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
+
     M4_WRITE_DBG(". enter FinalizeMatFourlvl")
     M4_MODLOOP_EXPR({MATFOURLVL},mat,{
+
+       M4_MODOBJ_GETREG(mat,reg)
+! save to checkpoint file
+
+       if ( save_state ) then
+
+          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+
+          write(UNITCHK) mat%Pax(p,1), mat%Pax(p,2)
+          write(UNITCHK) mat%Pay(p,1), mat%Pay(p,2)
+          write(UNITCHK) mat%Paz(p,1), mat%Paz(p,2)
+          write(UNITCHK) mat%Pbx(p,1), mat%Pbx(p,2)
+          write(UNITCHK) mat%Pby(p,1), mat%Pby(p,2)
+          write(UNITCHK) mat%Pbz(p,1), mat%Pbz(p,2)
+          write(UNITCHK) mat%Pbz(p,1), mat%Pbz(p,2)
+          write(UNITCHK) mat%N0(p), mat%N1(p), mat%N2(p), mat%N3(p)
+
+          })
+
+       end if
 
     ! finalize mat object here
     deallocate(mat%Pax, mat%Pay, mat%Paz, mat%Pbx, mat%Pby, mat%Pbz, mat%N0, mat%N1, mat%N2, mat%N3)
