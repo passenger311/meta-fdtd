@@ -19,6 +19,7 @@ module config
   use reglist
 
   use grid
+  use checkpoint
   use fdtd
   use bound
   use src
@@ -87,6 +88,9 @@ contains
             M4_WRITE_INFO({"-> ReadConfigGrid"})
             call ReadConfigGrid(UNITTMP,lcount,string,dim)
             gotgrid = .true.
+         case( "(CHECKPOINT" )
+            M4_WRITE_INFO({"-> ReadConfigCheckpoint"})
+            call ReadConfigCheckpoint(UNITTMP,lcount,string)
          case( "(FDTD" )
             M4_WRITE_INFO({"-> ReadConfigFdtd"})
             call ReadConfigFdtd(UNITTMP,lcount,string)

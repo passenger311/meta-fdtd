@@ -43,9 +43,9 @@ endif
 # basic objects
 BASIC_OBJ=\
 constant.o\
-checkpoint.o\
 strings.o\
 parse.o\
+checkpoint.o\
 utils.o\
 mpiworld.o\
 reglist.o\

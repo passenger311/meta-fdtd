@@ -283,7 +283,7 @@ contains
 
 ! load from checkpoint file
 
-       if ( load_state ) then
+       if ( load_state .and. detail_level .ge. 2 ) then
 
           M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
@@ -320,7 +320,7 @@ contains
        M4_MODOBJ_GETREG(mat,reg)
 ! save to checkpoint file
 
-       if ( save_state ) then
+       if ( save_state .and. detail_level .ge. 2 ) then
 
           M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 

@@ -38,6 +38,7 @@
 module fdtd
  
   use constant
+  use checkpoint
   use reglist
   use outlist
   use grid
@@ -157,10 +158,8 @@ contains
 
  subroutine InitializeFdtd
    
-   integer :: n
-   M4_REGLOOP_DECL(reg,p,i,j,k,w(6))  
-   real(kind=8) :: v(1)
-       
+   integer :: i,j,k
+
    M4_WRITE_DBG({". enter InitializeFdtd"})
 
    if ( .not. modconfigured ) then
@@ -170,6 +169,22 @@ contains
    call InitializeEpsilon
 M4_IFELSE_WMU({ call InitializeMu })
    call InitializeEHFields
+
+! load from checkpoint file
+
+   if ( load_state .and. ( detail_level .eq. 1 .or. detail_level .eq. 3 ) ) then
+
+      do k=KBEG, KEND
+         do j=JBEG, JEND
+            do i=IBEG, IEND
+               read(UNITCHK) Ex(i,j,k), Ey(i,j,k), Ez(i,j,k)
+               read(UNITCHK) Hx(i,j,k), Hy(i,j,k), Hz(i,j,k)               
+            end do
+         end do
+      end do
+
+   end if
+
 
    M4_WRITE_DBG({". exit InitializeFdtd"})   
 
@@ -367,8 +382,26 @@ end subroutine ExtendField
 
  subroutine FinalizeFdtd
    
+   integer :: i,j,k
+
    M4_WRITE_DBG({". enter FinalizeFdtd"})
    
+
+! save to checkpoint file
+
+   if ( save_state .and. ( detail_level .eq. 1 .or. detail_level .eq. 3 ) ) then
+
+      do k=KBEG, KEND
+         do j=JBEG, JEND
+            do i=IBEG, IEND
+               write(UNITCHK) Ex(i,j,k), Ey(i,j,k), Ez(i,j,k)
+               write(UNITCHK) Hx(i,j,k), Hy(i,j,k), Hz(i,j,k)               
+            end do
+         end do
+      end do
+
+   end if
+
    deallocate(Hz)
    deallocate(Hy)
    deallocate(Hx)

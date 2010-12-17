@@ -66,21 +66,22 @@ M4_IFELSE_MPI(call SynchronizeMPIWorld)
         write(6,*) "*"
         write(6,*) "* initialising modules: myrank = ", ranklbl
         call CheckTimer
+        write(6,*) "* -> InitializeList"
+        call InitializeList
+        write(6,*) "* -> ReadConfig(M4_SDIM{})"
+        call ReadConfig(M4_SDIM{})
 
         if ( load_state ) then
            write(6,*) "* loading checkpoint file"
-           inquire(file=checkpoint_fn, EXIST = load_state )
            if ( load_state ) then
               write(6,*) "* checkpoint.in found (loading)"
               open(unit=UNITCHK, file=checkpoint_fn, status = "old", form = "unformatted"  ) 
            else
-              write(6,*) "* checkpoint.in not found (skipping)"
+              M4_FATAL_ERROR({"COULD NOT LOAD 'checkpoint.in'"})
+          !    write(6,*) "* checkpoint.in not found (skipping)"
            end if
         end if
-         write(6,*) "* -> InitializeList"
-        call InitializeList
-        write(6,*) "* -> ReadConfig(M4_SDIM{})"
-        call ReadConfig(M4_SDIM{})
+
         write(6,*) "* -> InitializeFdtd"
         call InitializeFdtd
         write(6,*) "* -> InitializeFdtdCalc"

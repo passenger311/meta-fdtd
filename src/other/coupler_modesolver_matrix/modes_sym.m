@@ -75,7 +75,7 @@ n(3,2)=nsubstrate;
 
 % ---- setting up the mesh
 
-[x,y,xc,yc,nx,ny,eps] = waveguidemesh(n,h,w,dx,dy);
+[x,y,xc,yc,nx,ny,eps] = waveguidemesh(n.*n,h,w,dx,dy);
 
 % ---- Now we stretch out the mesh at the boundaries:
 
