@@ -42,6 +42,7 @@ module matlhm
 
   use constant
   use parse
+  use checkpoint
   use reglist
   use outlist
   use grid
@@ -101,9 +102,9 @@ contains
 
   subroutine InitializeMatLhm
 
-    type (T_REG) :: reg
     integer :: err
     M4_MODLOOP_DECL({MATLHM},mat) 
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(6))
     M4_WRITE_DBG(". enter InitializeMatLhm")
     M4_MODLOOP_EXPR({MATLHM},mat,{
     
@@ -143,6 +144,25 @@ contains
 
        endif
 
+
+! load from checkpoint file
+
+       if ( load_state .and. detail_level .ge. 2 ) then
+
+          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+
+          read(UNITCHK) mat%Jx(p,1), mat%Jx(p,2)
+          read(UNITCHK) mat%Jy(p,1), mat%Jy(p,2)
+          read(UNITCHK) mat%Jz(p,1), mat%Jz(p,2)
+          read(UNITCHK) mat%Kx(p,1), mat%Kx(p,2)
+          read(UNITCHK) mat%Ky(p,1), mat%Ky(p,2)
+          read(UNITCHK) mat%Kz(p,1), mat%Kz(p,2)
+
+          })
+
+       end if
+
+
        M4_IFELSE_DBG({call EchoMatLhmObj(mat)},{call DisplayMatLhmObj(mat)})
 
     })
@@ -155,12 +175,33 @@ contains
   subroutine FinalizeMatLhm
 
     M4_MODLOOP_DECL({MATLHM},mat)
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(6))
     M4_WRITE_DBG(". enter FinalizeMatLhm")
     M4_MODLOOP_EXPR({MATLHM},mat,{
 
-    ! finalize mat object here
-    deallocate(mat%Jx,mat%Jy,mat%Jz,mat%Kx,mat%Ky,mat%Kz)
 
+! save to checkpoint file
+
+       if ( save_state .and. detail_level .ge. 2 ) then
+
+          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+
+          write(UNITCHK) mat%Jx(p,1), mat%Jx(p,2)
+          write(UNITCHK) mat%Jy(p,1), mat%Jy(p,2)
+          write(UNITCHK) mat%Jz(p,1), mat%Jz(p,2)
+          write(UNITCHK) mat%Kx(p,1), mat%Kx(p,2)
+          write(UNITCHK) mat%Ky(p,1), mat%Ky(p,2)
+          write(UNITCHK) mat%Kz(p,1), mat%Kz(p,2)
+
+          })
+
+       end if
+
+
+      ! finalize mat object here
+      deallocate(mat%Jx,mat%Jy,mat%Jz,mat%Kx,mat%Ky,mat%Kz)
+
+   
     })
     M4_WRITE_DBG(". exit FinalizeMatLhm")
 
