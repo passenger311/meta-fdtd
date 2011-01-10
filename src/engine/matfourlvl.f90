@@ -506,7 +506,8 @@ M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * Ez(i,j,k) * mat%N * (  ( mat%Paz(p,m) - 
 
     })
     
-    SumJEMatFourlvl = sum
+!    SumJEMatFourlvl = sum
+    SumJEMatFourlvl = 0.
     
   end function SumJEMatFourlvl
 

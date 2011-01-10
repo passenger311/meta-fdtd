@@ -256,8 +256,8 @@ contains
 
                 M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-                Ep1 = real( 0.5 * ( Ex(M4_COORD(i,j,k)) + Ex(M4_COORD(i-1,j,k)) ) )
-                Hp1 = real( 0.25 * ( Hx(M4_COORD(i,j,k)) + Hx(M4_COORD(i,j,k-1)) + Hx(M4_COORD(i,j-1,k)) + Hx(M4_COORD(i,j-1,k-1)) ) )
+                Ep1 = dble( 0.5 * ( Ex(M4_COORD(i,j,k)) + Ex(M4_COORD(i-1,j,k)) ) )
+                Hp1 = dble( 0.25 * ( Hx(M4_COORD(i,j,k)) + Hx(M4_COORD(i,j,k-1)) + Hx(M4_COORD(i,j-1,k)) + Hx(M4_COORD(i,j-1,k-1)) ) )
 
                 do c = 1, diag%numfreqs 
 
@@ -280,8 +280,8 @@ contains
 
                 M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-                Ep1 = real( 0.5 * ( Ey(M4_COORD(i,j,k)) + Ey(M4_COORD(i,j-1,k)) ) )
-                Hp1 = real( 0.25 * ( Hy(M4_COORD(i,j,k)) + Hy(M4_COORD(i-1,j,k)) + Hy(M4_COORD(i,j,k-1)) + Hy(M4_COORD(i-1,j,k-1)) ) )
+                Ep1 = dble( 0.5 * ( Ey(M4_COORD(i,j,k)) + Ey(M4_COORD(i,j-1,k)) ) )
+                Hp1 = dble( 0.25 * ( Hy(M4_COORD(i,j,k)) + Hy(M4_COORD(i-1,j,k)) + Hy(M4_COORD(i,j,k-1)) + Hy(M4_COORD(i-1,j,k-1)) ) )
 
                 do c = 1, diag%numfreqs 
 
@@ -304,8 +304,8 @@ contains
 
                 M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-                Ep1 = real( 0.5 * ( Ez(M4_COORD(i,j,k)) + Ez(M4_COORD(i,j,k-1)) ) )
-                Hp1 = real( 0.25 * ( Hz(M4_COORD(i,j,k)) + Hz(M4_COORD(i-1,j,k)) + Hz(M4_COORD(i,j-1,k)) + Hz(M4_COORD(i-1,j-1,k)) ) )
+                Ep1 = dble( 0.5 * ( Ez(M4_COORD(i,j,k)) + Ez(M4_COORD(i,j,k-1)) ) )
+                Hp1 = dble( 0.25 * ( Hz(M4_COORD(i,j,k)) + Hz(M4_COORD(i-1,j,k)) + Hz(M4_COORD(i,j-1,k)) + Hz(M4_COORD(i-1,j-1,k)) ) )
 
                 do c = 1, diag%numfreqs 
 
@@ -336,11 +336,11 @@ contains
 
                 M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-                Ep1 = real( 0.5 * ( Ey(M4_COORD(i,j,k)) + Ey(M4_COORD(i,j-1,k)) ) )
-                Ep2 = real( 0.5 * ( Ez(M4_COORD(i,j,k)) + Ez(M4_COORD(i,j,k-1)) ) )
+                Ep1 = dble( 0.5 * ( Ey(M4_COORD(i,j,k)) + Ey(M4_COORD(i,j-1,k)) ) )
+                Ep2 = dble( 0.5 * ( Ez(M4_COORD(i,j,k)) + Ez(M4_COORD(i,j,k-1)) ) )
 
-                Hp1 = real( 0.5 * ( Hy(M4_COORD(i,j,k)) + Hy(M4_COORD(i,j,k-1)) ) )
-                Hp2 = real( 0.5 * ( Hz(M4_COORD(i,j,k)) + Hz(M4_COORD(i,j-1,k)) ) )
+                Hp1 = dble( 0.5 * ( Hy(M4_COORD(i,j,k)) + Hy(M4_COORD(i,j,k-1)) ) )
+                Hp2 = dble( 0.5 * ( Hz(M4_COORD(i,j,k)) + Hz(M4_COORD(i,j-1,k)) ) )
 
                 do c = 1, diag%numfreqs
 
@@ -367,11 +367,11 @@ contains
 
                 M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-                Ep1 = real( 0.5 * ( Ex(M4_COORD(i,j,k)) + Ex(M4_COORD(i-1,j,k)) ) )
-                Ep2 = real( 0.5 * ( Ez(M4_COORD(i,j,k)) + Ez(M4_COORD(i,j,k-1)) ) )
+                Ep1 = dble( 0.5 * ( Ex(M4_COORD(i,j,k)) + Ex(M4_COORD(i-1,j,k)) ) )
+                Ep2 = dble( 0.5 * ( Ez(M4_COORD(i,j,k)) + Ez(M4_COORD(i,j,k-1)) ) )
 
-                Hp1 = real( 0.5 * ( Hx(M4_COORD(i,j,k)) + Hx(M4_COORD(i,j,k-1)) ) )
-                Hp2 = real( 0.5 * ( Hz(M4_COORD(i,j,k)) + Hz(M4_COORD(i-1,j,k)) ) )
+                Hp1 = dble( 0.5 * ( Hx(M4_COORD(i,j,k)) + Hx(M4_COORD(i,j,k-1)) ) )
+                Hp2 = dble( 0.5 * ( Hz(M4_COORD(i,j,k)) + Hz(M4_COORD(i-1,j,k)) ) )
 
                 do c = 1, diag%numfreqs
 
@@ -398,11 +398,11 @@ contains
 
                 M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-                Ep1 = real( 0.5 * ( Ex(M4_COORD(i,j,k)) + Ex(M4_COORD(i-1,j,k)) ) )
-                Ep2 = real( 0.5 * ( Ey(M4_COORD(i,j,k)) + Ey(M4_COORD(i,j-1,k)) ) )
+                Ep1 = dble( 0.5 * ( Ex(M4_COORD(i,j,k)) + Ex(M4_COORD(i-1,j,k)) ) )
+                Ep2 = dble( 0.5 * ( Ey(M4_COORD(i,j,k)) + Ey(M4_COORD(i,j-1,k)) ) )
 
-                Hp1 = real( 0.5 * ( Hx(M4_COORD(i,j,k)) + Hx(M4_COORD(i,j-1,k)) ) )
-                Hp2 = real( 0.5 * ( Hy(M4_COORD(i,j,k)) + Hy(M4_COORD(i-1,j,k)) ) )
+                Hp1 = dble( 0.5 * ( Hx(M4_COORD(i,j,k)) + Hx(M4_COORD(i,j-1,k)) ) )
+                Hp2 = dble( 0.5 * ( Hy(M4_COORD(i,j,k)) + Hy(M4_COORD(i-1,j,k)) ) )
 
                 do c = 1, diag%numfreqs
 
@@ -437,13 +437,13 @@ contains
 
                 M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-                Ep1 = real( 0.5 * ( Ey(M4_COORD(i,j,k)) + Ey(M4_COORD(i,j-1,k)) ) )
-                Ep2 = real( 0.5 * ( Ez(M4_COORD(i,j,k)) + Ez(M4_COORD(i,j,k-1)) ) )
+                Ep1 = dble( 0.5 * ( Ey(M4_COORD(i,j,k)) + Ey(M4_COORD(i,j-1,k)) ) )
+                Ep2 = dble( 0.5 * ( Ez(M4_COORD(i,j,k)) + Ez(M4_COORD(i,j,k-1)) ) )
 
-                Hp1 = real( 0.5 * ( Hy(M4_COORD(i,j,k)) + Hy(M4_COORD(i,j,k-1)) ) )
-                Hp12 = real( 0.5 * ( Hy(M4_COORD(i-1,j,k)) + Hy(M4_COORD(i-1,j,k-1)) ) )
-                Hp2 = real( 0.5 * ( Hz(M4_COORD(i,j,k)) + Hz(M4_COORD(i,j-1,k)) ) )
-                Hp22 = real( 0.5 * ( Hz(M4_COORD(i-1,j,k)) + Hz(M4_COORD(i-1,j-1,k)) ) )
+                Hp1 = dble( 0.5 * ( Hy(M4_COORD(i,j,k)) + Hy(M4_COORD(i,j,k-1)) ) )
+                Hp12 = dble( 0.5 * ( Hy(M4_COORD(i-1,j,k)) + Hy(M4_COORD(i-1,j,k-1)) ) )
+                Hp2 = dble( 0.5 * ( Hz(M4_COORD(i,j,k)) + Hz(M4_COORD(i,j-1,k)) ) )
+                Hp22 = dble( 0.5 * ( Hz(M4_COORD(i-1,j,k)) + Hz(M4_COORD(i-1,j-1,k)) ) )
 
                 do c = 1, diag%numfreqs 
 
@@ -474,13 +474,13 @@ contains
 
                 M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-                Ep1 = real( 0.5 * ( Ex(M4_COORD(i,j,k)) + Ex(M4_COORD(i-1,j,k)) ) )
-                Ep2 = real( 0.5 * ( Ez(M4_COORD(i,j,k)) + Ez(M4_COORD(i,j,k-1)) ) )
+                Ep1 = dble( 0.5 * ( Ex(M4_COORD(i,j,k)) + Ex(M4_COORD(i-1,j,k)) ) )
+                Ep2 = dble( 0.5 * ( Ez(M4_COORD(i,j,k)) + Ez(M4_COORD(i,j,k-1)) ) )
 
-                Hp1 = real( 0.5 * ( Hx(M4_COORD(i,j,k)) + Hx(M4_COORD(i,j,k-1)) ) )
-                Hp12 = real( 0.5 * ( Hx(M4_COORD(i,j-1,k)) + Hx(M4_COORD(i,j-1,k-1)) ) )
-                Hp2 = real( 0.5 * ( Hz(M4_COORD(i,j,k)) + Hz(M4_COORD(i-1,j,k)) ) )
-                Hp22 = real( 0.5 * ( Hz(M4_COORD(i,j-1,k)) + Hz(M4_COORD(i-1,j-1,k)) ) )
+                Hp1 = dble( 0.5 * ( Hx(M4_COORD(i,j,k)) + Hx(M4_COORD(i,j,k-1)) ) )
+                Hp12 = dble( 0.5 * ( Hx(M4_COORD(i,j-1,k)) + Hx(M4_COORD(i,j-1,k-1)) ) )
+                Hp2 = dble( 0.5 * ( Hz(M4_COORD(i,j,k)) + Hz(M4_COORD(i-1,j,k)) ) )
+                Hp22 = dble( 0.5 * ( Hz(M4_COORD(i,j-1,k)) + Hz(M4_COORD(i-1,j-1,k)) ) )
 
                 do c = 1, diag%numfreqs 
 
@@ -511,13 +511,13 @@ contains
 
                 M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-                Ep1 = real( 0.5 * ( Ex(M4_COORD(i,j,k)) + Ex(M4_COORD(i-1,j,k)) ) )
-                Ep2 = real( 0.5 * ( Ey(M4_COORD(i,j,k)) + Ey(M4_COORD(i,j-1,k)) ) )
+                Ep1 = dble( 0.5 * ( Ex(M4_COORD(i,j,k)) + Ex(M4_COORD(i-1,j,k)) ) )
+                Ep2 = dble( 0.5 * ( Ey(M4_COORD(i,j,k)) + Ey(M4_COORD(i,j-1,k)) ) )
 
-                Hp1 = real( 0.5 * ( Hx(M4_COORD(i,j,k)) + Hx(M4_COORD(i,j-1,k)) ) )
-                Hp12 = real( 0.5 * ( Hx(M4_COORD(i,j,k-1)) + Hx(M4_COORD(i,j-1,k-1)) ) )
-                Hp2 = real( 0.5 * ( Hy(M4_COORD(i,j,k)) + Hy(M4_COORD(i-1,j,k)) ) )
-                Hp22 = real( 0.5 * ( Hy(M4_COORD(i,j,k-1)) + Hy(M4_COORD(i-1,j,k-1)) ) )
+                Hp1 = dble( 0.5 * ( Hx(M4_COORD(i,j,k)) + Hx(M4_COORD(i,j-1,k)) ) )
+                Hp12 = dble( 0.5 * ( Hx(M4_COORD(i,j,k-1)) + Hx(M4_COORD(i,j-1,k-1)) ) )
+                Hp2 = dble( 0.5 * ( Hy(M4_COORD(i,j,k)) + Hy(M4_COORD(i-1,j,k)) ) )
+                Hp22 = dble( 0.5 * ( Hy(M4_COORD(i,j,k-1)) + Hy(M4_COORD(i-1,j,k-1)) ) )
 
                 do c = 1, diag%numfreqs 
 
@@ -552,13 +552,13 @@ contains
 
              ! store E and H field projections
 
-             Exh = real( 0.5 * ( Ex(M4_COORD(i,j,k)) + Ex(M4_COORD(i-1,j,k)) ) )
-             Eyh = real( 0.5 * ( Ey(M4_COORD(i,j,k)) + Ey(M4_COORD(i,j-1,k)) ) )
-             Ezh = real( 0.5 * ( Ez(M4_COORD(i,j,k)) + Ez(M4_COORD(i,j,k-1)) ) )
+             Exh = dble( 0.5 * ( Ex(M4_COORD(i,j,k)) + Ex(M4_COORD(i-1,j,k)) ) )
+             Eyh = dble( 0.5 * ( Ey(M4_COORD(i,j,k)) + Ey(M4_COORD(i,j-1,k)) ) )
+             Ezh = dble( 0.5 * ( Ez(M4_COORD(i,j,k)) + Ez(M4_COORD(i,j,k-1)) ) )
 
-             Hxh = real( 0.25 * ( Hx(M4_COORD(i,j,k)) + Hx(M4_COORD(i,j-1,k)) + Hx(M4_COORD(i,j,k-1)) + Hx(M4_COORD(i,j-1,k-1)) ) )
-             Hyh = real( 0.25 * ( Hy(M4_COORD(i,j,k)) + Hy(M4_COORD(i-1,j,k)) + Hy(M4_COORD(i,j,k-1)) + Hy(M4_COORD(i-1,j,k-1)) ) )
-             Hzh = real( 0.25 * ( Hz(M4_COORD(i,j,k)) + Hz(M4_COORD(i-1,j,k)) + Hz(M4_COORD(i,j-1,k)) + Hz(M4_COORD(i-1,j-1,k)) ) )
+             Hxh = dble( 0.25 * ( Hx(M4_COORD(i,j,k)) + Hx(M4_COORD(i,j-1,k)) + Hx(M4_COORD(i,j,k-1)) + Hx(M4_COORD(i,j-1,k-1)) ) )
+             Hyh = dble( 0.25 * ( Hy(M4_COORD(i,j,k)) + Hy(M4_COORD(i-1,j,k)) + Hy(M4_COORD(i,j,k-1)) + Hy(M4_COORD(i-1,j,k-1)) ) )
+             Hzh = dble( 0.25 * ( Hz(M4_COORD(i,j,k)) + Hz(M4_COORD(i-1,j,k)) + Hz(M4_COORD(i,j-1,k)) + Hz(M4_COORD(i-1,j-1,k)) ) )
 
              do c = 1, diag%numfreqs 
 

@@ -179,35 +179,35 @@ contains
       ! poynting vector
  
        diag%dsx1(m) = diag%dsx1(m) &
-            + M4_VOLEY(i,j,k)/M4_SX(i,j,k) * ( real(Ey(i,j,k)) * real( Hz(i,j,k) - Hz(i-1,j,k) ) ) &
-            - M4_VOLEZ(i,j,k)/M4_SX(i,j,k) * ( real(Ez(i,j,k)) * real( Hy(i,j,k) - Hy(i-1,j,k) ) )
+            + M4_VOLEY(i,j,k)/M4_SX(i,j,k) * ( dble(Ey(i,j,k)) * dble( Hz(i,j,k) - Hz(i-1,j,k) ) ) &
+            - M4_VOLEZ(i,j,k)/M4_SX(i,j,k) * ( dble(Ez(i,j,k)) * dble( Hy(i,j,k) - Hy(i-1,j,k) ) )
 
        diag%dsx2(m) = diag%dsx2(m) &
-            + M4_VOLHZ(i,j,k)/M4_HSX(i,j,k) * ( real(Hz(i,j,k)) * real( Ey(i+1,j,k) - Ey(i,j,k) ) ) &
-            - M4_VOLHY(i,j,k)/M4_HSX(i,j,k) * ( real(Hy(i,j,k)) * real( Ez(i+1,j,k) - Ez(i,j,k) ) )
+            + M4_VOLHZ(i,j,k)/M4_HSX(i,j,k) * ( dble(Hz(i,j,k)) * dble( Ey(i+1,j,k) - Ey(i,j,k) ) ) &
+            - M4_VOLHY(i,j,k)/M4_HSX(i,j,k) * ( dble(Hy(i,j,k)) * dble( Ez(i+1,j,k) - Ez(i,j,k) ) )
 
 M4_IFELSE_1D({},{
 
 
        diag%dsy1(m) = diag%dsy1(m) &
-            + M4_VOLEZ(i,j,k)/M4_SY(i,j,k) * ( real(Ez(i,j,k)) * real( Hx(i,j,k) - Hx(i,j-1,k ) ) ) &
-            - M4_VOLEX(i,j,k)/M4_SY(i,j,k) * ( real(Ex(i,j,k)) * real( Hz(i,j,k) - Hz(i,j-1,k) ) )
+            + M4_VOLEZ(i,j,k)/M4_SY(i,j,k) * ( dble(Ez(i,j,k)) * dble( Hx(i,j,k) - Hx(i,j-1,k ) ) ) &
+            - M4_VOLEX(i,j,k)/M4_SY(i,j,k) * ( dble(Ex(i,j,k)) * dble( Hz(i,j,k) - Hz(i,j-1,k) ) )
 
        diag%dsy2(m) = diag%dsy2(m) &
-            + M4_VOLHX(i,j,k)/M4_HSZ(i,j,k) * ( real(Hx(i,j,k)) * real( Ez(i,j+1,k) - Ez(i,j,k) ) ) &
-            - M4_VOLHZ(i,j,k)/M4_HSX(i,j,k) * ( real(Hz(i,j,k)) * real( Ex(i,j+1,k) - Ex(i,j,k) ) )
+            + M4_VOLHX(i,j,k)/M4_HSZ(i,j,k) * ( dble(Hx(i,j,k)) * dble( Ez(i,j+1,k) - Ez(i,j,k) ) ) &
+            - M4_VOLHZ(i,j,k)/M4_HSX(i,j,k) * ( dble(Hz(i,j,k)) * dble( Ex(i,j+1,k) - Ex(i,j,k) ) )
 
 })
 
 M4_IFELSE_3D({
 
        diag%dsz1(m) = diag%dsz1(m) &
-            + M4_VOLEX(i,j,k)/M4_SY(i,j,k) * ( real(Ex(i,j,k)) * real( Hy(i,j,k) - Hy(i,j,k-1) ) ) &
-            - M4_VOLEY(i,j,k)/M4_SY(i,j,k) * ( real(Ey(i,j,k)) * real( Hx(i,j,k) - Hx(i,j,k-1) ) )
+            + M4_VOLEX(i,j,k)/M4_SY(i,j,k) * ( dble(Ex(i,j,k)) * dble( Hy(i,j,k) - Hy(i,j,k-1) ) ) &
+            - M4_VOLEY(i,j,k)/M4_SY(i,j,k) * ( dble(Ey(i,j,k)) * dble( Hx(i,j,k) - Hx(i,j,k-1) ) )
 
        diag%dsz2(m) = diag%dsz2(m) &
-            + M4_VOLHY(i,j,k)/M4_HSX(i,j,k) * ( real(Hy(i,j,k)) * real( Ex(i,j,k+1) - Ex(i,j,k) ) ) &
-            - M4_VOLHX(i,j,k)/M4_HSY(i,j,k) * ( real(Hx(i,j,k)) * real( Ey(i,j,k+1) - Ey(i,j,k) ) )
+            + M4_VOLHY(i,j,k)/M4_HSX(i,j,k) * ( dble(Hy(i,j,k)) * dble( Ex(i,j,k+1) - Ex(i,j,k) ) ) &
+            - M4_VOLHX(i,j,k)/M4_HSY(i,j,k) * ( dble(Hx(i,j,k)) * dble( Ey(i,j,k+1) - Ey(i,j,k) ) )
 
 })
 
@@ -255,47 +255,47 @@ M4_IFELSE_3D({
        ! energy density
 
        diag%en(m) =  diag%en(m) + ( &
-            M4_VOLEX(i,j,k) * epsinvx(i,j,k) * real(Ex(i,j,k))*real(Ex(i,j,k)) + &
-            M4_VOLEY(i,j,k) * epsinvy(i,j,k) * real(Ey(i,j,k))*real(Ey(i,j,k)) + &
-            M4_VOLEZ(i,j,k) * epsinvz(i,j,k) * real(Ez(i,j,k))*real(Ez(i,j,k)) + &
-            M4_VOLHX(i,j,k) * M4_MUINVX(i,j,k) * real(Hx(i,j,k))*real(Hx(i,j,k)) + &
-            M4_VOLHY(i,j,k) * M4_MUINVY(i,j,k) * real(Hy(i,j,k))*real(Hy(i,j,k)) + &
-            M4_VOLHZ(i,j,k) * M4_MUINVZ(i,j,k) * real(Hz(i,j,k))*real(Hz(i,j,k)) &
+            M4_VOLEX(i,j,k) / epsinvx(i,j,k) * dble(Ex(i,j,k))*dble(Ex(i,j,k)) + &
+            M4_VOLEY(i,j,k) / epsinvy(i,j,k) * dble(Ey(i,j,k))*dble(Ey(i,j,k)) + &
+            M4_VOLEZ(i,j,k) / epsinvz(i,j,k) * dble(Ez(i,j,k))*dble(Ez(i,j,k)) + &
+            M4_VOLHX(i,j,k) / M4_MUINVX(i,j,k) * dble(Hx(i,j,k))*dble(Hx(i,j,k)) + &
+            M4_VOLHY(i,j,k) / M4_MUINVY(i,j,k) * dble(Hy(i,j,k))*dble(Hy(i,j,k)) + &
+            M4_VOLHZ(i,j,k) / M4_MUINVZ(i,j,k) * dble(Hz(i,j,k))*dble(Hz(i,j,k)) &
             )
        
        ! poynting vector
 
     
        diag%dsx1(m) = diag%dsx1(m) &
-            + M4_VOLEY(i,j,k)/M4_SX(i,j,k) * ( real(Ey(i,j,k)) * real( Hz(i,j,k) - Hz(i-1,j,k) ) ) &
-            - M4_VOLEZ(i,j,k)/M4_SX(i,j,k) * ( real(Ez(i,j,k)) * real( Hy(i,j,k) - Hy(i-1,j,k) ) )
+            + M4_VOLEY(i,j,k)/M4_SX(i,j,k) * ( dble(Ey(i,j,k)) * dble( Hz(i,j,k) - Hz(i-1,j,k) ) ) &
+            - M4_VOLEZ(i,j,k)/M4_SX(i,j,k) * ( dble(Ez(i,j,k)) * dble( Hy(i,j,k) - Hy(i-1,j,k) ) )
 
        diag%dsx2(m) = diag%dsx2(m) &
-            + M4_VOLHZ(i,j,k)/M4_HSX(i,j,k) * ( real(Hz(i,j,k)) * real( Ey(i+1,j,k) - Ey(i,j,k) ) ) &
-            - M4_VOLHY(i,j,k)/M4_HSX(i,j,k) * ( real(Hy(i,j,k)) * real( Ez(i+1,j,k) - Ez(i,j,k) ) )
+            + M4_VOLHZ(i,j,k)/M4_HSX(i,j,k) * ( dble(Hz(i,j,k)) * dble( Ey(i+1,j,k) - Ey(i,j,k) ) ) &
+            - M4_VOLHY(i,j,k)/M4_HSX(i,j,k) * ( dble(Hy(i,j,k)) * dble( Ez(i+1,j,k) - Ez(i,j,k) ) )
 
 M4_IFELSE_1D({},{
 
 
        diag%dsy1(m) = diag%dsy1(m) &
-            + M4_VOLEZ(i,j,k)/M4_SY(i,j,k) * ( real(Ez(i,j,k)) * real( Hx(i,j,k) - Hx(i,j-1,k ) ) ) &
-            - M4_VOLEX(i,j,k)/M4_SY(i,j,k) * ( real(Ex(i,j,k)) * real( Hz(i,j,k) - Hz(i,j-1,k) ) )
+            + M4_VOLEZ(i,j,k)/M4_SY(i,j,k) * ( dble(Ez(i,j,k)) * dble( Hx(i,j,k) - Hx(i,j-1,k ) ) ) &
+            - M4_VOLEX(i,j,k)/M4_SY(i,j,k) * ( dble(Ex(i,j,k)) * dble( Hz(i,j,k) - Hz(i,j-1,k) ) )
 
        diag%dsy2(m) = diag%dsy2(m) &
-            + M4_VOLHX(i,j,k)/M4_HSZ(i,j,k) * ( real(Hx(i,j,k)) * real( Ez(i,j+1,k) - Ez(i,j,k) ) ) &
-            - M4_VOLHZ(i,j,k)/M4_HSX(i,j,k) * ( real(Hz(i,j,k)) * real( Ex(i,j+1,k) - Ex(i,j,k) ) )
+            + M4_VOLHX(i,j,k)/M4_HSZ(i,j,k) * ( dble(Hx(i,j,k)) * dble( Ez(i,j+1,k) - Ez(i,j,k) ) ) &
+            - M4_VOLHZ(i,j,k)/M4_HSX(i,j,k) * ( dble(Hz(i,j,k)) * dble( Ex(i,j+1,k) - Ex(i,j,k) ) )
 
 })
 
 M4_IFELSE_3D({
 
        diag%dsz1(m) = diag%dsz1(m) &
-            + M4_VOLEX(i,j,k)/M4_SY(i,j,k) * ( real(Ex(i,j,k)) * real( Hy(i,j,k) - Hy(i,j,k-1) ) ) &
-            - M4_VOLEY(i,j,k)/M4_SY(i,j,k) * ( real(Ey(i,j,k)) * real( Hx(i,j,k) - Hx(i,j,k-1) ) )
+            + M4_VOLEX(i,j,k)/M4_SY(i,j,k) * ( dble(Ex(i,j,k)) * dble( Hy(i,j,k) - Hy(i,j,k-1) ) ) &
+            - M4_VOLEY(i,j,k)/M4_SY(i,j,k) * ( dble(Ey(i,j,k)) * dble( Hx(i,j,k) - Hx(i,j,k-1) ) )
 
        diag%dsz2(m) = diag%dsz2(m) &
-            + M4_VOLHY(i,j,k)/M4_HSX(i,j,k) * ( real(Hy(i,j,k)) * real( Ex(i,j,k+1) - Ex(i,j,k) ) ) &
-            - M4_VOLHX(i,j,k)/M4_HSY(i,j,k) * ( real(Hx(i,j,k)) * real( Ey(i,j,k+1) - Ey(i,j,k) ) )
+            + M4_VOLHY(i,j,k)/M4_HSX(i,j,k) * ( dble(Hy(i,j,k)) * dble( Ex(i,j,k+1) - Ex(i,j,k) ) ) &
+            - M4_VOLHX(i,j,k)/M4_HSY(i,j,k) * ( dble(Hx(i,j,k)) * dble( Ey(i,j,k+1) - Ey(i,j,k) ) )
 
 })
       

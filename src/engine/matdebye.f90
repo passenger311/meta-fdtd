@@ -238,9 +238,9 @@ M4_IFELSE_TE({
        if ( mask(i,j,k) ) then
 
           sum = sum + ( &
-M4_IFELSE_TM({ M4_VOLEX(i,j,k) * w(1) * real(Ex(i,j,k)) * real( mat%Px(p,m) - mat%Px(p,n) ) / DT +},{0. +}) &
-M4_IFELSE_TM({ M4_VOLEY(i,j,k) * w(2) * real(Ey(i,j,k)) * real( mat%Py(p,m) - mat%Py(p,n) ) / DT +},{0. +}) &
-M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * real(Ez(i,j,k)) * real( mat%Pz(p,m) - mat%Pz(p,n) ) / DT  },{0.  }) &
+M4_IFELSE_TM({ M4_VOLEX(i,j,k) * w(1) * dble(Ex(i,j,k)) * dble( mat%Px(p,m) - mat%Px(p,n) ) / DT +},{0. +}) &
+M4_IFELSE_TM({ M4_VOLEY(i,j,k) * w(2) * dble(Ey(i,j,k)) * dble( mat%Py(p,m) - mat%Py(p,n) ) / DT +},{0. +}) &
+M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * dble(Ez(i,j,k)) * dble( mat%Pz(p,m) - mat%Pz(p,n) ) / DT  },{0.  }) &
                )
 
        endif

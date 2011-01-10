@@ -465,9 +465,9 @@ M4_IFELSE_TE({
              Jz = - w(3) * src%wavefct
           
              sum = sum + ( &
-M4_IFELSE_TM({ M4_VOLEX(i,j,k) * real(Ex(i,j,k)) * Jx + },{0. +}) &
-M4_IFELSE_TM({ M4_VOLEY(i,j,k) * real(Ey(i,j,k)) * Jy + },{0. +}) &
-M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * real(Ez(i,j,k)) * Jz   },{0.  }) &
+M4_IFELSE_TM({ M4_VOLEX(i,j,k) * dble(Ex(i,j,k)) * Jx + },{0. +}) &
+M4_IFELSE_TM({ M4_VOLEY(i,j,k) * dble(Ey(i,j,k)) * Jy + },{0. +}) &
+M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * dble(Ez(i,j,k)) * Jz   },{0.  }) &
                  )
              
           endif
@@ -500,9 +500,9 @@ M4_IFELSE_TE({
              Jz = - w(3) * epsinvz(i,j,k) * wavefct(3)
 })
              sum = sum + ( &
-M4_IFELSE_TM({ M4_VOLEX(i,j,k) * real(Ex(i,j,k)) * Jx + },{0. +}) &
-M4_IFELSE_TM({ M4_VOLEY(i,j,k) * real(Ey(i,j,k)) * Jy + },{0. +}) &
-M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * real(Ez(i,j,k)) * Jz   },{0.  }) &
+M4_IFELSE_TM({ M4_VOLEX(i,j,k) * dble(Ex(i,j,k)) * Jx + },{0. +}) &
+M4_IFELSE_TM({ M4_VOLEY(i,j,k) * dble(Ey(i,j,k)) * Jy + },{0. +}) &
+M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * dble(Ez(i,j,k)) * Jz   },{0.  }) &
                 )
 
           end if

@@ -43,7 +43,7 @@ contains
       M4_FTYPE :: fc
       real(kind=8) :: vc
 
-      M4_IFELSE_CF({vc = real(fc)},{vc = fc})
+      M4_IFELSE_CF({vc = dble(fc)},{vc = fc})
       if ( pa .eq. 1 ) then
          M4_IFELSE_CF({
          vc = abs(fc)
@@ -51,7 +51,7 @@ contains
       else
          if ( pa .eq. 2 ) then
             M4_IFELSE_CF({
-            vc = atan2(aimag(fc),real(fc))
+            vc = atan2(aimag(fc),dble(fc))
             },{
             vc = 0.0 
             })
@@ -68,9 +68,9 @@ contains
       M4_FTYPE :: fx,fy,fz
       real(kind=8) :: vx,vy,vz
 
-      vx = real(fx)
-      vy = real(fy)
-      vz = real(fz)
+      vx = dble(fx)
+      vy = dble(fy)
+      vz = dble(fz)
       if ( pa .eq. 1 ) then
          M4_IFELSE_CF({
          vx = abs(fx)
@@ -80,9 +80,9 @@ contains
       else
          if ( pa .eq. 2 ) then
             M4_IFELSE_CF({
-            vx = atan2(aimag(fx),real(fx))
-            vy = atan2(aimag(fy),real(fy))
-            vz = atan2(aimag(fz),real(fz))
+            vx = atan2(aimag(fx),dble(fx))
+            vy = atan2(aimag(fy),dble(fy))
+            vz = atan2(aimag(fz),dble(fz))
             },{
             vx = 0.0 
             vy = 0.0 
@@ -117,7 +117,7 @@ contains
          if ( pa .eq. 2 ) then
             M4_IFELSE_CF({
              do i = 1, buf%numslot
-                val(i) = atan2(aimag(buf%cdata(p,i)),real(buf%cdata(p,i)))
+                val(i) = atan2(aimag(buf%cdata(p,i)),dble(buf%cdata(p,i)))
              end do
             },{
                val = 0.0
