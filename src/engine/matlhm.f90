@@ -179,9 +179,9 @@ contains
     M4_WRITE_DBG(". enter FinalizeMatLhm")
     M4_MODLOOP_EXPR({MATLHM},mat,{
 
-
 ! save to checkpoint file
 
+       M4_MODOBJ_GETREG(mat,reg)
        if ( save_state .and. detail_level .ge. 2 ) then
 
           M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
