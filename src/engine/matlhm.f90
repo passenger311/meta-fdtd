@@ -151,12 +151,13 @@ contains
 
           M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-          read(UNITCHK) mat%Jx(p,1), mat%Jx(p,2)
-          read(UNITCHK) mat%Jy(p,1), mat%Jy(p,2)
-          read(UNITCHK) mat%Jz(p,1), mat%Jz(p,2)
-          read(UNITCHK) mat%Kx(p,1), mat%Kx(p,2)
-          read(UNITCHK) mat%Ky(p,1), mat%Ky(p,2)
-          read(UNITCHK) mat%Kz(p,1), mat%Kz(p,2)
+          read(UNITCHK) mat%Jx(p,1),mat%Jy(p,1),mat%Jz(p,1),mat%Kx(p,1),mat%Ky(p,1),mat%Kz(p,1)
+
+          if ( mat%order .eq. 2 ) then
+
+             read(UNITCHK) mat%Jx(p,2),mat%Jy(p,2),mat%Jz(p,2),mat%Kx(p,2),mat%Ky(p,2),mat%Kz(p,2)
+
+          end if
 
           })
 
@@ -186,12 +187,13 @@ contains
 
           M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-          write(UNITCHK) mat%Jx(p,1), mat%Jx(p,2)
-          write(UNITCHK) mat%Jy(p,1), mat%Jy(p,2)
-          write(UNITCHK) mat%Jz(p,1), mat%Jz(p,2)
-          write(UNITCHK) mat%Kx(p,1), mat%Kx(p,2)
-          write(UNITCHK) mat%Ky(p,1), mat%Ky(p,2)
-          write(UNITCHK) mat%Kz(p,1), mat%Kz(p,2)
+          write(UNITCHK) mat%Jx(p,1),mat%Jy(p,1),mat%Jz(p,1),mat%Kx(p,1),mat%Ky(p,1),mat%Kz(p,1)
+
+          if ( mat%order .eq. 2 ) then
+
+             write(UNITCHK) mat%Jx(p,2),mat%Jy(p,2),mat%Jz(p,2),mat%Kx(p,2),mat%Ky(p,2),mat%Kz(p,2)
+
+          end if
 
           })
 
