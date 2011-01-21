@@ -195,7 +195,7 @@ contains
   subroutine InitializeMatFourlvl
 
     integer :: err
-    real (kind=8) :: conv1, conv2, g32, g30, g21, g10
+    real (kind=8) :: conv1, conv2, g32, g30, g21, g10, ninit
 
     M4_MODLOOP_DECL({MATFOURLVL},mat) 
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
@@ -223,11 +223,12 @@ contains
        mat%Pbx = 0.
        mat%Pby = 0.
        mat%Pbz = 0.
-       mat%N0 = 1 - mat%Nstart(1) - mat%Nstart(2) - mat%Nstart(3)
-       if (mat%N0(1) < 0) then
+       ninit = 1 - mat%Nstart(1) - mat%Nstart(2) - mat%Nstart(3)
+       if (ninit < 0) then
           write(6,*) "Error in configuration: N0 is smaller zero" 
           !exit(1)
        endif
+       mat%N0 = ninit
        mat%N1 = mat%Nstart(1)
        mat%N2 = mat%Nstart(2)
        mat%N3 = mat%Nstart(3)
