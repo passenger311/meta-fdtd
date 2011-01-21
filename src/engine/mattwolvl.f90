@@ -332,7 +332,7 @@ M4_IFELSE_TE({}, {
        do m= m1, m2
 
        ! Local field effect E(loc) = E(macroscopic) + P/3 = D - 2/3*P 
-          Etmp(m) = D(m) - mat%lfeval * ei(m) * real( conjg(mat%M12(m))*rho12)
+          Etmp(m) = D(m) - mat%lfeval * ei(m) * dble( conjg(mat%M12(m))*rho12)
 
        end do
        
@@ -355,7 +355,7 @@ M4_IFELSE_TE({}, {
        do m= m1, m2
 
        ! Local field effect E(loc) = E(macroscopic) + P/3 = D - 2/3*P
-          Etmp(m) = D(m) - mat%lfeval * ei(m) * real( conjg(mat%M12(m))*rho12 )
+          Etmp(m) = D(m) - mat%lfeval * ei(m) * dble( conjg(mat%M12(m))*rho12 )
 
        end do
 
@@ -375,7 +375,7 @@ M4_IFELSE_TE({}, {
        do m= m1, m2
 
        ! Local field effect E(loc) = E(macroscopic) + P/3 = D - 2/3*P
-          Etmp(m) = D(m) - mat%lfeval * ei(m) * real( conjg(mat%M12(m))*rho12 )
+          Etmp(m) = D(m) - mat%lfeval * ei(m) * dble( conjg(mat%M12(m))*rho12 )
 
        end do
        
@@ -398,7 +398,7 @@ M4_IFELSE_TE({}, {
        do m= m1, m2
 
        ! Local field effect E(loc) = E(macroscopic) + P/3 = D - 2/3*P
-       Etmp(m) = D(m) - mat%lfeval * ei(m) * real( conjg(mat%M12(m))*rho12 )
+       Etmp(m) = D(m) - mat%lfeval * ei(m) * dble( conjg(mat%M12(m))*rho12 )
 
        end do
 
@@ -421,7 +421,7 @@ M4_IFELSE_TE({}, {
        do m= m1, m2
 
           Etmp(m) = D(m) - ei(m) * &
-            real( conjg(mat%M12(m))*rho12 )
+            dble( conjg(mat%M12(m))*rho12 )
 
        end do
        
