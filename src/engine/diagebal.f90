@@ -323,7 +323,7 @@ M4_IFELSE_3D({
        diag%kh = 0.5 * ( diag%skh(mo) + diag%skh(moo) )
 
        diag%ds   = diag%dsx + diag%dsy + diag%dsz 
-       diag%res = diag%dudt + diag%ds + diag%je + diag%kh
+       diag%res = - ( diag%dudt + diag%ds + diag%je + diag%kh )
        
        diag%sumdudt = diag%sumdudt + DT * diag%dudt
        diag%sumje = diag%sumje + DT * diag%je
@@ -333,7 +333,7 @@ M4_IFELSE_3D({
        diag%sumdsy = diag%sumdsy + DT * diag%dsy
        diag%sumdsz = diag%sumdsz + DT * diag%dsz
             
-       diag%sumres = diag%sumdudt + diag%sumds + diag%sumje + diag%sumkh
+       diag%sumres = - ( diag%sumdudt + diag%sumds + diag%sumje + diag%sumkh )
 
        ! ---------------------------------------------------
  
