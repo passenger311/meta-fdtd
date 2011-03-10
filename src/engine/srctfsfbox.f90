@@ -19,6 +19,7 @@
 module srctfsfbox
 
   use constant
+  use checkpoint
   use mpiworld
   use reglist
   use outlist
@@ -317,6 +318,15 @@ contains
 
     src%nend = src%noffs + src%natt + src%nsus + src%ndcy + src%maxdelay
 
+    if ( load_state .and. ( detail_level .eq. 1 .or. detail_level .eq. 3 ) ) then
+
+       do l = 0, src%maxdelay * src%tres -1
+          read(UNITCHK) src%signal(l)
+       end do
+       read(UNITCHK) src%signalp
+
+    end if
+
     M4_IFELSE_DBG({call EchoSrcTfsfBoxObj(src)},{call DisplaySrcTfsfBoxObj(src)})
       
     })
@@ -330,10 +340,20 @@ contains
   subroutine FinalizeSrcTfsfBox
     
     M4_MODLOOP_DECL({SRCTFSFBOX},src)
+    integer :: l
 
     M4_WRITE_DBG(". enter FinalizeSrcTfsfBox")
     
     M4_MODLOOP_EXPR({SRCTFSFBOX},src,{
+
+       if ( save_state .and. ( detail_level .eq. 1 .or. detail_level .eq. 3 ) ) then
+
+          do l = 0, src%maxdelay * src%tres -1
+             write(UNITCHK) src%signal(l)
+          end do
+          write(UNITCHK) src%signalp
+
+       end if
 
        deallocate(src%signal, src%delay)
 

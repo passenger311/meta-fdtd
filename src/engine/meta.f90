@@ -407,8 +407,6 @@ M4_IFELSE_MPI(call SynchronizeMPIWorld)
 
         write(6,*) "* -> FinalizeOut"
         call FinalizeOut
-        write(6,*) "* -> FinalizeSrc"
-        call FinalizeSrc
         write(6,*) "* -> FinalizeDiag"
         call FinalizeDiag
         write(6,*) "* -> FinalizeBound"
@@ -417,6 +415,8 @@ M4_IFELSE_MPI(call SynchronizeMPIWorld)
 	CALL FinalizeLumped
         write(6,*) "* -> FinalizeFdtd"
         call FinalizeFdtd
+        write(6,*) "* -> FinalizeSrc"
+        call FinalizeSrc
         write(6,*) "* -> FinalizeMat"
         call FinalizeMat
         write(6,*) "* -> FinalizeGrid"
