@@ -124,7 +124,7 @@ M4_IFELSE_MPI(call SynchronizeMPIWorld)
         write(6,*) "* "
         write(6,*) "* process entering loop: myrank = ",ranklbl 
 
-        str = i2str(NCYCMAX)
+        str = i2str(NCYCMAX-NCYCMIN)
         write(6,*) "* time steps = ", str 
 
      end if
@@ -143,7 +143,7 @@ M4_IFELSE_MPI(call InitializeMPIComms)
   prog0 = 0
   prog1 = -1
 
-  do ncyc = 0, NCYCMAX
+  do ncyc = NCYCMIN, NCYCMAX
 
 ! do some pretty print, a cursor and a 100.0% progress indicator
      

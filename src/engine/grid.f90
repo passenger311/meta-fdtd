@@ -52,6 +52,7 @@ module grid
   real(8) :: SY  = 1.0
   real(8) :: SZ  = 1.0
 
+  integer :: NCYCMIN = 0
   integer :: NCYCMAX = 0
   real(8) :: GT  = 0.0
   real(8) :: DT  = 0.577
@@ -98,7 +99,9 @@ contains
     THISPARTITION = v(1)
     PARTITIONS = v(2)
     M4_WRITE_DBG({"read PARTITIONS: ", THISPARTITION, PARTITIONS})
-    call readint(funit, lcount, NCYCMAX)
+    call readints(funit, lcount, v ,2)
+    NCYCMIN = v(1)
+    NCYCMAX = v(2)
     M4_WRITE_DBG({"read NCYCMAX: ", NCYCMAX})
     call readfloat(funit, lcount, DT)
     M4_WRITE_DBG({"read DT: ", DT})
