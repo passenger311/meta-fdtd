@@ -51,8 +51,12 @@ function ConfigMethods:GRID(parms)
    self.grid.jrange = parms.jrange or { 0, 0 };
    self.grid.krange = parms.krange or { 0, 0 };
    self.grid.dim =  parms.dim or 1;
-   self.grid.partition = parms.partition or { 0,1 };
-   self.grid.ncyc = parms.ncyc or 100;
+   self.grid.partition = parms.partition or { 0,1 }
+   if type(parms.ncyc) == 'table' then
+      self.grid.ncyc = parms.ncyc
+   else		       
+      self.grid.ncyc = { 0, parms.ncyc or 100 }
+   end	
    self.grid.dt = parms.dt or 0.9999;
    self.grid.dx = parms.dx or { 1., 1., 1., 1. }
 end
@@ -471,7 +475,7 @@ local function writeGRID(fh,GRID)
    fh:write("(GRID\n");
    fh:write("  ",GRID.dim," \t! dim\n");
    fh:write("  ",GRID.partition[1], " ", GRID.partition[2]," \t! partition (i of n)\n");
-   fh:write("  ",GRID.ncyc," \t! ncyc (# of timesteps)\n");
+   fh:write("  ",GRID.ncyc[1], " ", GRID.ncyc[2], " \t! ncyc (# of timesteps)\n");
    fh:write("  ",GRID.dt," \t! dt\n");
    fh:write("  ",GRID.irange[1], " ", GRID.irange[2]," \t! irange = (ibeg,iend)\n");
    fh:write("  ",GRID.jrange[1], " ", GRID.jrange[2]," \t! jrange = (jbeg,jend)\n");
