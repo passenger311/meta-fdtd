@@ -15,6 +15,7 @@ module pml
 
   use constant
   use strings
+  use checkpoint
   use grid  
   use fdtd
   use pec
@@ -163,6 +164,20 @@ M4_IFELSE_3D({       .or. (KEIG+1 .le. KBIG) &    })
     call CalcCoefficients(IBEG, IEND, IBIG-1, IEIG+1, cexpml, cmxpml)
     call CalcCoefficients(JBEG, JEND, JBIG-1, JEIG+1, ceypml, cmypml)
     call CalcCoefficients(KBEG, KEND, KBIG-1, KEIG+1, cezpml, cmzpml)
+
+! load from checkpoint file
+
+   if ( load_state .and. ( detail_level .eq. 1 .or. detail_level .eq. 3 ) ) then
+
+      read(UNITCHK) BE1, DE1, BE2, DE2
+M4_IFELSE_1D({},{  
+      read(UNITCHK) BE3, DE3, BE4, DE4
+})
+M4_IFELSE_3D({     
+      read(UNITCHK) BE5, DE5, BE6, DE6
+})
+
+   end if
 
     M4_WRITE_DBG({". exit InitializePml"})
 
@@ -354,6 +369,20 @@ M4_IFELSE_3D({
     M4_WRITE_DBG({". FinalizePml"})
 
     if ( pmlcount .eq. 0 ) return
+
+! save checkpoint file
+
+ if ( save_state .and. ( detail_level .eq. 1 .or. detail_level .eq. 3 ) ) then
+
+      write(UNITCHK) BE1, DE1, BE2, DE2
+M4_IFELSE_1D({},{  
+      write(UNITCHK) BE3, DE3, BE4, DE4
+})
+M4_IFELSE_3D({     
+      write(UNITCHK) BE5, DE5, BE6, DE6
+})
+
+   end if
 
 M4_IFELSE_3D({
     deallocate(DE6)

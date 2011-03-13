@@ -1,3 +1,4 @@
+
 !-*- F90 -*------------------------------------------------------------
 !
 !  module: matlorentz / meta
@@ -34,6 +35,7 @@
 module matlorentz
 
   use constant
+  use checkpoint
   use parse
   use reglist
   use outlist
@@ -90,9 +92,9 @@ contains
 
   subroutine InitializeMatLorentz
 
-    type (T_REG) :: reg
     integer :: err
     M4_MODLOOP_DECL({MATLORENTZ},mat) 
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
     M4_WRITE_DBG(". enter InitializeMatLorentz")
     M4_MODLOOP_EXPR({MATLORENTZ},mat,{
     
@@ -114,6 +116,14 @@ contains
        mat%c2 = ( -1. + DT * mat%gammal ) / ( 1. + DT * mat%gammal )
        mat%c3 = DT**2 * mat%omegal**2 * mat%deltaepsl / ( 1. + DT * mat%gammal )
 
+! load from checkpoint file
+
+       if ( load_state .and. detail_level .ge. 2 ) then
+
+          read(UNITCHK) mat%Px, mat%Py, mat%Pz
+
+       end if
+
        M4_IFELSE_DBG({call EchoMatLorentzObj(mat)},{call DisplayMatLorentzObj(mat)})
 
     })
@@ -126,8 +136,19 @@ contains
   subroutine FinalizeMatLorentz
 
     M4_MODLOOP_DECL({MATLORENTZ},mat)
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
     M4_WRITE_DBG(". enter FinalizeMatLorentz")
     M4_MODLOOP_EXPR({MATLORENTZ},mat,{
+
+       M4_MODOBJ_GETREG(mat,reg)
+
+! save to checkpoint file
+
+       if ( save_state .and. detail_level .ge. 2 ) then
+
+          write(UNITCHK) mat%Px, mat%Py, mat%Pz
+
+       end if
 
     ! finalize mat object here
     deallocate(mat%Px,mat%Py,mat%Pz)

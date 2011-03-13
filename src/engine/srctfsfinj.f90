@@ -19,6 +19,7 @@
 module srctfsfinj
 
   use constant
+  use checkpoint
   use mpiworld
   use reglist
   use outlist
@@ -302,7 +303,13 @@ contains
 
     src%nend = src%noffs + src%natt + src%nsus + src%ndcy + src%maxdelay
 
+    if ( load_state .and. ( detail_level .eq. 1 .or. detail_level .eq. 3 ) ) then
 
+       read(UNITCHK) src%signal
+       read(UNITCHK) src%signalp
+
+    end if
+      
     M4_IFELSE_DBG({call EchoSrcTfsfInjObj(src)},{call DisplaySrcTfsfInjObj(src)})
       
     })
@@ -320,6 +327,13 @@ contains
     M4_WRITE_DBG(". enter FinalizeSrcTfsfInj")
     
     M4_MODLOOP_EXPR({SRCTFSFINJ},src,{
+
+       if ( save_state .and. ( detail_level .eq. 1 .or. detail_level .eq. 3 ) ) then
+
+          write(UNITCHK) src%signal
+          write(UNITCHK) src%signalp
+
+       end if
 
        deallocate(src%signal, src%delay)
 

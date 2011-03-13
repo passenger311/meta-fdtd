@@ -86,8 +86,8 @@ M4_IFELSE_MPI(call SynchronizeMPIWorld)
         call InitializeFdtd
         write(6,*) "* -> InitializeFdtdCalc"
         call InitializeFdtdCalc
-	WRITE(6,*) "* -> InitializeLumped"
-	CALL InitializeLumped
+        write(6,*) "* -> InitializeLumped"
+        call InitializeLumped
         write(6,*) "* -> InitializeBound"
         call InitializeBound
         write(6,*) "* -> InitializeSrc"
@@ -148,7 +148,7 @@ M4_IFELSE_MPI(call InitializeMPIComms)
 ! do some pretty print, a cursor and a 100.0% progress indicator
      
      !  progress 0...1000
-     prog0 = int(ncyc*1000./NCYCMAX) 
+     prog0 = int((ncyc-NCYCMIN)*1000./(NCYCMAX-NCYCMIN)) 
 
      if (myrank .eq. 0 .and. prog0 .gt. prog1 ) then
 
@@ -405,24 +405,24 @@ M4_IFELSE_MPI(call SynchronizeMPIWorld)
            open(unit=UNITCHK, file=checkpoint_fn, status = "unknown", form = "unformatted" ) 
         end if
 
-        write(6,*) "* -> FinalizeOut"
-        call FinalizeOut
-        write(6,*) "* -> FinalizeDiag"
-        call FinalizeDiag
-        write(6,*) "* -> FinalizeBound"
-        call FinalizeBound
-	WRITE(6,*) "* -> FinalizeLumped"
-	CALL FinalizeLumped
+        write(6,*) "* -> FinalizeList"
+        call FinalizeList
+        write(6,*) "* -> FinalizeGrid"
+        call FinalizeGrid
         write(6,*) "* -> FinalizeFdtd"
         call FinalizeFdtd
+        write(6,*) "* -> FinalizeLumped"
+        call FinalizeLumped
+        write(6,*) "* -> FinalizeBound"
+        call FinalizeBound
         write(6,*) "* -> FinalizeSrc"
         call FinalizeSrc
         write(6,*) "* -> FinalizeMat"
         call FinalizeMat
-        write(6,*) "* -> FinalizeGrid"
-        call FinalizeGrid
-        write(6,*) "* -> FinalizeList"
-        call FinalizeList
+        write(6,*) "* -> FinalizeDiag"
+        call FinalizeDiag
+        write(6,*) "* -> FinalizeOut"
+        call FinalizeOut
 
         if ( save_state ) then
            close(UNITCHK) 

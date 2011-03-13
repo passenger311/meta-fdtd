@@ -27,6 +27,7 @@
 module srchardj
 
   use constant
+  use checkpoint
   use parse
   use reglist
   use outlist
@@ -267,6 +268,13 @@ contains
 
        src%signalp = 0 ! initialise signal index pointers
 
+       if ( load_state .and. ( detail_level .eq. 1 .or. detail_level .eq. 3 ) ) then
+
+          read(UNITCHK) src%signal
+          read(UNITCHK) src%signalp
+
+       end if
+
     end if
 
     src%nend = src%noffs +src%natt + src%nsus + src%ndcy + src%maxdelay
@@ -290,7 +298,14 @@ contains
       ! finalize src object here
   
       if ( src%planewave ) then
-       
+
+         if ( save_state .and. ( detail_level .eq. 1 .or. detail_level .eq. 3 ) ) then
+
+            write(UNITCHK) src%signal
+            write(UNITCHK) src%signalp
+ 
+         end if
+
          deallocate(src%signal, src%delay)
 
       end if

@@ -41,6 +41,7 @@
 module matdrude
 
   use constant
+  use checkpoint
   use parse
   use reglist
   use outlist
@@ -99,9 +100,9 @@ contains
 
   subroutine InitializeMatDrude
 
-    type (T_REG) :: reg
     integer :: err
     M4_MODLOOP_DECL({MATDRUDE},mat) 
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
     M4_WRITE_DBG(". enter InitializeMatDrude")
     M4_MODLOOP_EXPR({MATDRUDE},mat,{
     
@@ -138,6 +139,14 @@ contains
 
        endif
 
+! load from checkpoint file
+
+       if ( load_state .and. detail_level .ge. 2 ) then
+
+          read(UNITCHK) mat%Jx, mat%Jy, mat%Jz
+
+       end if
+
        M4_IFELSE_DBG({call EchoMatDrudeObj(mat)},{call DisplayMatDrudeObj(mat)})
 
 
@@ -151,8 +160,19 @@ contains
   subroutine FinalizeMatDrude
 
     M4_MODLOOP_DECL({MATDRUDE},mat)
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
     M4_WRITE_DBG(". enter FinalizeMatDrude")
     M4_MODLOOP_EXPR({MATDRUDE},mat,{
+
+       M4_MODOBJ_GETREG(mat,reg)
+
+! save to checkpoint file
+
+       if ( save_state .and. detail_level .ge. 2 ) then
+
+          write(UNITCHK) mat%Jx, mat%Jy, mat%Jz
+
+       end if
 
     ! finalize mat object here
     deallocate(mat%Jx,mat%Jy,mat%Jz)

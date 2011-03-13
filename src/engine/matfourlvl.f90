@@ -286,18 +286,9 @@ contains
 
        if ( load_state .and. detail_level .ge. 2 ) then
 
-          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-
-          read(UNITCHK) mat%Pax(p,1), mat%Pax(p,2)
-          read(UNITCHK) mat%Pay(p,1), mat%Pay(p,2)
-          read(UNITCHK) mat%Paz(p,1), mat%Paz(p,2)
-          read(UNITCHK) mat%Pbx(p,1), mat%Pbx(p,2)
-          read(UNITCHK) mat%Pby(p,1), mat%Pby(p,2)
-          read(UNITCHK) mat%Pbz(p,1), mat%Pbz(p,2)
-          read(UNITCHK) mat%Pbz(p,1), mat%Pbz(p,2)
-          read(UNITCHK) mat%N0(p), mat%N1(p), mat%N2(p), mat%N3(p)
-
-          })
+          read(UNITCHK) mat%Pax, mat%Pay, mat%Paz
+          read(UNITCHK) mat%Pbx, mat%Pby, mat%Pbz
+          read(UNITCHK) mat%N0, mat%N1, mat%N2, mat%N3
 
        end if
 
@@ -319,27 +310,19 @@ contains
     M4_MODLOOP_EXPR({MATFOURLVL},mat,{
 
        M4_MODOBJ_GETREG(mat,reg)
+
 ! save to checkpoint file
 
        if ( save_state .and. detail_level .ge. 2 ) then
 
-          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-
-          write(UNITCHK) mat%Pax(p,1), mat%Pax(p,2)
-          write(UNITCHK) mat%Pay(p,1), mat%Pay(p,2)
-          write(UNITCHK) mat%Paz(p,1), mat%Paz(p,2)
-          write(UNITCHK) mat%Pbx(p,1), mat%Pbx(p,2)
-          write(UNITCHK) mat%Pby(p,1), mat%Pby(p,2)
-          write(UNITCHK) mat%Pbz(p,1), mat%Pbz(p,2)
-          write(UNITCHK) mat%Pbz(p,1), mat%Pbz(p,2)
-          write(UNITCHK) mat%N0(p), mat%N1(p), mat%N2(p), mat%N3(p)
-
-          })
+          write(UNITCHK) mat%Pax, mat%Pay, mat%Paz
+          write(UNITCHK) mat%Pbx, mat%Pby, mat%Pbz
+          write(UNITCHK) mat%N0, mat%N1, mat%N2, mat%N3
 
        end if
 
-    ! finalize mat object here
-    deallocate(mat%Pax, mat%Pay, mat%Paz, mat%Pbx, mat%Pby, mat%Pbz, mat%N0, mat%N1, mat%N2, mat%N3)
+       ! finalize mat object here
+       deallocate(mat%Pax, mat%Pay, mat%Paz, mat%Pbx, mat%Pby, mat%Pbz, mat%N0, mat%N1, mat%N2, mat%N3)
 
     })
     M4_WRITE_DBG(". exit FinalizeMatFourlvl")

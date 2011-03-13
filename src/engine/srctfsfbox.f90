@@ -320,9 +320,7 @@ contains
 
     if ( load_state .and. ( detail_level .eq. 1 .or. detail_level .eq. 3 ) ) then
 
-       do l = 0, src%maxdelay * src%tres -1
-          read(UNITCHK) src%signal(l)
-       end do
+       read(UNITCHK) src%signal
        read(UNITCHK) src%signalp
 
     end if
@@ -340,7 +338,6 @@ contains
   subroutine FinalizeSrcTfsfBox
     
     M4_MODLOOP_DECL({SRCTFSFBOX},src)
-    integer :: l
 
     M4_WRITE_DBG(". enter FinalizeSrcTfsfBox")
     
@@ -348,9 +345,7 @@ contains
 
        if ( save_state .and. ( detail_level .eq. 1 .or. detail_level .eq. 3 ) ) then
 
-          do l = 0, src%maxdelay * src%tres -1
-             write(UNITCHK) src%signal(l)
-          end do
+          write(UNITCHK) src%signal
           write(UNITCHK) src%signalp
 
        end if

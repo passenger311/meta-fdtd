@@ -174,14 +174,8 @@ M4_IFELSE_WMU({ call InitializeMu })
 
    if ( load_state .and. ( detail_level .eq. 1 .or. detail_level .eq. 3 ) ) then
 
-      do k=KBEG, KEND
-         do j=JBEG, JEND
-            do i=IBEG, IEND
-               read(UNITCHK) Ex(i,j,k), Ey(i,j,k), Ez(i,j,k)
-               read(UNITCHK) Hx(i,j,k), Hy(i,j,k), Hz(i,j,k)               
-            end do
-         end do
-      end do
+      read(UNITCHK) Ex, Ey, Ez
+      read(UNITCHK) Hx, Hy, Hz
 
    end if
 
@@ -391,14 +385,8 @@ end subroutine ExtendField
 
    if ( save_state .and. ( detail_level .eq. 1 .or. detail_level .eq. 3 ) ) then
 
-      do k=KBEG, KEND
-         do j=JBEG, JEND
-            do i=IBEG, IEND
-               write(UNITCHK) Ex(i,j,k), Ey(i,j,k), Ez(i,j,k)
-               write(UNITCHK) Hx(i,j,k), Hy(i,j,k), Hz(i,j,k)               
-            end do
-         end do
-      end do
+      write(UNITCHK) Ex, Ey, Ez
+      write(UNITCHK) Hx, Hy, Hz
 
    end if
 
