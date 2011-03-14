@@ -144,25 +144,14 @@ contains
 
        endif
 
-
 ! load from checkpoint file
 
        if ( load_state .and. detail_level .ge. 2 ) then
 
-          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-
-          read(UNITCHK) mat%Jx(p,1),mat%Jy(p,1),mat%Jz(p,1),mat%Kx(p,1),mat%Ky(p,1),mat%Kz(p,1)
-
-          if ( mat%order .eq. 2 ) then
-
-             read(UNITCHK) mat%Jx(p,2),mat%Jy(p,2),mat%Jz(p,2),mat%Kx(p,2),mat%Ky(p,2),mat%Kz(p,2)
-
-          end if
-
-          })
+          read(UNITCHK) mat%Jx, mat%Jy, mat%Jz
+          read(UNITCHK) mat%Kx, mat%Ky, mat%Kz
 
        end if
-
 
        M4_IFELSE_DBG({call EchoMatLhmObj(mat)},{call DisplayMatLhmObj(mat)})
 
@@ -185,20 +174,10 @@ contains
        M4_MODOBJ_GETREG(mat,reg)
        if ( save_state .and. detail_level .ge. 2 ) then
 
-          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-
-          write(UNITCHK) mat%Jx(p,1),mat%Jy(p,1),mat%Jz(p,1),mat%Kx(p,1),mat%Ky(p,1),mat%Kz(p,1)
-
-          if ( mat%order .eq. 2 ) then
-
-             write(UNITCHK) mat%Jx(p,2),mat%Jy(p,2),mat%Jz(p,2),mat%Kx(p,2),mat%Ky(p,2),mat%Kz(p,2)
-
-          end if
-
-          })
+          write(UNITCHK) mat%Jx, mat%Jy, mat%Jz
+          write(UNITCHK) mat%Kx, mat%Ky, mat%Kz
 
        end if
-
 
       ! finalize mat object here
       deallocate(mat%Jx,mat%Jy,mat%Jz,mat%Kx,mat%Ky,mat%Kz)

@@ -30,6 +30,7 @@
 module matdebye
 
   use constant
+  use checkpoint
   use parse
   use reglist
   use outlist
@@ -104,6 +105,14 @@ contains
        mat%c1 = ( 2. * mat%taud - DT ) / ( 2. * mat%taud + DT )
        mat%c2 = 2. * DT * mat%deltaepsd
 
+! load from checkpoint file
+
+       if ( load_state .and. detail_level .ge. 2 ) then
+
+          write(UNITCHK) mat%Px, mat%Py, mat%Pz
+
+       end if
+
        M4_IFELSE_DBG({call EchoMatDebyeObj(mat)},{call DisplayMatDebyeObj(mat)})
 
     })
@@ -118,6 +127,14 @@ contains
     M4_MODLOOP_DECL({MATDEBYE},mat)
     M4_WRITE_DBG(". enter FinalizeMatDebye")
     M4_MODLOOP_EXPR({MATDEBYE},mat,{
+
+! save to checkpoint file
+
+       if ( save_state .and. detail_level .ge. 2 ) then
+
+          write(UNITCHK) mat%Px, mat%Py, mat%Pz
+
+       end if
 
     ! finalize mat object here
     deallocate(mat%Px,mat%Py,mat%Pz)
