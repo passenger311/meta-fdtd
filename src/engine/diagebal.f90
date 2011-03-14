@@ -27,6 +27,7 @@
 module diagebal
 
   use constant
+  use checkpoint
   use mpiworld
   use reglist
   use outlist
@@ -126,6 +127,17 @@ contains
     M4_WRITE_DBG("initialize mask")
     call SetMaskRegObj(reg,diag%mask,IMIN,IMAX,JMIN,JMAX,KMIN,KMAX)
 
+! load from checkpoint file
+
+    if ( load_state .and. ( detail_level .eq. 1 .or. detail_level .eq. 3 ) ) then
+
+       read(UNITCHK) diag%en, diag%skh, diag%sje
+       read(UNITCHK) diag%dsx1, diag%dsx2, diag%dsy1, diag%dsy2, diag%dsz1, diag%dsz2
+       read(UNITCHK) diag%sumdudt, diag%sumje, diag%sumkh
+       read(UNITCHK) diag%sumds, diag%sumdsx, diag%sumdsy, diag%sumdsz
+
+    end if
+
     M4_IFELSE_DBG({call EchoDiagEBalObj(diag)})
 
     })
@@ -140,6 +152,17 @@ contains
     M4_MODLOOP_DECL({DIAGEBAL},diag)
     M4_WRITE_DBG(". enter FinalizeMatEBal")
     M4_MODLOOP_EXPR({DIAGEBAL},diag,{
+
+! save to checkpoint file
+
+    if ( save_state .and. ( detail_level .eq. 1 .or. detail_level .eq. 3 ) ) then
+
+       write(UNITCHK) diag%en, diag%skh, diag%sje
+       write(UNITCHK) diag%dsx1, diag%dsx2, diag%dsy1, diag%dsy2, diag%dsz1, diag%dsz2
+       write(UNITCHK) diag%sumdudt, diag%sumje, diag%sumkh
+       write(UNITCHK) diag%sumds, diag%sumdsx, diag%sumdsy, diag%sumdsz
+
+    end if
 
     deallocate(diag%mask)
 
