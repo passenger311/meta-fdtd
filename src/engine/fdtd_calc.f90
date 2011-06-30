@@ -126,14 +126,14 @@ contains
 
     M4_REGLOOP_EXPR(reg,p,i,j,k,w, {
     
-    EEx = 0.5/epsinvx(i,j,k) * (real(Ex(M4_COORD(i,j,k)))**2+real(Ex(M4_COORD(i-1,j,k)))**2)
-    EEy = 0.5/epsinvy(i,j,k) * (real(Ey(M4_COORD(i,j,k)))**2+real(Ey(M4_COORD(i,j-1,k)))**2)
-    EEz = 0.5/epsinvz(i,j,k) * (real(Ez(M4_COORD(i,j,k)))**2+real(Ez(M4_COORD(i,j,k-1)))**2)
-    EHx = 0.25/M4_MUINVX(i,j,k) * ( real(Hx(M4_COORD(i,j,k)))**2+real(Hx(M4_COORD(i,j,k-1)))**2 + &
+    EEx = 0.25/epsinvx(i,j,k) * (real(Ex(M4_COORD(i,j,k)))**2+real(Ex(M4_COORD(i-1,j,k)))**2)
+    EEy = 0.25/epsinvy(i,j,k) * (real(Ey(M4_COORD(i,j,k)))**2+real(Ey(M4_COORD(i,j-1,k)))**2)
+    EEz = 0.25/epsinvz(i,j,k) * (real(Ez(M4_COORD(i,j,k)))**2+real(Ez(M4_COORD(i,j,k-1)))**2)
+    EHx = 0.125/M4_MUINVX(i,j,k) * ( real(Hx(M4_COORD(i,j,k)))**2+real(Hx(M4_COORD(i,j,k-1)))**2 + &
          real(Hx(M4_COORD(i,j-1,k)))**2+real(Hx(M4_COORD(i,j-1,k-1)))**2)
-    EHy = 0.25/M4_MUINVY(i,j,k) * (real(Hy(M4_COORD(i,j,k)))**2+real(Hy(M4_COORD(i-1,j,k)))**2 + &
+    EHy = 0.125/M4_MUINVY(i,j,k) * (real(Hy(M4_COORD(i,j,k)))**2+real(Hy(M4_COORD(i-1,j,k)))**2 + &
          real(Hy(M4_COORD(i,j,k-1)))**2+real(Hy(M4_COORD(i-1,j,k-1)))**2)
-    EHz = 0.25/M4_MUINVZ(i,j,k) * (real(Hz(M4_COORD(i,j,k)))**2+real(Hz(M4_COORD(i-1,j,k)))**2 + &
+    EHz = 0.125/M4_MUINVZ(i,j,k) * (real(Hz(M4_COORD(i,j,k)))**2+real(Hz(M4_COORD(i-1,j,k)))**2 + &
          real(Hz(M4_COORD(i,j-1,k)))**2+real(Hz(M4_COORD(i-1,j-1,k)))**2)
     buf%data(p,slot) = (EEx+EEy+EEz+EHx+EHy+EHz)
     
@@ -264,5 +264,6 @@ end module fdtd_calc
 !
 ! Authors:  J.Hamm
 ! Modified: 6/1/2008
+! Changed: 3/6/2011 S.Wuestner
 !
 !======================================================================

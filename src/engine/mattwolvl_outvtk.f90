@@ -61,6 +61,8 @@ contains
     type (T_BUF) :: buf
     logical :: mode
 
+    if ( .not. mode ) return
+
     M4_WRITE_DBG({"write data ",TRIM(out%filename), " ",TRIM(out%fn)})
 
     select case (out%fn)

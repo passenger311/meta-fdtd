@@ -137,18 +137,21 @@ contains
 
     select case ( i )
     case ( 1 ) 
+       Ex(M4_COORD(IMIN,JBEG:JEND,KBEG:KEND))= Ex(M4_COORD(IBEG,JBEG:JEND,KBEG:KEND))
 !       Ez(M4_COORD(IMIN,JBEG:JEND,KBEG:KEND))= phasex1 * Ez(M4_COORD(IEND,JBEG:JEND,KBEG:KEND))
 !       Ey(M4_COORD(IMIN,JBEG:JEND,KBEG:KEND))= phasex1 * Ey(M4_COORD(IEND,JBEG:JEND,KBEG:KEND))
     case ( 2 ) 
        Ez(M4_COORD(IMAX,JBEG:JEND,KBEG:KEND))= phasex2 * Ez(M4_COORD(IBEG,JBEG:JEND,KBEG:KEND))
        Ey(M4_COORD(IMAX,JBEG:JEND,KBEG:KEND))= phasex2 * Ey(M4_COORD(IBEG,JBEG:JEND,KBEG:KEND))
     case ( 3 ) 
+       Ey(M4_COORD(IBEG:IEND,JMIN,KBEG:KEND))= Ey(M4_COORD(IBEG:IEND,JBEG,KBEG:KEND))
 !       Ez(M4_COORD(IBEG:IEND,JMIN,KBEG:KEND))= phasey1 * Ez(M4_COORD(IBEG:IEND,JEND,KBEG:KEND))
 !       Ex(M4_COORD(IBEG:IEND,JMIN,KBEG:KEND))= phasey1 * Ex(M4_COORD(IBEG:IEND,JEND,KBEG:KEND))
     case ( 4 )
        Ez(M4_COORD(IBEG:IEND,JMAX,KBEG:KEND))= phasey2 * Ez(M4_COORD(IBEG:IEND,JBEG,KBEG:KEND))
        Ex(M4_COORD(IBEG:IEND,JMAX,KBEG:KEND))= phasey2 * Ex(M4_COORD(IBEG:IEND,JBEG,KBEG:KEND))
     case ( 5 ) 
+       Ez(M4_COORD(IBEG:IEND,JBEG:JEND,KMIN))= Ez(M4_COORD(IBEG:IEND,JBEG:JEND,KBEG))
 !       Ey(M4_COORD(IBEG:IEND,JBEG:JEND,KMIN))= phasez1 * Ey(M4_COORD(IBEG:IEND,JBEG:JEND,KEND))
 !       Ex(M4_COORD(IBEG:IEND,JBEG:JEND,KMIN))= phasez1 * Ex(M4_COORD(IBEG:IEND,JBEG:JEND,KEND))
     case ( 6 ) 
@@ -189,7 +192,7 @@ contains
        case ( 5 ) 
           Hy(M4_COORD(IBEG:IEND,JBEG:JEND,KMIN))= phasez1 * Hy(M4_COORD(IBEG:IEND,JBEG:JEND,KEND))
           Hx(M4_COORD(IBEG:IEND,JBEG:JEND,KMIN))= phasez1 * Hx(M4_COORD(IBEG:IEND,JBEG:JEND,KEND))
-       case ( 6 ) 
+       case ( 6 )
 !          Hy(M4_COORD(IBEG:IEND,JBEG:JEND,KMAX))= phasez2 * Hy(M4_COORD(IBEG:IEND,JBEG:JEND,KMAX))
 !          Hx(M4_COORD(IBEG:IEND,JBEG:JEND,KMAX))= phasez2 * Hx(M4_COORD(IBEG:IEND,JBEG:JEND,KMAX))
        end select
@@ -205,5 +208,6 @@ end module pbc
 !
 ! Authors:  J.Hamm
 ! Modified: 4/1/2008
+! Changed: 3/6/2011 S.Wuestner
 !
 !======================================================================

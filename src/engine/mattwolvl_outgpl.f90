@@ -65,6 +65,8 @@ contains
 
     M4_WRITE_DBG({"write data ",TRIM(out%filename), " ",TRIM(out%fn)})
 
+    if ( .not. mode ) return
+
     select case (out%fn)
     case('N')
        call WriteValues(out, 1)

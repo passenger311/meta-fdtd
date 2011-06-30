@@ -84,7 +84,7 @@ contains
     diag%ne = v(2)
     diag%dn = v(3)
 
-    diag%ns = max(diag%ns,0)
+    diag%ns = max(diag%ns,NCYCMIN)
     diag%ne = min(diag%ne,NCYCMAX)
 
     ! time window
