@@ -383,6 +383,7 @@ function HARDJ(parms)
 				  offset=0, attack=0, sustain=0, decay=0 }
    HARDJ.planewave = parms.planewave or { on=false, phi=0, theta=0, psi=0, nrefr=1 }
    HARDJ.alpha = parms.alpha or 0
+   HARDJ.domega = parms.domega or 0
    if not HARDJ.planewave.on then HARDJ.planewave.on=true end
    return HARDJ
 end
@@ -397,6 +398,7 @@ function TFSFINJ(parms)
 				    offset=0, attack=0, sustain=0, decay=0 }
    TFSFINJ.planewave = parms.planewave or { on=true, phi=0, theta=0, psi=0, nrefr=1 }
    TFSFINJ.alpha = parms.alpha or 0
+   TFSFINJ.domega = parms.domega or 0
    return TFSFINJ
 end
 
@@ -411,6 +413,7 @@ function TFSFBOX(parms)
    TFSFBOX.planewave = parms.planewave or { on=true, phi=0, theta=0, psi=0, nrefr=1 }
    TFSFBOX.config = parms.config or { 1,1,1,1,1,1 }
    TFSFBOX.alpha = parms.alpha or 0
+   TFSFBOX.domega = parms.domega or 0
    return TFSFBOX
 end
 
@@ -800,7 +803,8 @@ local writesrc = {
 		       HARDJ.planewave.theta, " ",
 		       HARDJ.planewave.psi, " ",
 		       HARDJ.planewave.nrefr, " \t! planewave: phi, theta, psi, nrefr\n")
-	      fh:write(HARDJ.alpha,"\n")
+	      fh:write(HARDJ.alpha," \t! carrier envelope phase \n")
+	      fh:write(HARDJ.domega, " \t! linear chirp \n")
 	   end,
    TFSFINJ = function(fh,TFSFINJ)
 	      fh:write(TFSFINJ.invlambda," \t! invlambda [2 pi c]\n")
@@ -816,6 +820,7 @@ local writesrc = {
 		       TFSFINJ.planewave.psi, " ",
 		       TFSFINJ.planewave.nrefr, " \t! planewave: phi, theta, psi, nrefr\n")
 	      fh:write(TFSFINJ.alpha," \t! relative phase between envelope and carrier \n")
+	      fh:write(TFSFINJ.domega, " \t! linear chirp \n")
 	   end,
    TFSFBOX = function(fh,TFSFBOX)
 	      fh:write(TFSFBOX.invlambda," \t! invlambda [2 pi c]\n")
@@ -833,7 +838,8 @@ local writesrc = {
 	      fh:write(TFSFBOX.config[1]," ", TFSFBOX.config[2]," ",
 		        TFSFBOX.config[3]," ", TFSFBOX.config[4]," ",
 			TFSFBOX.config[5]," ", TFSFBOX.config[6]," \t! active planes\n")
-              fh:write(TFSFBOX.alpha,"\n")
+              fh:write(TFSFBOX.alpha," \t! carrier envelope phase \n")
+	      fh:write(TFSFBOX.domega, " \t! linear chirp \n")
 	   end,
 
 }

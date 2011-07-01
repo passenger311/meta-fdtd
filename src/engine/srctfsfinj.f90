@@ -125,6 +125,7 @@ contains
     src%nrefr = v(4)
     
     call readfloat(funit, lcount, src%alpha)
+    call readfloat(funit, lcount, src%domega)
 
     })
 
@@ -482,7 +483,7 @@ contains
           ncyc1 = 1.0*ncyc  - 0.5 + l * ddt  ! signal: n-1/2 -> n+1/2
           
           src%wavefct = src%amp * GenericWave(src%sigshape, ncyc1, src%noffs, src%natt, src%nsus, src%ndcy, & 
-               src%nhwhm, src%omega0, src%alpha)
+               src%nhwhm, src%omega0, src%alpha, src%domega)
 
           ! store time signal for delayed e-field modulation
 
