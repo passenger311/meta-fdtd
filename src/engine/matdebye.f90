@@ -103,7 +103,7 @@ contains
        mat%Pz = 0.
 
        mat%c1 = ( 2. * mat%taud - DT ) / ( 2. * mat%taud + DT )
-       mat%c2 = 2. * DT * mat%deltaepsd
+       mat%c2 = 2. * DT * mat%deltaepsd / ( 2. * mat%taud + DT )
 
 ! load from checkpoint file
 
@@ -209,9 +209,9 @@ M4_IFELSE_TE({
 
 M4_IFELSE_TM({
        Ex(i,j,k) = 1./dx * ( 2. * Ex(i,j,k) - &
-            w(1) * epsinvx(i,j,k) * ( ( mat%c1 - 2.) * mat%Px(p,m) + mat%Px(p,n) ) )
+            w(1) * epsinvx(i,j,k) * ( mat%c1 * mat%Px(p,m) - mat%Px(p,n) ) )
        Ey(i,j,k) = 1./dy * ( 2. * Ey(i,j,k) - &
-            w(2) * epsinvy(i,j,k) * ( ( mat%c1 - 2.) * mat%Py(p,m) + mat%Py(p,n) ) )
+            w(2) * epsinvy(i,j,k) * ( mat%c1 * mat%Py(p,m) - mat%Py(p,n) ) )
 })
 M4_IFELSE_TE({
        Ez(i,j,k) = 1./dz * ( 2. * Ez(i,j,k) - &
