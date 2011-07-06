@@ -215,7 +215,7 @@ M4_IFELSE_TM({
 })
 M4_IFELSE_TE({
        Ez(i,j,k) = 1./dz * ( 2. * Ez(i,j,k) - &
-            w(3) * epsinvz(i,j,k) * ( ( mat%c1 - 2.) * mat%Pz(p,m) + mat%Pz(p,n) ) )
+            w(3) * epsinvz(i,j,k) * ( mat%c1 * mat%Pz(p,m) + mat%Pz(p,n) ) )
 })
 
        })      
