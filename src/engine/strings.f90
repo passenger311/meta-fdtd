@@ -356,7 +356,7 @@ contains
     fi = 10.**(-expn+prec) * f 
 
     mstr = i2str(fi)   ! mantisse string
-    estr = i2str(expn+1) ! exponent string 
+    estr = i2str(expn)!+1) ! exponent string 
 
     ! construct output string from digits, sign and exponent
 

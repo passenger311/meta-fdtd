@@ -21,7 +21,7 @@
 !
 ! The MatLorentz module calculates the reponse of a Lorentz pole
 !
-! d/dt d/dt P + 2 * gammal * d/dt P + omegal**2 P = deltaepsl * omegal**2 * E
+! a * d/dt d/dt P + b * d/dt P + c * P = d * E
 ! d/dt E = d/dt E* - epsinv * d/dt P 
 !
 ! where E* is the electric field as calculated without the sources.  
@@ -49,14 +49,19 @@ module matlorentz
   M4_MATHEAD_DECL({MATLORENTZ},MAXMATOBJ,{
 
   ! input parameters
-  real(kind=8) :: lambdalinv    ! inv. vac. plasma wavelength and abs. length
-  real(kind=8) :: gammal        ! resonance width
-  real(kind=8) :: deltaepsl     ! delta epsilon
+!  real(kind=8) :: lambdalinv    ! inv. vac. plasma wavelength and abs. length
+!  real(kind=8) :: gammal        ! resonance width
+!  real(kind=8) :: deltaepsl     ! delta epsilon
+
+  real(kind=8) :: a, b, c, d	 ! parameters in extended Lorentzian
+
 
   real(kind=8) :: omegal
 
   ! coefficients
   real(kind=8) :: c1, c2, c3
+  ! coefficients energy balance
+  real(kind=8) :: d1, d2, d3, d4
   
   ! polarisation field 
   M4_FTYPE, dimension(:,:), pointer :: Px, Py, Pz
@@ -76,9 +81,13 @@ contains
     M4_MODREAD_EXPR({MATLORENTZ},funit,lcount,mat,reg,3,out,{ 
 
     ! read mat parameters here, as defined in mat data structure
-    call readfloat(funit,lcount, mat%lambdalinv)
-    call readfloat(funit,lcount, mat%gammal)
-    call readfloat(funit,lcount, mat%deltaepsl)
+!    call readfloat(funit,lcount, mat%lambdalinv)
+!    call readfloat(funit,lcount, mat%gammal)
+!    call readfloat(funit,lcount, mat%deltaepsl)
+    call readfloat(funit,lcount, mat%a)
+    call readfloat(funit,lcount, mat%b)
+    call readfloat(funit,lcount, mat%c)
+    call readfloat(funit,lcount, mat%d)
 
     })
 
@@ -100,7 +109,10 @@ contains
     
        ! initialize mat object here
 
-       mat%omegal = 2. * PI * mat%lambdalinv
+!       mat%omegal = 2. * PI * mat%lambdalinv
+       mat%c = mat%c * ( 2. * PI ) ** 2
+       mat%d = mat%d * ( 2. * PI ) ** 2
+
 !       mat%gammal = 2. / ( mat%abslenl * DT )
 
        reg = regobj(mat%regidx)
@@ -112,9 +124,18 @@ contains
        mat%Py = 0.
        mat%Pz = 0.
        
-       mat%c1 = ( 2. - mat%omegal**2 * DT**2 ) / ( 1. + DT * mat%gammal )
-       mat%c2 = ( -1. + DT * mat%gammal ) / ( 1. + DT * mat%gammal )
-       mat%c3 = DT**2 * mat%omegal**2 * mat%deltaepsl / ( 1. + DT * mat%gammal )
+       mat%c1 = ( 4. * mat%a - 2. * mat%c * DT**2 ) / ( 2. * mat%a + DT * mat%b )
+       mat%c2 = ( -2. * mat%a + DT * mat%b ) / ( 2. * mat%a + DT * mat%b )
+       mat%c3 = 2. * mat%d * DT**2 / ( 2. * mat%a + DT * mat%b )
+
+       mat%d1 = mat%b / ( 2. * mat%d * DT ) * (  - 16. * mat%a**2  + &
+                2. * mat%c * DT**2 * ( 2. * mat%a - mat%b * DT ) ) / &
+                ( 4. * mat%a**2 - mat%b**2 * DT**2 )
+       mat%d2 = - mat%b / ( 2. * mat%d * DT ) * (  - 16. * mat%a**2  + &
+                2. * mat%c * DT**2 * ( 2. * mat%a + mat%b * DT ) ) / &
+                ( 4. * mat%a**2 - mat%b**2 * DT**2 )
+       mat%d3 = 2. * mat%a / ( 2. * mat%a + mat%b * DT )
+       mat%d4 = 2. * mat%a / ( 2. * mat%a - mat%b * DT )
 
 ! load from checkpoint file
 
@@ -260,8 +281,6 @@ M4_IFELSE_TE({
 
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
        
-       ! correct E(n+1) using E(n+1)_fdtd and P(n+1),P(n)
-
        ! J(*,m) is P(n+1) and J(*,n) is P(n)      
 
        if ( mask(i,j,k) ) then
@@ -300,9 +319,10 @@ M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * dble(Ez(i,j,k)) * dble( mat%Pz(p,m) - ma
     type(T_MATLORENTZ) :: mat
  
     M4_WRITE_INFO({"#",TRIM(i2str(mat%idx)),&
-    	" lambdalinv=",TRIM(f2str(mat%lambdalinv,5)),&
-    	" gammal=",TRIM(f2str(mat%gammal,5)),&
-    	" deltaepsl=",TRIM(f2str(mat%deltaepsl,5))
+    	" a=",TRIM(f2str(mat%a,5)),&
+    	" b=",TRIM(f2str(mat%b,5)),&
+    	" c=",TRIM(f2str(mat%c,5)),&
+    	" d=",TRIM(f2str(mat%d,5))
     })
     call DisplayRegObj(regobj(mat%regidx))
     	
@@ -318,10 +338,10 @@ M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * dble(Ez(i,j,k)) * dble( mat%Pz(p,m) - ma
          TRIM(i2str(mat%idx))," ", TRIM(mat%type)})
 
     ! -- write parameters to console 
-    M4_WRITE_INFO({"lambdalinv = ",mat%lambdalinv })
-    M4_WRITE_INFO({"omegal = ",mat%omegal })
-    M4_WRITE_INFO({"deltaepsl = ",mat%deltaepsl })
-    M4_WRITE_INFO({"gammal = ",mat%gammal })
+    M4_WRITE_INFO({"a = ",mat%a })
+    M4_WRITE_INFO({"b = ",mat%b })
+    M4_WRITE_INFO({"c = ",mat%c })
+    M4_WRITE_INFO({"d = ",mat%d })
     M4_WRITE_INFO({"c1 = ",mat%c1 })
     M4_WRITE_INFO({"c2 = ",mat%c2 })
     M4_WRITE_INFO({"c3 = ",mat%c3 })

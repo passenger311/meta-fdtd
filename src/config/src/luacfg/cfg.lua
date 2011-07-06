@@ -17,6 +17,7 @@ local _G,print,pairs,ipairs,type,assert,setmetatable,table,string,io,tostring,
    _G,print,pairs,ipairs,type,assert,setmetatable,table,string,io,tostring,
    unpack
 local geo = require "geo"
+local math = math
 
 module("cfg")
 
@@ -205,10 +206,14 @@ end
 --(MAT)DRUDE Sub-Block definition
 
 function DRUDE(parms) 
-   local DRUDE = { block = "DRUDE" }
-   DRUDE.invlambdapl = parms.invlambdapl
-   DRUDE.gammapl = parms.gammapl or 0
-   DRUDE.order = parms.order or 1
+   local DRUDE = { block = "LORENTZ" } -- DRUDE implemented as a LORENTZ
+   DRUDE.a = 1
+   DRUDE.b = parms.gammapl or 0
+   DRUDE.c = 0
+   DRUDE.d = parms.invlambdapl^2
+--   DRUDE.invlambdapl = parms.invlambdapl
+--   DRUDE.gammapl = parms.gammapl or 0
+--   DRUDE.order = parms.order or 1
    return DRUDE
 end
 
@@ -242,19 +247,27 @@ end
 -- (MAT)LORENTZ Sub-Block definition
 
 function LORENTZ(parms) 
-   local LORENTZ = { block = "LORENTZ" }
-   LORENTZ.invlambdal = parms.invlambdal
-   LORENTZ.gammal = parms.gammal or 0
-   LORENTZ.deltaepsl = parms.deltaepsl or 1e-3
+   local LORENTZ = { block = "LORENTZ" } -- more generic LORENTZ
+   LORENTZ.a = 1
+   LORENTZ.b = 2 * ( parms.gammal or 0 )
+   LORENTZ.c = parms.invlambdal^2
+   LORENTZ.d = parms.invlambdal^2 * ( parms.deltaepsl or 1e-3 )
+--   LORENTZ.invlambdal = parms.invlambdal
+--   LORENTZ.gammal = parms.gammal or 0
+--   LORENTZ.deltaepsl = parms.deltaepsl or 1e-3
    return LORENTZ
 end
 
 -- (MAT)DEBYE Sub-Block definition
 
 function DEBYE(parms) 
-   local DEBYE = { block = "DEBYE" }
-   DEBYE.taud = parms.taud or 0.
-   DEBYE.deltaepsd = parms.deltaepsd or 1e-3
+   local DEBYE = { block = "LORENTZ" } -- DEBYE inplemented as LORENTZ
+   DEBYE.a = 0
+   DEBYE.b = (2*math.pi)^2 * (parms.taud or 0.) --3.14159265358979323846
+   DEBYE.c = 1
+   DEBYE.d = parms.deltaepsd or 1e-3
+--   DEBYE.taud = parms.taud or 0.
+--   DEBYE.deltaepsd = parms.deltaepsd or 1e-3
    return DEBYE
 end
 
@@ -642,11 +655,14 @@ end
 -- (MAT) MAT Sub-Block write
 
 local writemat = {
+--[[
    DRUDE = function(fh,DRUDE)
-	      fh:write(DRUDE.invlambdapl,"\t! invlambdapl [2 pi c]\n")
+	      fh:write(1,"\t! a = 1\n")
+	      fh:write(DRUDE.invlambdapl^2,"\t! invlambdapl [2 pi c]\n")
 	      fh:write(DRUDE.gammapl,"\t! gammapl (damping) [1/dt]\n")
 	      fh:write(DRUDE.order,"\t! order: 1 (J ode) or 2 (P ode)\n")
 	   end,
+--]]
    LHM = function(fh,LHM)
 	      fh:write(LHM.invlambdapl,"\t! invlambdapl [2 pi c]\n")
 	      fh:write(LHM.gammapl,"\t! gammapl (damping) [1/dt]\n")
@@ -662,14 +678,17 @@ local writemat = {
 		       LHMGRAD.to[3],"\t! size vector\n")
 	   end,
    LORENTZ = function(fh,LORENTZ)
-	      fh:write(LORENTZ.invlambdal,"\t! invlambdal [2 pi c]\n")
-	      fh:write(LORENTZ.gammal,"\t! gammal (damping) [1/dt]\n")
-	      fh:write(LORENTZ.deltaepsl,"\t! deltaepsl coupling coeff.\n")
+	      fh:write(LORENTZ.a,"\t! a\n")
+	      fh:write(LORENTZ.b,"\t! b (damping) [1/dt]\n")
+	      fh:write(LORENTZ.c,"\t! c (invlambda^2) [(2 pi c)**2]\n")
+	      fh:write(LORENTZ.d,"\t! d (coupling*invlambda^2)[(2 pi c)**2]\n")
 	   end,
+--[[
    DEBYE = function(fh,DEBYE)
-	      fh:write(DEBYE.taud,"\t! taud [dt]\n")
-	      fh:write(DEBYE.deltaepsd,"\t! deltaepsd coupling coeff.\n")
+	      fh:write(DEBYE.taud,"\t! taud (damping) [dt]\n")
+	      fh:write(DEBYE.deltaepsd,"\t! deltaepsd (coupling coeff.)\n")
 	   end,
+--]]
    PEC = function(fh,PEC)
 	 end,
    BLOCH = function(fh,BLOCH)
