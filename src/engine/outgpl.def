@@ -1,5 +1,6 @@
 ! register all *_outgpl modules here
 diagebal
+diagebalmode
 matbloch
 matfourlvl
 matthreelvl
