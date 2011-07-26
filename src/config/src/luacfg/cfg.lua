@@ -471,6 +471,15 @@ function EBAL(parms)
    return EBAL
 end
 
+function EBALMODE(parms) 
+   local EBALMODE = { block = "EBALMODE" }
+   EBALMODE.time = parms.time or { 0,-1, 1 } 
+   EBALMODE.freq = parms.freq
+   EBALMODE.buffersize = parms.buffersize
+   EBALMODE.freqseparation = parms.freqseparation
+   return EBALMODE
+end
+
 -- LUMPED Config-Block definition
 
 function ConfigMethods:LUMPED(parms)
@@ -905,6 +914,12 @@ local writediag = {
 	   end,
    EBAL = function(fh,EBAL)
 	     fh:write(EBAL.time[1]," ",EBAL.time[2]," ",EBAL.time[3]," \t! time window [from to step]\n")
+	   end,
+   EBALMODE = function(fh,EBALMODE)	     
+             fh:write(EBALMODE.time[1]," ",EBALMODE.time[2]," ",EBALMODE.time[3]," \t! time window [from to step]\n")
+	     fh:write(EBALMODE.freq, " \t! frequency of the Fourier-Coeffecient that is to be calculated\n" )
+	     fh:write(EBALMODE.buffersize, " \t! p-coefficient of recursive filter. This equals the size of the buffer of old values. Typically 2, 3 or 4\n")
+	     fh:write(EBALMODE.freqseparation, " \t! the the minimal seperation of two frequencies that the filter can distinguish. This will also imply the number of samples that the filter indirectly takes into account from the past. Look for \"approx. history len\" in the output of meta.\n" )
 	  end
 }
 
