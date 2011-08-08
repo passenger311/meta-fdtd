@@ -297,6 +297,23 @@ function BLOCH(parms)
    return BLOCH
 end
 
+
+-- (MAT)LVBLOCH Sub-Block definition
+
+function LVBLOCH(parms) 
+   local LVBLOCH = { block = "LVBLOCH" }
+   LVBLOCH.invlambdal = parms.invlambdal
+   LVBLOCH.gammal = parms.gammal or 0
+   LVBLOCH.dipole = parms.dipole or { 0.1, 0.1, 0.1 }
+   LVBLOCH.carrier = parms.carrier or { 1., 0.5 }
+   LVBLOCH.gammanr = parms.gammanr or 0
+   LVBLOCH.pump = parms.pump or 0
+   LVBLOCH.volfac = parms.volfac or 1
+   LVBLOCH.seed = parms.seed or 1278430492
+   return LVBLOCH
+end
+
+
 -- (MAT)FOURLVL Sub-Block definition
 
 function FOURLVL(parms)
@@ -310,6 +327,23 @@ function FOURLVL(parms)
    FOURLVL.gamma = parms.gamma or {0,0,0,0}
    return FOURLVL
 end
+
+-- (MAT)LVFOURLVL Sub-Block definition
+
+function LVFOURLVL(parms)
+   local LVFOURLVL = { block = "LVFOURLVL" }
+   LVFOURLVL.invlambdal = parms.invlambdal
+   LVFOURLVL.gammal = parms.gammal or {0,0}
+   LVFOURLVL.dipole12 = parms.dipole12 or 0.1
+   LVFOURLVL.dipole03 = parms.dipole03 or 0.1
+   LVFOURLVL.dens = parms.dens or 1
+   LVFOURLVL.start = parms.start or {0,0,0}
+   LVFOURLVL.gamma = parms.gamma or {0,0,0,0}
+   LVFOURLVL.volfac = parms.volfac or 1
+   LVFOURLVL.seed = parms.seed or 1320282957
+   return LVFOURLVL
+end
+
 
 -- (Mat) QW Sub-Block definition
 
@@ -376,6 +410,7 @@ function TWOLVL(parms)
    TWOLVL.Lorentz = parms.Lorentz or 1
    return TWOLVL
 end
+
 
 
 -- SRC Config-Block definition
@@ -709,6 +744,17 @@ local writemat = {
 	      fh:write(BLOCH.gammanr,"\t! non-rad. recomb. [1/dt]\n")
 	      fh:write(BLOCH.pump,"\t! pump rate [1/dt]\n")		       
 	   end,
+   LVBLOCH = function(fh,LVBLOCH)
+	      fh:write(LVBLOCH.invlambdal,"\t! invlambdal [2 pi c]\n")
+	      fh:write(LVBLOCH.gammal,"\t! gammal (damping) [1/dt]\n")
+	      fh:write(LVBLOCH.dipole[1], " " , LVBLOCH.dipole[2]," ", LVBLOCH.dipole[3],"\t! dipole matrix elem. [1/dx]\n")
+	      fh:write(LVBLOCH.carrier[1]," ", LVBLOCH.carrier[2],
+		       "\t! carrier numbers transp./initial  [1/(dx^3)]\n")
+	      fh:write(LVBLOCH.gammanr,"\t! non-rad. recomb. [1/dt]\n")
+	      fh:write(LVBLOCH.pump,"\t! pump rate [1/dt]\n")
+	      fh:write(LVBLOCH.volfac,"\t! factor between 3D volume and 2D or 1D representation\n")
+	      fh:write(LVBLOCH.seed,"\t! random number seed\n")		       
+	   end,
    FOURLVL = function(fh,FOURLVL)
               fh:write(FOURLVL.invlambdal[1]," ", FOURLVL.invlambdal[2],"\t! invlambdal [2 pi c]\n")
 	      fh:write(FOURLVL.gammal[1]," ", FOURLVL.gammal[2],"\t! gammal [1/dt]\n")
@@ -718,6 +764,18 @@ local writemat = {
 	      fh:write(FOURLVL.start[1]," ", FOURLVL.start[2]," ",FOURLVL.start[3],"\t! values for N3_0,N2_0,N1_0 [1/dx^3]\n")
 	      fh:write(FOURLVL.gamma[1]," ",FOURLVL.gamma[2]," ",FOURLVL.gamma[3]," ",FOURLVL.gamma[4],"\t! non rad. recomb. rates [1/dt]\n")
 	  end,
+   LVFOURLVL = function(fh,LVFOURLVL)
+              fh:write(LVFOURLVL.invlambdal[1]," ", LVFOURLVL.invlambdal[2],"\t! invlambdal [2 pi c]\n")
+              fh:write(LVFOURLVL.gammal[1]," ", LVFOURLVL.gammal[2],"\t! gammal [1/dt]\n")
+              fh:write(LVFOURLVL.dipole12,"\t! DPME 1<->2 [1/dx]\n")
+              fh:write(LVFOURLVL.dipole03,"\t! DPME 0<->3 [1/dx]\n")
+              fh:write(LVFOURLVL.dens,"\t! density of four lvl systems [1/dx^3]\n")
+              fh:write(LVFOURLVL.start[1]," ", LVFOURLVL.start[2]," ",LVFOURLVL.start[3],"\t! values for N3_0,N2_0,N1_0 [1/dx^3]\n")
+              fh:write(LVFOURLVL.gamma[1]," ",LVFOURLVL.gamma[2]," ",LVFOURLVL.gamma[3]," ",LVFOURLVL.gamma[4],"\t! non rad. recomb. rates [1/dt]\n")
+	      fh:write(LVFOURLVL.volfac, "\t! relation between real volume and dx^3 \n")
+	      fh:write(LVFOURLVL.seed, "\t! random number seed (max 2^31 \n")
+          end,
+
    QW = function(fh,QW)
               fh:write(QW.ks[1]," ", QW.ks[2],"\t! { k0, kmax } [1/dx]\n")
 	      fh:write(QW.kCount,"\t! number of momentum states\n")
@@ -773,7 +831,7 @@ local writemat = {
 	      fh:write(RANDTHREELVL.LFE, "\n")
 	      fh:write(RANDTHREELVL.seed, "\n")
 	   end,
-	  TWOLVL = function(fh,TWOLVL)
+	TWOLVL = function(fh,TWOLVL)
 	      fh:write(TWOLVL.invlambda, "\n")
 	      fh:write(TWOLVL.gamma, "\n")
 	      fh:write(TWOLVL.sigma, "\n")

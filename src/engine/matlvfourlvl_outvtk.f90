@@ -1,13 +1,13 @@
 !-*- F90 -*------------------------------------------------------------
 !
-!  module: matlvfourlvl_outvtk / meta
+!  module: matfourlvl_outvtk / meta
 !
-!  this module handles VTK output of data related to the matlvfourlvl module.
+!  this module handles VTK output of data related to the matfourlvl module.
 !
 !----------------------------------------------------------------------
 
 
-module matlvfourlvl_outvtk
+module matfourlvl_outvtk
 
   use constant
   use strings
@@ -16,7 +16,7 @@ module matlvfourlvl_outvtk
   use buflist
   use mpiworld
   use grid 
-  use matlvfourlvl
+  use matfourlvl
   use out_calc
 
   implicit none
@@ -25,37 +25,37 @@ module matlvfourlvl_outvtk
 
   ! --- Module Identifier
 
-  character(len=STRLNG), parameter :: modname = 'MATLVFOURLVL_OUTVTK'
+  character(len=STRLNG), parameter :: modname = 'MATFOURLVL_OUTVTK'
 
  ! --- Public Methods
 
-  public :: InitializeMatlvfourlvlOutvtkObj
-  public :: FinalizeMatlvfourlvlOutvtkObj
-  public :: WriteDataMatlvfourlvlOutvtkObj
+  public :: InitializeMatfourlvlOutvtkObj
+  public :: FinalizeMatfourlvlOutvtkObj
+  public :: WriteDataMatfourlvlOutvtkObj
 
 contains
 
 !----------------------------------------------------------------------
 
-  subroutine InitializeMatlvfourlvlOutvtkObj(out)
+  subroutine InitializeMatfourlvlOutvtkObj(out)
 
     type (T_OUT) :: out
 
-  end subroutine InitializeMatlvfourlvlOutvtkObj
+  end subroutine InitializeMatfourlvlOutvtkObj
 
 
 !----------------------------------------------------------------------
 
-  subroutine FinalizeMatlvfourlvlOutvtkObj(out)
+  subroutine FinalizeMatfourlvlOutvtkObj(out)
 
     type (T_OUT) :: out
 
-  end subroutine FinalizeMatlvfourlvlOutvtkObj
+  end subroutine FinalizeMatfourlvlOutvtkObj
 
 
 !----------------------------------------------------------------------
 
-  subroutine WriteDataMatlvfourlvlOutvtkObj(out, mode)
+  subroutine WriteDataMatfourlvlOutvtkObj(out, mode)
 
     type (T_OUT) :: out
     type (T_BUF) :: buf
@@ -85,14 +85,14 @@ contains
 
       M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
       real(kind=8) :: val1, val2, val3, val4, val5, val6, sum
-      type(T_MATLVFOURLVL) :: mat
+      type(T_MATFOURLVL) :: mat
 
       M4_WRITE_DBG({"WriteScalars!"})
 
       M4_IFELSE_DBG({call EchoRegObj(regobj(out%regidx))})
 
       reg = regobj(out%regidx)
-      mat = matlvfourlvlobj(out%objidx)
+      mat = matfourlvlobj(out%objidx)
 
       sum = 0.
 
@@ -159,14 +159,14 @@ contains
 
     end subroutine WriteValues
 
-  end subroutine WriteDataMatlvfourlvlOutvtkObj
+  end subroutine WriteDataMatfourlvlOutvtkObj
 
 
-end module matlvfourlvl_outvtk
+end module matfourlvl_outvtk
 
 !
-! Authors:  J.Hamm, S.Wuestner, A. Pusch
+! Authors:  J.Hamm, S.Wuestner
 
-! Modified: 08/08/2011
+! Modified: 20/01/2010
 !
 !======================================================================

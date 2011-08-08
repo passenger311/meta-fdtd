@@ -6,11 +6,12 @@ matpec
 matlorentz
 matlhm
 matbloch
+matlvbloch
 matfourlvl
+matlvfourlvl
 matlhmgrad
 matqw
 ! these must be last and cannot be combined
 matchi3
 matthreelvl
-matrandthreelvl
 mattwolvl

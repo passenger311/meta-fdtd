@@ -53,7 +53,8 @@ vallist.o\
 buflist.o\
 outlist.o\
 list.o\
-grid.o
+grid.o\
+ziggurat.o
 
 # third party objects
 

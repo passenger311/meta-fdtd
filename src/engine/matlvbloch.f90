@@ -1,25 +1,25 @@
 !-*- F90 -*------------------------------------------------------------
 !
-!  module: matbloch / meta
+!  module: matlvbloch / meta
 !
 !  Effective Maxwell Bloch material module.
 !
 !  subs:
 !
-!    InitializeMatBloch
-!    FinalizeMatBloch
-!    ReadMatBlochObj
-!    StepEMatBloch
-!    StepHMatBloch
-!    SumJEKHMatBloch
+!    InitializeMatLVBloch
+!    FinalizeMatLVBloch
+!    ReadMatLVBlochObj
+!    StepEMatLVBloch
+!    StepHMatLVBloch
+!    SumJEKHMatLVBloch
 !
 !----------------------------------------------------------------------
 
 
 ! =====================================================================
 !
-! The MatBloch module calculates the reponse of an effective  2 level 
-! bloch system
+! The MatlvBloch module calculates the reponse of an effective  2 level 
+! bloch system with langevin noise for dephasing and relaxation
 !
 ! d/dt d/dt P + 2 * gammal * d/dt P + omegal**2 P =  - 4 * omegar * conv1 * M (M * E) f(N,Ntr)
 ! d/dt N = conv2 * E/ (omegar ) * ( d/dt P + gammal * P ) - gammanr * N 
@@ -34,14 +34,14 @@
 !
 ! 
 !
-! StepHMatBloch: update eq. P(n+1) = c1 * P(n) + c2 * P(n-1) + c3 * E(n)
+! StepHMatLVBloch: update eq. P(n+1) = c1 * P(n) + c2 * P(n-1) + c3 * E(n)
 !                and update N (see below)
-! StepEMatBloch: update eq. E(n+1) = E(n+1)* - epsinv * (P(n+1) - P(n))
+! StepEMatLVBloch: update eq. E(n+1) = E(n+1)* - epsinv * (P(n+1) - P(n))
 !
 ! N update eq:
 ! N(n+1) = c4 * N(n) + c5 * ( P(n+1) - P(n) )*( E(n+1) + E(n) ) + c6 * ( P(n+1) + P(n) )*( E(n+1) + E(n) )
 !
-! is calculated in StepHMatBloch in two steps. The first bit depends on E(n+1) and must be 
+! is calculated in StepHMatLVBloch in two steps. The first bit depends on E(n+1) and must be 
 ! calculated *after* StepEMat updated E to the proper E(n+1). However,
 ! n+1 -> n, so that
 !
@@ -52,7 +52,7 @@
 ! N(n+1)_p1 = c4 * N(n) + c5 * ( P(n+1) - P(n) )*( E(n) ) + c6 * ( P(n+1) + P(n) )*( E(n) )
 !
 
-module matbloch
+module matlvbloch
 
   use constant
   use parse
@@ -60,12 +60,13 @@ module matbloch
   use outlist
   use grid
   use fdtd
+  use ziggurat
 
   implicit none
   private
   save
 
-  M4_MATHEAD_DECL({MATBLOCH},MAXMATOBJ,{
+  M4_MATHEAD_DECL({MATLVBLOCH},MAXMATOBJ,{
 
   ! input parameters
   real(kind=8) :: lambdarinv    ! inv. vac. plasma wavelength
@@ -83,13 +84,24 @@ module matbloch
 
   ! coefficients
   real(kind=8) :: c1, c2, c3, c4, c5, c6, c7
+
+  ! langevin coefficients
+  real(kind=8) :: lvP1, lvP2, lvP3
   
   ! polarisation field 
   M4_FTYPE, dimension(:,:), pointer :: P
 
   ! number density 
-  real(kind=8), dimension(:), pointer :: N
+  real(kind=8), dimension(:), pointer :: N, Nold
   
+  ! old langevin term for P
+  real(kind=8), dimension(:), pointer :: lvterm
+  
+  ! factor to account for actual 3D volume of 2D or 1D representations
+  real(kind=8) :: volfac
+
+  ! seed for random number generator
+  integer :: seed
 
   })
 
@@ -97,17 +109,17 @@ contains
 
 !----------------------------------------------------------------------
 
-  subroutine ReadMatBlochObj(funit,lcount)
+  subroutine ReadMatlvblochObj(funit,lcount)
 
-    M4_MODREAD_DECL({MATBLOCH}, funit,lcount,mat,reg,out)
+    M4_MODREAD_DECL({MATLVBLOCH}, funit,lcount,mat,reg,out)
     real(kind=8) :: v(2)
     real(kind=8) :: c(3)
     logical :: eof,err
     character(len=LINELNG) :: line
 
-    M4_WRITE_DBG(". enter ReadMatBlochObj")
+    M4_WRITE_DBG(". enter ReadMatlvblochObj")
     
-    M4_MODREAD_EXPR({MATBLOCH},funit,lcount,mat,reg,3,out,{ 
+    M4_MODREAD_EXPR({MATLVBLOCH},funit,lcount,mat,reg,3,out,{ 
 
 
     ! read mat parameters here, as defined in mat data structure
@@ -130,25 +142,28 @@ contains
     if ( err ) mat%N0 = mat%Ntr
     call readfloat(funit,lcount, mat%gammanr)
     call readfloat(funit,lcount, mat%pump)
+    call readfloat(funit,lcount, mat%volfac)
+    call readint(funit,lcount, mat%seed)
 
     })
 
     call CompressValRegObj(reg) ! compress filling factors
 
-    M4_WRITE_DBG(". exit ReadMatBlochObj")
+    M4_WRITE_DBG(". exit ReadMatlvblochObj")
 
-  end subroutine ReadMatBlochObj
+  end subroutine ReadMatlvblochObj
 
 !----------------------------------------------------------------------
 
-  subroutine InitializeMatBloch
+  subroutine InitializeMatlvbloch
 
-    type (T_REG) :: reg
+    !type (T_REG) :: reg
     integer :: err
-    real (kind=8) :: conv1, conv2
-    M4_MODLOOP_DECL({MATBLOCH},mat) 
-    M4_WRITE_DBG(". enter InitializeMatBloch")
-    M4_MODLOOP_EXPR({MATBLOCH},mat,{
+    real (kind=8) :: conv1, conv2, x1, x2, tipangle, re, im
+    M4_MODLOOP_DECL({MATLVBLOCH},mat)
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(3)) 
+    M4_WRITE_DBG(". enter InitializeMatlvbloch")
+    M4_MODLOOP_EXPR({MATLVBLOCH},mat,{
     
        ! initialize mat object here
 
@@ -158,20 +173,22 @@ contains
 
        reg = regobj(mat%regidx)
 
-       allocate(mat%P(reg%numnodes,2), mat%N(reg%numnodes), stat = err)
-
-       M4_ALLOC_ERROR(err,"InitializeMatBloch")
+       allocate(mat%P(reg%numnodes,2), mat%N(reg%numnodes), mat%Nold(reg%numnodes), &
+            mat%lvterm(reg%numnodes), stat = err)
+       M4_ALLOC_ERROR(err,"InitializeMatlvbloch")
 
        mat%P = 0.
 
        mat%N = mat%N0
+       mat%Nold = mat%N0
+
+       mat%lvterm = 0.
 
 ! From unit conversion of polarisation equation -  SI to Computational units 
        conv1 = SI_4PIALPHA
-       write(*,*) conv1
 ! From unit conversion of population equation - SI to Computation units
        conv2 = ( ( REAL_DX * SI_C ) / ( SI_HBAR ) )
-       write(*,*) conv2
+
 ! for polarisation integration
        mat%c1 = ( 2. - mat%omegal**2 * DT**2 ) / ( 1. + DT * mat%gammal )
        mat%c2 = ( -1. + DT * mat%gammal ) / ( 1. + DT * mat%gammal )
@@ -185,7 +202,29 @@ contains
 
        mat%cyc = 1 
 
-
+! for langevin noise
+       call zigset(mat%seed)
+       ! set initial tipping angle
+       if (mat%N0 == 2*mat%Ntr) then
+         M4_MODOBJ_GETREG(mat,reg)
+         M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+            tipangle = 2/sqrt(mat%Ntr*2*mat%volfac)*rnor()
+            x1 = uni()
+            x2 = uni()
+            re = x1/sqrt(x1**2+x2**2)*sin(tipangle)*mat%Ntr/&
+                 sqrt(REAL_DX)*8.983e-23
+            im = x2/sqrt(x1**2+x2**2)*sin(tipangle)*mat%Ntr/&
+                 sqrt(REAL_DX)*8.983e-23
+            mat%P(p,2) = re
+            mat%P(p,1) = re*(1-mat%gammal*DT) - im*mat%omegar*DT
+            mat%N(p) = (cos(tipangle)+1)*mat%Ntr
+            mat%Nold(p) = mat%N(p)
+         })
+       endif
+       mat%lvP2 = mat%omegar*sqrt(DT*mat%gammal/mat%volfac)*8.982e-23/sqrt(REAL_DX)
+       mat%lvP1 = sqrt(mat%gammal*DT/mat%volfac)*8.982e-23/sqrt(REAL_DX)
+       mat%lvP3 = sqrt(mat%gammanr*DT/mat%volfac)
+       
 M4_IFELSE_1D({
        M4_WRITE_INFO({"1D -> forcing M(1)=0!"})
        mat%M(1) = 0.
@@ -205,40 +244,40 @@ M4_IFELSE_TM({},{
 })
 
 
-       M4_IFELSE_DBG({call EchoMatBlochObj(mat)},{call DisplayMatBlochObj(mat)})
+       M4_IFELSE_DBG({call EchoMatlvblochObj(mat)},{call DisplayMatlvblochObj(mat)})
 
     })
-    M4_WRITE_DBG(". exit InitializeMatBloch")
+    M4_WRITE_DBG(". exit InitializeMatlvbloch")
 
-  end subroutine InitializeMatBloch
+  end subroutine InitializeMatlvbloch
 
 !----------------------------------------------------------------------
 
-  subroutine FinalizeMatBloch
+  subroutine FinalizeMatlvbloch
 
-    M4_MODLOOP_DECL({MATBLOCH},mat)
-    M4_WRITE_DBG(". enter FinalizeMatBloch")
-    M4_MODLOOP_EXPR({MATBLOCH},mat,{
+    M4_MODLOOP_DECL({MATLVBLOCH},mat)
+    M4_WRITE_DBG(". enter FinalizeMatlvbloch")
+    M4_MODLOOP_EXPR({MATLVBLOCH},mat,{
 
     ! finalize mat object here
     deallocate(mat%P,mat%N)
 
     })
-    M4_WRITE_DBG(". exit FinalizeMatBloch")
+    M4_WRITE_DBG(". exit FinalizeMatlvbloch")
 
-  end subroutine FinalizeMatBloch
+  end subroutine FinalizeMatlvbloch
 
 !----------------------------------------------------------------------
 
-  subroutine StepHMatBloch(ncyc)
+  subroutine StepHMatlvbloch(ncyc)
 
-    integer :: ncyc, m, n
-    M4_MODLOOP_DECL({MATBLOCH},mat)
+    integer :: ncyc, m, n, zeta1, zeta2, zeta3
+    M4_MODLOOP_DECL({MATLVBLOCH},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
     M4_FTYPE :: me
     real(kind=8) :: pem, pen, ninv
 
-    M4_MODLOOP_EXPR({MATBLOCH},mat,{
+    M4_MODLOOP_EXPR({MATLVBLOCH},mat,{
 
     ! this loops over all mat structures, setting mat
 
@@ -268,16 +307,23 @@ M4_IFELSE_TM({},{
         ! before: P(*,m) is P(n-1), P(*,n) is P(n)
         
         ninv = ( mat%N(p) - mat%Ntr )
-
-        mat%P(p,m) = mat%c1 * mat%P(p,n) + mat%c2 * mat%P(p,m) + mat%c3 * me * ninv 
+        ! get random numbers for polarization noise
+        zeta1 = rnor()
+        zeta2 = rnor()
+        mat%P(p,m) = mat%c1 * mat%P(p,n) + mat%c2 * mat%P(p,m) + mat%c3 * me * ninv &
+             - zeta2*sqrt(mat%N(p))*mat%lvP2 + ( zeta1*sqrt(mat%N(p)) - &
+             mat%lvterm(p)*sqrt(mat%Nold(p)) )*mat%lvP1
+        mat%lvterm(p) = zeta1
+        mat%Nold(p) = mat%N(p)
 
         ! calculate first part of the density response
         
 
         pem =  mat%P(p,m) * me
 
-
-        mat%N(p) = mat%c4 * mat%N(p) + mat%c5 * ( pem - pen ) + mat%c6 * ( pem + pen ) + mat%c7
+        zeta3 = rnor()
+        mat%N(p) = mat%c4 * mat%N(p) + mat%c5 * ( pem - pen ) + mat%c6 * ( pem + pen ) + mat%c7&
+             + zeta3*sqrt(mat%N(p))*mat%lvP3
 
         ! after: J(*,m) is now P(n+1)
         ! m and n will be flipped in the next timestep!
@@ -287,18 +333,18 @@ M4_IFELSE_TM({},{
 
     })
   
-  end subroutine StepHMatBloch
+  end subroutine StepHMatlvbloch
 
 
 !----------------------------------------------------------------------
 
-  subroutine StepEMatBloch(ncyc)
+  subroutine StepEMatlvbloch(ncyc)
 
     integer :: ncyc, m, n
-    M4_MODLOOP_DECL({MATBLOCH},mat)
+    M4_MODLOOP_DECL({MATLVBLOCH},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
 
-    M4_MODLOOP_EXPR({MATBLOCH},mat,{
+    M4_MODLOOP_EXPR({MATLVBLOCH},mat,{
 
        ! this loops over all mat structures, setting mat
 
@@ -324,22 +370,22 @@ M4_IFELSE_TE({
 
     })
 
-  end subroutine StepEMatBloch
+  end subroutine StepEMatlvbloch
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumJEMatBloch(mask, ncyc)
+  real(kind=8) function SumJEMatlvbloch(mask, ncyc)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
     real(kind=8) :: sum
     integer :: ncyc, m, n
    
-    M4_MODLOOP_DECL({MATBLOCH},mat)
+    M4_MODLOOP_DECL({MATLVBLOCH},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
 
     sum = 0
 
-    M4_MODLOOP_EXPR({MATBLOCH},mat,{
+    M4_MODLOOP_EXPR({MATLVBLOCH},mat,{
 
        ! this loops over all mat structures, setting mat
 
@@ -368,26 +414,26 @@ M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * dble(Ez(i,j,k)) * dble( mat%M(3) * ( mat
 
     })
     
-    SumJEMatBloch = sum
+    SumJEMatlvbloch = sum
     
-  end function SumJEMatBloch
+  end function SumJEMatlvbloch
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumKHMatBloch(mask, ncyc)
+  real(kind=8) function SumKHMatlvbloch(mask, ncyc)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
     integer :: ncyc
 
-    SumKHMatBloch = 0.
+    SumKHMatlvbloch = 0.
 
-  end function SumKHMatBloch
+  end function SumKHMatlvbloch
  
 !----------------------------------------------------------------------
 
-  subroutine DisplayMatBlochObj(mat)
+  subroutine DisplayMatlvblochObj(mat)
 
-    type(T_MATBLOCH) :: mat
+    type(T_MATLVBLOCH) :: mat
  
     M4_WRITE_INFO({"#",TRIM(i2str(mat%idx)),&
     	" lambdarinv=",TRIM(f2str(mat%lambdarinv,5)),&
@@ -395,15 +441,15 @@ M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * dble(Ez(i,j,k)) * dble( mat%M(3) * ( mat
     })
     call DisplayRegObj(regobj(mat%regidx))
     	
-  end subroutine DisplayMatBlochObj
+  end subroutine DisplayMatlvblochObj
 
 !----------------------------------------------------------------------
 
-   subroutine EchoMatBlochObj(mat)
+   subroutine EchoMatlvblochObj(mat)
 
-    type(T_MATBLOCH) :: mat
+    type(T_MATLVBLOCH) :: mat
 
-    M4_WRITE_INFO({"--- matbloch # ",&
+    M4_WRITE_INFO({"--- matlvbloch # ",&
          TRIM(i2str(mat%idx))," ", TRIM(mat%type)})
 
     ! -- write parameters to console 
@@ -422,15 +468,15 @@ M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * dble(Ez(i,j,k)) * dble( mat%M(3) * ( mat
     call EchoRegObj(regobj(mat%regidx))
     
 
-  end subroutine EchoMatBlochObj
+  end subroutine EchoMatlvblochObj
 
   
 !----------------------------------------------------------------------
 
-end module matbloch
+end module matlvbloch
 
-! Authors:  K.Boehringer, J.Hamm 
-! Modified: 14/1/2008
+! Authors:  A.Pusch, K.Boehringer, J.Hamm 
+! Modified: 29/07/2011
 !
 ! =====================================================================
 
