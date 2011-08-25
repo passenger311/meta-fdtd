@@ -401,7 +401,7 @@ contains
     type(T_MATLORENTZ) :: mat   
     type(T_REG) :: reg_outset
     integer :: m4_m
-    M4_REGLOOP_DECL(reg,p,i,j,k,w(0))
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
 
     m    = mod(ncyc*2+3,3) + 1
     mo   = mod(ncyc*2+2,3) + 1 ! half timestep back
