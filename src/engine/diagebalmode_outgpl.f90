@@ -184,7 +184,7 @@ contains
 end module diagebalmode_outgpl
 
 !
-! Authors:  J.Hamm
-! Modified: 1/02/2008
+! Authors:  F.Renn, J.Hamm
+! Modified: 1/08/2011
 !
 !======================================================================
