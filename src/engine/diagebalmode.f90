@@ -120,8 +120,8 @@ contains
     real(kind=8) :: A
     real(kind=8) :: omega
     real(kind=8) :: freq_sep
-    real(kind=8) :: FWHM
-    real(kind=8) :: history
+    integer :: FWHM
+    integer :: history
     integer :: shift
     M4_MODLOOP_DECL({DIAGEBALMODE},diag)
     type (T_REG) :: reg, reg_outset
@@ -177,7 +177,7 @@ contains
 !         /(A-1.)
     shift = NINT( ( dble(diag%p) * gamma ) / ( 1. - gamma ) )
     FWHM = NINT(2. * sqrt(2.*log(2.)) * sqrt((dble(diag%p)*gamma)/((1.-gamma)**2.)))
-    history = 2. * FWHM
+    history = 2 * FWHM
     
     M4_WRITE_INFO({"--- diagebalmode: p = ", diag%p})
     M4_WRITE_INFO({"--- diagebalmode: gamma = ", gamma})
