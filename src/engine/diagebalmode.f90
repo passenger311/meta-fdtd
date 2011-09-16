@@ -176,7 +176,7 @@ contains
 !         (2. - ( 2. * A * cos( 2. * (freq_sep/(2. * PI)) ) ))**2. ) ) &
 !         /(A-1.)
     shift = NINT( ( dble(diag%p) * gamma ) / ( 1. - gamma ) )
-    FWHM = 2. * sqrt(2.*log(2.)) * sqrt((dble(diag%p)*gamma)/((1.-gamma)**2.))
+    FWHM = NINT(2. * sqrt(2.*log(2.)) * sqrt((dble(diag%p)*gamma)/((1.-gamma)**2.)))
     history = 2. * FWHM
     
     M4_WRITE_INFO({"--- diagebalmode: p = ", diag%p})
