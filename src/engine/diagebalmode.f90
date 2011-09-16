@@ -38,11 +38,11 @@ module diagebalmode
   complex(kind=8), pointer, dimension(:,:,:,:,:) :: buf_H
   complex(kind=8), pointer, dimension(:,:,:,:,:,:) :: buf_P
   ! filter parameters
-  real(kind=8) :: omega
+  real(kind=8) :: invlambda
   real(kind=8) :: beta
   complex(kind=8), pointer, dimension(:) :: alpha
   integer :: p
-  real(kind=8) :: freq_sep
+  real(kind=8) :: invlambda_sep
   integer :: h_pos_H, h_pos_E, h_pos_P
 
   ! copied from diagebal.f90
@@ -72,6 +72,7 @@ contains
 
     M4_MODREAD_DECL({DIAGEBALMODE}, funit,lcount,diag,reg,out)
     integer :: v(5)
+    real(kind=8) :: omega, freq_sep
 
     M4_WRITE_DBG(". enter ReadMatEBalModeObj")
     
@@ -81,10 +82,13 @@ contains
     diag%ns = v(1)
     diag%ne = v(2)
     diag%dn = v(3)
-    call readfloat(funit, lcount, diag%omega)
+    call readfloat(funit, lcount, diag%invlambda)
     call readint(funit, lcount, diag%p)
-    call readfloat(funit, lcount, diag%freq_sep)
+    call readfloat(funit, lcount, diag%invlambda_sep)
 
+    omega = 2. * PI * DT * diag%invlambda
+    freq_sep = 2. * PI * DT * diag%invlambda_sep
+    
     if ( diag%ns .ge. diag%ne .or. diag%ns .lt. 0 .or. diag%dn .lt. 1 ) then
        M4_FATAL_ERROR({"BAD TIME WINDOW!"})
     end if
@@ -92,10 +96,10 @@ contains
     if ( diag%p .le. 0 ) then
        M4_FATAL_ERROR({"BAD BUFFER SIZE!"})
     end if
-    if ( diag%omega .lt. 0 .or. diag%omega .gt. PI ) then
-       M4_FATAL_ERROR({"BAD OMEGA VALUE"})
+    if ( omega .lt. 0 .or. omega .gt. PI ) then
+       M4_FATAL_ERROR({"BAD INV LAMBDA VALUE"})
     end if
-    if ( diag%freq_sep .lt. 0 .or. diag%freq_sep .gt. PI ) then
+    if ( freq_sep .lt. 0 .or. freq_sep .gt. PI ) then
        M4_FATAL_ERROR({"BAD FREQUENCY SEPERATION VALUE"})
     end if})
 
@@ -114,6 +118,10 @@ contains
     real(kind=8) :: prefactor
     real(kind=8) :: ndb
     real(kind=8) :: A
+    real(kind=8) :: omega
+    real(kind=8) :: freq_sep
+    real(kind=8) :: FWHM
+    real(kind=8) :: history
     integer :: shift
     M4_MODLOOP_DECL({DIAGEBALMODE},diag)
     type (T_REG) :: reg, reg_outset
@@ -145,6 +153,9 @@ contains
     reg_outset = reg
     call OutsetRegion( reg_outset )
 
+    omega = 2. * PI * DT * diag%invlambda
+    freq_sep = 2. * PI * DT * diag%invlambda_sep
+
     M4_WRITE_DBG("allocate mask")
     allocate(diag%mask(reg_outset%is:reg_outset%ie,reg_outset%js:reg_outset%je, &
          reg_outset%ks:reg_outset%ke), stat = err)
@@ -152,18 +163,26 @@ contains
     call SetMaskRegObj(reg,diag%mask,reg_outset%is,reg_outset%ie,reg_outset%js,reg_outset%je, &
          reg_outset%ks,reg_outset%ke)
     
-    A = ndb ** ( 2. / dble(diag%p))
-    gamma = ( -1. + ( A * cos( 2. * (diag%freq_sep/(2. * PI)) ) ) + &
-         sqrt( (-4.* ((A-1.)**2.) ) + &
-         (2. - ( 2. * A * cos( 2. * (diag%freq_sep/(2. * PI)) ) ))**2. ) ) &
-         /(A-1.)
+    A = cos(freq_sep/8.)
+! see master thesis Fabian Renn
+    gamma = (A+sqrt( &
+    (A-1.)*(A+1.-(2.**((dble(diag%p)+2.)/dble(diag%p))))  &
+    )&
+    -(4.**(1./dble(diag%p)))  )/&
+    (1-(4.**(1./dble(diag%p))))
+!    A = ndb ** ( 2. / dble(diag%p))   
+!    gamma = ( -1. + ( A * cos( 2. * (freq_sep/(2. * PI)) ) ) + &
+!         sqrt( (-4.* ((A-1.)**2.) ) + &
+!         (2. - ( 2. * A * cos( 2. * (freq_sep/(2. * PI)) ) ))**2. ) ) &
+!         /(A-1.)
     shift = NINT( ( dble(diag%p) * gamma ) / ( 1. - gamma ) )
+    FWHM = 2. * sqrt(2.*log(2.)) * sqrt((dble(diag%p)*gamma)/((1.-gamma)**2.))
+    history = 2. * FWHM
     
-
     M4_WRITE_INFO({"--- diagebalmode: p = ", diag%p})
     M4_WRITE_INFO({"--- diagebalmode: gamma = ", gamma})
-    M4_WRITE_INFO({"--- diagebalmode: omega = ", diag%omega})
-    M4_WRITE_INFO({"--- diagebalmode: approx. history len = ", 4 * shift})
+    M4_WRITE_INFO({"--- diagebalmode: omega = ", omega})
+    M4_WRITE_INFO({"--- diagebalmode: approx. history len = ", history})
     M4_WRITE_INFO({"--- diagebalmode: output must be shifted by = ", shift})
     
     allocate(diag%buf_E(0:diag%p-1,reg_outset%is:reg_outset%ie,reg_outset%js:reg_outset%je, &
@@ -202,8 +221,8 @@ contains
        prefactor = (-1.d0) * binomial( diag%p, i+1 ) &
             * ( (-1.d0*gamma)**dble(i+1) )
        diag%alpha(diag%p-i-1) = &
-            complex(prefactor*cos(-1.d0 * diag%omega * dble(i+1) ), &
-            prefactor*sin(-1.d0 * diag%omega * dble(i+1)))
+            complex(prefactor*cos(-1.d0 * omega * dble(i+1) ), &
+            prefactor*sin(-1.d0 * omega * dble(i+1)))
        M4_WRITE_INFO({"--- diagebalmode: alpha = ", diag%alpha(diag%p-i-1)})
     enddo
 
