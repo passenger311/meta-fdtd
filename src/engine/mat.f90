@@ -113,37 +113,35 @@ contains
 
 !----------------------------------------------------------------------
 
-  real(kind=8 ) function SumJEMat(mask,ncyc)
+  subroutine SumJEMat(mask,ncyc,sum,idx,mode)
     
     logical, dimension(IBEG:IEND,JBEG:JEND,KBEG:KEND) :: mask
-    integer :: ncyc
-    real(kind=8) :: sum
+    logical :: mode
+    integer :: ncyc, idx
+    real(kind=8) :: sum(MAXEBALCH)
 
-    sum = 0.
-
-    M4_FOREACH_MAT({sum = sum + SumJE},{(mask,ncyc)
+    idx = 1
+    M4_FOREACH_MAT({
+    call SumJE},{(mask,ncyc,sum,idx,mode)
     })
 
-    SumJEMat = sum
-
-  end function SumJEMat
+  end subroutine SumJEMat
 
 !----------------------------------------------------------------------
 
-  real(kind=8 ) function SumKHMat(mask,ncyc)
+  subroutine SumKHMat(mask,ncyc,sum,idx,mode)
     
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
-    integer :: ncyc
-    real(kind=8) :: sum
+    logical :: mode
+    integer :: ncyc, idx
+    real(kind=8) :: sum(MAXEBALCH)
 
-    sum = 0.
-
-    M4_FOREACH_MAT({sum = sum + SumKH},{(mask,ncyc)
+    idx = 1
+    M4_FOREACH_MAT({
+    call SumKH},{(mask,ncyc,sum,idx,mode)
     })
 
-    SumKHMat = sum
-
-  end function SumKHMat
+  end subroutine SumKHMat
 
 !----------------------------------------------------------------------
 

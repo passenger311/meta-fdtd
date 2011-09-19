@@ -12,7 +12,8 @@
 !    ReadMatLorentzObj
 !    StepEMatLorentz
 !    StepHMatLorentz
-!    SumJEKHMatLorentz
+!    SumJEMatLorentz
+!    SumKHMatLorentz
 !
 !----------------------------------------------------------------------
 
@@ -113,7 +114,7 @@ contains
        mat%c = mat%c * ( 2. * PI ) ** 2
        mat%d = mat%d * ( 2. * PI ) ** 2
 
-!       mat%gammal = 2. / ( mat%abslenl * DT )
+!!       mat%gammal = 2. / ( mat%abslenl * DT )
 
        reg = regobj(mat%regidx)
 
@@ -128,10 +129,10 @@ contains
        mat%c2 = ( -2. * mat%a + DT * mat%b ) / ( 2. * mat%a + DT * mat%b )
        mat%c3 = 2. * mat%d * DT**2 / ( 2. * mat%a + DT * mat%b )
 
-       mat%d1 = mat%b / ( 2. * mat%d * DT ) * (  - 16. * mat%a**2  + &
+       mat%d1 = 0.5 * mat%b / ( 2. * mat%d * DT ) * (  - 16. * mat%a**2  + &
                 2. * mat%c * DT**2 * ( 2. * mat%a - mat%b * DT ) ) / &
                 ( 4. * mat%a**2 - mat%b**2 * DT**2 )
-       mat%d2 = - mat%b / ( 2. * mat%d * DT ) * (  - 16. * mat%a**2  + &
+       mat%d2 = - 0.5 * mat%b / ( 2. * mat%d * DT ) * (  - 16. * mat%a**2  + &
                 2. * mat%c * DT**2 * ( 2. * mat%a + mat%b * DT ) ) / &
                 ( 4. * mat%a**2 - mat%b**2 * DT**2 )
        mat%d3 = 2. * mat%a / ( 2. * mat%a + mat%b * DT )
@@ -259,18 +260,20 @@ M4_IFELSE_TE({
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumJEMatLorentz(mask, ncyc)
+  subroutine SumJEMatLorentz(mask, ncyc, sum, idx, mode)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
-    real(kind=8) :: sum
-    integer :: ncyc, m, n
+    logical :: mode
+    real(kind=8) :: d34, sum(MAXEBALCH), sum1, sum2
+    integer :: ncyc, m, n, idx
    
     M4_MODLOOP_DECL({MATLORENTZ},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
 
-    sum = 0
-
     M4_MODLOOP_EXPR({MATLORENTZ},mat,{
+
+    sum1 = 0
+    sum2 = 0
 
        ! this loops over all mat structures, setting mat
 
@@ -279,38 +282,65 @@ M4_IFELSE_TE({
        n = mod(ncyc-1+2,2) + 1
        m = mod(ncyc+2,2) + 1
 
+       if ( mode ) then
+          d34 = mat%d4
+       else
+          d34 = mat%d3
+       endif
+
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
        
        ! J(*,m) is P(n+1) and J(*,n) is P(n)      
 
        if ( mask(i,j,k) ) then
 
-          sum = sum + ( &
-M4_IFELSE_TM({ M4_VOLEX(i,j,k) * w(1) * dble(Ex(i,j,k)) * dble( mat%Px(p,m) - mat%Px(p,n) ) / DT +},{0. +}) &
-M4_IFELSE_TM({ M4_VOLEY(i,j,k) * w(2) * dble(Ey(i,j,k)) * dble( mat%Py(p,m) - mat%Py(p,n) ) / DT +},{0. +}) &
-M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * dble(Ez(i,j,k)) * dble( mat%Pz(p,m) - mat%Pz(p,n) ) / DT  },{0.  }) &
+          sum1 = sum1 + ( &
+M4_IFELSE_TM({ M4_VOLEX(i,j,k) * w(1) * ( mat%d1 * mat%Px(p,m) + mat%d2 * mat%Px(p,n) + d34 * Ex(i,j,k)) * &
+               ( mat%Px(p,m) - mat%Px(p,n) ) / DT + &
+               M4_VOLEY(i,j,k) * w(2) * ( mat%d1 * mat%Py(p,m) + mat%d2 * mat%Py(p,n) + d34 * Ey(i,j,k)) * &
+               ( mat%Py(p,m) - mat%Py(p,n) ) / DT +},{0. +}) &
+M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * ( mat%d1 * mat%Pz(p,m) + mat%d2 * mat%Pz(p,n) + d34 * Ez(i,j,k)) * &
+               ( mat%Pz(p,m) - mat%Pz(p,n) ) / DT  },{0.  }) &
+               )
+
+          sum2 = sum2 + ( &
+M4_IFELSE_TM({ M4_VOLEX(i,j,k) * w(1) * Ex(i,j,k) * ( mat%Px(p,m) - mat%Px(p,n) ) / DT + &
+               M4_VOLEY(i,j,k) * w(2) * Ey(i,j,k) * ( mat%Py(p,m) - mat%Py(p,n) ) / DT +},{0. +}) &
+M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * Ez(i,j,k) * ( mat%Pz(p,m) - mat%Pz(p,n) ) / DT  },{0.  }) &
                )
 
        endif
 
        })      
 
+    sum(idx) = sum(idx) + sum1
+    sum(idx+1) = sum(idx+1) + sum2 - sum1
+    idx = idx + NUMEBALCH
+
     })
+
     
-    SumJEMatLorentz = sum
-    
-  end function SumJEMatLorentz
+  end subroutine SumJEMatLorentz
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumKHMatLorentz(mask, ncyc)
+  subroutine SumKHMatLorentz(mask, ncyc, sum, idx, mode)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
-    integer :: ncyc
+    integer :: ncyc, idx
+    logical :: mode
+    real(kind=8) :: sum(MAXEBALCH)
 
-    SumKHMatLorentz = 0.
+    M4_MODLOOP_DECL({MATLorentz},mat)
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
 
-  end function SumKHMatLorentz
+    M4_MODLOOP_EXPR({MATLorentz},mat,{
+
+    idx = idx + NUMEBALCH
+
+    })
+
+  end subroutine SumKHMatLorentz
  
 !----------------------------------------------------------------------
 
@@ -359,6 +389,7 @@ end module matlorentz
 
 ! Authors:  K.Boehringer, J.Hamm 
 ! Modified: 14/1/2008
+! Changed : 7/07/2011 S.Wuestner
 !
 ! =====================================================================
 

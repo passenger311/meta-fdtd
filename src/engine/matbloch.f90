@@ -11,7 +11,8 @@
 !    ReadMatBlochObj
 !    StepEMatBloch
 !    StepHMatBloch
-!    SumJEKHMatBloch
+!    SumJEMatBloch
+!    SumKHMatBloch
 !
 !----------------------------------------------------------------------
 
@@ -328,16 +329,15 @@ M4_IFELSE_TE({
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumJEMatBloch(mask, ncyc)
+  subroutine SumJEMatBloch(mask, ncyc, sum, idx, mode)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
-    real(kind=8) :: sum
-    integer :: ncyc, m, n
+    logical :: mode
+    real(kind=8) :: sum(MAXEBALCH)
+    integer :: ncyc, m, n, idx
    
     M4_MODLOOP_DECL({MATBLOCH},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
-
-    sum = 0
 
     M4_MODLOOP_EXPR({MATBLOCH},mat,{
 
@@ -356,7 +356,7 @@ M4_IFELSE_TE({
 
        if ( mask(i,j,k) ) then
 
-          sum = sum + ( &
+          sum(idx+1) = sum(idx+1) + ( &
 M4_IFELSE_TM({ M4_VOLEX(i,j,k) * w(1) * dble(Ex(i,j,k)) * dble( mat%M(1) * ( mat%P(p,m) - mat%P(p,n) ) ) / DT +},{0. +}) &
 M4_IFELSE_TM({ M4_VOLEY(i,j,k) * w(2) * dble(Ey(i,j,k)) * dble( mat%M(2) * ( mat%P(p,m) - mat%P(p,n) ) ) / DT +},{0. +}) &
 M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * dble(Ez(i,j,k)) * dble( mat%M(3) * ( mat%P(p,m) - mat%P(p,n) ) ) / DT  },{0.  }) &
@@ -366,22 +366,31 @@ M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * dble(Ez(i,j,k)) * dble( mat%M(3) * ( mat
 
        })      
 
+    idx = idx + NUMEBALCH
+
     })
     
-    SumJEMatBloch = sum
-    
-  end function SumJEMatBloch
+  end subroutine SumJEMatBloch
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumKHMatBloch(mask, ncyc)
+  subroutine SumKHMatBloch(mask, ncyc, sum, idx, mode)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
-    integer :: ncyc
+    integer :: ncyc, idx
+    logical :: mode
+    real(kind=8) :: sum(MAXEBALCH)
 
-    SumKHMatBloch = 0.
+    M4_MODLOOP_DECL({MATBLOCH},mat)
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
 
-  end function SumKHMatBloch
+    M4_MODLOOP_EXPR({MATBLOCH},mat,{
+
+    idx = idx + NUMEBALCH
+
+    })
+
+  end subroutine SumKHMatBloch
  
 !----------------------------------------------------------------------
 
@@ -431,6 +440,7 @@ end module matbloch
 
 ! Authors:  K.Boehringer, J.Hamm 
 ! Modified: 14/1/2008
+! Changed: 7/07/2011 S.Wuestner
 !
 ! =====================================================================
 

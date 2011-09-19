@@ -18,6 +18,7 @@ local _G,print,pairs,ipairs,type,assert,setmetatable,table,string,io,tostring,
    unpack
 local geo = require "geo"
 local math = math
+local os = os
 
 module("cfg")
 
@@ -247,7 +248,7 @@ end
 -- (MAT)LORENTZ Sub-Block definition
 
 function LORENTZ(parms) 
-   local LORENTZ = { block = "LORENTZ" } -- more generic LORENTZ
+   local LORENTZ = { block = "LORENTZ" } -- generic LORENTZ
    LORENTZ.a = 1
    LORENTZ.b = 2 * ( parms.gammal or 0 )
    LORENTZ.c = parms.invlambdal^2
@@ -263,7 +264,7 @@ end
 function DEBYE(parms) 
    local DEBYE = { block = "LORENTZ" } -- DEBYE inplemented as LORENTZ
    DEBYE.a = 0
-   DEBYE.b = (2*math.pi)^2 * (parms.taud or 0.) --3.14159265358979323846
+   DEBYE.b = (2*math.pi)^2 * (parms.taud or 0.)
    DEBYE.c = 1
    DEBYE.d = parms.deltaepsd or 1e-3
 --   DEBYE.taud = parms.taud or 0.
@@ -309,7 +310,7 @@ function LVBLOCH(parms)
    LVBLOCH.gammanr = parms.gammanr or 0
    LVBLOCH.pump = parms.pump or 0
    LVBLOCH.volfac = parms.volfac or 1
-   LVBLOCH.seed = parms.seed or 1278430492
+   LVBLOCH.seed = parms.seed or os.time()
    return LVBLOCH
 end
 
@@ -325,6 +326,7 @@ function FOURLVL(parms)
    FOURLVL.dens = parms.dens or 1
    FOURLVL.start = parms.start or {0,0,0}
    FOURLVL.gamma = parms.gamma or {0,0,0,0}
+   FOURLVL.LFE = parms.LFE or 0
    return FOURLVL
 end
 
@@ -339,8 +341,10 @@ function LVFOURLVL(parms)
    LVFOURLVL.dens = parms.dens or 1
    LVFOURLVL.start = parms.start or {0,0,0}
    LVFOURLVL.gamma = parms.gamma or {0,0,0,0}
+   LVFOURLVL.LFE = parms.LFE or 0
    LVFOURLVL.volfac = parms.volfac or 1
-   LVFOURLVL.seed = parms.seed or 1320282957
+   LVFOURLVL.linefac = parms.linefac or 1
+   LVFOURLVL.seed = parms.seed or os.time()
    return LVFOURLVL
 end
 
@@ -392,7 +396,7 @@ function RANDTHREELVL(parms)
    RANDTHREELVL.densities = parms.densities or { 1., 0., 0. }
    RANDTHREELVL.n = parms.n or 1
    RANDTHREELVL.LFE = parms.LFE or 1
-   RANDTHREELVL.seed = parms.seed or 1734920
+   RANDTHREELVL.seed = parms.seed or os.time()
    return RANDTHREELVL
 end
 
@@ -763,6 +767,7 @@ local writemat = {
 	      fh:write(FOURLVL.dens,"\t! density of four lvl systems [1/dx^3]\n")
 	      fh:write(FOURLVL.start[1]," ", FOURLVL.start[2]," ",FOURLVL.start[3],"\t! values for N3_0,N2_0,N1_0 [1/dx^3]\n")
 	      fh:write(FOURLVL.gamma[1]," ",FOURLVL.gamma[2]," ",FOURLVL.gamma[3]," ",FOURLVL.gamma[4],"\t! non rad. recomb. rates [1/dt]\n")
+              fh:write(FOURLVL.LFE, "\t! local field effect due to epsilon included?\n")
 	  end,
    LVFOURLVL = function(fh,LVFOURLVL)
               fh:write(LVFOURLVL.invlambdal[1]," ", LVFOURLVL.invlambdal[2],"\t! invlambdal [2 pi c]\n")
@@ -772,7 +777,9 @@ local writemat = {
               fh:write(LVFOURLVL.dens,"\t! density of four lvl systems [1/dx^3]\n")
               fh:write(LVFOURLVL.start[1]," ", LVFOURLVL.start[2]," ",LVFOURLVL.start[3],"\t! values for N3_0,N2_0,N1_0 [1/dx^3]\n")
               fh:write(LVFOURLVL.gamma[1]," ",LVFOURLVL.gamma[2]," ",LVFOURLVL.gamma[3]," ",LVFOURLVL.gamma[4],"\t! non rad. recomb. rates [1/dt]\n")
+              fh:write(LVFOURLVL.LFE, "\t! local field effect due to epsilon included?\n")
 	      fh:write(LVFOURLVL.volfac, "\t! relation between real volume and dx^3 \n")
+              fh:write(LVFOURLVL.linefac, "\t! relation between homogeneous and inhomogeneous linewidth \n")
 	      fh:write(LVFOURLVL.seed, "\t! random number seed (max 2^31 \n")
           end,
 

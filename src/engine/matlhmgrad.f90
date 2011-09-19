@@ -11,6 +11,8 @@
 !    ReadMatlhmgradObj
 !    StepEMatlhmgrad
 !    StepHMatlhmgrad
+!    SumJEMatlhmgrad
+!    SumKHMatlhmgrad
 !
 !----------------------------------------------------------------------
 
@@ -343,37 +345,25 @@ M4_IFELSE_TM({
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumJEMatlhmgrad(mask, ncyc)
+  subroutine SumJEMatlhmgrad(mask, ncyc, sum, idx, mode)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
-    real(kind=8) :: sum
-    integer :: ncyc, m, n
-   
-    M4_MODLOOP_DECL({MATLHMGRAD},mat)
-    M4_REGLOOP_DECL(reg,p,i,j,k,w(6))
+    integer :: ncyc, idx
+    logical :: mode
+    real(kind=8) :: sum(MAXEBALCH)
 
-    sum = 0
-    
-    SumJEMatlhmgrad = sum
-    
-  end function SumJEMatlhmgrad
+  end subroutine SumJEMatlhmgrad
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumKHMatlhmgrad(mask, ncyc)
+  subroutine SumKHMatlhmgrad(mask, ncyc, sum, idx, mode)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
-    real(kind=8) :: sum
-    integer :: ncyc, m, n
-   
-    M4_MODLOOP_DECL({MATLHMGRAD},mat)
-    M4_REGLOOP_DECL(reg,p,i,j,k,w(6))
+    integer :: ncyc, idx
+    logical :: mode
+    real(kind=8) :: sum(MAXEBALCH)
 
-    sum = 0
-    
-    SumKHMatlhmgrad = sum
-    
-  end function SumKHMatlhmgrad
+  end subroutine SumKHMatlhmgrad
 
 !----------------------------------------------------------------------
 
@@ -411,6 +401,7 @@ end module matlhmgrad
 
 ! Authors:  J.Hamm 
 ! Modified: 14/1/2008
+! Changed: 7/07/2011 S.Wuestner
 !
 ! =====================================================================
 

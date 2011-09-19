@@ -11,6 +11,8 @@
 !    ReadMatLhmObj
 !    StepEMatLhm
 !    StepHMatLhm
+!    SumJEMatLhm
+!    SumKHMatLhm
 !
 !----------------------------------------------------------------------
 
@@ -341,16 +343,15 @@ M4_IFELSE_TM({
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumJEMatLhm(mask, ncyc)
+  subroutine SumJEMatLhm(mask, ncyc, sum, idx, mode)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
-    real(kind=8) :: sum
-    integer :: ncyc, m, n
+    logical :: mode
+    real(kind=8) :: sum(MAXEBALCH)
+    integer :: ncyc, m, n, idx
    
     M4_MODLOOP_DECL({MATLHM},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(6))
-
-    sum = 0
 
     M4_MODLOOP_EXPR({MATLHM},mat,{
 
@@ -371,7 +372,7 @@ M4_IFELSE_TM({
 
           if ( mat%order .eq. 1 ) then ! 1. order equation
 
-             sum = sum + ( &
+             sum(idx+1) = sum(idx+1) + ( &
 M4_IFELSE_TM({    M4_VOLEX(i,j,k) * w(1) * dble(Ex(i,j,k)) * dble(mat%Jx(p,1)) + },{0. +}) &
 M4_IFELSE_TM({    M4_VOLEY(i,j,k) * w(2) * dble(Ey(i,j,k)) * dble(mat%Jy(p,1)) + },{0. +}) &
 M4_IFELSE_TE({    M4_VOLEZ(i,j,k) * w(3) * dble(Ez(i,j,k)) * dble(mat%Jz(p,1))   },{0.  }) &
@@ -379,7 +380,7 @@ M4_IFELSE_TE({    M4_VOLEZ(i,j,k) * w(3) * dble(Ez(i,j,k)) * dble(mat%Jz(p,1))  
 
           else
 
-             sum = sum + ( &
+             sum(idx+1) = sum(idx+1) + ( &
 M4_IFELSE_TM({    M4_VOLEX(i,j,k) * w(1) * dble(Ex(i,j,k)) * dble( mat%Jx(p,m) - mat%Jx(p,n) ) / DT +},{0. +}) &
 M4_IFELSE_TM({    M4_VOLEY(i,j,k) * w(2) * dble(Ey(i,j,k)) * dble( mat%Jy(p,m) - mat%Jy(p,n) ) / DT +},{0. +}) &
 M4_IFELSE_TE({    M4_VOLEZ(i,j,k) * w(3) * dble(Ez(i,j,k)) * dble( mat%Jz(p,m) - mat%Jz(p,n) ) / DT  },{0.  }) &
@@ -391,24 +392,23 @@ M4_IFELSE_TE({    M4_VOLEZ(i,j,k) * w(3) * dble(Ez(i,j,k)) * dble( mat%Jz(p,m) -
 
        })      
 
+    idx = idx + NUMEBALCH
+
     })
     
-    SumJEMatLhm = sum
-    
-  end function SumJEMatLhm
+  end subroutine SumJEMatLhm
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumKHMatLhm(mask, ncyc)
+  subroutine SumKHMatLHM(mask, ncyc, sum, idx, mode)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
-    real(kind=8) :: sum
-    integer :: ncyc, m, n
+    integer :: ncyc, idx, m, n
+    logical :: mode
+    real(kind=8) :: sum(MAXEBALCH)
    
     M4_MODLOOP_DECL({MATLHM},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(6))
-
-    sum = 0
 
     M4_MODLOOP_EXPR({MATLHM},mat,{
 
@@ -429,7 +429,7 @@ M4_IFELSE_TE({    M4_VOLEZ(i,j,k) * w(3) * dble(Ez(i,j,k)) * dble( mat%Jz(p,m) -
 
           if ( mat%order .eq. 1 ) then ! 1. order equation
 
-             sum = sum + ( &
+             sum(idx+1) = sum(idx+1) + ( &
 M4_IFELSE_TE({    M4_VOLHX(i,j,k) * w(4) * dble(Hx(i,j,k)) * dble(mat%Kx(p,1)) +},{0. +}) &
 M4_IFELSE_TE({    M4_VOLHY(i,j,k) * w(5) * dble(Hy(i,j,k)) * dble(mat%Ky(p,1)) +},{0. +}) &
 M4_IFELSE_TM({    M4_VOLHZ(i,j,k) * w(6) * dble(Hz(i,j,k)) * dble(mat%Kz(p,1))  },{0.  }) &
@@ -437,7 +437,7 @@ M4_IFELSE_TM({    M4_VOLHZ(i,j,k) * w(6) * dble(Hz(i,j,k)) * dble(mat%Kz(p,1))  
 
           else
 
-              sum = sum + ( & 
+              sum(idx+1) = sum(idx+1) + ( & 
 M4_IFELSE_TE({    M4_VOLHX(i,j,k) * w(4) * dble(Hx(i,j,k)) * dble( mat%Kx(p,m) - mat%Kx(p,n) ) / DT +},{0. +}) &
 M4_IFELSE_TE({    M4_VOLHY(i,j,k) * w(5) * dble(Hy(i,j,k)) * dble( mat%Ky(p,m) - mat%Ky(p,n) ) / DT +},{0. +}) &
 M4_IFELSE_TM({    M4_VOLHZ(i,j,k) * w(6) * dble(Hz(i,j,k)) * dble( mat%Kz(p,m) - mat%Kz(p,n) ) / DT  },{0.  }) &
@@ -449,11 +449,11 @@ M4_IFELSE_TM({    M4_VOLHZ(i,j,k) * w(6) * dble(Hz(i,j,k)) * dble( mat%Kz(p,m) -
 
        })      
 
+    idx = idx + NUMEBALCH
+
     })
-    
-    SumKHMatLhm = sum
-    
-  end function SumKHMatLhm
+
+  end subroutine SumKHMatLhm
 
 !----------------------------------------------------------------------
 
@@ -500,6 +500,7 @@ end module matlhm
 
 ! Authors:  J.Hamm 
 ! Modified: 14/1/2008
+! Changed: 7/07/2011 S.Wuestner
 !
 ! =====================================================================
 

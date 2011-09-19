@@ -11,7 +11,8 @@
 !    ReadMattwoLvlObj
 !    StepEMattwoLvl
 !    StepHMattwoLvl
-!    SumJEKHMattwoLvl
+!    SumJEMattwoLvl
+!    SumKHMattwoLvl
 !
 !----------------------------------------------------------------------
 
@@ -448,31 +449,25 @@ M4_IFELSE_TE({
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumJEMattwolvl(mask, ncyc)
+  subroutine SumJEMattwolvl(mask, ncyc, sum, idx, mode)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
-    real(kind=8) :: sum
-    integer :: ncyc, m, n
+    integer :: ncyc, idx
+    logical :: mode
+    real(kind=8) :: sum(MAXEBALCH)
    
-    M4_MODLOOP_DECL({MATTWOLVL},mat)
-    M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
-
-    sum = 0
-    
-    SumJEMattwolvl = sum
-    
-  end function SumJEMattwolvl
+  end subroutine SumJEMattwolvl
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumKHMattwolvl(mask, ncyc)
+  subroutine SumKHMattwolvl(mask, ncyc, sum, idx, mode)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
-    integer :: ncyc
+    integer :: ncyc, idx
+    logical :: mode
+    real(kind=8) :: sum(MAXEBALCH)
 
-    SumKHMattwolvl = 0.
-
-  end function SumKHMattwolvl
+  end subroutine SumKHMattwolvl
  
 !----------------------------------------------------------------------
 
@@ -512,6 +507,7 @@ end module mattwolvl
 
 ! Authors: A.Pusch 
 ! Modified: 13/8/2010
+! Changed: 7/07/2011 S.Wuestner
 !
 ! =====================================================================
 

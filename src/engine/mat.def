@@ -1,8 +1,8 @@
 ! list all mat* modules here
 matpec
 ! drude and debye use lorentz model
-! matdrude
-! matdebye
+!matdrude
+!matdebye
 matlorentz
 matlhm
 matbloch

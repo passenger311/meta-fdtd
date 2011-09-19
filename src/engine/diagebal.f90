@@ -45,7 +45,8 @@ module diagebal
   integer :: ns, ne, dn  ! time stepping 
 
   ! spatially integrated energy contributions
-  real(kind=8) :: dudt, ds, je, kh, res
+  real(kind=8) :: dudt, ds, res
+  real(kind=8) :: je(MAXEBALCH), kh(MAXEBALCH), jedisp, jeabs, khdisp, khabs
   real(kind=8) :: dsx, dsy, dsz
   ! spatially and time integrated energy contributions
   real(kind=8) :: sumdudt, sumds, sumje, sumkh, sumres
@@ -54,7 +55,8 @@ module diagebal
   logical, pointer, dimension(:,:,:) :: mask
   
   ! partial contributions to energy terms
-  real(kind=8), dimension(3) :: en, skh, sje
+  real(kind=8), dimension(MAXEBALCH) :: skh1, skh2, sje1, sje2
+  real(kind=8), dimension(3) :: en
   real(kind=8), dimension(3) :: dsx1, dsx2
   real(kind=8), dimension(3) :: dsy1, dsy2
   real(kind=8), dimension(3) :: dsz1, dsz2
@@ -131,7 +133,7 @@ contains
 
     if ( load_state .and. ( detail_level .eq. 1 .or. detail_level .eq. 3 ) ) then
 
-       read(UNITCHK) diag%en, diag%skh, diag%sje
+       read(UNITCHK) diag%en, diag%skh1, diag%skh2, diag%sje1, diag%sje2
        read(UNITCHK) diag%dsx1, diag%dsx2, diag%dsy1, diag%dsy2, diag%dsz1, diag%dsz2
        read(UNITCHK) diag%sumdudt, diag%sumje, diag%sumkh
        read(UNITCHK) diag%sumds, diag%sumdsx, diag%sumdsy, diag%sumdsz
@@ -149,6 +151,8 @@ contains
 
   subroutine FinalizeDiagEBal
 
+
+
     M4_MODLOOP_DECL({DIAGEBAL},diag)
     M4_WRITE_DBG(". enter FinalizeMatEBal")
     M4_MODLOOP_EXPR({DIAGEBAL},diag,{
@@ -157,7 +161,7 @@ contains
 
     if ( save_state .and. ( detail_level .eq. 1 .or. detail_level .eq. 3 ) ) then
 
-       write(UNITCHK) diag%en, diag%skh, diag%sje
+       write(UNITCHK) diag%en, diag%skh1, diag%skh2, diag%sje1, diag%sje2
        write(UNITCHK) diag%dsx1, diag%dsx2, diag%dsy1, diag%dsy2, diag%dsz1, diag%dsz2
        write(UNITCHK) diag%sumdudt, diag%sumje, diag%sumkh
        write(UNITCHK) diag%sumds, diag%sumdsx, diag%sumdsy, diag%sumdsz
@@ -175,7 +179,8 @@ contains
 
   subroutine StepHDiagEBal(ncyc)
 
-    integer :: ncyc, m, mo, moo
+    integer :: ncyc, m, mo, moo, idx
+    real(kind=8) :: sum
     M4_MODLOOP_DECL({DIAGEBAL},diag)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(0))
 
@@ -238,8 +243,10 @@ M4_IFELSE_3D({
 
        ! material sources
 
-       diag%sje(m) = SumJEMat(diag%mask,ncyc)
-       diag%skh(m) = SumKHMat(diag%mask,ncyc)
+       diag%sje1 = 0.
+       call SumJEMat(diag%mask,ncyc,diag%sje1,idx,.true.)
+       diag%skh1 = 0.
+       call SumKHMat(diag%mask,ncyc,diag%skh1,idx,.true.)
 
     })
   
@@ -251,7 +258,8 @@ M4_IFELSE_3D({
 
   subroutine StepEDiagEBal(ncyc)
 
-    integer :: ncyc, m, mo, moo
+    integer :: ncyc, m, mo, moo, idx
+    real(kind=8) :: sum
     M4_MODLOOP_DECL({DIAGEBAL},diag)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(0))
 
@@ -325,9 +333,10 @@ M4_IFELSE_3D({
        })
 
        ! material sources
-
-       diag%sje(m) = SumJEMat(diag%mask,ncyc)
-       diag%skh(m) = SumKHMat(diag%mask,ncyc)
+       diag%sje2 = 0.
+       call SumJEMat(diag%mask,ncyc,diag%sje2,idx,.false.)
+       diag%skh2 = 0.
+       call SumKHMat(diag%mask,ncyc,diag%skh2,idx,.false.)
        
        ! ---------------------------------------------------
        
@@ -342,15 +351,29 @@ M4_IFELSE_3D({
        diag%dsy = .5 * ( diag%dsy1(m) + diag%dsy1(mo) + diag%dsy2(mo) + diag%dsy2(moo) )
        diag%dsz = .5 * ( diag%dsz1(m) + diag%dsz1(mo) + diag%dsz2(mo) + diag%dsz2(moo) )
 
-       diag%je = 0.5 * ( diag%sje(m) + diag%sje(mo) )
-       diag%kh = 0.5 * ( diag%skh(mo) + diag%skh(moo) )
+       diag%je = .5 * ( diag%sje1 + diag%sje2 )
+       diag%kh = .5 * ( diag%skh1 + diag%skh2 )
+
+       diag%jedisp = 0.
+       diag%jeabs = 0.
+       diag%khdisp = 0.
+       diag%khabs = 0.
+
+       do i = 1,idx-1,NUMEBALCH
+          diag%jedisp = diag%jedisp + diag%je(i) 
+          diag%jeabs = diag%jeabs + diag%je(i+1) + diag%je(i+2)
+          diag%khdisp = diag%khdisp + diag%kh(i) 
+          diag%khabs = diag%khabs + diag%kh(i+1) + diag%kh(i+2)
+       enddo
+
+       diag%dudt = diag%dudt + diag%jedisp + diag%khdisp
 
        diag%ds   = diag%dsx + diag%dsy + diag%dsz 
-       diag%res = - ( diag%dudt + diag%ds + diag%je + diag%kh )
-       
+       diag%res = - ( diag%dudt + diag%ds + diag%jeabs + diag%khabs )
+      
        diag%sumdudt = diag%sumdudt + DT * diag%dudt
-       diag%sumje = diag%sumje + DT * diag%je
-       diag%sumkh = diag%sumkh + DT * diag%kh
+       diag%sumje = diag%sumje + DT * diag%jeabs
+       diag%sumkh = diag%sumkh + DT * diag%khabs
        diag%sumds = diag%sumds + DT * diag%ds
        diag%sumdsx = diag%sumdsx + DT * diag%dsx
        diag%sumdsy = diag%sumdsy + DT * diag%dsy
@@ -390,6 +413,7 @@ end module diagebal
 !
 ! Authors:  J.Hamm, E.Kirby
 ! Modified: 23/01/2007
+! Changed : 7/07/2011 S.Wuestner
 !
 ! =====================================================================
 

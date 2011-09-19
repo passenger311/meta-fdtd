@@ -101,7 +101,7 @@ contains
       select case ( mode ) 
 
       case ( 1 )
-         write(out%funit,"(5E15.6E3)") diag%dudt, diag%ds, diag%je, diag%kh, diag%res
+         write(out%funit,"(5E15.6E3)") diag%dudt, diag%ds, diag%jeabs, diag%khabs, diag%res
       case ( 2 )
          write(out%funit,"(5E15.6E3)") diag%sumdudt, diag%sumds, diag%sumje, diag%sumkh, diag%sumres
       case ( 3 ) 

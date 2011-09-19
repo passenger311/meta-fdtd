@@ -11,7 +11,8 @@
 !    ReadMatQWObj
 !    StepEMatQW
 !    StepHMatQW
-!    SumJEKHMatQW
+!    SumJEMatQW
+!    SumKHMatQW
 !
 !----------------------------------------------------------------------
 
@@ -472,16 +473,16 @@ M4_IFELSE_TE({
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumJEMatQW(mask, ncyc)
+  subroutine SumJEMatQW(mask, ncyc, sum, idx, mode)
+!  real(kind=8) function SumJEMatQW(mask, ncyc, mode)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
-    real(kind=8) :: sum
-    integer :: ncyc, m, n, pk
+    logical :: mode
+    real(kind=8) :: sum(MAXEBALCH)
+    integer :: ncyc, m, n, pk, idx
    
     M4_MODLOOP_DECL({MATQW},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
-
-    sum = 0
 
     M4_MODLOOP_EXPR({MATQW},mat,{
 
@@ -500,7 +501,7 @@ M4_IFELSE_TE({
 
        if ( mask(i,j,k) ) then
           do pk=1,mat%kCount
-          sum = sum + ( &
+          sum(idx+1) = sum(idx+1) + ( &
 M4_IFELSE_TM({ M4_VOLEX(i,j,k) * w(1) * Ex(i,j,k) * mat%nr * mat%pW(pk) * ( mat%Px(p,pk,m) - mat%Px(p,pk,n) )& 
 / DT +}, {0. +}) &
 M4_IFELSE_TM({ M4_VOLEY(i,j,k) * w(2) * Ey(i,j,k) * mat%nr * mat%pW(pk) * ( mat%Py(p,pk,m) - mat%Py(p,pk,n) )&
@@ -513,22 +514,31 @@ M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * Ez(i,j,k) * mat%nr * mat%pW(pk) * ( mat%
 
        })      
 
+    idx = idx + NUMEBALCH
+
     })
-    
-    SumJEMatQW = sum
-    
-  end function SumJEMatQW
+
+  end subroutine SumJEMatQW
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumKHMatQW(mask, ncyc)
+  subroutine SumKHMatQW(mask, ncyc, sum, idx, mode)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
-    integer :: ncyc
+    integer :: ncyc, idx
+    logical :: mode
+    real(kind=8) :: sum(MAXEBALCH)
 
-    SumKHMatQW = 0.
+    M4_MODLOOP_DECL({MATQW},mat)
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
 
-  end function SumKHMatQW
+    M4_MODLOOP_EXPR({MATQW},mat,{
+
+    idx = idx + NUMEBALCH
+
+    })
+
+  end subroutine SumKHMatQW
  
 !----------------------------------------------------------------------
 
@@ -582,6 +592,7 @@ end module matqw
 
 ! Authors:  A.Pusch, J.Hamm 
 ! Modified: 17/04/2010
+! Changed: 7/07/2011 S.Wuestner
 !
 ! =====================================================================
 

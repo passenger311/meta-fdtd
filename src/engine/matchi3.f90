@@ -11,7 +11,8 @@
 !    ReadMatChi3Obj
 !    StepEMatChi3
 !    StepHMatChi3
-!    SumJEKHMatChi3
+!    SumJEMatChi3
+!    SumKHMatChi3
 !
 !----------------------------------------------------------------------
 
@@ -305,33 +306,31 @@ M4_IFELSE_TE({
        })      
 })
        
-
-
     })
 
   end subroutine StepEMatChi3
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumJEMatChi3(mask, ncyc)
+  subroutine SumJEMatChi3(mask, ncyc, sum, idx, mode)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
-    integer :: ncyc
+    logical :: mode
+    integer :: ncyc, idx
+    real(kind=8) :: sum(MAXEBALCH)
    
-    SumJEMatChi3 = 0.
-    
-  end function SumJEMatChi3
+  end subroutine SumJEMatChi3
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumKHMatChi3(mask, ncyc)
+  subroutine SumKHMatChi3(mask, ncyc, sum, idx, mode)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
-    integer :: ncyc
+    integer :: ncyc, idx
+    logical :: mode
+    real(kind=8) :: sum(MAXEBALCH)
 
-    SumKHMatChi3 = 0.
-
-  end function SumKHMatChi3
+  end subroutine SumKHMatChi3
  
 !----------------------------------------------------------------------
 
@@ -381,6 +380,7 @@ end module matchi3
 
 ! Authors:  J.Hamm 
 ! Modified: 1/10/2009
+! Changed: 7/07/2011 S.Wuestner
 !
 ! =====================================================================
 

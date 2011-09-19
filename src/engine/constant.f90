@@ -25,9 +25,11 @@ module constant
   integer, parameter :: MAXVALUES  = 10
   integer, parameter :: MAXSRCOBJ  = 50
   integer, parameter :: MAXMATOBJ  = 50
-  INTEGER, PARAMETER :: MAXLUMPOBJ = 50
+  integer, parameter :: MAXLUMPOBJ = 50
   integer, parameter :: MAXDIAGOBJ = 50
   integer, parameter :: MAXTIMER   = 10
+  integer, parameter :: MAXEBALCH  = 50
+  integer, parameter :: NUMEBALCH  = 3
 
   integer, parameter :: STRLNG=80                    ! max. string length
   integer, parameter :: LINELNG=160

@@ -11,6 +11,8 @@
 !    ReadMatDebyeObj
 !    StepEMatDebye
 !    StepHMatDebye
+!    SumJEMatDebye
+!    SumKHMatDebye
 !
 !----------------------------------------------------------------------
 ! =====================================================================
@@ -226,16 +228,15 @@ M4_IFELSE_TE({
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumJEMatDebye(mask, ncyc)
+  subroutine SumJEMatDebye(mask, ncyc, sum, idx, mode)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
-    real(kind=8) :: sum
-    integer :: ncyc, m, n
+    logical :: mode
+    real(kind=8) :: sum(MAXEBALCH)
+    integer :: ncyc, m, n, idx
    
     M4_MODLOOP_DECL({MATDEBYE},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
-
-    sum = 0
 
     M4_MODLOOP_EXPR({MATDEBYE},mat,{
 
@@ -254,7 +255,7 @@ M4_IFELSE_TE({
 
        if ( mask(i,j,k) ) then
 
-          sum = sum + ( &
+          sum(idx+1) = sum(idx+1) + ( &
 M4_IFELSE_TM({ M4_VOLEX(i,j,k) * w(1) * dble(Ex(i,j,k)) * dble( mat%Px(p,m) - mat%Px(p,n) ) / DT +},{0. +}) &
 M4_IFELSE_TM({ M4_VOLEY(i,j,k) * w(2) * dble(Ey(i,j,k)) * dble( mat%Py(p,m) - mat%Py(p,n) ) / DT +},{0. +}) &
 M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * dble(Ez(i,j,k)) * dble( mat%Pz(p,m) - mat%Pz(p,n) ) / DT  },{0.  }) &
@@ -264,22 +265,31 @@ M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * dble(Ez(i,j,k)) * dble( mat%Pz(p,m) - ma
 
        })      
 
+    idx = idx + NUMEBALCH
+
     })
     
-    SumJEMatDebye = sum
-    
-  end function SumJEMatDebye
+  end subroutine SumJEMatDebye
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumKHMatDebye(mask, ncyc)
+  subroutine SumKHMatDebye(mask, ncyc, sum, idx, mode)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
-    integer :: ncyc
+    integer :: ncyc, idx
+    logical :: mode
+    real(kind=8) :: sum(MAXEBALCH)
 
-    SumKHMatDebye = 0.
+    M4_MODLOOP_DECL({MATDEBYE},mat)
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
 
-  end function SumKHMatDebye
+    M4_MODLOOP_EXPR({MATDEBYE},mat,{
+
+    idx = idx + NUMEBALCH
+
+    })
+
+  end subroutine SumKHMatDebye
  
 !----------------------------------------------------------------------
 
@@ -323,6 +333,7 @@ end module matdebye
 
 ! Authors:  J.Hamm 
 ! Modified: 14/1/2008
+! Changed: 7/07/2011 S.Wuestner
 !
 ! =====================================================================
 

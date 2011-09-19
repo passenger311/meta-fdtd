@@ -11,6 +11,8 @@
 !    ReadMatDrudeObj
 !    StepEMatDrude
 !    StepHMatDrude
+!    SumJEMatDrude
+!    SumKHMatDrude
 !
 !----------------------------------------------------------------------
 
@@ -304,16 +306,16 @@ M4_IFELSE_TE({
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumJEMatDrude(mask, ncyc)
+  subroutine SumJEMatDrude(mask, ncyc, sum, idx, mode)
+
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
-    real(kind=8) :: sum
-    integer :: ncyc, m, n
+    logical :: mode
+    real(kind=8) :: sum(MAXEBALCH)
+    integer :: ncyc, m, n, idx
    
     M4_MODLOOP_DECL({MATDRUDE},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
-
-    sum = 0
 
     M4_MODLOOP_EXPR({MATDRUDE},mat,{
 
@@ -335,7 +337,7 @@ M4_IFELSE_TE({
 
           if ( mat%order .eq. 1 ) then ! 1. order equation
 
-             sum = sum + ( &
+             sum(idx+1) = sum(idx+1) + ( &
 M4_IFELSE_TM({    M4_VOLEX(i,j,k) * w(1) * dble(Ex(i,j,k)) * dble(mat%Jx(p,1)) + },{0. +}) &
 M4_IFELSE_TM({    M4_VOLEY(i,j,k) * w(2) * dble(Ey(i,j,k)) * dble(mat%Jy(p,1)) + },{0. +}) &
 M4_IFELSE_TE({    M4_VOLEZ(i,j,k) * w(3) * dble(Ez(i,j,k)) * dble(mat%Jz(p,1))   },{0.  }) &
@@ -343,7 +345,7 @@ M4_IFELSE_TE({    M4_VOLEZ(i,j,k) * w(3) * dble(Ez(i,j,k)) * dble(mat%Jz(p,1))  
              
           else
 
-             sum = sum + M4_VOL(i,j,k) * ( &
+             sum(idx+1) = sum(idx+1) + M4_VOL(i,j,k) * ( &
 M4_IFELSE_TM({    M4_VOLEX(i,j,k) * w(1) * dble(Ex(i,j,k)) * dble( mat%Jx(p,m) - mat%Jx(p,n) ) / DT + },{0. + }) &
 M4_IFELSE_TM({    M4_VOLEY(i,j,k) * w(2) * dble(Ey(i,j,k)) * dble( mat%Jy(p,m) - mat%Jy(p,n) ) / DT + },{0. + }) &
 M4_IFELSE_TE({    M4_VOLEZ(i,j,k) * w(3) * dble(Ez(i,j,k)) * dble( mat%Jz(p,m) - mat%Jz(p,n) ) / DT   },{0.   }) &
@@ -355,22 +357,31 @@ M4_IFELSE_TE({    M4_VOLEZ(i,j,k) * w(3) * dble(Ez(i,j,k)) * dble( mat%Jz(p,m) -
 
        })      
 
+    idx = idx + NUMEBALCH
+
     })
     
-    SumJEMatDrude = sum
-    
-  end function SumJEMatDrude
+  end subroutine SumJEMatDrude
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumKHMatDrude(mask, ncyc)
+  subroutine SumKHMatDrude(mask, ncyc, sum, idx, mode)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
-    integer :: ncyc
+    integer :: ncyc, idx
+    logical :: mode
+    real(kind=8) :: sum(MAXEBALCH)
 
-    SumKHMatDrude = 0.
+    M4_MODLOOP_DECL({MATDRUDE},mat)
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
 
-  end function SumKHMatDrude
+    M4_MODLOOP_EXPR({MATDRUDE},mat,{
+
+    idx = idx + NUMEBALCH
+
+    })
+
+  end subroutine SumKHMatDrude
  
 !----------------------------------------------------------------------
 
@@ -417,6 +428,7 @@ end module matdrude
 
 ! Authors:  K.Boehringer, J.Hamm 
 ! Modified: 14/1/2008
+! Changed: 7/07/2011 S.Wuestner
 !
 ! =====================================================================
 

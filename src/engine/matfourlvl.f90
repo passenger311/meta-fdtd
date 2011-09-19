@@ -11,7 +11,8 @@
 !    ReadMatFourlvlObj
 !    StepEMatFourlvl
 !    StepHMatFourlvl
-!    SumJEKHMatFourlvl
+!    SumJEMatFourlvl
+!    SumKHMatFourlvl
 !
 !----------------------------------------------------------------------
 
@@ -43,7 +44,7 @@
 !
 ! c1a = ( 2. - omegala**2 * DT**2 ) / ( 1 + gammala*dt )
 ! c2a = ( gammala*dt - 1 ) / ( 1 + gammala*dt )
-! c3a = 2 * omegara * Ma / hbar / ( 1/dt^2 + gammala/dt )
+! c3a = 2 * omegara * conv1 * Ma^2 / ( 1/dt^2 + gammala/dt )
 ! 
 ! N update eq: ( 4 x 4 matrix equation  A * N(n+1) = B * N(n) + C )
 !
@@ -127,6 +128,10 @@ module matfourlvl
   real(kind=8) :: ab11, ab21, ab22, ab31, ab32, ab33, ab41, ab42, ab43, ab44
   real(kind=8) :: ac11, ac21, ac22, ac31, ac32, ac33, ac41, ac42, ac43, ac44
   real(kind=8) :: x1fac1, x1fac2, x2fac1, x2fac2
+
+  ! coefficients for energy balance module
+  real(kind=8) :: d1a, d2a , d3a, d4a
+  real(kind=8) :: d1b, d2b , d3b, d4b
   
   ! polarisation field 
   M4_FTYPE, dimension(:,:), pointer :: Pax, Pay, Paz
@@ -137,6 +142,9 @@ module matfourlvl
   real(kind=8), dimension(:), pointer :: N1
   real(kind=8), dimension(:), pointer :: N2
   real(kind=8), dimension(:), pointer :: N3
+
+  ! Lorenz-Lorentz field due to epsilon included?
+  real(kind=8) :: epsLFE
 
   })
 
@@ -181,6 +189,8 @@ contains
     mat%gamma32 = d(2)
     mat%gamma21 = d(3)
     mat%gamma10 = d(4)
+
+    call readfloat(funit, lcount, mat%epsLFE)
 
     })
 
@@ -241,15 +251,29 @@ contains
 ! for polarisation integration
        mat%c1a = ( 2. - mat%omegala**2 * DT**2 ) / ( 1 + mat%gammala * DT )
        mat%c2a = ( mat%gammala * DT - 1. ) / ( 1. + mat%gammala * DT )
-       mat%c3a = 2. * mat%omegara * conv1 * mat%Ma**2 / ( 1/DT**2 + mat%gammala * DT )
+       mat%c3a = 2. * mat%omegara * conv1 * mat%Ma**2 / ( 1/DT**2 + mat%gammala / DT )
        mat%c1b = ( 2. - mat%omegalb**2 * DT**2 ) / ( 1 + mat%gammalb * DT )
        mat%c2b = ( mat%gammalb * DT - 1 ) / ( 1 + mat%gammalb * DT )
-       mat%c3b = 2. * mat%omegarb * conv1 * mat%Mb**2 / ( 1/DT**2 + mat%gammalb * DT )
+       mat%c3b = 2. * mat%omegarb * conv1 * mat%Mb**2 / ( 1/DT**2 + mat%gammalb / DT )
+
+! for energy balance calculation
+       mat%d1a =   0.5 * mat%gammala / ( 2. * mat%omegara * conv1 * mat%Ma**2 * DT ) * ( -4. + mat%omegala**2 * DT**2 * &
+                 ( 1. - mat%gammala * DT ) ) / ( 1. - mat%gammala**2 * DT**2 )
+       mat%d2a = - 0.5 * mat%gammala / ( 2 * mat%omegara * conv1 * mat%Ma**2 * DT ) * ( -4 + mat%omegala**2 * DT**2 * &
+                 ( 1. + mat%gammala * DT ) ) / ( 1. - mat%gammala**2 * DT**2 )
+       mat%d3a = 1. / ( 1. + mat%gammala * DT )
+       mat%d4a = 1. / ( 1. - mat%gammala * DT )
+       mat%d1b =   0.5 * mat%gammalb / ( 2. * mat%omegarb * conv1 * mat%Mb**2 * DT ) * ( -4. + mat%omegalb**2 * DT**2 * &
+                 ( 1. - mat%gammalb * DT ) ) / ( 1. - mat%gammalb**2 * DT**2 )
+       mat%d2b = - 0.5 * mat%gammalb / ( 2 * mat%omegarb * conv1 * mat%Mb**2 * DT ) * ( -4. + mat%omegalb**2 * DT**2 * &
+                 ( 1. + mat%gammalb * DT ) ) / ( 1. - mat%gammalb**2 * DT**2 )
+       mat%d3b = 1. / ( 1. + mat%gammalb * DT )
+       mat%d4b = 1. / ( 1. - mat%gammalb * DT )
 
 ! for density integration
-       mat%x1fac1 = 1. / 2. / mat%omegarb / DT * conv2
+       mat%x1fac1 = 1. / 2. / mat%omegarb / DT * conv2 
        mat%x1fac2 = mat%x1fac1 * DT * mat%gammalb / 2.
-       mat%x2fac1 = 1. / 2. / mat%omegara / DT * conv2
+       mat%x2fac1 = 1. / 2. / mat%omegara / DT * conv2 
        mat%x2fac2 = mat%x2fac2 * DT * mat%gammala / 2.
        g10 = mat%gamma10 * DT
        g21 = mat%gamma21 * DT
@@ -351,10 +375,10 @@ contains
       
         M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-        ! calculate local field enhancement due to dielectric
-        lEx = Ex(i,j,k) * ( 2. + 1./epsinvx(i,j,k) ) / 3.
-        lEy = Ey(i,j,k) * ( 2. + 1./epsinvy(i,j,k) ) / 3.
-        lEz = Ez(i,j,k) * ( 2. + 1./epsinvz(i,j,k) ) / 3.
+        ! calculate local field enhancement due to dielectric if mat%epsLFE=1
+        lEx = Ex(i,j,k) * ( mat%epsLFE * ( 2. + 1./epsinvx(i,j,k) ) / 3. + ( 1. - mat%epsLFE ) )
+        lEy = Ey(i,j,k) * ( mat%epsLFE * ( 2. + 1./epsinvy(i,j,k) ) / 3. + ( 1. - mat%epsLFE ) )
+        lEz = Ez(i,j,k) * ( mat%epsLFE * ( 2. + 1./epsinvz(i,j,k) ) / 3. + ( 1. - mat%epsLFE ) )
 
         ! calculate second part of the density response (after the new E field got calculated)
         pema = mat%Pax(p,m) * lEx + mat%Pay(p,m) * lEy + mat%Paz(p,m) * lEz
@@ -388,7 +412,7 @@ contains
         n3 = mat%N3(p)
         n2 = mat%N2(p)
         n1 = mat%N1(p)
-        
+       
         mat%N3(p) = mat%ab11 * n3 + mat%ac11 * x1
         mat%N2(p) = mat%ab21 * n3 + mat%ab22 * n2 + mat%ac21 * x1 + mat%ac22 * x2
         mat%N1(p) = mat%ab31 * n3 + mat%ab32 * n2 + mat%ab33 * n1 + mat%ac31 * x1 &
@@ -431,13 +455,13 @@ contains
        ! J(*,m) is P(n+1) and J(*,n) is P(n)      
 
 M4_IFELSE_TM({
-       Ex(i,j,k) = Ex(i,j,k) - w(1) * epsinvx(i,j,k) * mat%N * (  ( mat%Pax(p,m) - mat%Pax(p,n) )  + &
+       Ex(i,j,k) = Ex(i,j,k) - w(1) * epsinvx(i,j,k) * mat%N * (  ( mat%Pax(p,m) - mat%Pax(p,n) ) + &
            ( mat%Pbx(p,m) - mat%Pbx(p,n) ) )
        Ey(i,j,k) = Ey(i,j,k) - w(2) * epsinvy(i,j,k) * mat%N * (  ( mat%Pay(p,m) - mat%Pay(p,n) ) + &
-           ( mat%Pby(p,m) - mat%Pby(p,n) ) )
+           ( mat%Pby(p,m) - mat%Pby(p,n) ) ) 
 })
 M4_IFELSE_TE({
-       Ez(i,j,k) = Ez(i,j,k) - w(3) * epsinvz(i,j,k) * mat%N * (  ( mat%Paz(p,m) - mat%Paz(p,n) )  + &
+       Ez(i,j,k) = Ez(i,j,k) - w(3) * epsinvz(i,j,k) * mat%N * (  ( mat%Paz(p,m) - mat%Paz(p,n) ) + &
            ( mat%Pbz(p,m) - mat%Pbz(p,n) ) )
 })
        })      
@@ -448,18 +472,23 @@ M4_IFELSE_TE({
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumJEMatFourlvl(mask, ncyc)
+  subroutine SumJEMatFourlvl(mask, ncyc, sum, idx, mode)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
-    real(kind=8) :: sum
-    integer :: ncyc, m, n
+    logical :: mode
+    real(kind=8) :: sum(MAXEBALCH),sum1a,sum1b,sum2a,sum2b,ninva,ninvb,d34a,d34b
+    integer :: ncyc, m, n, idx
    
     M4_MODLOOP_DECL({MATFOURLVL},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
 
-    sum = 0
 
     M4_MODLOOP_EXPR({MATFOURLVL},mat,{
+
+    sum1a = 0.
+    sum1b = 0.
+    sum2a = 0.
+    sum2b = 0.
 
        ! this loops over all mat structures, setting mat
 
@@ -468,43 +497,112 @@ M4_IFELSE_TE({
        n = mod(ncyc-1+2,2) + 1
        m = mod(ncyc+2,2) + 1
 
+!       if ( mode ) then
+!          d34a = mat%d4a
+!          d34b = mat%d4b
+!       else
+!          d34a = mat%d3a
+!          d34b = mat%d3b
+!       endif
+
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-       
-       ! correct E(n+1) using E(n+1)_fdtd and P(n+1),P(n)
 
        ! J(*,m) is P(n+1) and J(*,n) is P(n)      
 
        if ( mask(i,j,k) ) then
 
-          sum = sum + ( &
-M4_IFELSE_TM({ M4_VOLEX(i,j,k) * w(1) * Ex(i,j,k) * mat%N * (  ( mat%Pax(p,m) - mat%Pax(p,n) ) + &
- ( mat%Pbx(p,m) - mat%Pbx(p,n) ) ) / DT +}, {0. +}) &
-M4_IFELSE_TM({ M4_VOLEY(i,j,k) * w(2) * Ey(i,j,k) * mat%N * (  ( mat%Pay(p,m) - mat%Pay(p,n) ) + &
- ( mat%Pby(p,m) - mat%Pby(p,n) ) ) / DT +}, {0. +}) &
-M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * Ez(i,j,k) * mat%N * (  ( mat%Paz(p,m) - mat%Paz(p,n) ) + &
- ( mat%Pbz(p,m) - mat%Pbz(p,n) ) ) / DT  }, {0.  }) &
+!          ninva = mat%N1(p) - mat%N2(p)
+!          ninvb = mat%N0(p) - mat%N3(p)
+!
+!          sum1a = sum1a + ( &
+!4_IFELSE_TM({ !4_VOLEX(i,j,k) * w(1) * d34a * Ex(i,j,k) * mat%N *( mat%Pax(p,m) - mat%Pax(p,n) ) / DT + &
+!               !4_VOLEY(i,j,k) * w(2) * d34a * Ey(i,j,k) * mat%N *( mat%Pay(p,m) - mat%Pay(p,n) ) / DT +},{0. +}) &
+!4_IFELSE_TE({ !4_VOLEZ(i,j,k) * w(3) * d34a * Ez(i,j,k) * mat%N *( mat%Paz(p,m) - mat%Paz(p,n) ) / DT  },{0.  }) &
+!               )
+
+!          if ( ninva .NE. 0 ) then ! if ninv=0 then P should also equal 0 -> term would give NAN rather than 0
+
+!             sum1a = sum1a + ( &
+!4_IFELSE_TM({ !4_VOLEX(i,j,k) * w(1) * ( mat%d1a * mat%Pax(p,m) + mat%d2a * mat%Pax(p,n) ) / ninva / &
+!               ( mat%epsLFE * ( 2. + 1./epsinvx(i,j,k) ) / 3. + ( 1. - mat%epsLFE ) ) * &
+!               mat%N * ( mat%Pax(p,m) - mat%Pax(p,n) ) / DT + &
+!               !4_VOLEY(i,j,k) * w(2) * ( mat%d1a * mat%Pay(p,m) + mat%d2a * mat%Pay(p,n) ) / ninva / &
+!               ( mat%epsLFE * ( 2. + 1./epsinvy(i,j,k) ) / 3. + ( 1. - mat%epsLFE ) ) * &
+!               mat%N * ( mat%Pay(p,m) - mat%Pay(p,n) ) / DT +},{0. +}) &
+!4_IFELSE_TE({ !4_VOLEZ(i,j,k) * w(3) * ( mat%d1a * mat%Paz(p,m) + mat%d2a * mat%Paz(p,n) ) / ninva / &
+!               ( mat%epsLFE * ( 2. + 1./epsinvz(i,j,k) ) / 3. + ( 1. - mat%epsLFE ) ) * &
+!               mat%N * ( mat%Paz(p,m) - mat%Paz(p,n) ) / DT  },{0.  }) &
+!                  )
+
+!          endif
+
+!          sum1b = sum1b + ( &
+!4_IFELSE_TM({ !4_VOLEX(i,j,k) * w(1) * d34b * Ex(i,j,k) * mat%N *( mat%Pbx(p,m) - mat%Pbx(p,n) ) / DT + &
+               !4_VOLEY(i,j,k) * w(2) * d34b * Ey(i,j,k) * mat%N *( mat%Pby(p,m) - mat%Pby(p,n) ) / DT +},{0. +}) &
+!4_IFELSE_TE({ !4_VOLEZ(i,j,k) * w(3) * d34b * Ez(i,j,k) * mat%N *( mat%Pbz(p,m) - mat%Pbz(p,n) ) / DT  },{0.  }) &
+!               )
+
+!          if ( ninvb .NE. 0 ) then ! if ninv=0 then P should also equal 0 -> term would give NAN rather than 0
+
+!             sum1b = sum1b + ( &
+!4_IFELSE_TM({ !4_VOLEX(i,j,k) * w(1) * ( mat%d1b * mat%Pbx(p,m) + mat%d2b * mat%Pbx(p,n) ) / ninvb / &
+!               ( mat%epsLFE * ( 2. + 1./epsinvx(i,j,k) ) / 3. + ( 1. - mat%epsLFE ) ) * &
+!               mat%N * ( mat%Pbx(p,m) - mat%Pbx(p,n) ) / DT + &
+!               !4_VOLEY(i,j,k) * w(2) * ( mat%d1b * mat%Pby(p,m) + mat%d2b * mat%Pby(p,n) ) / ninvb / &
+!               ( mat%epsLFE * ( 2. + 1./epsinvy(i,j,k) ) / 3. + ( 1. - mat%epsLFE ) ) * &
+!               mat%N * ( mat%Pby(p,m) - mat%Pby(p,n) ) / DT +},{0. +}) &
+!4_IFELSE_TE({ !4_VOLEZ(i,j,k) * w(3) * ( mat%d1b * mat%Pbz(p,m) + mat%d2b * mat%Pbz(p,n) ) / ninvb / &
+!               ( mat%epsLFE * ( 2. + 1./epsinvz(i,j,k) ) / 3. + ( 1. - mat%epsLFE ) ) * &
+!               mat%N * ( mat%Pbz(p,m) - mat%Pbz(p,n) ) / DT  },{0.  }) &
+!                  )
+
+!          endif
+
+          sum2a = sum2a + ( &
+M4_IFELSE_TM({ M4_VOLEX(i,j,k) * w(1) * Ex(i,j,k) * mat%N * ( mat%Pax(p,m) - mat%Pax(p,n) ) / DT + &
+               M4_VOLEY(i,j,k) * w(2) * Ey(i,j,k) * mat%N * ( mat%Pay(p,m) - mat%Pay(p,n) ) / DT +},{0. +}) &
+M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * Ez(i,j,k) * mat%N * ( mat%Paz(p,m) - mat%Paz(p,n) ) / DT  },{0.  }) &
                )
+
+          sum2b = sum2b + ( &
+M4_IFELSE_TM({ M4_VOLEX(i,j,k) * w(1) * Ex(i,j,k) * mat%N * ( mat%Pbx(p,m) - mat%Pbx(p,n) ) / DT + &
+               M4_VOLEY(i,j,k) * w(2) * Ey(i,j,k) * mat%N * ( mat%Pby(p,m) - mat%Pby(p,n) ) / DT +},{0. +}) &
+M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * Ez(i,j,k) * mat%N * ( mat%Pbz(p,m) - mat%Pbz(p,n) ) / DT  },{0.  }) &
+               )
+
        endif
 
        })      
 
+!    sum(idx) = sum(idx)  + sum1a + sum1b
+!    sum(idx+1) = sum(idx+1) + sum2a !- sum1a
+!    sum(idx+2) = sum(idx+2) + sum2b !- sum1b
+    idx = idx + NUMEBALCH
+
     })
-    
-!    SumJEMatFourlvl = sum
-    SumJEMatFourlvl = 0.
-    
-  end function SumJEMatFourlvl
+
+
+  end subroutine SumJEMatFourlvl
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumKHMatFourlvl(mask, ncyc)
+  subroutine SumKHMatFourlvl(mask, ncyc, sum, idx, mode)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
-    integer :: ncyc
+    real(kind=8) :: sum(MAXEBALCH)
+    logical :: mode
+    integer :: ncyc, idx
 
-    SumKHMatFourlvl = 0.
+    M4_MODLOOP_DECL({MATFOURLVL},mat)
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
 
-  end function SumKHMatFourlvl
+    M4_MODLOOP_EXPR({MATFOURLVL},mat,{
+
+    idx = idx + NUMEBALCH
+
+    })
+
+  end subroutine SumKHMatFourlvl
  
 !----------------------------------------------------------------------
 
@@ -562,6 +660,7 @@ end module matfourlvl
 
 ! Authors:  A.Pusch, J.Hamm 
 ! Modified: 22/03/2010
+! Changed: 7/07/2011 S.Wuestner
 !
 ! =====================================================================
 

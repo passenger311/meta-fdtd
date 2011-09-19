@@ -374,60 +374,144 @@ M4_IFELSE_TE({
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumJEMatlvbloch(mask, ncyc)
+  subroutine SumJEMatlvbloch(mask, ncyc, sum, idx, mode)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
-    real(kind=8) :: sum
-    integer :: ncyc, m, n
+    logical :: mode
+    real(kind=8) :: sum(MAXEBALCH),sum1a,sum1b,sum2a,sum2b,ninva,ninvb,d34a,d34b
+    integer :: ncyc, m, n, idx
    
-    M4_MODLOOP_DECL({MATLVBLOCH},mat)
+    M4_MODLOOP_DECL({MATlvbloch},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
 
-    sum = 0
 
-    M4_MODLOOP_EXPR({MATLVBLOCH},mat,{
+    M4_MODLOOP_EXPR({MATlvbloch},mat,{
+
+    sum1a = 0.
+    sum1b = 0.
+    sum2a = 0.
+    sum2b = 0.
 
        ! this loops over all mat structures, setting mat
 
     M4_MODOBJ_GETREG(mat,reg)
 
-       n = mod(ncyc-1+2,2) + 1
-       m = mod(ncyc+2,2) + 1
+!       n = mod(ncyc-1+2,2) + 1
+!       m = mod(ncyc+2,2) + 1
 
-       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+!       if ( mode ) then
+!          d34a = mat%d4a
+!          d34b = mat%d4b
+!       else
+!          d34a = mat%d3a
+!          d34b = mat%d3b
+!       endif
+
+!       !4_REGLOOP_EXPR(reg,p,i,j,k,w,{
        
        ! correct E(n+1) using E(n+1)_fdtd and P(n+1),P(n)
 
        ! J(*,m) is P(n+1) and J(*,n) is P(n)      
 
-       if ( mask(i,j,k) ) then
+!       if ( mask(i,j,k) ) then
+!
+!          ninva = mat%N1(p) - mat%N2(p)
+!          ninvb = mat%N0(p) - mat%N3(p)
+!
+!          sum1a = sum1a + ( &
+!4_IFELSE_TM({ !4_VOLEX(i,j,k) * w(1) * d34a * Ex(i,j,k) * mat%N *( mat%Pax(p,m) - mat%Pax(p,n) ) / DT + &
+!               !4_VOLEY(i,j,k) * w(2) * d34a * Ey(i,j,k) * mat%N *( mat%Pay(p,m) - mat%Pay(p,n) ) / DT +},{0. +}) &
+!4_IFELSE_TE({ !4_VOLEZ(i,j,k) * w(3) * d34a * Ez(i,j,k) * mat%N *( mat%Paz(p,m) - mat%Paz(p,n) ) / DT  },{0.  }) &
+!               )
 
-          sum = sum + ( &
-M4_IFELSE_TM({ M4_VOLEX(i,j,k) * w(1) * dble(Ex(i,j,k)) * dble( mat%M(1) * ( mat%P(p,m) - mat%P(p,n) ) ) / DT +},{0. +}) &
-M4_IFELSE_TM({ M4_VOLEY(i,j,k) * w(2) * dble(Ey(i,j,k)) * dble( mat%M(2) * ( mat%P(p,m) - mat%P(p,n) ) ) / DT +},{0. +}) &
-M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * dble(Ez(i,j,k)) * dble( mat%M(3) * ( mat%P(p,m) - mat%P(p,n) ) ) / DT  },{0.  }) &
-               )
+!          if ( ninva .NE. 0 ) then ! if ninv=0 then P should also equal 0 -> term would give NAN rather than 0
 
-       endif
+!             sum1a = sum1a + ( &
+!4_IFELSE_TM({ !4_VOLEX(i,j,k) * w(1) * ( mat%d1a * mat%Pax(p,m) + mat%d2a * mat%Pax(p,n) ) / ninva / &
+!               ( mat%epsLFE * ( 2. + 1./epsinvx(i,j,k) ) / 3. + ( 1. - mat%epsLFE ) ) * &
+!               mat%N * ( mat%Pax(p,m) - mat%Pax(p,n) ) / DT + &
+!               !4_VOLEY(i,j,k) * w(2) * ( mat%d1a * mat%Pay(p,m) + mat%d2a * mat%Pay(p,n) ) / ninva / &
+!               ( mat%epsLFE * ( 2. + 1./epsinvy(i,j,k) ) / 3. + ( 1. - mat%epsLFE ) ) * &
+!               mat%N * ( mat%Pay(p,m) - mat%Pay(p,n) ) / DT +},{0. +}) &
+!4_IFELSE_TE({ !4_VOLEZ(i,j,k) * w(3) * ( mat%d1a * mat%Paz(p,m) + mat%d2a * mat%Paz(p,n) ) / ninva / &
+!               ( mat%epsLFE * ( 2. + 1./epsinvz(i,j,k) ) / 3. + ( 1. - mat%epsLFE ) ) * &
+!               mat%N * ( mat%Paz(p,m) - mat%Paz(p,n) ) / DT  },{0.  }) &
+!                  )
 
-       })      
+!          endif
+
+!          sum1b = sum1b + ( &
+!4_IFELSE_TM({ !4_VOLEX(i,j,k) * w(1) * d34b * Ex(i,j,k) * mat%N *( mat%Pbx(p,m) - mat%Pbx(p,n) ) / DT + &
+               !4_VOLEY(i,j,k) * w(2) * d34b * Ey(i,j,k) * mat%N *( mat%Pby(p,m) - mat%Pby(p,n) ) / DT +},{0. +}) &
+!4_IFELSE_TE({ !4_VOLEZ(i,j,k) * w(3) * d34b * Ez(i,j,k) * mat%N *( mat%Pbz(p,m) - mat%Pbz(p,n) ) / DT  },{0.  }) &
+!               )
+
+!          if ( ninvb .NE. 0 ) then ! if ninv=0 then P should also equal 0 -> term would give NAN rather than 0
+
+!             sum1b = sum1b + ( &
+!4_IFELSE_TM({ !4_VOLEX(i,j,k) * w(1) * ( mat%d1b * mat%Pbx(p,m) + mat%d2b * mat%Pbx(p,n) ) / ninvb / &
+!               ( mat%epsLFE * ( 2. + 1./epsinvx(i,j,k) ) / 3. + ( 1. - mat%epsLFE ) ) * &
+!               mat%N * ( mat%Pbx(p,m) - mat%Pbx(p,n) ) / DT + &
+!               !4_VOLEY(i,j,k) * w(2) * ( mat%d1b * mat%Pby(p,m) + mat%d2b * mat%Pby(p,n) ) / ninvb / &
+!               ( mat%epsLFE * ( 2. + 1./epsinvy(i,j,k) ) / 3. + ( 1. - mat%epsLFE ) ) * &
+!               mat%N * ( mat%Pby(p,m) - mat%Pby(p,n) ) / DT +},{0. +}) &
+!4_IFELSE_TE({ !4_VOLEZ(i,j,k) * w(3) * ( mat%d1b * mat%Pbz(p,m) + mat%d2b * mat%Pbz(p,n) ) / ninvb / &
+!               ( mat%epsLFE * ( 2. + 1./epsinvz(i,j,k) ) / 3. + ( 1. - mat%epsLFE ) ) * &
+!               mat%N * ( mat%Pbz(p,m) - mat%Pbz(p,n) ) / DT  },{0.  }) &
+!                  )
+
+!          endif
+
+!          sum2a = sum2a + ( &
+!4_IFELSE_TM({ !4_VOLEX(i,j,k) * w(1) * Ex(i,j,k) * mat%N * ( mat%Pax(p,m) - mat%Pax(p,n) ) / DT + &
+!               !4_VOLEY(i,j,k) * w(2) * Ey(i,j,k) * mat%N * ( mat%Pay(p,m) - mat%Pay(p,n) ) / DT +},{0. +}) &
+!4_IFELSE_TE({ !4_VOLEZ(i,j,k) * w(3) * Ez(i,j,k) * mat%N * ( mat%Paz(p,m) - mat%Paz(p,n) ) / DT  },{0.  }) &
+!               )
+
+!          sum2b = sum2b + ( &
+!4_IFELSE_TM({ !4_VOLEX(i,j,k) * w(1) * Ex(i,j,k) * mat%N * ( mat%Pbx(p,m) - mat%Pbx(p,n) ) / DT + &
+!               !4_VOLEY(i,j,k) * w(2) * Ey(i,j,k) * mat%N * ( mat%Pby(p,m) - mat%Pby(p,n) ) / DT +},{0. +}) &
+!4_IFELSE_TE({ !4_VOLEZ(i,j,k) * w(3) * Ez(i,j,k) * mat%N * ( mat%Pbz(p,m) - mat%Pbz(p,n) ) / DT  },{0.  }) &
+!               )
+
+!       endif
+
+!       })      
+
+!    sum1a = sum1a
+!    sum1b = sum1b
+!    sum2a = sum2a
+!    sum2b = sum2b
+
+!    sum(idx) = sum(idx)  + sum1a + sum1b
+!    sum(idx+1) = sum(idx+1) + sum2a - sum1a
+!    sum(idx+2) = sum(idx+2) + sum2b - sum1b
+    idx = idx + NUMEBALCH
 
     })
-    
-    SumJEMatlvbloch = sum
-    
-  end function SumJEMatlvbloch
+
+
+  end subroutine SumJEMatlvbloch
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumKHMatlvbloch(mask, ncyc)
+  subroutine SumKHMatlvbloch(mask, ncyc, sum, idx, mode)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
-    integer :: ncyc
+    real(kind=8) :: sum(MAXEBALCH)
+    logical :: mode
+    integer :: ncyc, idx
 
-    SumKHMatlvbloch = 0.
+    M4_MODLOOP_DECL({MATlvbloch},mat)
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
 
-  end function SumKHMatlvbloch
+    M4_MODLOOP_EXPR({MATlvbloch},mat,{
+
+    idx = idx + NUMEBALCH
+
+    })
+
+  end subroutine SumKHMatlvbloch
  
 !----------------------------------------------------------------------
 

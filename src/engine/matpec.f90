@@ -11,7 +11,8 @@
 !    ReadMatPecObj
 !    StepEMatPec
 !    StepHMatPec
-!    SumJEKHMatPec
+!    SumJEMatPec
+!    SumKHMatPec
 !
 !----------------------------------------------------------------------
 
@@ -120,25 +121,25 @@ contains
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumJEMatPec(mask, ncyc)
+  subroutine SumJEMatPec(mask, ncyc, sum, idx, mode)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
-    integer :: ncyc
+    logical :: mode
+    integer :: ncyc, idx
+    real(kind=8) :: sum(MAXEBALCH)
  
-    SumJEMatPec = 0.
-    
-  end function SumJEMatPec
+  end subroutine SumJEMatPec
 
 !----------------------------------------------------------------------
 
-  real(kind=8) function SumKHMatPec(mask, ncyc)
+  subroutine SumKHMatPec(mask, ncyc, sum, idx, mode)
 
     logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
-    integer :: ncyc
+    integer :: ncyc, idx
+    logical :: mode
+    real(kind=8) :: sum(MAXEBALCH)
 
-    SumKHMatPec = 0.
-
-  end function SumKHMatPec
+  end subroutine SumKHMatPec
  
 !----------------------------------------------------------------------
 
@@ -174,6 +175,7 @@ end module matpec
 
 ! Authors:  J.Hamm 
 ! Modified: 15/02/2008
+! Changed: 7/07/2011 S.Wuestner
 !
 ! =====================================================================
 
