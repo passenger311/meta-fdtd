@@ -67,8 +67,12 @@ contains
     M4_WRITE_DBG({"write data ",TRIM(out%filename), " ",TRIM(out%fn)})
 
     select case (out%fn)
-    case('E')
+    case('En')
        call WriteValuesDiagebalmode(out, 1)
+    case('E')
+       call WriteValuesDiagebalmode(out, 2)
+    case('H')
+       call WriteValuesDiagebalmode(out, 3)
     case default
        write(out%funit,*) "OUTPUT FUNCTION NOT IMPLEMENTED"
     end select
@@ -96,33 +100,47 @@ contains
 
       sum = 0.
 
-      write(out%funit,"(A,A)") "SCALARS scalars float 1"
-      write(out%funit,*) "LOOKUP_TABLE default"
-      
+      select case (mode)
+      case(1)
+         write(out%funit,"(A,A)") "SCALARS scalars float 1"
+         write(out%funit,*) "LOOKUP_TABLE default"
+      case (2)
+         write(out%funit,"(A)") "VECTORS vectors float"
+      case (3)
+         write(out%funit,"(A)") "VECTORS vectors float"
+      end select
 
       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-      
-      en = ( M4_VOLEX(i,j,k) / epsinvx(i,j,k) * &
-            (REALPART(diag%buf_E(diag%h_pos_E,i,j,k,0))**2+&
-            IMAGPART(diag%buf_E(diag%h_pos_E,i,j,k,0))**2) + &
-            M4_VOLEY(i,j,k) / epsinvy(i,j,k) * &
-            (REALPART(diag%buf_E(diag%h_pos_E,i,j,k,1))**2+&
-            IMAGPART(diag%buf_E(diag%h_pos_E,i,j,k,1))**2) + &
-            M4_VOLEZ(i,j,k) / epsinvz(i,j,k) * &
-            (REALPART(diag%buf_E(diag%h_pos_E,i,j,k,2))**2+&
-            IMAGPART(diag%buf_E(diag%h_pos_E,i,j,k,2))**2) + &
-            M4_VOLHX(i,j,k) / M4_MUINVX(i,j,k) * &
-            (REALPART(diag%buf_H(diag%h_pos_H,i,j,k,0))**2+&
-            IMAGPART(diag%buf_H(diag%h_pos_H,i,j,k,0))**2) + &
-            M4_VOLHY(i,j,k) / M4_MUINVY(i,j,k) * &
-            (REALPART(diag%buf_H(diag%h_pos_H,i,j,k,1))**2+&
-            IMAGPART(diag%buf_H(diag%h_pos_H,i,j,k,1))**2) + &
-            M4_VOLHZ(i,j,k) / M4_MUINVZ(i,j,k) * &
-            (REALPART(diag%buf_H(diag%h_pos_H,i,j,k,2))**2+&
-            IMAGPART(diag%buf_H(diag%h_pos_H,i,j,k,2))**2) )
-      write(out%funit,"(4E15.6E3)") real(en)
-         
-           
+      select case (mode)
+      case(1)
+         en = ( M4_VOLEX(i,j,k) / epsinvx(i,j,k) * &
+              (REALPART(diag%buf_E(diag%h_pos_E,i,j,k,0))**2+&
+              IMAGPART(diag%buf_E(diag%h_pos_E,i,j,k,0))**2) + &
+              M4_VOLEY(i,j,k) / epsinvy(i,j,k) * &
+              (REALPART(diag%buf_E(diag%h_pos_E,i,j,k,1))**2+&
+              IMAGPART(diag%buf_E(diag%h_pos_E,i,j,k,1))**2) + &
+              M4_VOLEZ(i,j,k) / epsinvz(i,j,k) * &
+              (REALPART(diag%buf_E(diag%h_pos_E,i,j,k,2))**2+&
+              IMAGPART(diag%buf_E(diag%h_pos_E,i,j,k,2))**2) + &
+              M4_VOLHX(i,j,k) / M4_MUINVX(i,j,k) * &
+              (REALPART(diag%buf_H(diag%h_pos_H,i,j,k,0))**2+&
+              IMAGPART(diag%buf_H(diag%h_pos_H,i,j,k,0))**2) + &
+              M4_VOLHY(i,j,k) / M4_MUINVY(i,j,k) * &
+              (REALPART(diag%buf_H(diag%h_pos_H,i,j,k,1))**2+&
+              IMAGPART(diag%buf_H(diag%h_pos_H,i,j,k,1))**2) + &
+              M4_VOLHZ(i,j,k) / M4_MUINVZ(i,j,k) * &
+              (REALPART(diag%buf_H(diag%h_pos_H,i,j,k,2))**2+&
+              IMAGPART(diag%buf_H(diag%h_pos_H,i,j,k,2))**2) )
+         write(out%funit,"(4E15.6E3)") real(en)
+      case (2)
+         write(out%funit,"(3E14.6E2)") abs(diag%buf_E(diag%h_pos_E,i,j,k,0)), &
+              abs(diag%buf_E(diag%h_pos_E,i,j,k,1)), &
+              abs(diag%buf_E(diag%h_pos_E,i,j,k,2))
+      case (3)
+         write(out%funit,"(3E14.6E2)") abs(diag%buf_H(diag%h_pos_H,i,j,k,0)), &
+              abs(diag%buf_H(diag%h_pos_H,i,j,k,1)), &
+              abs(diag%buf_H(diag%h_pos_H,i,j,k,2))
+      end select
       } )
 
     end subroutine WriteValuesDiagebalmode
