@@ -84,11 +84,9 @@ contains
     subroutine WriteValuesDiagebalmode(out, mode)
 
       type (T_OUT) :: out
-      integer :: mode,m
+      integer :: mode
       real(kind=8) :: en
-
       M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
-      real(kind=8) :: val1, val2, val3, val4, val5, val6, sum
       type(T_DIAGEBALMODE) :: diag
 
       M4_WRITE_DBG({"WriteScalars!"})
@@ -97,8 +95,6 @@ contains
 
       reg = regobj(out%regidx)
       diag = diagebalmodeobj(out%objidx)
-
-      sum = 0.
 
       select case (mode)
       case(1)

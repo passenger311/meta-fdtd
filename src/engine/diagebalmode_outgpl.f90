@@ -78,83 +78,43 @@ contains
        call WriteValuesDiagebalMode(out, 3 )
     case('DSI') ! time integrated
        call WriteValuesDiagebalMode(out, 4 )
-    case('Um')
-       call WriteMatrixDiagebalMode(out, 1 )   
-    case('Sm')
-       call WriteMatrixDiagebalMode(out, 2 )   
-    case('Jm')
-       call WriteMatrixDiagebalMode(out, 3 )   
+    case('E')
+       call WriteSumDiagebalMode(out, 1 )   
+    case('H')
+       call WriteSumDiagebalMode(out, 2 )   
     case default
        write(out%funit,*) "OUTPUT FUNCTION NOT IMPLEMENTED" 
     end select
     
   end subroutine WriteDataDiagebalModeOutgplObj
 
-  subroutine WriteMatrixDiagebalMode(out, mode)
-
+  subroutine WriteSumDiagebalMode(out, mode)
+    
     type (T_OUT) :: out
-    integer :: mode
+    integer :: mode, c
     type (T_DIAGEBALMODE) :: diag
-    type (T_REG) :: reg
-    integer :: i,j,k, m_P, n_P, m4_m
-    real(kind=8) :: v
-    integer :: err
+    real(kind=8) fld_sum(0:2)
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(0))
 
+    fld_sum = 0.
+    
     diag = diagebalmodeobj(out%objidx)
-    
-    M4_WRITE_DBG({"WriteValues!"})
-    M4_IFELSE_DBG({call EchoRegObj(regobj(out%regidx))})
-
     M4_MODOBJ_GETREG(out,reg)
-    k = ((reg%ke-reg%ks)/2)+reg%ks
+
+    M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+    do c=0,2
+       select case ( mode ) 
+       case (1)
+          fld_sum(c) = fld_sum(c) + abs(diag%buf_E(diag%h_pos_E,i,j,k,c))
+       case (2)
+          fld_sum(c) = fld_sum(c) + abs(diag%buf_H(diag%h_pos_H,i,j,k,c))
+       end select
+    end do
+    })
+
+    write(out%funit,"(5E15.6E3)") fld_sum(0), fld_sum(1), fld_sum(2)
     
-    do j=reg%js, reg%je, reg%dj
-       do i=reg%is, reg%ie, reg%di
-          select case ( mode )
-             case (1)
-!                v = abs(diag%buf_E(diag%h_pos_E,i,j,k,0))
-                v = M4_VOLEX(i,j,k) / epsinvx(i,j,k) * &
-                     (REALPART(diag%buf_E(diag%h_pos_E,i,j,k,0))**2+&
-                     IMAGPART(diag%buf_E(diag%h_pos_E,i,j,k,0))**2) + &
-                     M4_VOLEY(i,j,k) / epsinvy(i,j,k) * &
-                     (REALPART(diag%buf_E(diag%h_pos_E,i,j,k,1))**2+&
-                     IMAGPART(diag%buf_E(diag%h_pos_E,i,j,k,1))**2) + &
-                     M4_VOLEZ(i,j,k) / epsinvz(i,j,k) * &
-                     (REALPART(diag%buf_E(diag%h_pos_E,i,j,k,2))**2+&
-                     IMAGPART(diag%buf_E(diag%h_pos_E,i,j,k,2))**2) + &
-                     M4_VOLHX(i,j,k) / M4_MUINVX(i,j,k) * &
-                     (REALPART(diag%buf_H(diag%h_pos_H,i,j,k,0))**2+&
-                     IMAGPART(diag%buf_H(diag%h_pos_H,i,j,k,0))**2) + &
-                     M4_VOLHY(i,j,k) / M4_MUINVY(i,j,k) * &
-                     (REALPART(diag%buf_H(diag%h_pos_H,i,j,k,1))**2+&
-                     IMAGPART(diag%buf_H(diag%h_pos_H,i,j,k,1))**2) + &
-                     M4_VOLHZ(i,j,k) / M4_MUINVZ(i,j,k) * &
-                     (REALPART(diag%buf_H(diag%h_pos_H,i,j,k,2))**2+&
-                     IMAGPART(diag%buf_H(diag%h_pos_H,i,j,k,2))**2);
-             case (2)
-                v = diag%sumds
-             case (3)                
-                v = 0
-                m_P = diag%h_pos_P
-                if (m_P .eq. 0) then
-                   n_P = diag%p - 1
-                else
-                   n_P = m_P - 1
-                endif
-                do m4_m = 1, numMATLORENTZobj
-                   v = v + (M4_IFELSE_TM({ M4_VOLEX(i,j,k) * abs(diag%buf_E(diag%h_pos_E,i,j,k,0) *&
-                        dconjg( diag%buf_P(m_P,i,j,k,0,m4_m-1) - diag%buf_P(n_P,i,j,k,0,m4_m-1) ) ) / DT +},{0. +}) &
-                        M4_IFELSE_TM({ M4_VOLEY(i,j,k) * abs(diag%buf_E(diag%h_pos_E,i,j,k,1) *&
-                        dconjg( diag%buf_P(m_P,i,j,k,1,m4_m-1) - diag%buf_P(n_P,i,j,k,1,m4_m-1) ) ) / DT +},{0. +}) &
-                        M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * abs(diag%buf_E(diag%h_pos_E,i,j,k,2) *&
-                        dconjg( diag%buf_P(m_P,i,j,k,2,m4_m-1) - diag%buf_P(n_P,i,j,k,2,m4_m-1) ) ) / DT},{0. }))
-                enddo
-          end select
-          write(out%funit,"(5E15.6E3)",advance = "no") v
-       enddo
-       write(out%funit,"(5E15.6E3)")
-    enddo
-  end subroutine WriteMatrixDiagebalMode
+  end subroutine WriteSumDiagebalMode
 
   subroutine WriteValuesDiagebalMode(out, mode)
     
