@@ -62,6 +62,7 @@ module diagebalmode
   real(kind=8), dimension(3) :: dsy1, dsy2
   real(kind=8), dimension(3) :: dsz1, dsz2
 
+  type (T_REG) :: reg_outset
   })
 
 contains
@@ -124,7 +125,7 @@ contains
     integer :: history
     integer :: shift
     M4_MODLOOP_DECL({DIAGEBALMODE},diag)
-    type (T_REG) :: reg, reg_outset
+    type (T_REG) :: reg
     
     ! this is used later when calculating gamma from freq-separation
     ! it's basically the value of the normal distribution at the 
@@ -150,18 +151,25 @@ contains
     diag%sumres = 0.
 ! this will load the region specified in the input file
     reg = regobj(diag%regidx)
-    reg_outset = reg
-    call OutsetRegion( reg_outset )
+    diag%reg_outset = CreateBoxRegObj(reg%is-1,reg%ie+1,reg%di, &
+         M4_IFELSE_1D({reg%js,reg%je,reg%dj, &
+         reg%ks,reg%ke,reg%dk &
+    },{reg%js-1,reg%je+1,reg%dj, &
+         M4_IFELSE_2D({reg%ks,reg%ke,reg%dk},
+    {reg%ks-1,reg%ke+1,reg%dk})}))
+    
 
     omega = 2. * PI * DT * diag%invlambda
     freq_sep = 2. * PI * DT * diag%invlambda_sep
 
     M4_WRITE_DBG("allocate mask")
-    allocate(diag%mask(reg_outset%is:reg_outset%ie,reg_outset%js:reg_outset%je, &
-         reg_outset%ks:reg_outset%ke), stat = err)
+    allocate(diag%mask(diag%reg_outset%is:diag%reg_outset%ie, &
+         diag%reg_outset%js:diag%reg_outset%je, &
+         diag%reg_outset%ks:diag%reg_outset%ke), stat = err)
     M4_WRITE_DBG("initialize mask")
-    call SetMaskRegObj(reg,diag%mask,reg_outset%is,reg_outset%ie,reg_outset%js,reg_outset%je, &
-         reg_outset%ks,reg_outset%ke)
+    call SetMaskRegObj(diag%reg_outset,diag%mask,diag%reg_outset%is,diag%reg_outset%ie,&
+         diag%reg_outset%js,diag%reg_outset%je, &
+         diag%reg_outset%ks,diag%reg_outset%ke)
     
     A = cos(freq_sep/8.)
 ! see master thesis Fabian Renn
@@ -170,11 +178,6 @@ contains
     )&
     -(4.**(1./dble(diag%p)))  )/&
     (1-(4.**(1./dble(diag%p))))
-!    A = ndb ** ( 2. / dble(diag%p))   
-!    gamma = ( -1. + ( A * cos( 2. * (freq_sep/(2. * PI)) ) ) + &
-!         sqrt( (-4.* ((A-1.)**2.) ) + &
-!         (2. - ( 2. * A * cos( 2. * (freq_sep/(2. * PI)) ) ))**2. ) ) &
-!         /(A-1.)
     shift = NINT( ( dble(diag%p) * gamma ) / ( 1. - gamma ) )
     FWHM = NINT(2. * sqrt(2.*log(2.)) * sqrt((dble(diag%p)*gamma)/((1.-gamma)**2.)))
     history = 2 * FWHM
@@ -185,20 +188,23 @@ contains
     M4_WRITE_INFO({"--- diagebalmode: approx. history len = ", history})
     M4_WRITE_INFO({"--- diagebalmode: output must be shifted by = ", shift})
     
-    allocate(diag%buf_E(0:diag%p-1,reg_outset%is:reg_outset%ie,reg_outset%js:reg_outset%je, &
-         reg_outset%ks:reg_outset%ke,0:2), stat = err)
+    allocate(diag%buf_E(0:diag%p-1,diag%reg_outset%is:diag%reg_outset%ie, &
+         diag%reg_outset%js:diag%reg_outset%je, &
+         diag%reg_outset%ks:diag%reg_outset%ke,0:2), stat = err)
     M4_ALLOC_ERROR( err, "Unable to allocate filter buffer for E" )
-    allocate(diag%buf_H(0:diag%p-1,reg_outset%is:reg_outset%ie,reg_outset%js:reg_outset%je, &
-         reg_outset%ks:reg_outset%ke,0:2), stat = err)
+    allocate(diag%buf_H(0:diag%p-1,diag%reg_outset%is:diag%reg_outset%ie, &
+         diag%reg_outset%js:diag%reg_outset%je, &
+         diag%reg_outset%ks:diag%reg_outset%ke,0:2), stat = err)
     M4_ALLOC_ERROR( err, "Unable to allocate filter buffer for H" )
     M4_WRITE_INFO({"--- diagebalmode: numMATLORENTZobj = ", numMATLORENTZobj})
-    allocate(diag%buf_P(0:diag%p-1,reg_outset%is:reg_outset%ie,reg_outset%js:reg_outset%je, &
-         reg_outset%ks:reg_outset%ke,0:2,0:(numMATLORENTZobj-1)), stat = err)
+    allocate(diag%buf_P(0:diag%p-1,diag%reg_outset%is:diag%reg_outset%ie, &
+         diag%reg_outset%js:diag%reg_outset%je, &
+         diag%reg_outset%ks:diag%reg_outset%ke,0:2,0:(numMATLORENTZobj-1)), stat = err)
     M4_ALLOC_ERROR( err, "Unable to allocate filter buffer for P" )
     do c=0,2
-       do k=reg%ks,reg%ke
-          do j=reg%js,reg%je
-             do i=reg%is,reg%ie
+       do k=diag%reg_outset%ks,diag%reg_outset%ke
+          do j=diag%reg_outset%js,diag%reg_outset%je
+             do i=diag%reg_outset%is,diag%reg_outset%ie
                 do q=0,diag%p-1
                    diag%buf_E(q,i,j,k,c) = (0,0)
                    diag%buf_H(q,i,j,k,c) = (0,0)
@@ -272,7 +278,6 @@ contains
 
     M4_MODLOOP_EXPR({DIAGEBALMODE},diag,{
 
-
 ! save to checkpoint file
     deallocate(diag%alpha)
     deallocate(diag%buf_E)
@@ -292,20 +297,6 @@ contains
   end subroutine FinalizeDiagEBalMode
 
 !----------------------------------------------------------------------
-  subroutine OutsetRegion(rgn)
-    type (T_REG),intent(inout) :: rgn
-
-    rgn%is = rgn%is - 1
-    rgn%ie = rgn%ie + 1
-    M4_IFELSE_1D({},{
-    rgn%js = rgn%js - 1
-    rgn%je = rgn%je + 1
-    })
-    M4_IFELSE_2D({},{
-    rgn%ks = rgn%ks - 1
-    rgn%ke = rgn%ke + 1
-    })
-  end subroutine OutsetRegion
 
 
   subroutine StepHDiagEBalMode(ncyc)
@@ -316,7 +307,6 @@ contains
     complex(kind=8) :: out_value
     M4_MODLOOP_DECL({DIAGEBALMODE},diag)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(0))
-    type (T_REG) :: reg_outset
     
     m    = mod(ncyc*2+2,3) + 1
 
@@ -324,8 +314,6 @@ contains
 
     if (  ncyc .lt. diag%ns .or. ncyc .gt. diag%ne ) cycle
     M4_MODOBJ_GETREG(diag,reg)
-    reg_outset = reg
-    call OutsetRegion( reg_outset )
     M4_CALC_FILTER_FIELD(H)
 
     diag%dsx1(m) = 0.
@@ -418,8 +406,8 @@ contains
     complex(kind=8) :: out_value
     M4_MODLOOP_DECL({DIAGEBALMODE},diag)
     type(T_MATLORENTZ) :: mat   
-    type(T_REG) :: reg_outset
     integer :: m4_m
+    type(T_REG) :: mat_reg
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
 
     m    = mod(ncyc*2+3,3) + 1
@@ -432,8 +420,6 @@ contains
     if (  ncyc .lt. diag%ns .or. ncyc .gt. diag%ne ) cycle
     
     M4_MODOBJ_GETREG(diag,reg)
-    reg_outset = reg
-    call OutsetRegion( reg_outset )
     
     diag%h_pos_E = MOD(diag%h_pos_E + 1, diag%p)
     
@@ -538,7 +524,7 @@ contains
     ! --- do the JE loop
     do m4_m = 1, numMATLORENTZobj
        mat = MATLORENTZobj(m4_m)
-       M4_MODOBJ_GETREG(mat,reg)
+       M4_MODOBJ_GETREG(mat,mat_reg)
        ! --- m is the last calculated polarization field
        M4_CALC_FILTER_FIELD_OF_MAT(m4_m-1)    
        MATLORENTZobj(m4_m) = mat
@@ -555,18 +541,22 @@ contains
     
     do m4_m = 1, numMATLORENTZobj
        mat = MATLORENTZobj(m4_m)
-       M4_MODOBJ_GETREG(mat,reg)
-       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-       if ( diag%mask(i,j,k) ) then
-          diag%sje(m) = diag%sje(m) + &
-               ( &
-               M4_IFELSE_TM({ M4_VOLEX(i,j,k) * w(1) * abs(diag%buf_E(diag%h_pos_E,i,j,k,0) *&
-               dconjg( diag%buf_P(m_P,i,j,k,0,m4_m-1) - diag%buf_P(n_P,i,j,k,0,m4_m-1) ) ) / DT +},{0. +}) &
-               M4_IFELSE_TM({ M4_VOLEY(i,j,k) * w(2) * abs(diag%buf_E(diag%h_pos_E,i,j,k,1) *&
-               dconjg( diag%buf_P(m_P,i,j,k,1,m4_m-1) - diag%buf_P(n_P,i,j,k,1,m4_m-1) ) ) / DT +},{0. +}) &
-               M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * abs(diag%buf_E(diag%h_pos_E,i,j,k,2) *&
-               dconjg( diag%buf_P(m_P,i,j,k,2,m4_m-1) - diag%buf_P(n_P,i,j,k,2,m4_m-1) ) ) / DT},{0. }) &
-               )
+       M4_MODOBJ_GETREG(mat,mat_reg)
+       M4_REGLOOP_EXPR(mat_reg,p,i,j,k,w,{
+       if ( ( i .ge. reg%is ) .and. ( i .le. reg%ie ) .and. &
+            ( j .ge. reg%js ) .and. ( j .le. reg%je ) .and. &
+          ( k .ge. reg%ks ) .and. ( k .le. reg%ke ) ) then
+          if ( diag%mask(i,j,k) ) then
+             diag%sje(m) = diag%sje(m) + &
+                  ( &
+                  M4_IFELSE_TM({ M4_VOLEX(i,j,k) * w(1) * abs(diag%buf_E(diag%h_pos_E,i,j,k,0) *&
+                  dconjg( diag%buf_P(m_P,i,j,k,0,m4_m-1) - diag%buf_P(n_P,i,j,k,0,m4_m-1) ) ) / DT +},{0. +}) &
+                  M4_IFELSE_TM({ M4_VOLEY(i,j,k) * w(2) * abs(diag%buf_E(diag%h_pos_E,i,j,k,1) *&
+                  dconjg( diag%buf_P(m_P,i,j,k,1,m4_m-1) - diag%buf_P(n_P,i,j,k,1,m4_m-1) ) ) / DT +},{0. +}) &
+                  M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * abs(diag%buf_E(diag%h_pos_E,i,j,k,2) *&
+                  dconjg( diag%buf_P(m_P,i,j,k,2,m4_m-1) - diag%buf_P(n_P,i,j,k,2,m4_m-1) ) ) / DT},{0. }) &
+                  )
+          endif
        endif
        })
        MATLORENTZobj(m4_m) = mat

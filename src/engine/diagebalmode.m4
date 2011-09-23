@@ -14,7 +14,7 @@ out_value = $1$2(i,j,k) * diag%beta
 })
 
 define({M4_CALC_FILTER_COMPONENT},{
-M4_REGLOOP_EXPR(reg_outset,p,i,j,k,w,{M4_CALC_FILTER_LOOP($1,$2,$3)})
+M4_REGLOOP_EXPR(diag%reg_outset,p,i,j,k,w,{M4_CALC_FILTER_LOOP($1,$2,$3)})
 })
 
 define({M4_CALC_FILTER_FIELD},{
@@ -24,7 +24,10 @@ M4_CALC_FILTER_COMPONENT($1,z,2)
 })
 
 define({M4_CALC_FILTER_COMPONENT_OF_MAT},{
-M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+M4_REGLOOP_EXPR(mat_reg,p,i,j,k,w,{
+if ( ( i .ge. reg%is ) .and. ( i .le. reg%ie ) .and. &
+    ( j .ge. reg%js ) .and. ( j .le. reg%je ) .and. &
+    ( k .ge. reg%ks ) .and. ( k .le. reg%ke ) ) then
 if ( diag%mask(i,j,k) ) then
   out_value = mat%P$1(p,m) * diag%beta
   do q = 0,diag%p-1,1
@@ -33,6 +36,7 @@ if ( diag%mask(i,j,k) ) then
       (diag%buf_P(mod_pos,i,j,k,$2,$3)*diag%alpha(q))
   enddo !q
   diag%buf_P(diag%h_pos_P,i,j,k,$2,$3) = out_value
+endif
 endif})
 })
 
