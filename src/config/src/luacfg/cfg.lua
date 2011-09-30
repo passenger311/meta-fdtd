@@ -516,6 +516,14 @@ function EBALMODE(parms)
    EBALMODE.invlambda = parms.invlambda
    EBALMODE.buffersize = parms.buffersize
    EBALMODE.resolution = parms.resolution
+   if ( parms.calc_poynting == nil ) then
+      parms.calc_poynting = true
+   end
+   if ( parms.calc_je == nil ) then
+      parms.calc_je = true
+   end
+   EBALMODE.calc_poynting = parms.calc_poynting
+   EBALMODE.calc_je = parms.calc_je
    return EBALMODE
 end
 
@@ -981,10 +989,22 @@ local writediag = {
 	     fh:write(EBAL.time[1]," ",EBAL.time[2]," ",EBAL.time[3]," \t! time window [from to step]\n")
 	   end,
    EBALMODE = function(fh,EBALMODE)	     
+		 if ( EBALMODE.calc_poynting == true ) then
+		    EBALMODE.calc_poynting = ".T." 
+		 else 
+		    EBALMODE.calc_poynting = ".F." 
+		 end
+		 if ( EBALMODE.calc_je == true ) then
+		    EBALMODE.calc_je = ".T." 
+		 else 
+		    EBALMODE.calc_je = ".F." 
+		 end
              fh:write(EBALMODE.time[1]," ",EBALMODE.time[2]," ",EBALMODE.time[3]," \t! time window [from to step]\n")
 	     fh:write(EBALMODE.invlambda, " \t! frequency of the Fourier-Coeffecient that is to be calculated\n" )
 	     fh:write(EBALMODE.buffersize, " \t! p-coefficient of recursive filter. This equals the size of the buffer of old values. Typically 2, 3 or 4\n")
 	     fh:write(EBALMODE.resolution, " \t! the the minimal seperation of two frequencies in inverse lambda units. This is the frequency seperation that the filter can distinguish. This will also imply the number of samples that the filter indirectly takes into account from the past. Look for \"approx. history len\" in the output of meta.\n" )
+	     fh:write(EBALMODE.calc_poynting, " \t! calculate the poynting vector S. Enabling this will make the filter run slower. The filter always calculates the energy density.\n" )
+	     fh:write(EBALMODE.calc_je, " \t! calculate JE. This will slow down the filter substantially if there is a lot of material in the scene. For every lorentzian the filter must filter a polarization field.\n" )
 	  end
 }
 

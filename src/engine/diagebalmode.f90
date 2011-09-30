@@ -62,6 +62,8 @@ module diagebalmode
   real(kind=8), dimension(3) :: dsy1, dsy2
   real(kind=8), dimension(3) :: dsz1, dsz2
 
+  logical :: calc_poynting, calc_je
+
   type (T_REG) :: reg_outset
   })
 
@@ -86,6 +88,8 @@ contains
     call readfloat(funit, lcount, diag%invlambda)
     call readint(funit, lcount, diag%p)
     call readfloat(funit, lcount, diag%invlambda_sep)
+    call readlogical(funit, lcount, diag%calc_poynting)
+    call readlogical(funit, lcount, diag%calc_je)
 
     omega = 2. * PI * DT * diag%invlambda
     freq_sep = 2. * PI * DT * diag%invlambda_sep
@@ -151,12 +155,18 @@ contains
     diag%sumres = 0.
 ! this will load the region specified in the input file
     reg = regobj(diag%regidx)
-    diag%reg_outset = CreateBoxRegObj(reg%is-1,reg%ie+1,reg%di, &
-         M4_IFELSE_1D({reg%js,reg%je,reg%dj, &
-         reg%ks,reg%ke,reg%dk &
-    },{reg%js-1,reg%je+1,reg%dj, &
-         M4_IFELSE_2D({reg%ks,reg%ke,reg%dk},
-    {reg%ks-1,reg%ke+1,reg%dk})}))
+    if ( diag%calc_poynting ) then
+       diag%reg_outset = CreateBoxRegObj(reg%is-1,reg%ie+1,reg%di, &
+            M4_IFELSE_1D({reg%js,reg%je,reg%dj, &
+            reg%ks,reg%ke,reg%dk &
+            },{reg%js-1,reg%je+1,reg%dj, &
+            M4_IFELSE_2D({reg%ks,reg%ke,reg%dk},
+       {reg%ks-1,reg%ke+1,reg%dk})}))
+    else 
+       ! no need to outset box: we are not calculating S
+       diag%reg_outset = CreateBoxRegObj(reg%is,reg%ie,reg%di, &
+            reg%js, reg%je, reg%dj, reg%ks, reg%ke, reg%dk )
+    endif
     
 
     omega = 2. * PI * DT * diag%invlambda
@@ -196,11 +206,14 @@ contains
          diag%reg_outset%js:diag%reg_outset%je, &
          diag%reg_outset%ks:diag%reg_outset%ke,0:2), stat = err)
     M4_ALLOC_ERROR( err, "Unable to allocate filter buffer for H" )
-    M4_WRITE_INFO({"--- diagebalmode: numMATLORENTZobj = ", numMATLORENTZobj})
-    allocate(diag%buf_P(0:diag%p-1,diag%reg_outset%is:diag%reg_outset%ie, &
-         diag%reg_outset%js:diag%reg_outset%je, &
-         diag%reg_outset%ks:diag%reg_outset%ke,0:2,0:(numMATLORENTZobj-1)), stat = err)
-    M4_ALLOC_ERROR( err, "Unable to allocate filter buffer for P" )
+    if ( diag%calc_je ) then
+       ! do we need a polarization field
+       M4_WRITE_INFO({"--- diagebalmode: numMATLORENTZobj = ", numMATLORENTZobj})
+       allocate(diag%buf_P(0:diag%p-1,diag%reg_outset%is:diag%reg_outset%ie, &
+            diag%reg_outset%js:diag%reg_outset%je, &
+            diag%reg_outset%ks:diag%reg_outset%ke,0:2,0:(numMATLORENTZobj-1)), stat = err)
+       M4_ALLOC_ERROR( err, "Unable to allocate filter buffer for P" )
+    endif
     do c=0,2
        do k=diag%reg_outset%ks,diag%reg_outset%ke
           do j=diag%reg_outset%js,diag%reg_outset%je
@@ -208,9 +221,11 @@ contains
                 do q=0,diag%p-1
                    diag%buf_E(q,i,j,k,c) = (0,0)
                    diag%buf_H(q,i,j,k,c) = (0,0)
-                   do r=0,numMATLORENTZobj-1
-                      diag%buf_P(q,i,j,k,c,r) = (0,0)
-                   enddo
+                   if ( diag%calc_je ) then
+                      do r=0,numMATLORENTZobj-1
+                         diag%buf_P(q,i,j,k,c,r) = (0,0)
+                      enddo
+                   endif
                 enddo
              enddo
           enddo
@@ -316,79 +331,81 @@ contains
     M4_MODOBJ_GETREG(diag,reg)
     M4_CALC_FILTER_FIELD(H)
 
-    diag%dsx1(m) = 0.
-    diag%dsx2(m) = 0.
-    diag%dsy1(m) = 0.
-    diag%dsy2(m) = 0.
-    diag%dsz1(m) = 0.
-    diag%dsz2(m) = 0.
+    if ( diag%calc_poynting ) then
+       diag%dsx1(m) = 0.
+       diag%dsx2(m) = 0.
+       diag%dsy1(m) = 0.
+       diag%dsy2(m) = 0.
+       diag%dsz1(m) = 0.
+       diag%dsz2(m) = 0.
 
-    M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-    ! poynting vector
-
-    diag%dsx1(m) = diag%dsx1(m) &
-         + 0.5 * ( realpart( M4_VOLEY(i,j,k)/M4_SX(i,j,k) * &
-         ( diag%buf_E(diag%h_pos_E,i,j,k,1) * & 
-         ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,2) ) - &
-           dconjg( diag%buf_H(diag%h_pos_H,i-1,j,k,2) ) ) )&
-         - M4_VOLEZ(i,j,k)/M4_SX(i,j,k) * &
-         ( diag%buf_E(diag%h_pos_E,i,j,k,2) * &
-         ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,1) ) - &
-         dconjg( diag%buf_H(diag%h_pos_H,i-1,j,k,1) ) ) ) ) )
-    
-    diag%dsx2(m) = diag%dsx2(m) &
-         + 0.5 * ( realpart( M4_VOLHZ(i,j,k)/M4_HSX(i,j,k) * &
-         ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,2) ) *&
-         ( diag%buf_E(diag%h_pos_E,i+1,j,k,1) - diag%buf_E(diag%h_pos_E,i,j,k,1) ) ) &
-         - M4_VOLHY(i,j,k)/M4_HSX(i,j,k) * &
-         ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,1) ) * &
-         ( diag%buf_E(diag%h_pos_E,i+1,j,k,2) - diag%buf_E(diag%h_pos_E,i,j,k,2) ) ) ) )
-    
-    M4_IFELSE_1D({},{
-    
-    
-    diag%dsy1(m) = diag%dsy1(m) &
-         + 0.5 * ( realpart( M4_VOLEZ(i,j,k)/M4_SY(i,j,k) * &
-         ( diag%buf_E(diag%h_pos_E,i,j,k,2) * &
-         ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,0) ) - &
-         dconjg( diag%buf_H(diag%h_pos_H,i,j-1,k,0) ) ) ) &
-         - M4_VOLEX(i,j,k)/M4_SY(i,j,k) * &
-         ( diag%buf_E(diag%h_pos_E,i,j,k,0) * &
-         ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,2) ) &
-         - dconjg( diag%buf_H(diag%h_pos_H,i,j-1,k,2) ) ) ) ) )
-    
-    diag%dsy2(m) = diag%dsy2(m) &
-         + 0.5 * ( realpart( M4_VOLHX(i,j,k)/M4_HSY(i,j,k) * &
-         ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,0) ) * &
-         ( diag%buf_E(diag%h_pos_E,i,j+1,k,2) - diag%buf_E(diag%h_pos_E,i,j,k,2) ) ) &
-         - M4_VOLHZ(i,j,k)/M4_HSY(i,j,k) * &
-         ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,2) ) * &
-         ( diag%buf_E(diag%h_pos_E,i,j+1,k,0) - diag%buf_E(diag%h_pos_E,i,j,k,0) ) ) ) )
-    
-    })
-    
-    M4_IFELSE_3D({
-    diag%dsz1(m) = diag%dsz1(m) &
-         + 0.5 * ( realpart( M4_VOLEX(i,j,k)/M4_SZ(i,j,k) * &
-         ( diag%buf_E(diag%h_pos_E,i,j,k,0) * &
-         ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,1) ) - &
-           dconjg( diag%buf_H(diag%h_pos_H,i,j,k-1,1) ) ) ) &
-         - M4_VOLEY(i,j,k)/M4_SZ(i,j,k) * &
-         ( diag%buf_E(diag%h_pos_E,i,j,k,1) * &
-         ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,0) ) - &
-           dconjg( diag%buf_H(diag%h_pos_H,i,j,k-1,0) ) ) ) ) )
-
-    diag%dsz2(m) = diag%dsz2(m) &
-         + 0.5 * ( realpart ( M4_VOLHY(i,j,k)/M4_HSZ(i,j,k) * &
-         ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,1) ) * &
-         ( diag%buf_E(diag%h_pos_E,i,j,k+1,0) - diag%buf_E(diag%h_pos_E,i,j,k,0) ) ) &
-         - M4_VOLHX(i,j,k)/M4_HSZ(i,j,k) * &
-         ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,0) ) * &
-         ( diag%buf_E(diag%h_pos_E,i,j,k+1,1) - diag%buf_E(diag%h_pos_E,i,j,k,1) ) ) ) )
-    
-    })
-    
-    })
+       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+       ! poynting vector
+       
+       diag%dsx1(m) = diag%dsx1(m) &
+            + 0.5 * ( realpart( M4_VOLEY(i,j,k)/M4_SX(i,j,k) * &
+            ( diag%buf_E(diag%h_pos_E,i,j,k,1) * & 
+            ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,2) ) - &
+            dconjg( diag%buf_H(diag%h_pos_H,i-1,j,k,2) ) ) )&
+            - M4_VOLEZ(i,j,k)/M4_SX(i,j,k) * &
+            ( diag%buf_E(diag%h_pos_E,i,j,k,2) * &
+            ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,1) ) - &
+            dconjg( diag%buf_H(diag%h_pos_H,i-1,j,k,1) ) ) ) ) )
+       
+       diag%dsx2(m) = diag%dsx2(m) &
+            + 0.5 * ( realpart( M4_VOLHZ(i,j,k)/M4_HSX(i,j,k) * &
+            ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,2) ) *&
+            ( diag%buf_E(diag%h_pos_E,i+1,j,k,1) - diag%buf_E(diag%h_pos_E,i,j,k,1) ) ) &
+            - M4_VOLHY(i,j,k)/M4_HSX(i,j,k) * &
+            ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,1) ) * &
+            ( diag%buf_E(diag%h_pos_E,i+1,j,k,2) - diag%buf_E(diag%h_pos_E,i,j,k,2) ) ) ) )
+       
+       M4_IFELSE_1D({},{
+       
+       
+       diag%dsy1(m) = diag%dsy1(m) &
+            + 0.5 * ( realpart( M4_VOLEZ(i,j,k)/M4_SY(i,j,k) * &
+            ( diag%buf_E(diag%h_pos_E,i,j,k,2) * &
+            ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,0) ) - &
+            dconjg( diag%buf_H(diag%h_pos_H,i,j-1,k,0) ) ) ) &
+            - M4_VOLEX(i,j,k)/M4_SY(i,j,k) * &
+            ( diag%buf_E(diag%h_pos_E,i,j,k,0) * &
+            ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,2) ) &
+            - dconjg( diag%buf_H(diag%h_pos_H,i,j-1,k,2) ) ) ) ) )
+       
+       diag%dsy2(m) = diag%dsy2(m) &
+            + 0.5 * ( realpart( M4_VOLHX(i,j,k)/M4_HSY(i,j,k) * &
+            ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,0) ) * &
+            ( diag%buf_E(diag%h_pos_E,i,j+1,k,2) - diag%buf_E(diag%h_pos_E,i,j,k,2) ) ) &
+            - M4_VOLHZ(i,j,k)/M4_HSY(i,j,k) * &
+            ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,2) ) * &
+            ( diag%buf_E(diag%h_pos_E,i,j+1,k,0) - diag%buf_E(diag%h_pos_E,i,j,k,0) ) ) ) )
+       
+       })
+       
+       M4_IFELSE_3D({
+       diag%dsz1(m) = diag%dsz1(m) &
+            + 0.5 * ( realpart( M4_VOLEX(i,j,k)/M4_SZ(i,j,k) * &
+            ( diag%buf_E(diag%h_pos_E,i,j,k,0) * &
+            ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,1) ) - &
+            dconjg( diag%buf_H(diag%h_pos_H,i,j,k-1,1) ) ) ) &
+            - M4_VOLEY(i,j,k)/M4_SZ(i,j,k) * &
+            ( diag%buf_E(diag%h_pos_E,i,j,k,1) * &
+            ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,0) ) - &
+            dconjg( diag%buf_H(diag%h_pos_H,i,j,k-1,0) ) ) ) ) )
+       
+       diag%dsz2(m) = diag%dsz2(m) &
+            + 0.5 * ( realpart ( M4_VOLHY(i,j,k)/M4_HSZ(i,j,k) * &
+            ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,1) ) * &
+            ( diag%buf_E(diag%h_pos_E,i,j,k+1,0) - diag%buf_E(diag%h_pos_E,i,j,k,0) ) ) &
+            - M4_VOLHX(i,j,k)/M4_HSZ(i,j,k) * &
+            ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,0) ) * &
+            ( diag%buf_E(diag%h_pos_E,i,j,k+1,1) - diag%buf_E(diag%h_pos_E,i,j,k,1) ) ) ) )
+       
+       })
+       
+       })
+    endif
 
 
 
@@ -426,12 +443,6 @@ contains
     M4_CALC_FILTER_FIELD(E)
 
     diag%en(m) = 0.
-    diag%dsx1(m) = 0.
-    diag%dsx2(m) = 0.
-    diag%dsy1(m) = 0.
-    diag%dsy2(m) = 0. 
-    diag%dsz1(m) = 0.
-    diag%dsz2(m) = 0.
 
     M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
     
@@ -455,133 +466,149 @@ contains
             M4_VOLHZ(i,j,k) / M4_MUINVZ(i,j,k) * &
             (REALPART(diag%buf_H(diag%h_pos_H,i,j,k,2))**2+&
             IMAGPART(diag%buf_H(diag%h_pos_H,i,j,k,2))**2) )
-    
-    ! poynting vector
-    diag%dsx1(m) = diag%dsx1(m) &
-         + 0.5 * ( realpart( M4_VOLEY(i,j,k)/M4_SX(i,j,k) * &
-         ( diag%buf_E(diag%h_pos_E,i,j,k,1) * & 
-         ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,2) ) - &
-         dconjg( diag%buf_H(diag%h_pos_H,i-1,j,k,2) ) ) ) &
-         - M4_VOLEZ(i,j,k)/M4_SX(i,j,k) * &
-         ( diag%buf_E(diag%h_pos_E,i,j,k,2) * &
-         ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,1) ) - &
-         dconjg( diag%buf_H(diag%h_pos_H,i-1,j,k,1) ) ) ) ) )
-    
-    diag%dsx2(m) = diag%dsx2(m) &
-         + 0.5 * ( realpart( M4_VOLHZ(i,j,k)/M4_HSX(i,j,k) * &
-         ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,2) ) *&
-         ( diag%buf_E(diag%h_pos_E,i+1,j,k,1) - diag%buf_E(diag%h_pos_E,i,j,k,1) ) ) &
-         - M4_VOLHY(i,j,k)/M4_HSX(i,j,k) * &
-         ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,1) ) * &
-         ( diag%buf_E(diag%h_pos_E,i+1,j,k,2) - diag%buf_E(diag%h_pos_E,i,j,k,2) ) ) ) )
-    
-    M4_IFELSE_1D({},{
-    
-    
-    diag%dsy1(m) = diag%dsy1(m) &
-         + 0.5 * ( realpart( M4_VOLEZ(i,j,k)/M4_SY(i,j,k) * &
-         ( diag%buf_E(diag%h_pos_E,i,j,k,2) * &
-         ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,0) ) - &
-         dconjg( diag%buf_H(diag%h_pos_H,i,j-1,k,0) ) ) ) &
-         - M4_VOLEX(i,j,k)/M4_SY(i,j,k) * &
-         ( diag%buf_E(diag%h_pos_E,i,j,k,0) * &
-         ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,2) ) - &
-         dconjg( diag%buf_H(diag%h_pos_H,i,j-1,k,2) ) ) ) ) )
-    
-    diag%dsy2(m) = diag%dsy2(m) &
-         + 0.5 * ( realpart( M4_VOLHX(i,j,k)/M4_HSY(i,j,k) * &
-         ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,0) ) * &
-         ( diag%buf_E(diag%h_pos_E,i,j+1,k,2) - diag%buf_E(diag%h_pos_E,i,j,k,2) ) ) &
-         - M4_VOLHZ(i,j,k)/M4_HSY(i,j,k) * &
-         ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,2) ) * &
-         ( diag%buf_E(diag%h_pos_E,i,j+1,k,0) - diag%buf_E(diag%h_pos_E,i,j,k,0) ) ) ) )
-    
-    })
-    
-    M4_IFELSE_3D({
-    diag%dsz1(m) = diag%dsz1(m) &
-         + 0.5 * ( realpart( M4_VOLEX(i,j,k)/M4_SZ(i,j,k) * &
-         ( diag%buf_E(diag%h_pos_E,i,j,k,0) * &
-         ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,1) ) -&
-         dconjg( diag%buf_H(diag%h_pos_H,i,j,k-1,1) ) ) ) &
-         - M4_VOLEY(i,j,k)/M4_SZ(i,j,k) * &
-         ( diag%buf_E(diag%h_pos_E,i,j,k,1) * &
-         ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,0) ) -&
-         dconjg( diag%buf_H(diag%h_pos_H,i,j,k-1,0) ) ) ) ) )
+       })    
 
-    diag%dsz2(m) = diag%dsz2(m) &
-         + 0.5 * ( realpart( M4_VOLHY(i,j,k)/M4_HSZ(i,j,k) * &
-         ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,1) ) * &
-         ( diag%buf_E(diag%h_pos_E,i,j,k+1,0) - diag%buf_E(diag%h_pos_E,i,j,k,0) ) ) &
-         - M4_VOLHX(i,j,k)/M4_HSZ(i,j,k) * &
-         ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,0) ) * &
-         ( diag%buf_E(diag%h_pos_E,i,j,k+1,1) - diag%buf_E(diag%h_pos_E,i,j,k,1) ) ) ) )
-    
-    })
-    
-    })
+    if ( diag%calc_poynting ) then
+       diag%dsx1(m) = 0.
+       diag%dsx2(m) = 0.
+       diag%dsy1(m) = 0.
+       diag%dsy2(m) = 0. 
+       diag%dsz1(m) = 0.
+       diag%dsz2(m) = 0.
+       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
-    ! --- do the JE loop
-    do m4_m = 1, numMATLORENTZobj
-       mat = MATLORENTZobj(m4_m)
-       M4_MODOBJ_GETREG(mat,mat_reg)
-       ! --- m is the last calculated polarization field
-       M4_CALC_FILTER_FIELD_OF_MAT(m4_m-1)    
-       MATLORENTZobj(m4_m) = mat
-    enddo
-    m_P = diag%h_pos_P
-    if (m_P .eq. 0) then
-       n_P = diag%p - 1
-    else
-       n_P = m_P - 1
-    endif
-    diag%h_pos_H = MOD(diag%h_pos_H + 1, diag%p)
-    diag%h_pos_P = MOD(diag%h_pos_P + 1, diag%p)
-    diag%sje(m) = 0
+       ! poynting vector
+       diag%dsx1(m) = diag%dsx1(m) &
+            + 0.5 * ( realpart( M4_VOLEY(i,j,k)/M4_SX(i,j,k) * &
+            ( diag%buf_E(diag%h_pos_E,i,j,k,1) * & 
+            ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,2) ) - &
+            dconjg( diag%buf_H(diag%h_pos_H,i-1,j,k,2) ) ) ) &
+            - M4_VOLEZ(i,j,k)/M4_SX(i,j,k) * &
+            ( diag%buf_E(diag%h_pos_E,i,j,k,2) * &
+            ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,1) ) - &
+            dconjg( diag%buf_H(diag%h_pos_H,i-1,j,k,1) ) ) ) ) )
+       
+       diag%dsx2(m) = diag%dsx2(m) &
+            + 0.5 * ( realpart( M4_VOLHZ(i,j,k)/M4_HSX(i,j,k) * &
+            ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,2) ) *&
+            ( diag%buf_E(diag%h_pos_E,i+1,j,k,1) - diag%buf_E(diag%h_pos_E,i,j,k,1) ) ) &
+            - M4_VOLHY(i,j,k)/M4_HSX(i,j,k) * &
+            ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,1) ) * &
+            ( diag%buf_E(diag%h_pos_E,i+1,j,k,2) - diag%buf_E(diag%h_pos_E,i,j,k,2) ) ) ) )
+       
+       M4_IFELSE_1D({},{
+       
+       
+       diag%dsy1(m) = diag%dsy1(m) &
+            + 0.5 * ( realpart( M4_VOLEZ(i,j,k)/M4_SY(i,j,k) * &
+            ( diag%buf_E(diag%h_pos_E,i,j,k,2) * &
+            ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,0) ) - &
+            dconjg( diag%buf_H(diag%h_pos_H,i,j-1,k,0) ) ) ) &
+            - M4_VOLEX(i,j,k)/M4_SY(i,j,k) * &
+            ( diag%buf_E(diag%h_pos_E,i,j,k,0) * &
+            ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,2) ) - &
+            dconjg( diag%buf_H(diag%h_pos_H,i,j-1,k,2) ) ) ) ) )
     
-    do m4_m = 1, numMATLORENTZobj
-       mat = MATLORENTZobj(m4_m)
-       M4_MODOBJ_GETREG(mat,mat_reg)
-       M4_REGLOOP_EXPR(mat_reg,p,i,j,k,w,{
-       if ( ( i .ge. reg%is ) .and. ( i .le. reg%ie ) .and. &
-            ( j .ge. reg%js ) .and. ( j .le. reg%je ) .and. &
-          ( k .ge. reg%ks ) .and. ( k .le. reg%ke ) ) then
-          if ( diag%mask(i,j,k) ) then
-             diag%sje(m) = diag%sje(m) + &
-                  ( &
-                  M4_IFELSE_TM({ M4_VOLEX(i,j,k) * w(1) * abs(diag%buf_E(diag%h_pos_E,i,j,k,0) *&
-                  dconjg( diag%buf_P(m_P,i,j,k,0,m4_m-1) - diag%buf_P(n_P,i,j,k,0,m4_m-1) ) ) / DT +},{0. +}) &
-                  M4_IFELSE_TM({ M4_VOLEY(i,j,k) * w(2) * abs(diag%buf_E(diag%h_pos_E,i,j,k,1) *&
-                  dconjg( diag%buf_P(m_P,i,j,k,1,m4_m-1) - diag%buf_P(n_P,i,j,k,1,m4_m-1) ) ) / DT +},{0. +}) &
-                  M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * abs(diag%buf_E(diag%h_pos_E,i,j,k,2) *&
-                  dconjg( diag%buf_P(m_P,i,j,k,2,m4_m-1) - diag%buf_P(n_P,i,j,k,2,m4_m-1) ) ) / DT},{0. }) &
-                  )
-          endif
-       endif
+       diag%dsy2(m) = diag%dsy2(m) &
+            + 0.5 * ( realpart( M4_VOLHX(i,j,k)/M4_HSY(i,j,k) * &
+            ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,0) ) * &
+            ( diag%buf_E(diag%h_pos_E,i,j+1,k,2) - diag%buf_E(diag%h_pos_E,i,j,k,2) ) ) &
+            - M4_VOLHZ(i,j,k)/M4_HSY(i,j,k) * &
+            ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,2) ) * &
+            ( diag%buf_E(diag%h_pos_E,i,j+1,k,0) - diag%buf_E(diag%h_pos_E,i,j,k,0) ) ) ) )
+    
        })
-       MATLORENTZobj(m4_m) = mat
-    enddo
+       
+       M4_IFELSE_3D({
+       diag%dsz1(m) = diag%dsz1(m) &
+            + 0.5 * ( realpart( M4_VOLEX(i,j,k)/M4_SZ(i,j,k) * &
+            ( diag%buf_E(diag%h_pos_E,i,j,k,0) * &
+            ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,1) ) -&
+            dconjg( diag%buf_H(diag%h_pos_H,i,j,k-1,1) ) ) ) &
+            - M4_VOLEY(i,j,k)/M4_SZ(i,j,k) * &
+            ( diag%buf_E(diag%h_pos_E,i,j,k,1) * &
+            ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,0) ) -&
+            dconjg( diag%buf_H(diag%h_pos_H,i,j,k-1,0) ) ) ) ) )
+       
+       diag%dsz2(m) = diag%dsz2(m) &
+            + 0.5 * ( realpart( M4_VOLHY(i,j,k)/M4_HSZ(i,j,k) * &
+            ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,1) ) * &
+            ( diag%buf_E(diag%h_pos_E,i,j,k+1,0) - diag%buf_E(diag%h_pos_E,i,j,k,0) ) ) &
+            - M4_VOLHX(i,j,k)/M4_HSZ(i,j,k) * &
+            ( dconjg( diag%buf_H(diag%h_pos_H,i,j,k,0) ) * &
+            ( diag%buf_E(diag%h_pos_E,i,j,k+1,1) - diag%buf_E(diag%h_pos_E,i,j,k,1) ) ) ) )
+    
+       })
+    
+       })
+    endif
+
+    diag%h_pos_H = MOD(diag%h_pos_H + 1, diag%p)    
+    if ( diag%calc_je ) then
+       ! --- do the JE loop
+       do m4_m = 1, numMATLORENTZobj
+          mat = MATLORENTZobj(m4_m)
+          M4_MODOBJ_GETREG(mat,mat_reg)
+          ! --- m is the last calculated polarization field
+          M4_CALC_FILTER_FIELD_OF_MAT(m4_m-1)    
+          MATLORENTZobj(m4_m) = mat
+       enddo
+       m_P = diag%h_pos_P
+       if (m_P .eq. 0) then
+          n_P = diag%p - 1
+       else
+          n_P = m_P - 1
+       endif
+       
+       diag%h_pos_P = MOD(diag%h_pos_P + 1, diag%p)
+       diag%sje(m) = 0
+       
+       do m4_m = 1, numMATLORENTZobj
+          mat = MATLORENTZobj(m4_m)
+          M4_MODOBJ_GETREG(mat,mat_reg)
+          M4_REGLOOP_EXPR(mat_reg,p,i,j,k,w,{
+          if ( ( i .ge. reg%is ) .and. ( i .le. reg%ie ) .and. &
+               ( j .ge. reg%js ) .and. ( j .le. reg%je ) .and. &
+               ( k .ge. reg%ks ) .and. ( k .le. reg%ke ) ) then
+             if ( diag%mask(i,j,k) ) then
+                diag%sje(m) = diag%sje(m) + &
+                     ( &
+                     M4_IFELSE_TM({ M4_VOLEX(i,j,k) * w(1) * abs(diag%buf_E(diag%h_pos_E,i,j,k,0) *&
+                     dconjg( diag%buf_P(m_P,i,j,k,0,m4_m-1) - diag%buf_P(n_P,i,j,k,0,m4_m-1) ) ) / DT +},{0. +}) &
+                     M4_IFELSE_TM({ M4_VOLEY(i,j,k) * w(2) * abs(diag%buf_E(diag%h_pos_E,i,j,k,1) *&
+                     dconjg( diag%buf_P(m_P,i,j,k,1,m4_m-1) - diag%buf_P(n_P,i,j,k,1,m4_m-1) ) ) / DT +},{0. +}) &
+                     M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * abs(diag%buf_E(diag%h_pos_E,i,j,k,2) *&
+                     dconjg( diag%buf_P(m_P,i,j,k,2,m4_m-1) - diag%buf_P(n_P,i,j,k,2,m4_m-1) ) ) / DT},{0. }) &
+                     )
+             endif
+          endif
+          })
+          MATLORENTZobj(m4_m) = mat
+       enddo
+    endif
 
     ! WE need an extra 0.5 compared to diagebal because the average over a
     ! sin^2 wave is 0.5*amplitude
     diag%dudt = .25/DT * ( diag%en(m) - diag%en(moo) )
     
-    diag%dsx = .5 * ( diag%dsx1(m) + diag%dsx1(mo) + diag%dsx2(mo) + diag%dsx2(moo) )
-    diag%dsy = .5 * ( diag%dsy1(m) + diag%dsy1(mo) + diag%dsy2(mo) + diag%dsy2(moo) )
-    diag%dsz = .5 * ( diag%dsz1(m) + diag%dsz1(mo) + diag%dsz2(mo) + diag%dsz2(moo) )
+    if ( diag%calc_poynting ) then
+       diag%dsx = .5 * ( diag%dsx1(m) + diag%dsx1(mo) + diag%dsx2(mo) + diag%dsx2(moo) )
+       diag%dsy = .5 * ( diag%dsy1(m) + diag%dsy1(mo) + diag%dsy2(mo) + diag%dsy2(moo) )
+       diag%dsz = .5 * ( diag%dsz1(m) + diag%dsz1(mo) + diag%dsz2(mo) + diag%dsz2(moo) )
+       diag%ds   = diag%dsx + diag%dsy + diag%dsz 
+       diag%sumds = diag%sumds + DT * diag%ds
+       diag%sumdsx = diag%sumdsx + DT * diag%dsx
+       diag%sumdsy = diag%sumdsy + DT * diag%dsy
+       diag%sumdsz = diag%sumdsz + DT * diag%dsz
+    endif
 
-    diag%je = 0.5 * ( diag%sje(m) + diag%sje(mo) )
+    if ( diag%calc_je ) then
+       diag%je = 0.5 * ( diag%sje(m) + diag%sje(mo) )
+       diag%sumje = diag%sumje + DT * diag%je
+    endif
+
     diag%res = - ( diag%dudt + diag%ds + diag%je )
-
-    diag%ds   = diag%dsx + diag%dsy + diag%dsz 
-
     diag%sumdudt = diag%sumdudt + DT * diag%dudt
-    diag%sumds = diag%sumds + DT * diag%ds
-    diag%sumdsx = diag%sumdsx + DT * diag%dsx
-    diag%sumdsy = diag%sumdsy + DT * diag%dsy
-    diag%sumdsz = diag%sumdsz + DT * diag%dsz
-    diag%sumje = diag%sumje + DT * diag%je
-
     diag%sumres = - ( diag%sumdudt + diag%sumds + diag%sumje )
     
     })
