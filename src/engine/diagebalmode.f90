@@ -245,7 +245,7 @@ contains
     endif
     diag%h_pos_H = 0
     diag%h_pos_J = 0
-    diag%h_pos_E = diag%p - 1
+    diag%h_pos_E = 0
     allocate(diag%alpha(0:diag%p-1), stat = err )
     M4_ALLOC_ERROR( err, "Unable to allocate alpha array" )
     diag%beta = -2.d0 * ((1.d0 - gamma)**dble(diag%p))
@@ -334,6 +334,7 @@ contains
     type(T_MATLORENTZ) :: mat   
     integer :: m4_m
     type(T_REG) :: mat_reg
+    complex(kind=8) :: in_value ! needed by JE calculation
     complex(kind=8) :: out_value
     M4_MODLOOP_DECL({DIAGEBALMODE},diag)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
@@ -343,7 +344,9 @@ contains
     M4_MODLOOP_EXPR({DIAGEBALMODE},diag,{
 
     if (  ncyc .lt. diag%ns .or. ncyc .gt. diag%ne ) cycle
+
     M4_MODOBJ_GETREG(diag,reg)
+    diag%h_pos_H = MOD(diag%h_pos_H + 1, diag%p)    
     M4_CALC_FILTER_FIELD(H)
 
     if ( diag%calc_poynting ) then
@@ -422,17 +425,23 @@ contains
        })
     endif
     if ( diag%calc_je ) then
+
        ! --- do the JE loop
        P_n = mod(ncyc-1+2,2) + 1
        P_m = mod(ncyc+2,2) + 1
+
+       diag%h_pos_J = MOD(diag%h_pos_J + 1, diag%p)
+       do m4_m = 1, numMATLORENTZobj
+          mat = MATLORENTZobj(m4_m)
+          M4_MODOBJ_GETREG(mat,mat_reg)
+          ! --- m is the last calculated polarization field
+          M4_CALC_FILTER_FIELD_OF_MAT(m4_m-1)    
+          MATLORENTZobj(m4_m) = mat
+       enddo
+
        diag%sje(1) = 0
        m_P = diag%h_pos_J
-       if ( m_P .eq. 0 ) then
-          m_P = diag%h_pos_J - 1
-       else
-          m_P = m_P - 1
-       endif
-       
+
        do m4_m = 1, numMATLORENTZobj
           mat = MATLORENTZobj(m4_m)
           M4_MODOBJ_GETREG(mat,mat_reg)
@@ -441,7 +450,7 @@ contains
                ( j .ge. reg%js ) .and. ( j .le. reg%je ) .and. &
                ( k .ge. reg%ks ) .and. ( k .le. reg%ke ) ) then
              if ( diag%mask(i,j,k) ) then
-                diag%sje(1) = diag%sje(1) + &
+                diag%sje(1) = diag%sje(1) + 0.5 * &
                      ( &
                      M4_IFELSE_TM({ M4_VOLEX(i,j,k) * w(1) * realpart(diag%buf_E(diag%h_pos_E,i,j,k,0) *&
                      dconjg( diag%buf_J(m_P,i,j,k,0,m4_m-1) ) ) +},{0. +}) &
@@ -469,7 +478,7 @@ contains
     integer :: mod_pos;
     integer :: q
     complex(kind=8) :: out_value
-    complex(kind=8) :: in_value ! needed by JE calculation
+
     M4_MODLOOP_DECL({DIAGEBALMODE},diag)
     type(T_MATLORENTZ) :: mat   
     integer :: m4_m
@@ -486,9 +495,7 @@ contains
     if (  ncyc .lt. diag%ns .or. ncyc .gt. diag%ne ) cycle
     
     M4_MODOBJ_GETREG(diag,reg)
-    
     diag%h_pos_E = MOD(diag%h_pos_E + 1, diag%p)
-    
     M4_CALC_FILTER_FIELD(E)
 
     diag%en(m) = 0.
@@ -592,22 +599,11 @@ contains
        })
     endif
 
-    diag%h_pos_H = MOD(diag%h_pos_H + 1, diag%p)    
-    if ( diag%calc_je ) then
-       ! --- do the JE loop
-       P_n = mod(ncyc-1+2,2) + 1
-       P_m = mod(ncyc+2,2) + 1
 
-       do m4_m = 1, numMATLORENTZobj
-          mat = MATLORENTZobj(m4_m)
-          M4_MODOBJ_GETREG(mat,mat_reg)
-          ! --- m is the last calculated polarization field
-          M4_CALC_FILTER_FIELD_OF_MAT(m4_m-1)    
-          MATLORENTZobj(m4_m) = mat
-       enddo
+    if ( diag%calc_je ) then
+
        m_P = diag%h_pos_J
-       
-       diag%h_pos_J = MOD(diag%h_pos_J + 1, diag%p)
+
        diag%sje(2) = 0
        
        do m4_m = 1, numMATLORENTZobj

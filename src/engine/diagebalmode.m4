@@ -29,7 +29,7 @@ if ( ( i .ge. reg%is ) .and. ( i .le. reg%ie ) .and. &
     ( j .ge. reg%js ) .and. ( j .le. reg%je ) .and. &
     ( k .ge. reg%ks ) .and. ( k .le. reg%ke ) ) then
 if ( diag%mask(i,j,k) ) then
-   in_value = ( mat%P$1(p,P_m) - mat%P$1(p,P_n) ) / DT
+  in_value = ( mat%P$1(p,P_m) - mat%P$1(p,P_n) ) / DT
   out_value = in_value * diag%beta
   do q = 0,diag%p-1,1
     mod_pos = MOD( q + diag%h_pos_J, diag%p )

@@ -60,6 +60,8 @@ real(kind=8) function GenericWave(sigshape ,ncyc, noffs, natt, nsus, ndcy, nhwhm
 
   select case ( sigshape ) 
 
+  case ( "Linear" )
+     GenericWave = LinearWave(ncyc, noffs, natt, nsus, ndcy, nhwhm, omega, alpha, domega)
   case( "Sech" )
      GenericWave = SechWave(ncyc, noffs, natt, nsus, ndcy, nhwhm, omega, alpha, domega)
   case ( "Ramp" )
@@ -80,6 +82,45 @@ real(kind=8) function StepFunction(n,w,m)
   StepFunction = 1./(exp((0.85*w-x)/(0.02*w))+1.)
 
 end function StepFunction
+
+!---------------------------------------------------------------------
+
+  real(kind=8) function LinearWave(ncyc, noffs, natt, nsus, ndcy, nhwhm, omega, alpha, domega)
+
+    real(kind=8) :: ncyc, noffs, natt, nsus, ndcy, nhwhm, omega, alpha, domega
+    real(kind=8) :: gamma
+    real(kind=8) :: ncyc0, nend, amp
+
+
+    ncyc0 = ncyc - noffs
+    nend = natt + nsus + ndcy
+
+    LinearWave = 0.
+
+!    gamma = sqrt( log(2.) ) / ( nhwhm * DT )  ! calc gamma from HWHM
+
+    if ( ncyc0 .ge. 0. .and. ncyc0 .le. nend ) then
+
+       amp = 1.0
+
+       ! attack phase
+       if ( ncyc0 .le. natt ) then
+          amp =  ( natt - ncyc0 ) / natt
+       end if
+
+       ! decay phase
+       if ( ncyc0 .gt. natt + nsus ) then               
+          amp =  1.0 - ( ncyc0 - natt - nsus ) / ndcy
+       end if
+
+       LinearWave = amp * cos( (omega+domega*(ncyc0-natt)*DT) * (ncyc0 - natt) * DT + DEG*alpha) ! cos will peak at noffs+natt
+
+    end if
+
+  end function LinearWave
+
+
+
 !----------------------------------------------------------------------
   real(kind=8) function RampWave(ncyc, noffs, natt, nsus, ndcy, nhwhm, omega, alpha, domega)
 
