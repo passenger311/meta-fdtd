@@ -82,8 +82,6 @@ contains
        call WriteSumDiagebalMode(out, 1 )   
     case('H')
        call WriteSumDiagebalMode(out, 2 )   
-    case('J')
-       call WriteSumDiagebalMode(out, 3 )
     case default
        write(out%funit,*) "OUTPUT FUNCTION NOT IMPLEMENTED" 
     end select
@@ -102,7 +100,6 @@ contains
     
     diag = diagebalmodeobj(out%objidx)
     M4_MODOBJ_GETREG(out,reg)
-
     M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
     do c=0,2
        select case ( mode ) 
@@ -110,8 +107,6 @@ contains
           fld_sum(c) = fld_sum(c) + abs(diag%buf_E(diag%h_pos_E,i,j,k,c))
        case (2)
           fld_sum(c) = fld_sum(c) + abs(diag%buf_H(diag%h_pos_H,i,j,k,c))
-       case (3)
-          fld_sum(c) = fld_sum(c) + abs(diag%buf_J(diag%h_pos_J,i,j,k,c,0))
        end select
     end do
     })

@@ -36,14 +36,14 @@ module diagebalmode
   ! indices filt_history,i,j,k,vec_component
   complex(kind=8), pointer, dimension(:,:,:,:,:) :: buf_E
   complex(kind=8), pointer, dimension(:,:,:,:,:) :: buf_H
-  complex(kind=8), pointer, dimension(:,:,:,:,:,:) :: buf_J
+  complex(kind=8), pointer, dimension(:,:,:,:,:,:) :: buf_P
   ! filter parameters
   real(kind=8) :: invlambda
   real(kind=8) :: beta
   complex(kind=8), pointer, dimension(:) :: alpha
   integer :: p
   real(kind=8) :: invlambda_sep
-  integer :: h_pos_H, h_pos_E, h_pos_J
+  integer :: h_pos_H, h_pos_E, h_pos_P
 
   ! copied from diagebal.f90
   ! spatially integrated energy contributions
@@ -57,7 +57,7 @@ module diagebalmode
   
   ! partial contributions to energy terms
   real(kind=8), dimension(3) :: en, skh
-  real(kind=8), dimension(2) :: sje
+  real(kind=8), dimension(2) :: sje1, sje2
 
   real(kind=8), dimension(3) :: dsx1, dsx2
   real(kind=8), dimension(3) :: dsy1, dsy2
@@ -210,10 +210,10 @@ contains
     if ( diag%calc_je ) then
        ! do we need a polarization field
        M4_WRITE_INFO({"--- diagebalmode: numMATLORENTZobj = ", numMATLORENTZobj})
-       allocate(diag%buf_J(0:diag%p-1,reg%is:reg%ie, &
+       allocate(diag%buf_P(0:diag%p-1,reg%is:reg%ie, &
             reg%js:reg%je, &
             reg%ks:reg%ke,0:2,0:(numMATLORENTZobj-1)), stat = err)
-       M4_ALLOC_ERROR( err, "Unable to allocate filter buffer for J" )
+       M4_ALLOC_ERROR( err, "Unable to allocate filter buffer for P" )
 
     endif
     do c=0,2
@@ -235,7 +235,7 @@ contains
                 do i=reg%is,reg%ie
                    do q=0,diag%p-1
                       do r=0,numMATLORENTZobj-1
-                         diag%buf_J(q,i,j,k,c,r) = (0,0)
+                         diag%buf_P(q,i,j,k,c,r) = (0,0)
                       enddo
                    enddo
                 enddo
@@ -244,7 +244,7 @@ contains
        enddo
     endif
     diag%h_pos_H = 0
-    diag%h_pos_J = 0
+    diag%h_pos_P = 0
     diag%h_pos_E = 0
     allocate(diag%alpha(0:diag%p-1), stat = err )
     M4_ALLOC_ERROR( err, "Unable to allocate alpha array" )
@@ -330,12 +330,11 @@ contains
 
     integer :: ncyc, m
     integer :: mod_pos
-    integer :: q, P_n, P_m, m_P
+    integer :: q, P_n, P_m, m_P, n_P
     type(T_MATLORENTZ) :: mat   
     integer :: m4_m
     type(T_REG) :: mat_reg
-    complex(kind=8) :: in_value ! needed by JE calculation
-    complex(kind=8) :: out_value
+    complex(kind=8) :: in_value, out_value ! needed by JE calculation
     M4_MODLOOP_DECL({DIAGEBALMODE},diag)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
     
@@ -430,7 +429,7 @@ contains
        P_n = mod(ncyc-1+2,2) + 1
        P_m = mod(ncyc+2,2) + 1
 
-       diag%h_pos_J = MOD(diag%h_pos_J + 1, diag%p)
+       diag%h_pos_P = MOD(diag%h_pos_P + 1, diag%p)
        do m4_m = 1, numMATLORENTZobj
           mat = MATLORENTZobj(m4_m)
           M4_MODOBJ_GETREG(mat,mat_reg)
@@ -439,8 +438,14 @@ contains
           MATLORENTZobj(m4_m) = mat
        enddo
 
-       diag%sje(1) = 0
-       m_P = diag%h_pos_J
+       diag%sje1(1) = 0.
+       diag%sje2(1) = 0.
+       m_P = diag%h_pos_P
+       if ( diag%h_pos_P == 0 ) then
+          n_P = diag%p-1
+       else
+          n_P = diag%h_pos_P-1
+       endif
 
        do m4_m = 1, numMATLORENTZobj
           mat = MATLORENTZobj(m4_m)
@@ -450,14 +455,27 @@ contains
                ( j .ge. reg%js ) .and. ( j .le. reg%je ) .and. &
                ( k .ge. reg%ks ) .and. ( k .le. reg%ke ) ) then
              if ( diag%mask(i,j,k) ) then
-                diag%sje(1) = diag%sje(1) + 0.5 * &
+                diag%sje1(1) = diag%sje1(1) + 0.5 * &
+                     ( &
+                     M4_IFELSE_TM({ M4_VOLEX(i,j,k) * w(1) * realpart( ( mat%d1 * diag%buf_P(m_P,i,j,k,0,m4_m-1) +&
+                     mat%d2 * diag%buf_P(n_P,i,j,k,0,m4_m-1) + mat%d4 * diag%buf_E(diag%h_pos_E,i,j,k,0) ) *&
+                     dconjg( ( diag%buf_P(m_P,i,j,k,0,m4_m-1) - diag%buf_P(n_P,i,j,k,0,m4_m-1) ) / DT ) ) +},{0. +}) &
+                     M4_IFELSE_TM({ M4_VOLEX(i,j,k) * w(2) * realpart( ( mat%d1 * diag%buf_P(m_P,i,j,k,1,m4_m-1) +&
+                     mat%d2 * diag%buf_P(n_P,i,j,k,1,m4_m-1) + mat%d4 * diag%buf_E(diag%h_pos_E,i,j,k,1) ) *&
+                     dconjg( ( diag%buf_P(m_P,i,j,k,1,m4_m-1) - diag%buf_P(n_P,i,j,k,1,m4_m-1) ) / DT ) ) +},{0. +}) &
+                     M4_IFELSE_TE({ M4_VOLEX(i,j,k) * w(3) * realpart( ( mat%d1 * diag%buf_P(m_P,i,j,k,2,m4_m-1) +&
+                     mat%d2 * diag%buf_P(n_P,i,j,k,2,m4_m-1) + mat%d4 * diag%buf_E(diag%h_pos_E,i,j,k,2) ) *&
+                     dconjg( ( diag%buf_P(m_P,i,j,k,2,m4_m-1) - diag%buf_P(n_P,i,j,k,2,m4_m-1) ) / DT ) )},{0. }) &
+                     )
+
+                diag%sje2(1) = diag%sje2(1) + 0.5 * &
                      ( &
                      M4_IFELSE_TM({ M4_VOLEX(i,j,k) * w(1) * realpart(diag%buf_E(diag%h_pos_E,i,j,k,0) *&
-                     dconjg( diag%buf_J(m_P,i,j,k,0,m4_m-1) ) ) +},{0. +}) &
+                     dconjg( ( diag%buf_P(m_P,i,j,k,0,m4_m-1) - diag%buf_P(n_P,i,j,k,0,m4_m-1) ) / DT ) ) +},{0. +}) &
                      M4_IFELSE_TM({ M4_VOLEY(i,j,k) * w(2) * realpart(diag%buf_E(diag%h_pos_E,i,j,k,1) *&
-                     dconjg( diag%buf_J(m_P,i,j,k,1,m4_m-1) ) ) +},{0. +}) &
+                     dconjg( ( diag%buf_P(m_P,i,j,k,1,m4_m-1) - diag%buf_P(n_P,i,j,k,1,m4_m-1) ) / DT ) ) +},{0. +}) &
                      M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * realpart(diag%buf_E(diag%h_pos_E,i,j,k,2) *&
-                     dconjg( diag%buf_J(m_P,i,j,k,2,m4_m-1) ) )},{0. }) &
+                     dconjg( ( diag%buf_P(m_P,i,j,k,2,m4_m-1) - diag%buf_P(n_P,i,j,k,2,m4_m-1) ) / DT ) )},{0. }) &
                      )
              endif
           endif
@@ -475,7 +493,7 @@ contains
   subroutine StepEDiagEBalMode(ncyc)
 
     integer :: ncyc, m, mo, moo, m_P, n_P, P_n, P_m
-    integer :: mod_pos;
+    integer :: mod_pos
     integer :: q
     complex(kind=8) :: out_value
 
@@ -602,9 +620,15 @@ contains
 
     if ( diag%calc_je ) then
 
-       m_P = diag%h_pos_J
+       m_P = diag%h_pos_P
+       if ( diag%h_pos_P == 0 ) then
+          n_P = diag%p-1
+       else
+          n_P = diag%h_pos_P-1
+       endif
 
-       diag%sje(2) = 0
+       diag%sje1(2) = 0
+       diag%sje2(2) = 0
        
        do m4_m = 1, numMATLORENTZobj
           mat = MATLORENTZobj(m4_m)
@@ -614,14 +638,27 @@ contains
                ( j .ge. reg%js ) .and. ( j .le. reg%je ) .and. &
                ( k .ge. reg%ks ) .and. ( k .le. reg%ke ) ) then
              if ( diag%mask(i,j,k) ) then
-                diag%sje(2) = diag%sje(2) + 0.5 *&
+                diag%sje1(2) = diag%sje1(2) + 0.5 * &
+                     ( &
+                     M4_IFELSE_TM({ M4_VOLEX(i,j,k) * w(1) * realpart( ( mat%d1 * diag%buf_P(m_P,i,j,k,0,m4_m-1) +&
+                     mat%d2 * diag%buf_P(n_P,i,j,k,0,m4_m-1) + mat%d3 * diag%buf_E(diag%h_pos_E,i,j,k,0) ) *&
+                     dconjg( ( diag%buf_P(m_P,i,j,k,0,m4_m-1) - diag%buf_P(n_P,i,j,k,0,m4_m-1) ) / DT ) ) +},{0. +}) &
+                     M4_IFELSE_TM({ M4_VOLEX(i,j,k) * w(2) * realpart( ( mat%d1 * diag%buf_P(m_P,i,j,k,1,m4_m-1) +&
+                     mat%d2 * diag%buf_P(n_P,i,j,k,1,m4_m-1) + mat%d3 * diag%buf_E(diag%h_pos_E,i,j,k,1) ) *&
+                     dconjg( ( diag%buf_P(m_P,i,j,k,1,m4_m-1) - diag%buf_P(n_P,i,j,k,1,m4_m-1) ) / DT ) ) +},{0. +}) &
+                     M4_IFELSE_TE({ M4_VOLEX(i,j,k) * w(3) * realpart( ( mat%d1 * diag%buf_P(m_P,i,j,k,2,m4_m-1) +&
+                     mat%d2 * diag%buf_P(n_P,i,j,k,2,m4_m-1) + mat%d3 * diag%buf_E(diag%h_pos_E,i,j,k,2) ) *&
+                     dconjg( ( diag%buf_P(m_P,i,j,k,2,m4_m-1) - diag%buf_P(n_P,i,j,k,2,m4_m-1) ) / DT ) )},{0. }) &
+                     )
+
+                diag%sje2(2) = diag%sje2(2) + 0.5 * &
                      ( &
                      M4_IFELSE_TM({ M4_VOLEX(i,j,k) * w(1) * realpart(diag%buf_E(diag%h_pos_E,i,j,k,0) *&
-                     dconjg( diag%buf_J(m_P,i,j,k,0,m4_m-1) ) ) +},{0. +}) &
+                     dconjg( ( diag%buf_P(m_P,i,j,k,0,m4_m-1) - diag%buf_P(n_P,i,j,k,0,m4_m-1) ) / DT ) ) +},{0. +}) &
                      M4_IFELSE_TM({ M4_VOLEY(i,j,k) * w(2) * realpart(diag%buf_E(diag%h_pos_E,i,j,k,1) *&
-                     dconjg( diag%buf_J(m_P,i,j,k,1,m4_m-1) ) ) +},{0. +}) &
+                     dconjg( ( diag%buf_P(m_P,i,j,k,1,m4_m-1) - diag%buf_P(n_P,i,j,k,1,m4_m-1) ) / DT ) ) +},{0. +}) &
                      M4_IFELSE_TE({ M4_VOLEZ(i,j,k) * w(3) * realpart(diag%buf_E(diag%h_pos_E,i,j,k,2) *&
-                     dconjg( diag%buf_J(m_P,i,j,k,2,m4_m-1) ) )},{0. }) &
+                     dconjg( ( diag%buf_P(m_P,i,j,k,2,m4_m-1) - diag%buf_P(n_P,i,j,k,2,m4_m-1) ) / DT ) )},{0. }) &
                      )
              endif
           endif
@@ -646,7 +683,8 @@ contains
     endif
 
     if ( diag%calc_je ) then
-       diag%je = 0.5 * ( diag%sje(1) + diag%sje(2) )
+       diag%dudt = diag%dudt + 0.5 * ( diag%sje1(1) + diag%sje1(2) )
+       diag%je = 0.5 * ( diag%sje2(1) + diag%sje2(2) ) - 0.5 * ( diag%sje1(1) + diag%sje1(2) )
        diag%sumje = diag%sumje + DT * diag%je
     endif
 

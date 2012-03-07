@@ -110,6 +110,20 @@ function PML(parms)
    return PML
 end
 
+-- CPML Sub-Block definition
+
+function CPML(parms)
+   local CPML = { block = "CPML" }
+   for k,v in pairs(parms) do CPML[k] = v end
+   CPML.cells = parms.cells or 11
+   CPML.pot = parms.pot or 3.2
+   CPML.sigma = parms.sigma or 1.94444444444444
+   CPML.kappa = parms.kappa or 1.1
+   CPML.alpha = parms.alpha or 0.0
+   CPML.alphapot = parms.alphapot or 1.0
+   return CPML
+end
+
 -- REG Sub-Block definition
 
 function REG(parms) 
@@ -694,6 +708,20 @@ local function writePML(fh,PML)
    fh:write(")PML\n")
 end
 
+-- CPML Sub-Block write
+
+local function writeCPML(fh,CPML)
+   assert(CPML and CPML.block == "CPML", "Expected CPML{}")
+   fh:write("(CPML\n")
+   fh:write(CPML.cells,"\t! # of cells\n");
+   fh:write(CPML.pot,"\t! pot parameter\n");
+   fh:write(CPML.sigma,"\t! sigma parameter\n");
+   fh:write(CPML.kappa,"\t! kappa parameter\n");
+   fh:write(CPML.alpha,"\t! alpha parameter\n");
+   fh:write(CPML.alphapot,"\t!alpha pot parameter\n");
+   fh:write(")CPML\n")
+end
+
 -- BOUND Config-Block write
 
 local function writeBOUND(fh,BOUND)
@@ -704,6 +732,7 @@ local function writeBOUND(fh,BOUND)
 	    "\t! boundary config\n"); 
    for i,v in ipairs(BOUND) do
       if v.block == "PML" then writePML(fh,v) end
+      if v.block == "CPML" then writeCPML(fh,v) end
    end
    fh:write(")BOUND\n\n")
 end

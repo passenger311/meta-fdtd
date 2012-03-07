@@ -22,6 +22,7 @@ module bound
   use pmc
   use pbc
   use pml
+  use cpml
 
   implicit none
   private
@@ -83,8 +84,11 @@ contains
       select case (string)
       case( "(PML" )
          M4_WRITE_INFO({"--> ReadConfigPml"})
-         call ReadConfigPml(funit,lcount,string) 
-       case( "(MPIBC" )
+         call ReadConfigPml(funit,lcount,string)
+      case( "(CPML" )
+         M4_WRITE_INFO({"--> ReadConfigCPml"})
+         call ReadConfigCPml(funit,lcount,string)
+      case( "(MPIBC" )
           M4_WRITE_DBG({"-> invoking ReadConfigMpibc"})
 !          call ReadConfigMpibc(UNITTMP,lcount,string) 
       case( "(PBC" )
@@ -128,6 +132,7 @@ contains
     
     call InitializePec(planebound,0)
     call InitializePml(planebound,1)
+    call InitializeCPml(planebound,4)
     call InitializePmc(planebound,2)
     call InitializePbc(planebound,3)
 
@@ -142,6 +147,7 @@ contains
     M4_WRITE_DBG({". enter FinalizeBound"})
 
     call FinalizePml
+    call FinalizeCPml
     call FinalizePec
     call FinalizePmc
     call FinalizePbc
@@ -164,6 +170,7 @@ contains
 
        if ( mpibound(i) ) cycle
        if ( planebound(i) .eq. 1 ) call StepHBoundPml(i)
+       if ( planebound(i) .eq. 4 ) call StepHBoundCPml(i)
 
     end do
 
@@ -181,6 +188,8 @@ contains
              call StepHBoundPmc(i)
           case ( 3 )
              call StepHBoundPbc(i)
+          case ( 4 )
+             ! call StepHBoundCPml(i)
 
           case default
              M4_FATAL_ERROR({"BOUNDARY CONDITION # ",TRIM(i2str(planebound(i))),&
@@ -205,6 +214,7 @@ contains
 
        if ( mpibound(i) ) cycle
        if ( planebound(i) .eq. 1 ) call StepEBoundPml(i)
+       if ( planebound(i) .eq. 4 ) call StepEBoundCPml(i)
 
     end do
 
@@ -222,6 +232,8 @@ contains
           call StepEBoundPmc(i)
        case ( 3 )
           call StepEBoundPbc(i)
+       case ( 4 )
+          ! call StepEBoundCPml(i)
 
        case default
           M4_FATAL_ERROR({"BOUNDARY CONDITION # ",TRIM(i2str(planebound(i))),&

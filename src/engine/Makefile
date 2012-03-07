@@ -72,6 +72,7 @@ pec.o\
 pmc.o\
 pbc.o\
 pml.o\
+cpml.o\
 out_calc.o\
 fdtd_outset.o\
 fdtd_outgpl.o\

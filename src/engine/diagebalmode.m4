@@ -29,14 +29,14 @@ if ( ( i .ge. reg%is ) .and. ( i .le. reg%ie ) .and. &
     ( j .ge. reg%js ) .and. ( j .le. reg%je ) .and. &
     ( k .ge. reg%ks ) .and. ( k .le. reg%ke ) ) then
 if ( diag%mask(i,j,k) ) then
-  in_value = ( mat%P$1(p,P_m) - mat%P$1(p,P_n) ) / DT
+  in_value = mat%P$1(p,P_m)
   out_value = in_value * diag%beta
   do q = 0,diag%p-1,1
-    mod_pos = MOD( q + diag%h_pos_J, diag%p )
+    mod_pos = MOD( q + diag%h_pos_P, diag%p )
     out_value = out_value + &
-      (diag%buf_J(mod_pos,i,j,k,$2,$3)*diag%alpha(q))
+      (diag%buf_P(mod_pos,i,j,k,$2,$3)*diag%alpha(q))
   enddo !q
-  diag%buf_J(diag%h_pos_J,i,j,k,$2,$3) = out_value
+  diag%buf_P(diag%h_pos_P,i,j,k,$2,$3) = out_value
 endif
 endif})
 })
