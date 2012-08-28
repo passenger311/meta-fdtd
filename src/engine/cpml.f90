@@ -479,11 +479,11 @@ M4_IFELSE_1D({},{
       M4_FTYPE, dimension(1:6,is:ie,js:je,ks:ke) :: PsiH
       integer i, j, k
   
-M4_IFELSE_3D({!$OMP PARALLEL DO PRIVATE(Exh,Eyh,Ezh,Bxo,Byo,Bzo)})
+M4_IFELSE_3D({!$OMP PARALLEL DO })
       do k=ks, ke     
-M4_IFELSE_2D({!$OMP PARALLEL DO PRIVATE(Exh,Eyh,Ezh,Bxo,Byo,Bzo)})
+M4_IFELSE_2D({!$OMP PARALLEL DO })
          do j=js, je
-M4_IFELSE_1D({!$OMP PARALLEL DO PRIVATE(Exh,Eyh,Ezh,Bxo,Byo,Bzo)})
+M4_IFELSE_1D({!$OMP PARALLEL DO })
             do i=is, ie
 
 
@@ -591,11 +591,11 @@ M4_IFELSE_3D({!$OMP END PARALLEL DO})
       
       integer :: i, j, k
 
-M4_IFELSE_3D({!$OMP PARALLEL DO PRIVATE(Hxh,Hyh,Hzh,Dxo,Dyo,Dzo,epsinvx,epsinvy,epsinvz)}) 
+M4_IFELSE_3D({!$OMP PARALLEL DO }) 
       do k=ks, ke
-M4_IFELSE_2D({!$OMP PARALLEL DO PRIVATE(Hxh,Hyh,Hzh,Dxo,Dyo,Dzo,epsinvx,epsinvy,epsinvz)}) 
+M4_IFELSE_2D({!$OMP PARALLEL DO }) 
          do j=js, je
-M4_IFELSE_1D({!$OMP PARALLEL DO PRIVATE(Hxh,Hyh,Hzh,Dxo,Dyo,Dzo,epsinvx,epsinvy,epsinvz)}) 
+M4_IFELSE_1D({!$OMP PARALLEL DO }) 
             do i=is, ie
 
 
