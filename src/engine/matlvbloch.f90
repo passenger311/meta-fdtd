@@ -21,8 +21,8 @@
 ! The MatlvBloch module calculates the reponse of an effective  2 level 
 ! bloch system with langevin noise for dephasing and relaxation
 !
-! d/dt d/dt P + 2 * gammal * d/dt P + omegal**2 P =  - 4 * omegar * conv1 * M (M * E) f(N,Ntr)
-! d/dt N = conv2 * E/ (omegar ) * ( d/dt P + gammal * P ) - gammanr * N 
+! d/dt d/dt P + 2 * gammal * d/dt P + omegal**2 P =  - 4 * omegar * conv1 * M (M * E) f(N,Ntr) + Noise
+! d/dt N = conv2 * E/ (omegar ) * ( d/dt P + gammal * P ) - gammanr * N + Noise
 ! d/dt E = d/dt E* - epsinv * d/dt P 
 !
 ! where E* is the electric field as calculated without the sources.  
@@ -34,7 +34,7 @@
 !
 ! 
 !
-! StepHMatLVBloch: update eq. P(n+1) = c1 * P(n) + c2 * P(n-1) + c3 * E(n)
+! StepHMatLVBloch: update eq. P(n+1) = c1 * P(n) + c2 * P(n-1) + c3 * E(n) + Noise
 !                and update N (see below)
 ! StepEMatLVBloch: update eq. E(n+1) = E(n+1)* - epsinv * (P(n+1) - P(n))
 !
@@ -49,7 +49,7 @@
 !
 ! The second bit (after calculating P) is actually the first part of the N calculation:
 !
-! N(n+1)_p1 = c4 * N(n) + c5 * ( P(n+1) - P(n) )*( E(n) ) + c6 * ( P(n+1) + P(n) )*( E(n) )
+! N(n+1)_p1 = c4 * N(n) + c5 * ( P(n+1) - P(n) )*( E(n) ) + c6 * ( P(n+1) + P(n) )*( E(n) ) + Noise
 !
 
 module matlvbloch
@@ -92,13 +92,13 @@ module matlvbloch
   M4_FTYPE, dimension(:,:), pointer :: P
 
   ! number density 
-  real(kind=8), dimension(:), pointer :: N, Nold
+  real(kind=8), dimension(:), pointer :: N
   
   ! old langevin term for P
   real(kind=8), dimension(:), pointer :: lvterm
   
   ! factor to account for actual 3D volume of 2D or 1D representations
-  real(kind=8) :: volfac
+  real(kind=8) :: volfac, pfac
 
   ! seed for random number generator
   integer :: seed
@@ -173,14 +173,14 @@ contains
 
        reg = regobj(mat%regidx)
 
-       allocate(mat%P(reg%numnodes,2), mat%N(reg%numnodes), mat%Nold(reg%numnodes), &
+       allocate(mat%P(reg%numnodes,2), mat%N(reg%numnodes), &
             mat%lvterm(reg%numnodes), stat = err)
        M4_ALLOC_ERROR(err,"InitializeMatlvbloch")
 
        mat%P = 0.
 
        mat%N = mat%N0
-       mat%Nold = mat%N0
+       !mat%Nold = mat%N0
 
        mat%lvterm = 0.
 
@@ -204,6 +204,8 @@ contains
 
 ! for langevin noise
        call zigset(mat%seed)
+       ! set factor between offdiagonal matrix element rho_12 and P 
+       mat%pfac = 2*SI_E/SI_C/sqrt(REAL_DX*SI_EPS0)
        ! set initial tipping angle
        if (mat%N0 == 2*mat%Ntr) then
          M4_MODOBJ_GETREG(mat,reg)
@@ -211,18 +213,16 @@ contains
             tipangle = 2/sqrt(mat%Ntr*2*mat%volfac)*rnor()
             x1 = uni()
             x2 = uni()
-            re = x1/sqrt(x1**2+x2**2)*sin(tipangle)*mat%Ntr/&
-                 sqrt(REAL_DX)*8.983e-23
-            im = x2/sqrt(x1**2+x2**2)*sin(tipangle)*mat%Ntr/&
-                 sqrt(REAL_DX)*8.983e-23
+            re = x1/sqrt(x1**2+x2**2)*sin(tipangle)*mat%pfac*mat%Ntr
+            im = x2/sqrt(x1**2+x2**2)*sin(tipangle)*mat%pfac*mat%Ntr
             mat%P(p,2) = re
             mat%P(p,1) = re*(1-mat%gammal*DT) - im*mat%omegar*DT
             mat%N(p) = (cos(tipangle)+1)*mat%Ntr
-            mat%Nold(p) = mat%N(p)
+            !mat%Nold(p) = mat%N(p)
          })
        endif
-       mat%lvP2 = mat%omegar*sqrt(DT*mat%gammal/mat%volfac)*8.982e-23/sqrt(REAL_DX)
-       mat%lvP1 = sqrt(mat%gammal*DT/mat%volfac)*8.982e-23/sqrt(REAL_DX)
+       mat%lvP2 = mat%pfac*mat%omegar*sqrt(DT*mat%gammal/mat%volfac)
+       mat%lvP1 = mat%pfac*sqrt(mat%gammal*DT/mat%volfac)
        mat%lvP3 = sqrt(mat%gammanr*DT/mat%volfac)
        
 M4_IFELSE_1D({
@@ -271,11 +271,12 @@ M4_IFELSE_TM({},{
 
   subroutine StepHMatlvbloch(ncyc)
 
-    integer :: ncyc, m, n, zeta1, zeta2, zeta3
+    integer :: ncyc, m, n
     M4_MODLOOP_DECL({MATLVBLOCH},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
     M4_FTYPE :: me
     real(kind=8) :: pem, pen, ninv
+    real(kind=8) :: zeta1, zeta2, zeta3, x, y, z, phi, theta, dphi, dtheta, d, r
 
     M4_MODLOOP_EXPR({MATLVBLOCH},mat,{
 
@@ -308,22 +309,22 @@ M4_IFELSE_TM({},{
         
         ninv = ( mat%N(p) - mat%Ntr )
         ! get random numbers for polarization noise
-        zeta1 = rnor()
-        zeta2 = rnor()
+        zeta1 = rnor()*sqrt(mat%N(p))*mat%lvP1
+        zeta2 = rnor()*sqrt(mat%N(p))*mat%lvP2
+        zeta3 = rnor()*sqrt(mat%N(p))*mat%lvP3        
         mat%P(p,m) = mat%c1 * mat%P(p,n) + mat%c2 * mat%P(p,m) + mat%c3 * me * ninv &
-             - zeta2*sqrt(mat%N(p))*mat%lvP2 + ( zeta1*sqrt(mat%N(p)) - &
-             mat%lvterm(p)*sqrt(mat%Nold(p)) )*mat%lvP1
+            - zeta2 + zeta1 - mat%lvterm(p)
+ 
         mat%lvterm(p) = zeta1
-        mat%Nold(p) = mat%N(p)
+ 
 
         ! calculate first part of the density response
         
 
         pem =  mat%P(p,m) * me
 
-        zeta3 = rnor()
         mat%N(p) = mat%c4 * mat%N(p) + mat%c5 * ( pem - pen ) + mat%c6 * ( pem + pen ) + mat%c7&
-             + zeta3*sqrt(mat%N(p))*mat%lvP3
+             + zeta3
 
         ! after: J(*,m) is now P(n+1)
         ! m and n will be flipped in the next timestep!

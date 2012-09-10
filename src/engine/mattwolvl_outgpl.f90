@@ -121,15 +121,16 @@ contains
 
       case ( 2 )
 
-         val1 = mat%rho12(p)
+         val1 = Real(mat%rho12(p))
+         val2 = Aimag(mat%rho12(p))
 
          if ( out%mode .ne. 'S' ) then
 
             if ( reg%isbox ) then
-               write(out%funit,"(1E15.6E3)") real(val1,8)
+               write(out%funit,"(2E15.6E3)") real(val1,8), real(val2,8)
             else
-               write(out%funit,"(M4_SDIM({I5}),(1E15.6E3))") &
-                    M4_DIM123({i},{i,j},{i,j,k}),real(val1,8)
+               write(out%funit,"(M4_SDIM({I5}),(2E15.6E3))") &
+                    M4_DIM123({i},{i,j},{i,j,k}),real(val1,8), real(val2,8)
             endif
 
          else

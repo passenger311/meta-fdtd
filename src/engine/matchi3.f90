@@ -61,7 +61,7 @@
 ! invlambdar scales like an inverse length, gammar as an inverse time
 ! chi3r + chi3k scale as follows:
 !
-! chi3 = ( dx[SI]^3 * c[SI]^2 / eps0[SI] ) * chi3(SI)
+! chi3 = c[SI]^2 / ( dx[SI]^3 eps0[SI] ) * chi3(SI)
 !
 
 
