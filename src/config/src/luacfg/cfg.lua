@@ -137,6 +137,9 @@ end
 function LOAD(parms) 
    local LOAD = { block = "LOAD" }
    for k,v in pairs(parms) do LOAD[k] = v end
+   for i=1, #LOAD do
+     LOAD[i] = tostring(LOAD[i])..".in"
+   end
    return LOAD
 end
 
@@ -147,7 +150,9 @@ function LOAD_GEO(parms)
    local LOAD_GEO = { block = "LOAD_GEO" }
    for k,v in pairs(parms) do LOAD_GEO[k] = v end
    assert(scenes[parms[1]] ~=nil, "LOAD_GEO{} <name>="..parms[1].." does not exist!")
-   LOAD_GEO.file = "geo_"..tostring(parms[1])..".in"
+   for i=1, #LOAD_GEO do
+     LOAD_GEO[i] = "geo_"..tostring(LOAD_GEO[i])..".in"
+   end
    return LOAD_GEO
 end
 
@@ -362,6 +367,24 @@ function LVFOURLVL(parms)
    return LVFOURLVL
 end
 
+-- (MAT)LVFOURLVLEP Sub-Block definition
+
+function LVFOURLVLEP(parms)
+   local LVFOURLVLEP = { block = "LVFOURLVLEP" }
+   LVFOURLVLEP.invlambdal = parms.invlambdal
+   LVFOURLVLEP.gammal = parms.gammal or {0,0}
+   LVFOURLVLEP.dipole12 = parms.dipole12 or 0.1
+   LVFOURLVLEP.dipole03 = parms.dipole03 or 0.1
+   LVFOURLVLEP.dens = parms.dens or 1
+   LVFOURLVLEP.start = parms.start or {0,0,0}
+   LVFOURLVLEP.gamma = parms.gamma or {0,0,0,0}
+   LVFOURLVLEP.rp = parms.rp
+   LVFOURLVLEP.LFE = parms.LFE or 0
+   LVFOURLVLEP.volfac = parms.volfac or 1
+   LVFOURLVLEP.linefac = parms.linefac or 1
+   LVFOURLVLEP.seed = parms.seed or os.time()
+   return LVFOURLVLEP
+end
 
 -- (Mat) QW Sub-Block definition
 
@@ -447,10 +470,11 @@ function HARDJ(parms)
    HARDJ.amplitude = parms.amplitude or 1.
    HARDJ.pulse = parms.pulse or { shape="Gaussian", width=0, 
 				  offset=0, attack=0, sustain=0, decay=0 }
-   HARDJ.planewave = parms.planewave or { on=false, phi=0, theta=0, psi=0, nrefr=1 }
+   if not parms.planewave then  parms.planewave = { on=false, phi=0, theta=0, psi=0, nrefr=1 } end
+   HARDJ.planewave = parms.planewave 
    HARDJ.alpha = parms.alpha or 0
    HARDJ.domega = parms.domega or 0
-   if not HARDJ.planewave.on then HARDJ.planewave.on=true end
+   if HARDJ.planewave.on == nil then HARDJ.planewave.on=true end
    return HARDJ
 end
 
@@ -619,10 +643,12 @@ end
 
 local function writeLOAD(fh,LOAD)
    assert(LOAD and LOAD.block == "LOAD", "Expected LOAD{}")
-   if LOAD.on == false then return end  
-   fh:write("    (LOAD\n")
-   fh:write("\t",LOAD[1],"\t! file to load\n")
-   fh:write("    )LOAD\n")
+   if LOAD.on == false then return end 
+   for i=1, #LOAD do
+   	fh:write("    (LOAD\n")
+   	fh:write("\t",LOAD[i],"\t! file to load\n")
+   	fh:write("    )LOAD\n")
+   end
 end
 
 -- LOAD_GEO Sub-Block write
@@ -630,9 +656,11 @@ end
 local function writeLOAD_GEO(fh,LOAD_GEO)
    assert(LOAD_GEO and LOAD_GEO.block == "LOAD_GEO", "Expected LOAD_GEO{}")
    if LOAD_GEO.on == false then return end  
-   fh:write("    (LOAD\n")
-   fh:write("\t",LOAD_GEO.file,"\t! scene file to load\n")
-   fh:write("    )LOAD\n")
+   for i=1, #LOAD_GEO do 
+     fh:write("    (LOAD\n")
+     fh:write("\t",LOAD_GEO[i],"\t! scene file to load\n")
+     fh:write("    )LOAD\n")
+   end
 end
 
 -- REG Sub-Block write
@@ -818,6 +846,20 @@ local writemat = {
 	      fh:write(LVFOURLVL.volfac, "\t! relation between real volume and dx^3 \n")
               fh:write(LVFOURLVL.linefac, "\t! relation between homogeneous and inhomogeneous linewidth \n")
 	      fh:write(LVFOURLVL.seed, "\t! random number seed (max 2^31 \n")
+          end,
+   LVFOURLVLEP = function(fh,LVFOURLVLEP)
+              fh:write(LVFOURLVLEP.invlambdal[1]," ", LVFOURLVLEP.invlambdal[2],"\t! invlambdal [2 pi c]\n")
+              fh:write(LVFOURLVLEP.gammal[1]," ", LVFOURLVLEP.gammal[2],"\t! gammal [1/dt]\n")
+              fh:write(LVFOURLVLEP.dipole12,"\t! DPME 1<->2 [1/dx]\n")
+              fh:write(LVFOURLVLEP.dipole03,"\t! DPME 0<->3 [1/dx]\n")
+              fh:write(LVFOURLVLEP.dens,"\t! density of four lvl systems [1/dx^3]\n")
+              fh:write(LVFOURLVLEP.start[1]," ", LVFOURLVLEP.start[2]," ",LVFOURLVLEP.start[3],"\t! values for N3_0,N2_0,N1_0 [1/dx^3]\n")
+              fh:write(LVFOURLVLEP.gamma[1]," ",LVFOURLVLEP.gamma[2]," ",LVFOURLVLEP.gamma[3]," ",LVFOURLVLEP.gamma[4],"\t! non rad. recomb. rates [1/dt]\n")
+              fh:write(LVFOURLVLEP.rp,"\t! Pump Rate 0<->3 [1/dt]\n")
+              fh:write(LVFOURLVLEP.LFE, "\t! local field effect due to epsilon included?\n")
+	      fh:write(LVFOURLVLEP.volfac, "\t! relation between real volume and dx^3 \n")
+              fh:write(LVFOURLVLEP.linefac, "\t! relation between homogeneous and inhomogeneous linewidth \n")
+	      fh:write(LVFOURLVLEP.seed, "\t! random number seed (max 2^31 \n")
           end,
 
    QW = function(fh,QW)
