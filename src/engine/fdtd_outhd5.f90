@@ -43,7 +43,7 @@ contains
     type (T_BUF) :: buf
 
     if ( out%fn .eq. 'Px' .or. out%fn .eq. 'Py' .or. out%fn .eq. 'Pz' .or. &
-         out%fn .eq. 'En' ) then
+         out%fn .eq. 'En' .or. out%fn .eq. 'EnE' .or. out%fn .eq. 'EnH' ) then
 
        ! allocate buffer for calculated data
 
@@ -93,7 +93,13 @@ contains
        call WriteBufData(out, mode) 
     case('En')
        call FdtdCalcEn(buf, 1, mode)
-       call WriteBufData(out, mode) 
+       call WriteBufData(out, mode)
+    case('EnE')
+       call FdtdCalcEnE(buf, 1, mode)
+       call WriteBuffer(out, buf, 0, mode)
+    case('EnH')
+       call FdtdCalcEnH(buf, 1, mode)
+       call WriteBuffer(out, buf, 0, mode)
     case('EH')
        call WriteEH(out, mode)
     case('Ex')

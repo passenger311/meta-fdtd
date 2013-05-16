@@ -75,7 +75,11 @@ M4_IFELSE_MPI(call SynchronizeMPIWorld)
            write(6,*) "* loading checkpoint file"
            if ( load_state ) then
               write(6,*) "* checkpoint.in found (loading)"
-              open(unit=UNITCHK, file=checkpoint_fn, status = "old", form = "unformatted"  ) 
+              open(unit=UNITCHK, file=checkpoint_fn, status = "old", form = "unformatted"  )
+              write(6,*) "!WRN Ensure in config file that even first timestep follows on odd last timestep &
+		and vice versa (Beware that timestep ncyc=0 is not performed)."
+              write(6,*) "!WRN The diagebal module evaluates mod(2*ncyc,3) and enforcing odd following on &
+                even timesteps only is not sufficient for this module."
            else
               M4_FATAL_ERROR({"COULD NOT LOAD 'checkpoint.in'"})
           !    write(6,*) "* checkpoint.in not found (skipping)"

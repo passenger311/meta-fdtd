@@ -34,7 +34,8 @@ module fdtd_calc
 
   public :: InitializeFdtdCalc
   public :: FinalizeFdtdCalc
-  public :: FdtdCalcEn, FdtdCalcSx, FdtdCalcSy, FdtdCalcSz
+  public :: FdtdCalcEn, FdtdCalcEnE, FdtdCalcEnH
+  public :: FdtdCalcSx, FdtdCalcSy, FdtdCalcSz
   public :: NumericalPhaseVelocity
 
 contains
@@ -142,7 +143,76 @@ contains
     
   end subroutine FdtdCalcEn
 
+
+  subroutine FdtdCalcEnE(buf, slot, mode)
+
+    ! Localization: En[i,j,k] = En(i,j,k)
+
+    type (T_BUF) :: buf
+    integer :: slot
+    logical :: mode
+    M4_FTYPE :: EEx,EEy,EEz
+    real(kind=8) :: eps
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(0))
+
+    if ( .not. mode ) return
+
+    if ( slot .gt. buf%numslot ) then
+       M4_FATAL_ERROR({"NOT ENOUGH BUFFER SLOTS ", &
+            TRIM(i2str(slot))," > ", TRIM(i2str(buf%numslot)), " (FdtdCalcEn)"})
+    endif
+
+    reg = regobj(buf%regidx)
+
+    M4_REGLOOP_EXPR(reg,p,i,j,k,w, {
+
+    EEx = 0.25/epsinvx(i,j,k) * (real(Ex(M4_COORD(i,j,k)))**2+real(Ex(M4_COORD(i-1,j,k)))**2)
+    EEy = 0.25/epsinvy(i,j,k) * (real(Ey(M4_COORD(i,j,k)))**2+real(Ey(M4_COORD(i,j-1,k)))**2)
+    EEz = 0.25/epsinvz(i,j,k) * (real(Ez(M4_COORD(i,j,k)))**2+real(Ez(M4_COORD(i,j,k-1)))**2)
+    buf%data(p,slot) = (EEx+EEy+EEz)
+
+    } )
+
+
+  end subroutine FdtdCalcEnE
+
+  subroutine FdtdCalcEnH(buf, slot, mode)
+
+    ! Localization: En[i,j,k] = En(i,j,k)
+
+    type (T_BUF) :: buf
+    integer :: slot
+    logical :: mode
+    M4_FTYPE :: EHx,EHy,EHz
+    real(kind=8) :: eps
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(0))
+
+    if ( .not. mode ) return
+
+    if ( slot .gt. buf%numslot ) then
+       M4_FATAL_ERROR({"NOT ENOUGH BUFFER SLOTS ", &
+            TRIM(i2str(slot))," > ", TRIM(i2str(buf%numslot)), " (FdtdCalcEn)"})
+    endif
+
+    reg = regobj(buf%regidx)
+
+    M4_REGLOOP_EXPR(reg,p,i,j,k,w, {
+
+    EHx = 0.125/M4_MUINVX(i,j,k) * ( real(Hx(M4_COORD(i,j,k)))**2+real(Hx(M4_COORD(i,j,k-1)))**2 + &
+         real(Hx(M4_COORD(i,j-1,k)))**2+real(Hx(M4_COORD(i,j-1,k-1)))**2)
+    EHy = 0.125/M4_MUINVY(i,j,k) * (real(Hy(M4_COORD(i,j,k)))**2+real(Hy(M4_COORD(i-1,j,k)))**2 + &
+         real(Hy(M4_COORD(i,j,k-1)))**2+real(Hy(M4_COORD(i-1,j,k-1)))**2)
+    EHz = 0.125/M4_MUINVZ(i,j,k) * (real(Hz(M4_COORD(i,j,k)))**2+real(Hz(M4_COORD(i-1,j,k)))**2 + &
+         real(Hz(M4_COORD(i,j-1,k)))**2+real(Hz(M4_COORD(i-1,j-1,k)))**2)
+    buf%data(p,slot) = (EHx+EHy+EHz)
+
+    } )
+
+
+  end subroutine FdtdCalcEnH
+
 !----------------------------------------------------------------------
+
 
 ! Localization: Sx[i,j,k] = Sx(i+1/2,j,k)
 

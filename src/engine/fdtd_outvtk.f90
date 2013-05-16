@@ -44,7 +44,7 @@ contains
     type (T_BUF) :: buf
 
     if ( out%fn .eq. 'Sx' .or. out%fn .eq. 'Sy' .or. out%fn .eq. 'Sz' .or. &
-         out%fn .eq. 'En' ) then
+         out%fn .eq. 'En' .or. out%fn .eq. 'EnE' .or. out%fn .eq. 'EnH' ) then
 
        ! allocate buffer for calculated data
 
@@ -102,6 +102,12 @@ contains
     select case (out%fn)
     case('En')
        call FdtdCalcEn(buf, 1, mode)
+       call WriteBuffer(out, buf, 0, mode)
+    case('EnE')
+       call FdtdCalcEnE(buf, 1, mode)
+       call WriteBuffer(out, buf, 0, mode)
+    case('EnH')
+       call FdtdCalcEnH(buf, 1, mode)
        call WriteBuffer(out, buf, 0, mode)
     case('S')
        call FdtdCalcSx(buf, 1, mode)

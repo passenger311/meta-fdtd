@@ -370,7 +370,7 @@ M4_IFELSE_3D({
 
        diag%ds   = diag%dsx + diag%dsy + diag%dsz 
        diag%res = - ( diag%dudt + diag%ds + diag%jeabs + diag%khabs )
-      
+       
        diag%sumdudt = diag%sumdudt + DT * diag%dudt
        diag%sumje = diag%sumje + DT * diag%jeabs
        diag%sumkh = diag%sumkh + DT * diag%khabs
