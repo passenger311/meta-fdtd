@@ -274,7 +274,8 @@ contains
        mat%x1fac1 = 1. / 2. / mat%omegarb / DT * conv2 
        mat%x1fac2 = mat%x1fac1 * DT * mat%gammalb / 2.
        mat%x2fac1 = 1. / 2. / mat%omegara / DT * conv2 
-       mat%x2fac2 = mat%x2fac2 * DT * mat%gammala / 2.
+       !mat%x2fac2 = mat%x2fac2 * DT * mat%gammala / 2.  bugfix on 16/05/2013 Influence of bug should be minor
+       mat%x2fac2 = mat%x2fac1 * DT * mat%gammala / 2.
        g10 = mat%gamma10 * DT
        g21 = mat%gamma21 * DT
        g32 = mat%gamma32 * DT
