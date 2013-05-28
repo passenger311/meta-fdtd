@@ -259,10 +259,13 @@ contains
 ! for polarisation integration
        mat%c1a = ( 2. - mat%omegala**2 * DT**2 ) / ( 1 + mat%gammala * DT )
        mat%c2a = ( mat%gammala * DT - 1. ) / ( 1. + mat%gammala * DT )
-       mat%c3a = 2. * mat%omegara * conv1 * mat%Ma**2 / ( 1/DT**2 + mat%gammala * DT )
+       !mat%c3a = 2. * mat%omegara * conv1 * mat%Ma**2 / ( 1/DT**2 + mat%gammala * DT ) bugfix 28/05/2013 Influence of bug is minor
+       mat%c3a = 2. * mat%omegara * conv1 * mat%Ma**2 / ( 1/DT**2 + mat%gammala / DT )
        mat%c1b = ( 2. - mat%omegalb**2 * DT**2 ) / ( 1 + mat%gammalb * DT )
        mat%c2b = ( mat%gammalb * DT - 1 ) / ( 1 + mat%gammalb * DT )
-       mat%c3b = 2. * mat%omegarb * conv1 * mat%Mb**2 / ( 1/DT**2 + mat%gammalb * DT )
+       !mat%c3b = 2. * mat%omegarb * conv1 * mat%Mb**2 / ( 1/DT**2 + mat%gammalb * DT ) bugfix 28/05/2013 Influence of bug is minor
+       mat%c3b = 2. * mat%omegarb * conv1 * mat%Mb**2 / ( 1/DT**2 + mat%gammalb / DT )
+       
 
 ! for density integration
        mat%x1fac1 = 1. / 2. / mat%omegarb / DT * conv2
