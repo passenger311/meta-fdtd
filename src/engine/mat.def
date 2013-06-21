@@ -13,6 +13,7 @@ matlvfourlvl
 matlvfourlvlep
 matlhmgrad
 matqw
+matbulksc
 ! these must be last and cannot be combined
 matkerr
 matchi3

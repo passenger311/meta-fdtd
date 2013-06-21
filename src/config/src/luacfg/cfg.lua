@@ -318,6 +318,23 @@ function BLOCH(parms)
 end
 
 
+-- (MAT)BULKSC Sub-Block definition
+
+function BULKSC(parms) 
+   local BULKSC = { block = "BULKSC" }
+   BULKSC.gammap = parms.gammap
+   BULKSC.M = parms.M
+   BULKSC.egap = parms.egap
+   BULKSC.me = parms.me
+   BULKSC.mh = parms.mh
+   BULKSC.N0 = parms.N0
+   BULKSC.gammanr = parms.gammanr
+   BULKSC.temp = parms.temp or 300
+   BULKSC.kmax = parms.kmax
+   BULKSC.numk = parms.numk
+   return BULKSC
+end
+
 -- (MAT)LVBLOCH Sub-Block definition
 
 function LVBLOCH(parms) 
@@ -812,6 +829,18 @@ local writemat = {
 		       "\t! carrier numbers transp./initial  [1/(dx^3)]\n")
 	      fh:write(BLOCH.gammanr,"\t! non-rad. recomb. [1/dt]\n")
 	      fh:write(BLOCH.pump,"\t! pump rate [1/dt]\n")		       
+	   end,
+   BULKSC = function(fh,BULKSC)
+	       fh:write(BLOCH.gammap ,"\t! dephasing rate; gammap [1/s] \n")
+	       fh:write(BLOCH.M ,"\t! dipole length; M [m]  \n")
+	       fh:write(BLOCH.egap ,"\t! bandgap [eV]  \n")
+	       fh:write(BLOCH.me ,"\t! effective electron mass; me [m0]\n")
+	       fh:write(BLOCH.mh ,"\t! effective hole mass; mh [m0]\n")
+	       fh:write(BLOCH.N0 ,"\t! initital carrier density; N0 [1/m^3]\n")
+	       fh:write(BLOCH.gammanr ,"\t! nonradiative recomb. rate; gammanr [1/s] \n")
+	       fh:write(BLOCH.temp ,"\t! temperature; temp [K]   \n")
+	       fh:write(BLOCH.kmax ,"\t! k-cutoff; kmax [1/m]  \n")
+	       fh:write(BLOCH.numk ,"\t! number of k values; numk \n")   
 	   end,
    LVBLOCH = function(fh,LVBLOCH)
 	      fh:write(LVBLOCH.invlambdal,"\t! invlambdal [2 pi c]\n")
