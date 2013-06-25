@@ -130,9 +130,9 @@ contains
          val1 = mat%Pax(p,mat%cyc)
          val2 = mat%Pay(p,mat%cyc)
          val3 = mat%Paz(p,mat%cyc)
-  !       val4 = mat%Pbx(p,mat%cyc)
-!         val5 = mat%Pby(p,mat%cyc)
-!         val6 = mat%Pbz(p,mat%cyc)
+         !val4 = mat%Pbx(p,mat%cyc)
+         !val5 = mat%Pby(p,mat%cyc)
+         !val6 = mat%Pbz(p,mat%cyc)
 
          if ( out%mode .ne. 'S' ) then
 
