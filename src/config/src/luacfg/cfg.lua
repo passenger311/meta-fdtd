@@ -278,6 +278,20 @@ function LORENTZ(parms)
    return LORENTZ
 end
 
+-- (MAT)LORENTZH Sub-Block definition
+
+function LORENTZH(parms) 
+   local LORENTZH = { block = "LORENTZH" } -- magnetic LORENTZ
+   LORENTZH.a = 1
+   LORENTZH.b = 2 * ( parms.gammal or 0 )
+   LORENTZH.c = parms.invlambdal^2
+   LORENTZH.d = parms.invlambdal^2 * ( parms.deltaepsl or 1e-3 )
+--   LORENTZH.invlambdal = parms.invlambdal
+--   LORENTZH.gammal = parms.gammal or 0
+--   LORENTZH.deltaepsl = parms.deltaepsl or 1e-3
+   return LORENTZH
+end
+
 -- (MAT)DEBYE Sub-Block definition
 
 function DEBYE(parms) 
@@ -580,6 +594,14 @@ function EBALMODE(parms)
    EBALMODE.calc_poynting = parms.calc_poynting
    EBALMODE.calc_je = parms.calc_je
    return EBALMODE
+end
+
+-- (DIAG)EVEL Sub-Block definition
+
+function EVEL(parms) 
+   local EVEL = { block = "EVEL" }
+   EVEL.time = parms.time or { 0,-1, 1 }  
+   return EVEL
 end
 
 -- LUMPED Config-Block definition
@@ -1087,6 +1109,9 @@ local writediag = {
 	   end,
    EBAL = function(fh,EBAL)
 	     fh:write(EBAL.time[1]," ",EBAL.time[2]," ",EBAL.time[3]," \t! time window [from to step]\n")
+	   end,
+   EVEL = function(fh,EVEL)
+	     fh:write(EVEL.time[1]," ",EVEL.time[2]," ",EVEL.time[3]," \t! time window [from to step]\n")
 	   end,
    EBALMODE = function(fh,EBALMODE)	     
 		 if ( EBALMODE.calc_poynting == true ) then
