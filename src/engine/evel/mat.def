@@ -1,0 +1,21 @@
+! list all mat* modules here
+matpec
+! drude and debye use lorentz model
+!matdrude
+!matdebye
+matlorentz
+matlorentzh
+matlhm
+matbloch
+matlvbloch
+matfourlvl
+matlvfourlvl
+matlvfourlvlep
+matlhmgrad
+matqw
+matbulksc
+! these must be last and cannot be combined
+matkerr
+matchi3
+matthreelvl
+mattwolvl
