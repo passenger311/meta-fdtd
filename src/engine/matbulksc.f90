@@ -65,6 +65,12 @@ module matbulksc
   real(kind=8) :: mr0, me0, mh0     ! mass in [kg]
   real(kind=8) :: omegagap
 
+  ! coefficients
+
+  real(kind=8) :: dd, c1, c2, c3, K1, K2, K3
+  real(kind=8) :: conv1, conv2
+  real(kind=8) :: sigma, d2
+
   ! polarisation field 
   M4_FTYPE, dimension(:,:,:,:), pointer :: Pk
 
@@ -92,13 +98,13 @@ contains
 
     M4_MODREAD_EXPR({MATBULKSC},funit,lcount,mat,reg,3,out,{ 
 
+    call readfloat(funit, lcount, mat%gammap)
     call readfloat(funit, lcount, mat%M)
     call readfloat(funit, lcount, mat%egap)
     call readfloat(funit, lcount, mat%me)
     call readfloat(funit, lcount, mat%mh)
-    call readfloat(funit, lcount, mat%gammap)
-    call readfloat(funit, lcount, mat%gammanr)
     call readfloat(funit, lcount, mat%N0)
+    call readfloat(funit, lcount, mat%gammanr)
     call readfloat(funit, lcount, mat%temp) 
     call readfloat(funit, lcount, mat%kmax)
     call readint(funit, lcount, mat%numk)
@@ -146,6 +152,28 @@ contains
        mat%mr0 = mat%me0 * mat%mh0 / ( mat%me0 + mat%mh0 )
 
        mat%cyc = 1
+
+! Initialize coefficients
+
+!        dd = 2. + DT * mat%gammanr	!Corrected 02.07.2013
+!        c1 = ( 2. - DT * mat%gammanr ) / dd
+!        c2 = ( 2. + DT * mat%gammap ) / dd
+!        c3 = ( 2. - DT * mat%gammap ) / dd
+        mat%dd = 2. + DT * REAL_DX / SI_C * mat%gammanr
+        mat%c1 = ( 2. - DT * REAL_DX / SI_C * mat%gammanr ) / mat%dd
+        mat%c2 = ( 2. + DT * REAL_DX / SI_C * mat%gammap ) / mat%dd
+        mat%c3 = ( 2. - DT * REAL_DX / SI_C * mat%gammap ) / mat%dd
+
+        mat%dd = 1. + DT * REAL_DX / SI_C * mat%gammap
+        mat%sigma =  (DT * REAL_DX / SI_C )**2 / mat%dd  *  2 * SI_E**2 / SI_HBAR * mat%M**2 
+        mat%d2 = ( DT * REAL_DX / SI_C * mat%gammap - 1. ) / mat%dd
+
+        mat%K1 = 4.8966851
+        mat%K2 = 0.04496457
+        mat%K3 = 0.1333760
+
+        mat%conv1 = SI_C / ( REAL_DX**(3/2) * sqrt(SI_EPS0) )
+        mat%conv2 = REAL_DX**(3/2) / ( SI_C * sqrt(SI_EPS0) )
 
 ! load from checkpoint file
 
@@ -200,13 +228,12 @@ contains
     M4_MODLOOP_DECL({MATBULKSC},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
     real(kind=8), dimension(3) :: lE, psum, qsum, arg, pk
-    real(kind=8) :: c1, c2, c3, dd
     real(kind=8) :: qem, qen
-    real(kind=8) :: sigma, beta, ne0, nh0, nue, nuh
-    real(kind=8) :: K1, K2, K3, mue, muh
+    real(kind=8) :: d1, d3, beta
+    real(kind=8) :: ne0, nh0, nue, nuh
+    real(kind=8) :: mue, muh
     real(kind=8) :: kk, omegak, omegabarksq, enek, enhk
     real(kind=8) :: fermiek, fermihk
-    real(kind=8) :: conv1
     integer :: ki
 
     M4_MODLOOP_EXPR({MATBULKSC},mat,{
@@ -224,47 +251,32 @@ contains
 
         ! E(n) at current position
  
-        conv1 = SI_C / ( REAL_DX**(3/2) * sqrt(SI_EPS0) )
-
-        lE(1) = Ex(i,j,k) * conv1
-        lE(2) = Ey(i,j,k) * conv1
-        lE(3) = Ez(i,j,k) * conv1
+        lE(1) = Ex(i,j,k) * mat%conv1
+        lE(2) = Ey(i,j,k) * mat%conv1
+        lE(3) = Ez(i,j,k) * mat%conv1
 
         ! calculate second part of the density response
 
-        dd = 2. + DT * mat%gammanr
-        c1 = ( 2. - DT * mat%gammanr ) / dd
-        c2 = ( 2. + DT * mat%gammap ) / dd
-        c3 = ( 2. - DT * mat%gammap ) / dd
-
         qem = lE(1) * mat%Qsum(1,m,p) + lE(2) * mat%Qsum(2,m,p) + lE(3) * mat%Qsum(3,m,p) 
         qen = lE(1) * mat%Qsum(1,n,p) + lE(2) * mat%Qsum(2,n,p) + lE(3) * mat%Qsum(3,n,p) 
-
-        mat%N(p) = mat%N(p) + 0.5 * ( c2 * qem - c3 * qen )
+        mat%N(p) = mat%N(p) + 0.5 * ( mat%c2 * qem - mat%c3 * qen )
 
         ! calculate P(n+1) from P(n),P(n-1),E(n) and N(n)
         
         ! before: P(*,m) is P(n-1), P(*,n) is P(n)
 
-        dd = 1 + mat%gammap * DT
-        c2 = ( mat%gammap * DT - 1 ) / dd
-        sigma =  DT**2 / dd  *  2 * SI_E**2 / SI_HBAR * mat%M**2
         beta = 1./( SI_KB * mat%temp )  
 
         ! calculate chemical potentials using the Pade approximations
 
-        ne0 = 0.25 * ( 2. * mat%me0 / ( SI_HBAR**2 * pi * beta ) )**( 3./2. ) 
-        nh0 = 0.25 * ( 2. * mat%mh0 / (SI_HBAR**2 * pi * beta ) )**( 3./2. ) 
+        ne0 = 0.25 * ( 2. * mat%me0 / ( SI_HBAR**2 * pi * beta ) )**( 3./2. )
+        nh0 = 0.25 * ( 2. * mat%mh0 / ( SI_HBAR**2 * pi * beta ) )**( 3./2. ) 
 
         nue = mat%N(p) / ne0 
         nuh = mat%N(p) / nh0 
 
-        K1 = 4.8966851
-        K2 = 0.04496457
-        K3 = 0.1333760
-
-        mue = log( nue ) + K1 * log( K2 * nue + 1 ) + K3 * nue 
-        muh = log( nue ) + K1 * log( K2 * nue + 1 ) + K3 * nue 
+        mue = log( nue ) + mat%K1 * log( mat%K2 * nue + 1 ) + mat%K3 * nue
+        muh = log( nuh ) + mat%K1 * log( mat%K2 * nuh + 1 ) + mat%K3 * nuh 
 
         ! update the microscopic polarisation variables
 
@@ -274,21 +286,21 @@ contains
         do ki = 0, mat%numk 
            
            kk = ki * mat%dk 
-
            omegak = mat%omegagap + SI_HBAR * kk**2 / ( 2*mat%mr0 )
+
            omegabarksq =  omegak**2 + mat%gammap**2
-                     
+
            enek = beta * SI_HBAR**2 * kk**2 / ( 2*mat%me0 ) 
            enhk = beta * SI_HBAR**2 * kk**2 / ( 2*mat%mh0 ) 
 
-           fermiek = 1./(exp( enek - mue ) + 1.)  
-           fermihk = 1./(exp( enhk - muh ) + 1.)
-           
-           c1 = ( 2. - omegabarksq * DT**2 ) / dd
-           c3 = sigma * omegak * ( 1- fermiek - fermihk )
+           fermiek = 1./(dexp( enek - mue ) + 1.)  
+           fermihk = 1./(dexp( enhk - muh ) + 1.)
 
-           pk(:) = c1 * mat%Pk(:,n,ki,p) + c2 * mat%Pk(:,m,ki,p) + c3 * lE(:)
-           
+           d1 = ( 2. - omegabarksq * ( DT * REAL_DX / SI_C )**2 ) / mat%dd
+           d3 = mat%sigma * omegak * ( 1. - fermiek - fermihk )
+
+           pk(:) = d1 * mat%Pk(:,n,ki,p) + mat%d2 * mat%Pk(:,m,ki,p) + d3 * lE(:)
+
            ! sum up polarisations
            
            arg = kk**2 * mat%dk * pk
@@ -303,26 +315,17 @@ contains
   
         ! remove half of first/last element (trapezian rule)
 
-        psum = psum - 0.5 * kk**2 * mat%dk * ( mat%Pk(:,m,0,p) + mat%Pk(:,m,mat%numk,p) )
-        qsum = qsum - 0.5 * kk**2 * mat%dk * 1./SI_HBAR * ( & 
-             mat%Pk(:,m,0,p) / mat%omegagap &
-             + mat%Pk(:,m,mat%numk,p) / ( mat%omegagap + SI_HBAR * kk**2 / ( 2*mat%mr0 ) ) &
-             )
+        psum = psum - 0.5 * arg
+        qsum = qsum - 0.5 * arg / ( SI_HBAR * omegak ) 
 
         mat%Psum(:,m,p) = psum(:) / ( pi ** 2 ) 
         mat%Qsum(:,m,p) = qsum(:) / ( pi ** 2 )
 
         ! calculate first part of the density response
 
-        dd = 2. + DT * mat%gammanr
-        c1 = ( 2. - DT * mat%gammanr ) / dd
-        c2 = ( 2. + DT * mat%gammap ) / dd
-        c3 = ( 2. - DT * mat%gammap ) / dd
-
         qem = lE(1) * mat%Qsum(1,m,p) + lE(2) * mat%Qsum(2,m,p) + lE(3) * mat%Qsum(3,m,p) 
         qen = lE(1) * mat%Qsum(1,n,p) + lE(2) * mat%Qsum(2,n,p) + lE(3) * mat%Qsum(3,n,p) 
-
-        mat%N(p) = c1 * mat%N(p) + 0.5 * ( c2 * qem - c3 * qen )
+        mat%N(p) = mat%c1 * mat%N(p) + 0.5 * ( mat%c2 * qem - mat%c3 * qen )
 
         ! after: J(*,m) is now P(n+1)
         ! m and n will be flipped in the next timestep!
@@ -342,9 +345,7 @@ contains
     integer :: ncyc, m, n
     M4_MODLOOP_DECL({MATBULKSC},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
-    real(kind=8) :: conv2
 
-    conv2 = REAL_DX**(3/2) / ( SI_C * sqrt(SI_EPS0) )
 
     M4_MODLOOP_EXPR({MATBULKSC},mat,{
 
@@ -362,11 +363,11 @@ contains
        ! J(*,m) is P(n+1) and J(*,n) is P(n)      
 
 M4_IFELSE_TM({
-       Ex(i,j,k) = Ex(i,j,k) - w(1) * epsinvx(i,j,k) * conv2 * ( mat%Psum(1,m,p) - mat%Psum(1,n,p) )
-       Ey(i,j,k) = Ey(i,j,k) - w(2) * epsinvy(i,j,k) * conv2 * ( mat%Psum(2,m,p) - mat%Psum(2,n,p) )
+       Ex(i,j,k) = Ex(i,j,k) - w(1) * epsinvx(i,j,k) * mat%conv2 * ( mat%Psum(1,m,p) - mat%Psum(1,n,p) )
+       Ey(i,j,k) = Ey(i,j,k) - w(2) * epsinvy(i,j,k) * mat%conv2 * ( mat%Psum(2,m,p) - mat%Psum(2,n,p) )
 })
 M4_IFELSE_TE({
-       Ez(i,j,k) = Ez(i,j,k) - w(3) * epsinvz(i,j,k) * conv2 *( mat%Psum(3,m,p) - mat%Psum(3,n,p) )
+       Ez(i,j,k) = Ez(i,j,k) - w(3) * epsinvz(i,j,k) * mat%conv2 * ( mat%Psum(3,m,p) - mat%Psum(3,n,p) )
 })
        })      
 
@@ -383,16 +384,37 @@ M4_IFELSE_TE({
     logical :: mode
     real(kind=8) :: sum(MAXEBALCH)
 
+
+    M4_MODLOOP_DECL({MatBulkSC},mat)
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
+
+    M4_MODLOOP_EXPR({MatBulkSC},mat,{
+
+    idx = idx + NUMEBALCH
+
+    })
+
   end subroutine SumJEMatBulkSC
 
 !----------------------------------------------------------------------
 
   subroutine SumKHMatBulkSC(mask, ncyc, sum, idx, mode)
 
-   logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
+    logical, dimension(IMIN:IMAX,JMIN:JMAX,KMIN:KMAX) :: mask
     integer :: ncyc, idx
     logical :: mode
     real(kind=8) :: sum(MAXEBALCH)
+
+
+    M4_MODLOOP_DECL({MatBulkSC},mat)
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
+
+    M4_MODLOOP_EXPR({MatBulkSC},mat,{
+
+    idx = idx + NUMEBALCH
+
+    })
+
   end subroutine SumKHMatBulkSC
  
 !----------------------------------------------------------------------
@@ -402,10 +424,19 @@ M4_IFELSE_TE({
     type(T_MATBULKSC) :: mat
  
     M4_WRITE_INFO({"#",TRIM(i2str(mat%idx)), &
-         " M=",TRIM(f2str(mat%M,5))
+         " gammap=",TRIM(f2str(mat%gammap,5)), &
+         " M=",TRIM(f2str(mat%M,5)), &
+         " egap=",TRIM(f2str(mat%egap,5)), &
+         " me=",TRIM(f2str(mat%me,5)), &
+         " mh=",TRIM(f2str(mat%mh,5)), &
+         " N0=",TRIM(f2str(mat%N0,5)), &
+         " gammanr=",TRIM(f2str(mat%gammanr,5)), &
+         " temp=",TRIM(f2str(mat%temp,5)), &
+         " kmax=",TRIM(f2str(mat%kmax,5)), &
+         " numk=",TRIM(i2str(mat%numk))
      })
     call DisplayRegObj(regobj(mat%regidx))
-    	
+
   end subroutine DisplayMatBulkSCObj
 
 !----------------------------------------------------------------------
@@ -418,7 +449,16 @@ M4_IFELSE_TE({
          TRIM(i2str(mat%idx))," ", TRIM(mat%type) })
 
     ! -- write parameters to console 
+    M4_WRITE_INFO({"gammap = ", mat%gammap })
     M4_WRITE_INFO({"M = ", mat%M })
+    M4_WRITE_INFO({"egap = ", mat%egap })
+    M4_WRITE_INFO({"me = ", mat%me })
+    M4_WRITE_INFO({"mh = ", mat%mh })
+    M4_WRITE_INFO({"N0 = ", mat%N0 })
+    M4_WRITE_INFO({"gammanr = ", mat%gammanr })
+    M4_WRITE_INFO({"temp = ", mat%temp })
+    M4_WRITE_INFO({"kmax = ", mat%kmax })
+    M4_WRITE_INFO({"numk = ", mat%numk })
 
     M4_WRITE_INFO({"defined over:"})
     call EchoRegObj(regobj(mat%regidx))
@@ -431,8 +471,8 @@ M4_IFELSE_TE({
 
 end module matbulksc
 
-! Authors: J.Hamm J. Wood
-! Modified: 16/05/2013
+! Authors: J.Hamm J. Wood S. Wuestner
+! Modified: 02/07/2013
 !
 ! =====================================================================
 
