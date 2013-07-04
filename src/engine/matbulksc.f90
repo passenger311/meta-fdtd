@@ -155,17 +155,13 @@ contains
 
 ! Initialize coefficients
 
-!        dd = 2. + DT * mat%gammanr	!Corrected 02.07.2013
-!        c1 = ( 2. - DT * mat%gammanr ) / dd
-!        c2 = ( 2. + DT * mat%gammap ) / dd
-!        c3 = ( 2. - DT * mat%gammap ) / dd
         mat%dd = 2. + DT * REAL_DX / SI_C * mat%gammanr
         mat%c1 = ( 2. - DT * REAL_DX / SI_C * mat%gammanr ) / mat%dd
         mat%c2 = ( 2. + DT * REAL_DX / SI_C * mat%gammap ) / mat%dd
         mat%c3 = ( 2. - DT * REAL_DX / SI_C * mat%gammap ) / mat%dd
 
         mat%dd = 1. + DT * REAL_DX / SI_C * mat%gammap
-        mat%sigma =  (DT * REAL_DX / SI_C )**2 / mat%dd  *  2 * SI_E**2 / SI_HBAR * mat%M**2 
+        mat%sigma =  (DT * REAL_DX / SI_C )**2 / mat%dd  * 2. * SI_E**2 / SI_HBAR * mat%M**2
         mat%d2 = ( DT * REAL_DX / SI_C * mat%gammap - 1. ) / mat%dd
 
         mat%K1 = 4.8966851
@@ -259,7 +255,7 @@ contains
 
         qem = lE(1) * mat%Qsum(1,m,p) + lE(2) * mat%Qsum(2,m,p) + lE(3) * mat%Qsum(3,m,p) 
         qen = lE(1) * mat%Qsum(1,n,p) + lE(2) * mat%Qsum(2,n,p) + lE(3) * mat%Qsum(3,n,p) 
-        mat%N(p) = mat%N(p) + 0.5 * ( mat%c2 * qem - mat%c3 * qen )
+        mat%N(p) = mat%N(p) + 0.5 * ( mat%c2 * qen - mat%c3 * qem )
 
         ! calculate P(n+1) from P(n),P(n-1),E(n) and N(n)
         
@@ -298,7 +294,6 @@ contains
 
            d1 = ( 2. - omegabarksq * ( DT * REAL_DX / SI_C )**2 ) / mat%dd
            d3 = mat%sigma * omegak * ( 1. - fermiek - fermihk )
-
            pk(:) = d1 * mat%Pk(:,n,ki,p) + mat%d2 * mat%Pk(:,m,ki,p) + d3 * lE(:)
 
            ! sum up polarisations
