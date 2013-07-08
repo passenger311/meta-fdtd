@@ -168,8 +168,8 @@ contains
         mat%K2 = 0.04496457
         mat%K3 = 0.1333760
 
-        mat%conv1 = SI_C / ( REAL_DX**(3/2) * sqrt(SI_EPS0) )
-        mat%conv2 = REAL_DX**(3/2) / ( SI_C * sqrt(SI_EPS0) )
+        mat%conv1 = SI_C / ( REAL_DX**(3./2.) * sqrt(SI_EPS0) )
+        mat%conv2 = REAL_DX**(3./2.) / ( SI_C * sqrt(SI_EPS0) )
 
 ! load from checkpoint file
 
