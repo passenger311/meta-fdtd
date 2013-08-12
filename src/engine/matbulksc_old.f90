@@ -61,7 +61,7 @@ module matbulksc
   
   ! calculated
 
-  real(kind=8) :: domega
+  real(kind=8) :: dk
   real(kind=8) :: mr0, me0, mh0     ! mass in [kg]
   real(kind=8) :: omegagap
 
@@ -145,11 +145,11 @@ contains
   
 ! Initialize omegak(k)
 
+       mat%dk = mat%kmax / mat%numk
        mat%me0 = mat%me * SI_ME
        mat%mh0 = mat%mh * SI_ME
        mat%omegagap = mat%egap * SI_E / SI_HBAR
        mat%mr0 = mat%me0 * mat%mh0 / ( mat%me0 + mat%mh0 )
-       mat%domega = SI_HBAR*mat%kmax*mat%kmax / ( 2*mat%numk*mat%mr0) 
 
        mat%cyc = 1
 
@@ -228,8 +228,8 @@ contains
     real(kind=8) :: d1, d3, beta
     real(kind=8) :: ne0, nh0, nue, nuh
     real(kind=8) :: mue, muh
-    real(kind=8) :: omega, omegabarsq, enew, enhw
-    real(kind=8) :: fermiew, fermihw
+    real(kind=8) :: kk, omegak, omegabarksq, enek, enhk
+    real(kind=8) :: fermiek, fermihk
     integer :: ki
 
     M4_MODLOOP_EXPR({MATBULKSC},mat,{
@@ -279,38 +279,39 @@ contains
         psum = 0.
         qsum = 0.
 
-        do ki = 0, mat%numk
+        do ki = 0, mat%numk 
            
-           omega = mat%omegagap + ki * mat%domega
+           kk = ki * mat%dk 
+           omegak = mat%omegagap + SI_HBAR * kk**2 / ( 2*mat%mr0 )
 
-           omegabarsq =  omega**2 + mat%gammap**2
+           omegabarksq =  omegak**2 + mat%gammap**2
 
-           enew = beta * ( mat%mr0 / mat%me0 ) * ( SI_HBAR * ( omega - mat%omegagap ) )
-           enhw = beta * ( mat%mr0 / mat%mh0 ) * ( SI_HBAR * ( omega - mat%omegagap ) )
+           enek = beta * SI_HBAR**2 * kk**2 / ( 2*mat%me0 ) 
+           enhk = beta * SI_HBAR**2 * kk**2 / ( 2*mat%mh0 ) 
 
-           fermiew = 1./(dexp( enew - mue ) + 1.)  
-           fermihw = 1./(dexp( enhw - muh ) + 1.)
+           fermiek = 1./(dexp( enek - mue ) + 1.)  
+           fermihk = 1./(dexp( enhk - muh ) + 1.)
 
-           d1 = ( 2. - omegabarsq * ( DT * REAL_DX / SI_C )**2 ) / mat%dd
-           d3 = mat%sigma * omega * ( 1. - fermiew - fermihw )
+           d1 = ( 2. - omegabarksq * ( DT * REAL_DX / SI_C )**2 ) / mat%dd
+           d3 = mat%sigma * omegak * ( 1. - fermiek - fermihk )
            pk(:) = d1 * mat%Pk(:,n,ki,p) + mat%d2 * mat%Pk(:,m,ki,p) + d3 * lE(:)
 
            ! sum up polarisations
            
-           arg =  ( SI_HBAR * ( omega - mat%omegagap ) * 2. * mat%mr0 )**(0.5) * mat%domega * mat%mr0 * pk / (SI_HBAR**2) 
+           arg = kk**2 * mat%dk * pk
 
            psum = psum + arg
 
-           qsum = qsum + arg / ( SI_HBAR * omega )
+           qsum = qsum + arg / ( SI_HBAR * omegak )
 
            mat%Pk(:,m,ki,p) = pk(:) ! store new polarisation variables
            
         end do
-
+  
         ! remove half of first/last element (trapezian rule)
 
         psum = psum - 0.5 * arg
-        qsum = qsum - 0.5 * arg / ( SI_HBAR * omega ) 
+        qsum = qsum - 0.5 * arg / ( SI_HBAR * omegak ) 
 
         mat%Psum(:,m,p) = psum(:) / ( pi ** 2 ) 
         mat%Qsum(:,m,p) = qsum(:) / ( pi ** 2 )
