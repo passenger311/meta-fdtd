@@ -127,9 +127,11 @@ module reglist
      integer :: ks = 0, ke = 0, dk = 0
      integer :: numnodes                        ! number of points in region
      integer, pointer, dimension(:,:,:) :: mask ! mark set points
+ !    integer, pointer, dimension(:,:) :: list  
      integer :: numval                          ! number of values
-     real(kind=8),pointer,dimension(:,:) :: val ! values field
-
+     real(kind=8),pointer,dimension(:,:) :: val ! values field 
+ !    logical :: islist = .false.
+ !    logical :: ismask = .false.
      logical :: compressval
      integer, pointer,dimension(:) :: valptr
      logical :: isref = .false.

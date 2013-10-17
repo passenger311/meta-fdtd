@@ -45,7 +45,7 @@ module constant
 
   real(8), parameter :: PI=3.14159265358979323846    ! PI
   real(8), parameter :: DEG = PI/180.                ! convert deg -> rad 
-  complex(kind=8), parameter :: IMAG = complex(0,1)  ! imaginary unit
+  complex(kind=8), parameter :: IMAG = cmplx(0,1)  ! imaginary unit
 
   ! --- physical constants
 

@@ -59,6 +59,7 @@ contains
       logical :: err, eof
       integer :: ios, lcount = 1
       
+!OMP SERIAL
       M4_WRITE_DBG({". enter ReadConfig"})
 
       file=cat2(pfxconfig,mpi_sfxin)
@@ -138,6 +139,8 @@ contains
       endif
       
       M4_WRITE_DBG({". exit ReadConfig"})
+
+!OMP END SERIAL
 
     end subroutine ReadConfig
       

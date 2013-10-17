@@ -127,15 +127,15 @@ contains
 
     M4_REGLOOP_EXPR(reg,p,i,j,k,w, {
     
-    EEx = 0.25/epsinvx(i,j,k) * (real(Ex(M4_COORD(i,j,k)))**2+real(Ex(M4_COORD(i-1,j,k)))**2)
-    EEy = 0.25/epsinvy(i,j,k) * (real(Ey(M4_COORD(i,j,k)))**2+real(Ey(M4_COORD(i,j-1,k)))**2)
-    EEz = 0.25/epsinvz(i,j,k) * (real(Ez(M4_COORD(i,j,k)))**2+real(Ez(M4_COORD(i,j,k-1)))**2)
-    EHx = 0.125/M4_MUINVX(i,j,k) * ( real(Hx(M4_COORD(i,j,k)))**2+real(Hx(M4_COORD(i,j,k-1)))**2 + &
-         real(Hx(M4_COORD(i,j-1,k)))**2+real(Hx(M4_COORD(i,j-1,k-1)))**2)
-    EHy = 0.125/M4_MUINVY(i,j,k) * (real(Hy(M4_COORD(i,j,k)))**2+real(Hy(M4_COORD(i-1,j,k)))**2 + &
-         real(Hy(M4_COORD(i,j,k-1)))**2+real(Hy(M4_COORD(i-1,j,k-1)))**2)
-    EHz = 0.125/M4_MUINVZ(i,j,k) * (real(Hz(M4_COORD(i,j,k)))**2+real(Hz(M4_COORD(i-1,j,k)))**2 + &
-         real(Hz(M4_COORD(i,j-1,k)))**2+real(Hz(M4_COORD(i-1,j-1,k)))**2)
+    EEx = 0.25/epsinvx(i,j,k) * (dble(Ex(M4_COORD(i,j,k)))**2+dble(Ex(M4_COORD(i-1,j,k)))**2)
+    EEy = 0.25/epsinvy(i,j,k) * (dble(Ey(M4_COORD(i,j,k)))**2+dble(Ey(M4_COORD(i,j-1,k)))**2)
+    EEz = 0.25/epsinvz(i,j,k) * (dble(Ez(M4_COORD(i,j,k)))**2+dble(Ez(M4_COORD(i,j,k-1)))**2)
+    EHx = 0.125/M4_MUINVX(i,j,k) * ( dble(Hx(M4_COORD(i,j,k)))**2+dble(Hx(M4_COORD(i,j,k-1)))**2 + &
+         dble(Hx(M4_COORD(i,j-1,k)))**2+dble(Hx(M4_COORD(i,j-1,k-1)))**2)
+    EHy = 0.125/M4_MUINVY(i,j,k) * (dble(Hy(M4_COORD(i,j,k)))**2+dble(Hy(M4_COORD(i-1,j,k)))**2 + &
+         dble(Hy(M4_COORD(i,j,k-1)))**2+dble(Hy(M4_COORD(i-1,j,k-1)))**2)
+    EHz = 0.125/M4_MUINVZ(i,j,k) * (dble(Hz(M4_COORD(i,j,k)))**2+dble(Hz(M4_COORD(i-1,j,k)))**2 + &
+         dble(Hz(M4_COORD(i,j-1,k)))**2+dble(Hz(M4_COORD(i-1,j-1,k)))**2)
     buf%data(p,slot) = (EEx+EEy+EEz+EHx+EHy+EHz)
     
     } )
@@ -166,9 +166,9 @@ contains
 
     M4_REGLOOP_EXPR(reg,p,i,j,k,w, {
 
-    EEx = 0.25/epsinvx(i,j,k) * (real(Ex(M4_COORD(i,j,k)))**2+real(Ex(M4_COORD(i-1,j,k)))**2)
-    EEy = 0.25/epsinvy(i,j,k) * (real(Ey(M4_COORD(i,j,k)))**2+real(Ey(M4_COORD(i,j-1,k)))**2)
-    EEz = 0.25/epsinvz(i,j,k) * (real(Ez(M4_COORD(i,j,k)))**2+real(Ez(M4_COORD(i,j,k-1)))**2)
+    EEx = 0.25/epsinvx(i,j,k) * (dble(Ex(M4_COORD(i,j,k)))**2+dble(Ex(M4_COORD(i-1,j,k)))**2)
+    EEy = 0.25/epsinvy(i,j,k) * (dble(Ey(M4_COORD(i,j,k)))**2+dble(Ey(M4_COORD(i,j-1,k)))**2)
+    EEz = 0.25/epsinvz(i,j,k) * (dble(Ez(M4_COORD(i,j,k)))**2+dble(Ez(M4_COORD(i,j,k-1)))**2)
     buf%data(p,slot) = (EEx+EEy+EEz)
 
     } )
@@ -198,12 +198,12 @@ contains
 
     M4_REGLOOP_EXPR(reg,p,i,j,k,w, {
 
-    EHx = 0.125/M4_MUINVX(i,j,k) * ( real(Hx(M4_COORD(i,j,k)))**2+real(Hx(M4_COORD(i,j,k-1)))**2 + &
-         real(Hx(M4_COORD(i,j-1,k)))**2+real(Hx(M4_COORD(i,j-1,k-1)))**2)
-    EHy = 0.125/M4_MUINVY(i,j,k) * (real(Hy(M4_COORD(i,j,k)))**2+real(Hy(M4_COORD(i-1,j,k)))**2 + &
-         real(Hy(M4_COORD(i,j,k-1)))**2+real(Hy(M4_COORD(i-1,j,k-1)))**2)
-    EHz = 0.125/M4_MUINVZ(i,j,k) * (real(Hz(M4_COORD(i,j,k)))**2+real(Hz(M4_COORD(i-1,j,k)))**2 + &
-         real(Hz(M4_COORD(i,j-1,k)))**2+real(Hz(M4_COORD(i-1,j-1,k)))**2)
+    EHx = 0.125/M4_MUINVX(i,j,k) * ( dble(Hx(M4_COORD(i,j,k)))**2+dble(Hx(M4_COORD(i,j,k-1)))**2 + &
+         dble(Hx(M4_COORD(i,j-1,k)))**2+dble(Hx(M4_COORD(i,j-1,k-1)))**2)
+    EHy = 0.125/M4_MUINVY(i,j,k) * (dble(Hy(M4_COORD(i,j,k)))**2+dble(Hy(M4_COORD(i-1,j,k)))**2 + &
+         dble(Hy(M4_COORD(i,j,k-1)))**2+dble(Hy(M4_COORD(i-1,j,k-1)))**2)
+    EHz = 0.125/M4_MUINVZ(i,j,k) * (dble(Hz(M4_COORD(i,j,k)))**2+dble(Hz(M4_COORD(i-1,j,k)))**2 + &
+         dble(Hz(M4_COORD(i,j-1,k)))**2+dble(Hz(M4_COORD(i-1,j-1,k)))**2)
     buf%data(p,slot) = (EHx+EHy+EHz)
 
     } )
@@ -238,10 +238,10 @@ contains
 
     M4_REGLOOP_EXPR(reg,p,i,j,k,w, {
 
-     val = 0.125*(real(Ey(M4_COORD(i,j,k))+Ey(M4_COORD(i+1,j,k)))*real(Hz(M4_COORD(i,j,k))) &
-         + real(Ey(M4_COORD(i,j-1,k))+Ey(M4_COORD(i+1,j-1,k)))* real(Hz(M4_COORD(i,j-1,k))) &
-         - real(Ez(M4_COORD(i,j,k))+Ez(M4_COORD(i+1,j,k)))*real(Hy(M4_COORD(i,j,k))) &
-         - real(Ez(M4_COORD(i,j,k-1))+Ez(M4_COORD(i+1,j,k-1)))* real(Hy(M4_COORD(i,j,k-1))) &
+     val = 0.125*(dble(Ey(M4_COORD(i,j,k))+Ey(M4_COORD(i+1,j,k)))*dble(Hz(M4_COORD(i,j,k))) &
+         + dble(Ey(M4_COORD(i,j-1,k))+Ey(M4_COORD(i+1,j-1,k)))* dble(Hz(M4_COORD(i,j-1,k))) &
+         - dble(Ez(M4_COORD(i,j,k))+Ez(M4_COORD(i+1,j,k)))*dble(Hy(M4_COORD(i,j,k))) &
+         - dble(Ez(M4_COORD(i,j,k-1))+Ez(M4_COORD(i+1,j,k-1)))* dble(Hy(M4_COORD(i,j,k-1))) &
          ) 
     buf%data(p,slot) = buf%data(p,slot) + val
     
@@ -276,10 +276,10 @@ contains
 
     M4_REGLOOP_EXPR(reg,p,i,j,k,w, {
 
-    val = 0.125*( real(Ez(M4_COORD(i,j,k))+Ez(M4_COORD(i,j+1,k)))*real(Hx(M4_COORD(i,j,k))) &
-         + real(Ez(M4_COORD(i,j,k-1))+Ez(M4_COORD(i,j+1,k-1)))*real(Hx(M4_COORD(i,j,k-1))) &
-         - real(Ex(M4_COORD(i,j,k))+Ex(M4_COORD(i,j+1,k)))*real(Hz(M4_COORD(i,j,k))) &
-         - real(Ex(M4_COORD(i-1,j,k))+Ex(M4_COORD(i-1,j+1,k)))*real(Hz(M4_COORD(i-1,j,k))) &
+    val = 0.125*( dble(Ez(M4_COORD(i,j,k))+Ez(M4_COORD(i,j+1,k)))*dble(Hx(M4_COORD(i,j,k))) &
+         + dble(Ez(M4_COORD(i,j,k-1))+Ez(M4_COORD(i,j+1,k-1)))*dble(Hx(M4_COORD(i,j,k-1))) &
+         - dble(Ex(M4_COORD(i,j,k))+Ex(M4_COORD(i,j+1,k)))*dble(Hz(M4_COORD(i,j,k))) &
+         - dble(Ex(M4_COORD(i-1,j,k))+Ex(M4_COORD(i-1,j+1,k)))*dble(Hz(M4_COORD(i-1,j,k))) &
          )
     buf%data(p,slot) = buf%data(p,slot) + val
     
@@ -314,10 +314,10 @@ contains
 
     M4_REGLOOP_EXPR(reg,p,i,j,k,w, {
 
-    val = 0.125*( real(Ex(M4_COORD(i,j,k))+Ex(M4_COORD(i,j,k+1)))*real(Hy(M4_COORD(i,j,k))) &
-         + real(Ex(M4_COORD(i-1,j,k))+Ex(M4_COORD(i-1,j,k+1)))*real(Hy(M4_COORD(i-1,j,k))) &
-         - real(Ey(M4_COORD(i,j,k))+Ey(M4_COORD(i,j,k+1)))*real(Hx(M4_COORD(i,j,k))) &
-         - real(Ey(M4_COORD(i,j-1,k))+Ey(M4_COORD(i,j-1,k+1)))*real(Hx(M4_COORD(i,j-1,k))) &
+    val = 0.125*( dble(Ex(M4_COORD(i,j,k))+Ex(M4_COORD(i,j,k+1)))*dble(Hy(M4_COORD(i,j,k))) &
+         + dble(Ex(M4_COORD(i-1,j,k))+Ex(M4_COORD(i-1,j,k+1)))*dble(Hy(M4_COORD(i-1,j,k))) &
+         - dble(Ey(M4_COORD(i,j,k))+Ey(M4_COORD(i,j,k+1)))*dble(Hx(M4_COORD(i,j,k))) &
+         - dble(Ey(M4_COORD(i,j-1,k))+Ey(M4_COORD(i,j-1,k+1)))*dble(Hx(M4_COORD(i,j-1,k))) &
          )
 
     buf%data(p,slot) = buf%data(p,slot) + val

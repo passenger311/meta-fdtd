@@ -185,9 +185,9 @@ contains
       if ( out%mode .ne. 'S' ) then
  
          if ( reg%isbox ) then
-            write(out%funit,"(E15.6E3)") real(val,8)
+            write(out%funit,"(E15.6E3)") dble(val)
          else
-            write(out%funit,"(M4_SDIM({I5}),(E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}),real(val,8)
+            write(out%funit,"(M4_SDIM({I5}),(E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}),dble(val)
          endif
          
       else
@@ -198,7 +198,7 @@ contains
    
 
       if ( out%mode .eq. 'S' ) then
-         write(out%funit,"(E15.6E3)") real(sum,8)
+         write(out%funit,"(E15.6E3)") dble(sum)
       endif
 
     end subroutine WriteScalar
@@ -231,9 +231,9 @@ contains
 
       if ( out%mode .ne. 'S' ) then
          if ( reg%isbox ) then
-            write(out%funit,"(3E15.6E3)") real(vx,8), real(vy,8), real(vz,8)
+            write(out%funit,"(3E15.6E3)") dble(vx), dble(vy), dble(vz)
          else
-            write(out%funit,"(M4_SDIM({I5}),(3E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}),real(vx,8),real(vy,8),real(vz,8)
+            write(out%funit,"(M4_SDIM({I5}),(3E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}),dble(vx),dble(vy),dble(vz)
          endif
       else
          sx = sx + vx
@@ -244,7 +244,7 @@ contains
       },{if ( reg%is .ne. reg%ie ) write(out%funit,*)}, {if ( reg%js .ne. reg%je ) write(out%funit,*)} )
 
       if ( out%mode .eq. 'S' ) then
-          write(out%funit,"(3E15.6E3)") real(sx,8), real(sy,8), real(sz,8)
+          write(out%funit,"(3E15.6E3)") dble(sx), dble(sy), dble(sz)
       endif
    
     end subroutine WriteVector
@@ -280,9 +280,9 @@ contains
       if ( out%mode .ne. 'S' ) then
 
          if ( reg%isbox ) then
-           write(out%funit,*) (real(val(l),8), l=1, buf%numslot,1)
+           write(out%funit,*) (dble(val(l)), l=1, buf%numslot,1)
          else
-           write(out%funit,*) M4_DIM123({i},{i,j},{i,j,k}),(real(val(l),8), l=1, buf%numslot,1)
+           write(out%funit,*) M4_DIM123({i},{i,j},{i,j,k}),(dble(val(l)), l=1, buf%numslot,1)
         endif
 
       else
@@ -292,7 +292,7 @@ contains
       },{}, {} )
    
       if ( out%mode .eq. 'S' ) then
-         write(out%funit,*) (real(sum(l),8), l=1, buf%numslot,1)
+         write(out%funit,*) (dble(sum(l)), l=1, buf%numslot,1)
       endif
 
 
@@ -319,11 +319,11 @@ contains
 
       if ( reg%isbox ) then
          write(out%funit,"(E15.6E3)") &
-              real(1./epsinvx(i,j,k),8),real(1./epsinvy(i,j,k),8),real(1./epsinvz(i,j,k),8) 
+              dble(1./epsinvx(i,j,k)),dble(1./epsinvy(i,j,k)),dble(1./epsinvz(i,j,k)) 
       else
          write(out%funit,"(M4_SDIM({I5}),(E15.6E3))") &
               M4_DIM123({i},{i,j},{i,j,k}), &
-              real(1./epsinvx(i,j,k),8),real(1./epsinvy(i,j,k),8),real(1./epsinvz(i,j,k),8) 
+              dble(1./epsinvx(i,j,k)),dble(1./epsinvy(i,j,k)),dble(1./epsinvz(i,j,k)) 
       endif
       
       },{if ( reg%is .ne. reg%ie ) write(out%funit,*)}, {if ( reg%js .ne. reg%je ) write(out%funit,*)} )
@@ -348,11 +348,11 @@ contains
 
       if ( reg%isbox ) then
          write(out%funit,"(E15.6E3)")  &
-              real(1./M4_MUINVX(i,j,k),8),real(1./M4_MUINVY(i,j,k),8),real(1./M4_MUINVZ(i,j,k),8)
+              dble(1./M4_MUINVX(i,j,k)),dble(1./M4_MUINVY(i,j,k)),dble(1./M4_MUINVZ(i,j,k))
       else
          write(out%funit,"(M4_SDIM({I5}),(E15.6E3))") &
               M4_DIM123({i},{i,j},{i,j,k}), &
-              real(1./M4_MUINVX(i,j,k),8),real(1./M4_MUINVY(i,j,k),8),real(1./M4_MUINVZ(i,j,k),8)
+              dble(1./M4_MUINVX(i,j,k)),dble(1./M4_MUINVY(i,j,k)),dble(1./M4_MUINVZ(i,j,k))
       endif
       
       },{if ( reg%is .ne. reg%ie ) write(out%funit,*)}, {if ( reg%js .ne. reg%je ) write(out%funit,*)} )

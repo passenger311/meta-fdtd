@@ -531,9 +531,9 @@ contains
 
        select case ( diag%mode ) 
        case( "Ecs" )
-          write(UNITTMP,*) freq, SumE1c/norm/rv(1), SumE1s/norm/rv(2), SumE2c/norm/rv(3), SumE2s/norm/rv(4)
+          write(UNITTMP,'(5E15.6E3)') freq, SumE1c/norm/rv(1), SumE1s/norm/rv(2), SumE2c/norm/rv(3), SumE2s/norm/rv(4)
        case( "Hcs" ) 
-          write(UNITTMP,*) freq, SumH1c/norm/rv(1), SumH1s/norm/rv(2), SumH2c/norm/rv(3), SumH2s/norm/rv(4)
+          write(UNITTMP,'(5E15.6E3)') freq, SumH1c/norm/rv(1), SumH1s/norm/rv(2), SumH2c/norm/rv(3), SumH2s/norm/rv(4)
        case( "Eap" )
           SumEph1 = SumEph1/norm
           SumEph2 = SumEph2/norm
@@ -551,7 +551,7 @@ contains
              SumEph1 = SumEph1 - rv(2)
              SumEph2 = SumEph1 - rv(4)
           end if
-          write(UNITTMP,*) freq, sqrt(SumEa1/norm)/rv(1), SumEph1-PI,  &
+          write(UNITTMP,'(5E15.6E3)') freq, sqrt(SumEa1/norm)/rv(1), SumEph1-PI,  &
                sqrt(SumEa2/norm)/rv(3),SumEph2-PI
        case( "Hap" ) 
           SumHph1 = SumHph1/norm
@@ -570,10 +570,10 @@ contains
              SumHph1 = SumHph1 - rv(2)
              SumHph2 = SumHph1 - rv(4)
           end if
-          write(UNITTMP,*) freq, sqrt(SumHa1/norm)/rv(1), SumHph1-PI, &
+          write(UNITTMP,'(5E15.6E3)') freq, sqrt(SumHa1/norm)/rv(1), SumHph1-PI, &
                sqrt(SumHa2/norm)/rv(3), SumHph2-PI
        case ("S")
-          write(UNITTMP,*) freq, SumS1/(norm*rv(1)), SumS2/(norm*rv(2))
+          write(UNITTMP,'(3E15.6E3)') freq, SumS1/(norm*rv(1)), SumS2/(norm*rv(2))
        end select
           
 

@@ -29,6 +29,7 @@
 
 module matbulksc
 
+  use omp_lib
   use constant
   use checkpoint
   use parse
@@ -53,9 +54,8 @@ module matbulksc
   real(kind=8) :: gammanr        ! nonradiative transition rates [s]
   real(kind=8) :: temp           ! temperature [K]
   real(kind=8) :: kmax           ! k cutoff value [1/m]
+  real(kind=8) :: pump           ! pump rate [1/s m^-3]
   integer :: numk                ! number of k points for band discretisation
-
-  !
 
   integer :: cyc
   
@@ -67,7 +67,7 @@ module matbulksc
 
   ! coefficients
 
-  real(kind=8) :: dd, c1, c2, c3, K1, K2, K3
+  real(kind=8) :: cc, dd, c0, c1, c2, c3, K1, K2, K3
   real(kind=8) :: conv1, conv2
   real(kind=8) :: sigma, d2
 
@@ -78,6 +78,10 @@ module matbulksc
 
   M4_FTYPE, dimension(:,:,:), pointer :: Qsum
   M4_FTYPE, dimension(:,:,:), pointer :: Psum
+
+  ! index fields
+
+  integer, dimension(:), pointer :: ipos,jpos,kpos
 
 
   ! density
@@ -105,6 +109,7 @@ contains
     call readfloat(funit, lcount, mat%mh)
     call readfloat(funit, lcount, mat%N0)
     call readfloat(funit, lcount, mat%gammanr)
+    call readfloat(funit, lcount, mat%pump)
     call readfloat(funit, lcount, mat%temp) 
     call readfloat(funit, lcount, mat%kmax)
     call readint(funit, lcount, mat%numk)
@@ -133,8 +138,9 @@ contains
 
        reg = regobj(mat%regidx)
 
-       allocate(mat%Pk(3,2,0:mat%numk,reg%numnodes), stat=err)
-       allocate(mat%N(reg%numnodes), mat%Qsum(3, 2, reg%numnodes), mat%Psum(3, 2, reg%numnodes), stat=err)
+       allocate(M4_PK(3,2,0:mat%numk,reg%numnodes), stat=err)
+       allocate(mat%N(reg%numnodes), M4_QSUM(3, 2, reg%numnodes), M4_PSUM(3, 2, reg%numnodes), stat=err)
+       allocate(mat%ipos(reg%numnodes), mat%jpos(reg%numnodes), mat%kpos(reg%numnodes), stat=err)
 
        M4_ALLOC_ERROR(err,"InitializeMatBulkSC")
 
@@ -155,10 +161,11 @@ contains
 
 ! Initialize coefficients
 
-        mat%dd = 2. + DT * REAL_DX / SI_C * mat%gammanr
-        mat%c1 = ( 2. - DT * REAL_DX / SI_C * mat%gammanr ) / mat%dd
-        mat%c2 = ( 2. + DT * REAL_DX / SI_C * mat%gammap ) / mat%dd
-        mat%c3 = ( 2. - DT * REAL_DX / SI_C * mat%gammap ) / mat%dd
+        mat%cc = 2. + DT * REAL_DX / SI_C * mat%gammanr
+        mat%c0 = 2 * DT * REAL_DX / mat%cc * mat%pump
+        mat%c1 = ( 2. - DT * REAL_DX / SI_C * mat%gammanr ) / mat%cc
+        mat%c2 = ( 2. + DT * REAL_DX / SI_C * mat%gammap ) / mat%cc
+        mat%c3 = ( 2. - DT * REAL_DX / SI_C * mat%gammap ) / mat%cc
 
         mat%dd = 1. + DT * REAL_DX / SI_C * mat%gammap
         mat%sigma =  (DT * REAL_DX / SI_C )**2 / mat%dd  * 2. * SI_E**2 / SI_HBAR * mat%M**2
@@ -170,6 +177,17 @@ contains
 
         mat%conv1 = SI_C / ( REAL_DX**(3./2.) * sqrt(SI_EPS0) )
         mat%conv2 = REAL_DX**(3./2.) / ( SI_C * sqrt(SI_EPS0) )
+
+! THIS IS A EXPERIMENTAL HOT-FIX! 
+! reg.f90 will need to be rewritten to again enable list-mode rather than mask-mode.
+
+        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+        
+        mat%ipos(p) = i
+        mat%jpos(p) = j
+        mat%kpos(p) = k
+
+        })
 
 ! load from checkpoint file
 
@@ -210,6 +228,8 @@ contains
 
        ! finalize mat object here
        deallocate(mat%Pk, mat%Psum, mat%Qsum, mat%N)
+       deallocate(mat%ipos, mat%jpos, mat%kpos)
+
 
     })
     M4_WRITE_DBG(". exit FinalizeMatBulkSC")
@@ -225,12 +245,12 @@ contains
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
     real(kind=8), dimension(3) :: lE, psum, qsum, arg, pk
     real(kind=8) :: qem, qen
-    real(kind=8) :: d1, d3, beta
+    real(kind=8) :: d1, d2, d3, beta
     real(kind=8) :: ne0, nh0, nue, nuh
     real(kind=8) :: mue, muh
     real(kind=8) :: omega, omegabarsq, enew, enhw
     real(kind=8) :: fermiew, fermihw
-    integer :: ki
+    integer :: ki, t
 
     M4_MODLOOP_EXPR({MATBULKSC},mat,{
 
@@ -238,23 +258,30 @@ contains
 
       M4_MODOBJ_GETREG(mat,reg)
 
-      n = mod(ncyc-1+2,2) + 1
+      n = mod(ncyc+1,2) + 1
       m = mod(ncyc+2,2) + 1
 
       mat%cyc = m
-      
-        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-
-        ! E(n) at current position
+  
+!$OMP PARALLEL DO &
+!$OMP& PRIVATE(i,j,k,lE,qem,qen,ne0,nh0,mue,muh,ki,omega,enew,enhw,fermiew,fermihw,psum,qsum,omegabarsq,d1,d3,pk,arg) &
+!$OMP& SHARED(Ex,Ey,Ez,reg,mat)
+      do p = 1, reg%numnodes 
  
+        ! E(n) at current position
+  
+        i = mat%ipos(p)
+        j = mat%jpos(p)
+        k = mat%kpos(p)
+
         lE(1) = Ex(i,j,k) * mat%conv1
         lE(2) = Ey(i,j,k) * mat%conv1
         lE(3) = Ez(i,j,k) * mat%conv1
 
         ! calculate second part of the density response
 
-        qem = lE(1) * mat%Qsum(1,m,p) + lE(2) * mat%Qsum(2,m,p) + lE(3) * mat%Qsum(3,m,p) 
-        qen = lE(1) * mat%Qsum(1,n,p) + lE(2) * mat%Qsum(2,n,p) + lE(3) * mat%Qsum(3,n,p) 
+        qem = lE(1) * M4_QSUM(1,m,p) + lE(2) * M4_QSUM(2,m,p) + lE(3) * M4_QSUM(3,m,p) 
+        qen = lE(1) * M4_QSUM(1,n,p) + lE(2) * M4_QSUM(2,n,p) + lE(3) * M4_QSUM(3,n,p) 
         mat%N(p) = mat%N(p) + 0.5 * ( mat%c2 * qen - mat%c3 * qem )
 
         ! calculate P(n+1) from P(n),P(n-1),E(n) and N(n)
@@ -293,18 +320,17 @@ contains
 
            d1 = ( 2. - omegabarsq * ( DT * REAL_DX / SI_C )**2 ) / mat%dd
            d3 = mat%sigma * omega * ( 1. - fermiew - fermihw )
-           pk(:) = d1 * mat%Pk(:,n,ki,p) + mat%d2 * mat%Pk(:,m,ki,p) + d3 * lE(:)
 
-           ! sum up polarisations
-           
+           pk(:) = d1 * M4_PK(:,n,ki,p) + mat%d2 * M4_PK(:,m,ki,p) + d3 * lE(:)
+
            arg =  ( SI_HBAR * ( omega - mat%omegagap ) * 2. * mat%mr0 )**(0.5) * mat%domega * mat%mr0 * pk / (SI_HBAR**2) 
+
+           M4_PK(:,m,ki,p) = pk(:) ! store new polarisation variables
 
            psum = psum + arg
 
            qsum = qsum + arg / ( SI_HBAR * omega )
 
-           mat%Pk(:,m,ki,p) = pk(:) ! store new polarisation variables
-           
         end do
 
         ! remove half of first/last element (trapezian rule)
@@ -312,23 +338,22 @@ contains
         psum = psum - 0.5 * arg
         qsum = qsum - 0.5 * arg / ( SI_HBAR * omega ) 
 
-        mat%Psum(:,m,p) = psum(:) / ( pi ** 2 ) 
-        mat%Qsum(:,m,p) = qsum(:) / ( pi ** 2 )
+        M4_PSUM(:,m,p) = psum(:) / ( pi ** 2 ) 
+        M4_QSUM(:,m,p) = qsum(:) / ( pi ** 2 )
 
         ! calculate first part of the density response
 
-        qem = lE(1) * mat%Qsum(1,m,p) + lE(2) * mat%Qsum(2,m,p) + lE(3) * mat%Qsum(3,m,p) 
-        qen = lE(1) * mat%Qsum(1,n,p) + lE(2) * mat%Qsum(2,n,p) + lE(3) * mat%Qsum(3,n,p) 
-        mat%N(p) = mat%c1 * mat%N(p) + 0.5 * ( mat%c2 * qem - mat%c3 * qen )
+        qem = lE(1) * M4_QSUM(1,m,p) + lE(2) * M4_QSUM(2,m,p) + lE(3) * M4_QSUM(3,m,p) 
+        qen = lE(1) * M4_QSUM(1,n,p) + lE(2) * M4_QSUM(2,n,p) + lE(3) * M4_QSUM(3,n,p) 
+        mat%N(p) = mat%c1 * mat%N(p) + 0.5 * ( mat%c2 * qem - mat%c3 * qen ) + mat%c0
 
         ! after: J(*,m) is now P(n+1)
         ! m and n will be flipped in the next timestep!
 
-        })      
-
-
+     end do
+!$OMP END PARALLEL DO
     })
-  
+
   end subroutine StepHMatBulkSC
 
 
@@ -336,36 +361,46 @@ contains
 
   subroutine StepEMatBulkSC(ncyc)
 
-    integer :: ncyc, m, n
+    integer :: ncyc, m, n, ii, jj, kk
     M4_MODLOOP_DECL({MATBULKSC},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
 
+    n = mod(ncyc-1+2,2) + 1
+    m = mod(ncyc+2,2) + 1
 
     M4_MODLOOP_EXPR({MATBULKSC},mat,{
 
        ! this loops over all mat structures, setting mat
 
-    M4_MODOBJ_GETREG(mat,reg)
+    M4_MODOBJ_GETREG(mat,reg) 
 
-       n = mod(ncyc-1+2,2) + 1
-       m = mod(ncyc+2,2) + 1
+!$OMP PARALLEL DO &
+!$OMP& PRIVATE(i,j,k,w) &
+!$OMP& SHARED(reg,mat,Ex,Ey,Ez)
+       do p=1, reg%numnodes 
 
-       M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
-       
+          i = mat%ipos(p)
+          j = mat%jpos(p)
+          k = mat%kpos(p)
+
+          w(:) = reg%val(:,p)
+
        ! correct E(n+1) using E(n+1)_fdtd and P(n+1),P(n)
 
        ! J(*,m) is P(n+1) and J(*,n) is P(n)      
 
 M4_IFELSE_TM({
-       Ex(i,j,k) = Ex(i,j,k) - w(1) * epsinvx(i,j,k) * mat%conv2 * ( mat%Psum(1,m,p) - mat%Psum(1,n,p) )
-       Ey(i,j,k) = Ey(i,j,k) - w(2) * epsinvy(i,j,k) * mat%conv2 * ( mat%Psum(2,m,p) - mat%Psum(2,n,p) )
+       Ex(i,j,k) = Ex(i,j,k) - w(1) * epsinvx(i,j,k) * mat%conv2 * ( M4_PSUM(1,m,p) - M4_PSUM(1,n,p) )
+       Ey(i,j,k) = Ey(i,j,k) - w(2) * epsinvy(i,j,k) * mat%conv2 * ( M4_PSUM(2,m,p) - M4_PSUM(2,n,p) )
 })
 M4_IFELSE_TE({
-       Ez(i,j,k) = Ez(i,j,k) - w(3) * epsinvz(i,j,k) * mat%conv2 * ( mat%Psum(3,m,p) - mat%Psum(3,n,p) )
+       Ez(i,j,k) = Ez(i,j,k) - w(3) * epsinvz(i,j,k) * mat%conv2 * ( M4_PSUM(3,m,p) - M4_PSUM(3,n,p) )
 })
-       })      
 
-    })
+       end do
+!$OMP END PARALLEL DO
+
+})
 
   end subroutine StepEMatBulkSC
 

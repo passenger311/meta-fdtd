@@ -38,7 +38,7 @@ LDFLAGS+= -static
 
 ifneq ($(OMP),)
 
-OMPFLAGS:= -fopenmp
+OMPFLAGS:= -fopenmp 
 CCFLAGS+=  $(OMPFLAGS)
 CXXFLAGS+= $(OMPFLAGS)
 F90FLAGS+= $(OMPFLAGS)

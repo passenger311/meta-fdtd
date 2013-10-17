@@ -345,6 +345,7 @@ function BULKSC(parms)
    BULKSC.gammanr = parms.gammanr
    BULKSC.temp = parms.temp or 300
    BULKSC.kmax = parms.kmax
+   BULKSC.pump = parms.pump or 0
    BULKSC.numk = parms.numk
    return BULKSC
 end
@@ -860,6 +861,7 @@ local writemat = {
 	       fh:write(BULKSC.mh ,"\t! effective hole mass; mh [m0]\n")
 	       fh:write(BULKSC.N0 ,"\t! initital carrier density; N0 [1/m^3]\n")
 	       fh:write(BULKSC.gammanr ,"\t! nonradiative recomb. rate; gammanr [1/s] \n")
+	       fh:write(BULKSC.pump ,"\t! pump rate; pump [1/s 1/m^3] \n")
 	       fh:write(BULKSC.temp ,"\t! temperature; temp [K]   \n")
 	       fh:write(BULKSC.kmax ,"\t! k-cutoff; kmax [1/m]  \n")
 	       fh:write(BULKSC.numk ,"\t! number of k values; numk \n")   

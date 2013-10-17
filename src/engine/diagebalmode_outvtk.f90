@@ -110,23 +110,23 @@ contains
       select case (mode)
       case(1)
          en = ( M4_VOLEX(i,j,k) / epsinvx(i,j,k) * &
-              (REALPART(diag%buf_E(diag%h_pos_E,i,j,k,0))**2+&
-              IMAGPART(diag%buf_E(diag%h_pos_E,i,j,k,0))**2) + &
+              (dble(diag%buf_E(diag%h_pos_E,i,j,k,0))**2+&
+              dimag(diag%buf_E(diag%h_pos_E,i,j,k,0))**2) + &
               M4_VOLEY(i,j,k) / epsinvy(i,j,k) * &
-              (REALPART(diag%buf_E(diag%h_pos_E,i,j,k,1))**2+&
-              IMAGPART(diag%buf_E(diag%h_pos_E,i,j,k,1))**2) + &
+              (dble(diag%buf_E(diag%h_pos_E,i,j,k,1))**2+&
+              dimag(diag%buf_E(diag%h_pos_E,i,j,k,1))**2) + &
               M4_VOLEZ(i,j,k) / epsinvz(i,j,k) * &
-              (REALPART(diag%buf_E(diag%h_pos_E,i,j,k,2))**2+&
-              IMAGPART(diag%buf_E(diag%h_pos_E,i,j,k,2))**2) + &
+              (dble(diag%buf_E(diag%h_pos_E,i,j,k,2))**2+&
+              dimag(diag%buf_E(diag%h_pos_E,i,j,k,2))**2) + &
               M4_VOLHX(i,j,k) / M4_MUINVX(i,j,k) * &
-              (REALPART(diag%buf_H(diag%h_pos_H,i,j,k,0))**2+&
-              IMAGPART(diag%buf_H(diag%h_pos_H,i,j,k,0))**2) + &
+              (dble(diag%buf_H(diag%h_pos_H,i,j,k,0))**2+&
+              dimag(diag%buf_H(diag%h_pos_H,i,j,k,0))**2) + &
               M4_VOLHY(i,j,k) / M4_MUINVY(i,j,k) * &
-              (REALPART(diag%buf_H(diag%h_pos_H,i,j,k,1))**2+&
-              IMAGPART(diag%buf_H(diag%h_pos_H,i,j,k,1))**2) + &
+              (dble(diag%buf_H(diag%h_pos_H,i,j,k,1))**2+&
+              dimag(diag%buf_H(diag%h_pos_H,i,j,k,1))**2) + &
               M4_VOLHZ(i,j,k) / M4_MUINVZ(i,j,k) * &
-              (REALPART(diag%buf_H(diag%h_pos_H,i,j,k,2))**2+&
-              IMAGPART(diag%buf_H(diag%h_pos_H,i,j,k,2))**2) )
+              (dble(diag%buf_H(diag%h_pos_H,i,j,k,2))**2+&
+              dimag(diag%buf_H(diag%h_pos_H,i,j,k,2))**2) )
          write(out%funit,"(4E15.6E3)") real(en)
       case (2)
          write(out%funit,"(3E14.6E2)") abs(diag%buf_E(diag%h_pos_E,i,j,k,0)), &

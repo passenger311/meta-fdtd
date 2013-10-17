@@ -448,11 +448,15 @@ M4_IFELSE_1D({},{
       M4_FTYPE :: Bxo, Byo, Bzo, Exh, Eyh, Ezh
       
   
-M4_IFELSE_3D({!$OMP PARALLEL DO PRIVATE(Exh,Eyh,Ezh,Bxo,Byo,Bzo)})
+!$OMP PARALLEL DO &
+!$OMP& SHARED(Ex,Ey,Ez,Hx,Hy,Hz,B,cmxpml,cmypml,cmzpml) &
+!$OMP& PRIVATE(Exh,Eyh,Ezh,Bxo,Byo,Bzo) &
+!$OMP& COLLAPSE(M4_DIM)
+M4_IFELSE_3D({!!$OMP PARALLEL DO SHARED(Ex,Ey,Ez,Hx,Hy,Hz,B,cmxpml,cmypml,cmzpml) PRIVATE(Exh,Eyh,Ezh,Bxo,Byo,Bzo)})
       do k=ks, ke     
-M4_IFELSE_2D({!$OMP PARALLEL DO PRIVATE(Exh,Eyh,Ezh,Bxo,Byo,Bzo)})
+M4_IFELSE_2D({!!$OMP PARALLEL DO SHARED(Ex,Ey,Ez,Hx,Hy,Hz,B,cmxpml,cmypml,cmzpml) PRIVATE(Exh,Eyh,Ezh,Bxo,Byo,Bzo)})
          do j=js, je
-M4_IFELSE_1D({!$OMP PARALLEL DO PRIVATE(Exh,Eyh,Ezh,Bxo,Byo,Bzo)})
+M4_IFELSE_1D({!!$OMP PARALLEL DO SHARED(Ex,Ey,Ez,Hx,Hy,Hz,B,cmxpml,cmypml,cmzpml) PRIVATE(Exh,Eyh,Ezh,Bxo,Byo,Bzo)})
             do i=is, ie
   
 M4_IFELSE_TM({
@@ -503,11 +507,12 @@ M4_IFELSE_TM({
                     M4_MUINVZ(i,j,k)*(cmzpml(1,k)*B(3,i,j,k) - cmzpml(3,k)*Bzo)           
 })               
             enddo
-M4_IFELSE_1D({!$OMP END PARALLEL DO})
+M4_IFELSE_1D({!!$OMP END PARALLEL DO})
          enddo
-M4_IFELSE_2D({!$OMP END PARALLEL DO})
+M4_IFELSE_2D({!!$OMP END PARALLEL DO})
       enddo
-M4_IFELSE_3D({!$OMP END PARALLEL DO})
+M4_IFELSE_3D({!!$OMP END PARALLEL DO})
+!$OMP END PARALLEL DO
 
     end subroutine DoStepHPml
     
@@ -552,11 +557,15 @@ M4_IFELSE_3D({!$OMP END PARALLEL DO})
       M4_FTYPE :: Dxo, Dyo, Dzo, Hxh, Hyh, Hzh    
   
 
-M4_IFELSE_3D({!$OMP PARALLEL DO PRIVATE(Hxh,Hyh,Hzh,Dxo,Dyo,Dzo,epsinvx,epsinvy,epsinvz)}) 
+!$OMP PARALLEL DO &
+!$OMP& SHARED(Ex,Ey,Ez,Hx,Hy,Hz,D,cexpml,ceypml,cezpml,epsinvx,epsinvy,epsinvz) &
+!$OMP& PRIVATE(Hxh,Hyh,Hzh,Dxo,Dyo,Dzo) &
+!$OMP& COLLAPSE(M4_DIM)
+M4_IFELSE_3D({!!$OMP PARALLEL DO SHARED(Ex,Ey,Ez,Hx,Hy,Hz,D,cexpml,ceypml,cezpml,epsinvx,epsinvy,epsinvz) PRIVATE(Hxh,Hyh,Hzh,Dxo,Dyo,Dzo)}) 
       do k=ks, ke
-M4_IFELSE_2D({!$OMP PARALLEL DO PRIVATE(Hxh,Hyh,Hzh,Dxo,Dyo,Dzo,epsinvx,epsinvy,epsinvz)}) 
+M4_IFELSE_2D({!!$OMP PARALLEL DO SHARED(Ex,Ey,Ez,Hx,Hy,Hz,D,cexpml,ceypml,cezpml,epsinvx,epsinvy,epsinvz) PRIVATE(Hxh,Hyh,Hzh,Dxo,Dyo,Dzo)}) 
          do j=js, je
-M4_IFELSE_1D({!$OMP PARALLEL DO PRIVATE(Hxh,Hyh,Hzh,Dxo,Dyo,Dzo,epsinvx,epsinvy,epsinvz)}) 
+M4_IFELSE_1D({!!$OMP PARALLEL DO SHARED(Ex,Ey,Ez,Hx,Hy,Hz,D,cexpml,ceypml,cezpml,epsinvx,epsinvy,epsinvz) PRIVATE(Hxh,Hyh,Hzh,Dxo,Dyo,Dzo)}) 
             do i=is, ie
 
 M4_IFELSE_TE({
@@ -609,12 +618,13 @@ M4_IFELSE_TE({
 })
 
             enddo
-M4_IFELSE_1D({!$OMP END PARALLEL DO})
+M4_IFELSE_1D({!!$OMP END PARALLEL DO})
          enddo
-M4_IFELSE_2D({!$OMP END PARALLEL DO})
+M4_IFELSE_2D({!!$OMP END PARALLEL DO})
       enddo
-M4_IFELSE_3D({!$OMP END PARALLEL DO})
- 
+M4_IFELSE_3D({!!$OMP END PARALLEL DO})
+!$OMP END PARALLEL DO 
+
     end subroutine DoStepEPml
     
   end subroutine StepEBoundPml

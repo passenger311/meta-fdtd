@@ -38,7 +38,7 @@ LDFLAGS+= -static
 
 ifneq ($(OMP),)
 
-OMPFLAGS:= -openmp
+OMPFLAGS:= -openmp -vec-report1 
 CCFLAGS+=  $(OMPFLAGS)
 CXXFLAGS+= $(OMPFLAGS)
 F90FLAGS+= $(OMPFLAGS)
@@ -50,11 +50,11 @@ endif
 
 ifneq ($(DBG),)
 
-DBGFLAGS:= -g -O0 -fmath-errno
+DBGFLAGS:= -g -debug -O0 -fmath-errno
 CCFLAGS+=  $(DBGFLAGS)
 CXXFLAGS+= $(DBGFLAGS)
 F90FLAGS+= $(DBGFLAGS) -check bounds
-LDFLAGS+=  -g
+LDFLAGS+=  -g -debug
 
 endif 
 
@@ -66,7 +66,7 @@ F90FLAGS_LOPT:= $(F90FLAGS)
 
 ifeq ($(DBG),)
 
-OPTFLAGS:= -O1 -ipo
+OPTFLAGS:= -O1  
 CCFLAGS_LOPT+=  $(OPTFLAGS)
 CXXFLAGS_LOPT+= $(OPTFLAGS)
 F90FLAGS_LOPT+= $(OPTFLAGS)
@@ -81,7 +81,7 @@ F90FLAGS_HOPT := $(F90FLAGS)
 
 ifeq ($(DBG),)
 
-OPTFLAGS:= -O3 -xW -fpp -ipo
+OPTFLAGS:= -O3
 CCFLAGS_HOPT+=  $(OPTFLAGS)
 CXXFLAGS_HOPT+= $(OPTFLAGS)
 F90FLAGS_HOPT+= $(OPTFLAGS)
@@ -92,11 +92,11 @@ endif
 
 ifeq ($(DBG),)
 
-OPTFLAGS:= -O2 -ipo
+OPTFLAGS:= -O2 
 CCFLAGS+=  $(OPTFLAGS)
 CXXFLAGS+= $(OPTFLAGS)
 F90FLAGS+= $(OPTFLAGS)
-LDFLAGS+= -ipo
+LDFLAGS+= 
 
 endif
 

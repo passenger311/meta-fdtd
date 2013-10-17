@@ -220,7 +220,7 @@ contains
   subroutine SetOutObj(out, fmt, snap, modl, filename, fn, mode, ns, ne, dn, reg)
 
     type(T_OUT) :: out
-    character(len=STRLNG) :: fmt, modl, filename, fn, mode
+    character(len=*) :: fmt, modl, filename, fn, mode
     logical :: snap
     type(T_REG) :: reg
     integer:: ns, ne, dn

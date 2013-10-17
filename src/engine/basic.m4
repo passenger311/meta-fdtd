@@ -33,6 +33,11 @@ define({M4_IFELSE_TE}, {M4_IFELSE_2D({ifdef({M4_TE}, {$1}, {$2})},{$1})})
 define({M4_IFELSE_TM}, {M4_IFELSE_2D({ifdef({M4_TM}, {$1}, {$2})},{$1})})
 define({M4_DIM123},{M4_IFELSE_1D({$1},{M4_IFELSE_2D({$2},{$3})})})
 
+define(M4_REALPART, { DBLE($1) })
+define(M4_IMAGPART, { DIMAG($1) })
+define(M4_REAL,{ DBLE($1) })
+define(M4_IMAG,{ DIMAG($1) })
+
 define({M4_MPE_SECTION}, { M4_IFELSE_MPELOG({
 call StartMPELog($1)  
 $2

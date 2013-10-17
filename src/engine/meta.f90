@@ -176,7 +176,7 @@ M4_IFELSE_ARCH({PGI}, {
         end select
         write(6,*) busychar," running ... ", str
 
-        call flush()
+!        call flush()
       end if
 
 ! ------------------------------ StepH --------------------------------
