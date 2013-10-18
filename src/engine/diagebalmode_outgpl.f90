@@ -129,8 +129,8 @@ contains
     select case ( mode ) 
        
     case ( 1 )
-      write(out%funit,"(5E15.6E3)") dble(diag%dudt), dble(diag%ds), dble(diag%jeabs), &
-              dble(diag%khabs), dble(diag%res)
+      write(out%funit,"(5E15.6E3)") dble(diag%dudt), dble(diag%ds), dble(diag%je), &
+              dble(diag%kh), dble(diag%res)
     case ( 2 )
        write(out%funit,"(5E15.6E3)") dble(diag%sumdudt), dble(diag%sumds), &
               dble(diag%sumje), dble(diag%sumkh), dble(diag%sumres)
