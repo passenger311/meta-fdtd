@@ -111,7 +111,7 @@ contains
 
          if ( out%mode .ne. 'S' ) then
                write(out%funit,"(M4_SDIM({I5}),(1E15.6E3))") &
-                    M4_DIM123({i},{i,j},{i,j,k}),real(val1,8)
+                    M4_DIM123({i},{i,j},{i,j,k}),dble(val1)
          
          else
             sum1 = sum1 + val1
@@ -119,12 +119,12 @@ contains
 
       case ( 2 )
 
-         val1 = real(mat%rho12(p))
+         val1 = dble(mat%rho12(p))
 
          if ( out%mode .ne. 'S' ) then
                        
             write(out%funit,"(M4_SDIM({I5}),(2E15.6E3))") &
-                    M4_DIM123({i},{i,j},{i,j,k}),real(val1,8) 
+                    M4_DIM123({i},{i,j},{i,j,k}),dble(val1) 
 
          else
             sum1 = sum1 * val1
@@ -139,7 +139,7 @@ contains
       } )
    
       if ( out%mode .eq. 'S' ) then
-         write(out%funit,"(2E15.6E3)") real(sum1,8)
+         write(out%funit,"(2E15.6E3)") dble(sum1)
       endif
 
     end subroutine WriteValues

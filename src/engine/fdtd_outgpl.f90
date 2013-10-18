@@ -258,6 +258,8 @@ contains
       type (T_BUF) :: buf
       logical :: mode
       integer :: l, pa ! 0 : real part, 1: amplitude, 2: phase
+      character(len=STRLNG) :: fmt1
+
 
       M4_REGLOOP_DECL(reg,p,i,j,k,w(0))  
       real(kind=8), allocatable :: val(:), sum(:)
@@ -280,11 +282,14 @@ contains
       if ( out%mode .ne. 'S' ) then
 
          if ( reg%isbox ) then
-           write(out%funit,*) (dble(val(l)), l=1, buf%numslot,1)
+           write(fmt1,'("(", I0, "E15.6E3)")') buf%numslot
+           write(out%funit,fmt1) (dble(val(l)), l=1, buf%numslot,1)
+!           write(out%funit,*) (dble(val(l)), l=1, buf%numslot,1)
          else
-           write(out%funit,*) M4_DIM123({i},{i,j},{i,j,k}),(dble(val(l)), l=1, buf%numslot,1)
+           write(fmt1,'("(M4_SDIM({I5}),(", I0, "E15.6E3))")') buf%numslot
+           write(out%funit,fmt1) M4_DIM123({i},{i,j},{i,j,k}),(dble(val(l)), l=1, buf%numslot,1)
+!           write(out%funit,*) M4_DIM123({i},{i,j},{i,j,k}),(dble(val(l)), l=1, buf%numslot,1)
         endif
-
       else
          sum = sum + val
       endif
@@ -292,7 +297,9 @@ contains
       },{}, {} )
    
       if ( out%mode .eq. 'S' ) then
-         write(out%funit,*) (dble(sum(l)), l=1, buf%numslot,1)
+         write(fmt1,'("(", I0, "E15.6E3)")') buf%numslot
+         write(out%funit,fmt1) (dble(sum(l)), l=1, buf%numslot,1)
+!         write(out%funit,*) (dble(sum(l)), l=1, buf%numslot,1)
       endif
 
 

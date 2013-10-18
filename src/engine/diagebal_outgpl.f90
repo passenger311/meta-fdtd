@@ -101,13 +101,17 @@ contains
       select case ( mode ) 
 
       case ( 1 )
-         write(out%funit,"(5E15.6E3)") diag%dudt, diag%ds, diag%jeabs, diag%khabs, diag%res
+         write(out%funit,"(5E15.6E3)") dble(diag%dudt), dble(diag%ds), dble(diag%jeabs), &
+                dble(diag%khabs), dble(diag%res)
       case ( 2 )
-         write(out%funit,"(5E15.6E3)") diag%sumdudt, diag%sumds, diag%sumje, diag%sumkh, diag%sumres
+         write(out%funit,"(5E15.6E3)") dble(diag%sumdudt), dble(diag%sumds), &
+                dble(diag%sumje), dble(diag%sumkh), dble(diag%sumres)
       case ( 3 ) 
-         write(out%funit,"(4E15.6E3)") diag%ds, diag%dsx, diag%dsy, diag%dsz
+         write(out%funit,"(4E15.6E3)") dble(diag%ds), dble(diag%dsx), dble(diag%dsy), &
+                dble(diag%dsz)
       case ( 4 ) 
-         write(out%funit,"(4E15.6E3)") diag%sumds, diag%sumdsx, diag%sumdsy, diag%sumdsz
+         write(out%funit,"(4E15.6E3)") dble(diag%sumds), dble(diag%sumdsx), &
+                dble(diag%sumdsy), dble(diag%sumdsz)
       end select
 
     end subroutine WriteValues

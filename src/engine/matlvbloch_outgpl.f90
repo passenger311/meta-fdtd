@@ -107,9 +107,9 @@ contains
          if ( out%mode .ne. 'S' ) then
  
             if ( reg%isbox ) then
-               write(out%funit,"(E15.6E3)") real(val,8)
+               write(out%funit,"(E15.6E3)") dble(val)
             else
-               write(out%funit,"(M4_SDIM({I5}),(E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}),real(val,8)
+               write(out%funit,"(M4_SDIM({I5}),(E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}),dble(val)
             endif
          
          else
@@ -123,9 +123,9 @@ contains
          if ( out%mode .ne. 'S' ) then
 
             if ( reg%isbox ) then
-               write(out%funit,"(3E15.6E3)") real(val,8)
+               write(out%funit,"(3E15.6E3)") dble(val)
             else
-               write(out%funit,"(M4_SDIM({I5}),(3E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}),real(val,8)
+               write(out%funit,"(M4_SDIM({I5}),(3E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}),dble(val)
             endif
 
          else
@@ -137,7 +137,7 @@ contains
       },{if ( reg%is .ne. reg%ie ) write(out%funit,*)}, {if ( reg%js .ne. reg%je ) write(out%funit,*)} )
    
       if ( out%mode .eq. 'S' ) then
-         write(out%funit,"(E15.6E3)") real(sum,8)
+         write(out%funit,"(E15.6E3)") dble(sum)
       endif
 
     end subroutine WriteValues

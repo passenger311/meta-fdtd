@@ -343,7 +343,7 @@ M4_IFELSE_TE({}, {
        
        ! calculate first ks
        k12(1) = IMAG*( -rho12*om12 - ra12*inversion ) - mat%gamma * rho12
-       kinversion(1) = 4*aimag(rho12*conjg(ra12)) - mat%sigma * (1 + inversion)
+       kinversion(1) = 4*dimag(rho12*conjg(ra12)) - mat%sigma * (1 + inversion)
 
        ! rk4: second step
        ! D interpolated to t+dt/2 in order to calculate E(t+dt/2)
@@ -365,7 +365,7 @@ M4_IFELSE_TE({}, {
             mat%M12(3)*Etmp(3)*eps_lz
 
        k12(2) = IMAG*( -rho12*om12 - ra12*inversion ) - mat%gamma * rho12
-       kinversion(2) = 4*aimag(rho12*conjg(ra12)) - mat%sigma * ( 1 + inversion )
+       kinversion(2) = 4*dimag(rho12*conjg(ra12)) - mat%sigma * ( 1 + inversion )
 
        ! rk4: third step
        ! rho interpolated to t+dt/2 for a second time. D stays the same
@@ -386,7 +386,7 @@ M4_IFELSE_TE({}, {
 
 
        k12(3) = IMAG*( -rho12*om12 - ra12*inversion ) - mat%gamma * rho12
-       kinversion(3) = 4*aimag(rho12*conjg(ra12)) - mat%sigma * ( 1 + inversion )
+       kinversion(3) = 4*dimag(rho12*conjg(ra12)) - mat%sigma * ( 1 + inversion )
 
        ! rk4: fourth step
        ! D(t+dt) for E(t+dt)
@@ -409,7 +409,7 @@ M4_IFELSE_TE({}, {
  
 
        k12(4) = IMAG*( -rho12*om12 - ra12*inversion ) - mat%gamma * rho12
-       kinversion(4) = 4*aimag(rho12*conjg(ra12)) - mat%sigma * ( 1 + inversion )
+       kinversion(4) = 4*dimag(rho12*conjg(ra12)) - mat%sigma * ( 1 + inversion )
 
        ! value at end point
 

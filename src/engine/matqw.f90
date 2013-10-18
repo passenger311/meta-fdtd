@@ -317,9 +317,9 @@ contains
   subroutine StepHMatQW(ncyc)
 
     integer :: ncyc, m, n, pk
-    real :: Pxsum, Pysum, Pzsum, dP, lEx, lEy, lEz, wspk, Wsp, mu_help, mu_e, mu_h
-    real :: factor_e, factor_h, pFa, pFb, pFc, pFd, pFe, pFf, factor, Kval, Ee, Eh
-    real :: gain, c_g, c_cx, c_cy, c_cz, lambdae, lambdah
+    real(kind=8) :: Pxsum, Pysum, Pzsum, dP, lEx, lEy, lEz, wspk, Wsp, mu_help, mu_e, mu_h
+    real(kind=8) :: factor_e, factor_h, pFa, pFb, pFc, pFd, pFe, pFf, factor, Kval, Ee, Eh
+    real(kind=8) :: gain, c_g, c_cx, c_cy, c_cz, lambdae, lambdah
     M4_MODLOOP_DECL({MATQW},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
 
@@ -430,8 +430,8 @@ contains
   subroutine StepEMatQW(ncyc)
 
     integer :: ncyc, m, n, pk
-    real :: Pxsum, Pysum, Pzsum, dP, lEx, lEy, lEz, wspk, Wsp, mu_help, mu_e, mu_h
-    real :: factor_e, factor_h, pFa, pFb, pFc, pFd, pFe, pFf, factor, Kval, Ee, Eh
+    real(kind=8) :: Pxsum, Pysum, Pzsum, dP, lEx, lEy, lEz, wspk, Wsp, mu_help, mu_e, mu_h
+    real(kind=8) :: factor_e, factor_h, pFa, pFb, pFc, pFd, pFe, pFf, factor, Kval, Ee, Eh
     M4_MODLOOP_DECL({MATQW},mat)
     M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
 

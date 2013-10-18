@@ -628,6 +628,7 @@ contains
     integer :: c
 
     character(len=STRLNG) :: fn, sfx
+    character(len=20) :: fmt1
     integer :: l, m, ios, mask 
     real(kind=8) :: En, F(12), F_tmp
 
@@ -645,7 +646,7 @@ contains
     M4_OPEN_ERROR(ios,fn)
 
     write(UNITTMP,"(A)") "(SET"
-    write(UNITTMP,*) reg%is,reg%ie,reg%di,reg%js,reg%je,reg%dj,reg%ks,reg%ke,reg%dk
+    write(UNITTMP,"(9I8)") reg%is,reg%ie,reg%di,reg%js,reg%je,reg%dj,reg%ks,reg%ke,reg%dk
 
     if ( diag%mode .eq. "En" ) then
 
@@ -659,12 +660,13 @@ contains
           En = En + 1./M4_MUINVY(i,j,k)* ( diag%Fcos(c,p,5)**2 + diag%Fsin(c,p,5)**2 )
           En = En + 1./M4_MUINVZ(i,j,k)* ( diag%Fcos(c,p,6)**2 + diag%Fsin(c,p,6)**2 )
 
-          write(UNITTMP,*) real(En,8)
-          !write(UNITTMP,"(E15.6E3)") real(En,4)
+          write(UNITTMP,"(E15.6E3)") dble(En)
 
        })
 
     elseif ( diag%mode .eq. "EHTG" ) then
+
+       write(fmt1,'("(", I0, "E15.6E3)")') 2*(diag%numcomp-2)
 
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
@@ -676,11 +678,13 @@ contains
        call GeoAverage(F(5:6),F(9:10))
        call GeoAverage(F(7:8),F(11:12))
 
-       write(UNITTMP,*) ( real(F(l),8), l = 1, 2*(diag%numcomp-2), 1 )
+       write(UNITTMP,fmt1) ( dble(F(l)), l = 1, 2*(diag%numcomp-2), 1 )
 
        })
 
     else 
+
+       write(fmt1,'("(", I0, "E15.6E3)")') 2*diag%numcomp
 
        M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
 
@@ -689,8 +693,8 @@ contains
           F(2*l) = diag%Fsin(c,p,l)
        end do
 
-       write(UNITTMP,*) ( real(F(l),8), l = 1, 2*diag%numcomp, 1 )
-       !write(UNITTMP,"(12E15.6E3)") ( real(F(l),4), l = 1, 12, 1 )
+       write(UNITTMP,fmt1) ( dble(F(l)), l = 1, 2*diag%numcomp, 1 )
+       !write(UNITTMP,"(12E15.6E3)") ( dble(F(l)), l = 1, 12, 1 )
 
        })
 

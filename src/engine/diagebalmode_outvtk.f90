@@ -127,7 +127,7 @@ contains
               M4_VOLHZ(i,j,k) / M4_MUINVZ(i,j,k) * &
               (dble(diag%buf_H(diag%h_pos_H,i,j,k,2))**2+&
               dimag(diag%buf_H(diag%h_pos_H,i,j,k,2))**2) )
-         write(out%funit,"(4E15.6E3)") real(en)
+         write(out%funit,"(4E15.6E3)") dble(en)
       case (2)
          write(out%funit,"(3E14.6E2)") abs(diag%buf_E(diag%h_pos_E,i,j,k,0)), &
               abs(diag%buf_E(diag%h_pos_E,i,j,k,1)), &

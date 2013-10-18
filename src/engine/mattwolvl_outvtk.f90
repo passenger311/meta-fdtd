@@ -111,7 +111,7 @@ contains
 
          if ( out%mode .ne. 'S' ) then
 
-           write(out%funit,"(1E15.6E3)") real(val1,8)
+           write(out%funit,"(1E15.6E3)") dble(val1)
 
          else
 
@@ -121,11 +121,11 @@ contains
 
       case ( 2 )
 
-         val1 = real(mat%rho12(p))
+         val1 = dble(mat%rho12(p))
 
          if ( out%mode .ne. 'S' ) then
 
-            write(out%funit,"(1E15.6E3)") real(val1,8)
+            write(out%funit,"(1E15.6E3)") dble(val1)
 
          else
 
@@ -142,7 +142,7 @@ contains
       } )
 
       if ( out%mode .eq. 'S' ) then
-         write(out%funit,"(1E15.6E3)") real(sum1,8)
+         write(out%funit,"(1E15.6E3)") dble(sum1)
       endif
 
     end subroutine WriteValues

@@ -117,7 +117,7 @@ contains
 
          if ( out%mode .ne. 'S' ) then
 
-           write(out%funit,"(4E15.6E3)") real(val1,8), real(val2,8), real(val3,8), real(val4,8)
+           write(out%funit,"(4E15.6E3)") dble(val1), dble(val2), dble(val3), dble(val4)
 
          else
 
@@ -136,8 +136,8 @@ contains
 
          if ( out%mode .ne. 'S' ) then
 
-            write(out%funit,"(6E15.6E3)") real(val1,8), real(val2,8), real(val3,8)!, &
-!            real(val4,8), real(val5,8), real(val6,8)
+            write(out%funit,"(6E15.6E3)") dble(val1), dble(val2), dble(val3)!, &
+!            dble(val4), dble(val5), dble(val6)
 
          else
 
@@ -154,7 +154,7 @@ contains
       } )
 
       if ( out%mode .eq. 'S' ) then
-         write(out%funit,"(E15.6E3)") real(sum,8)
+         write(out%funit,"(E15.6E3)") dble(sum)
       endif
 
     end subroutine WriteValues

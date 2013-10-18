@@ -51,7 +51,7 @@ contains
       else
          if ( pa .eq. 2 ) then
             M4_IFELSE_CF({
-            vc = atan2(aimag(fc),dble(fc))
+            vc = atan2(dimag(fc),dble(fc))
             },{
             vc = 0.0 
             })
@@ -80,9 +80,9 @@ contains
       else
          if ( pa .eq. 2 ) then
             M4_IFELSE_CF({
-            vx = atan2(aimag(fx),dble(fx))
-            vy = atan2(aimag(fy),dble(fy))
-            vz = atan2(aimag(fz),dble(fz))
+            vx = atan2(dimag(fx),dble(fx))
+            vy = atan2(dimag(fy),dble(fy))
+            vz = atan2(dimag(fz),dble(fz))
             },{
             vx = 0.0 
             vy = 0.0 
@@ -117,7 +117,7 @@ contains
          if ( pa .eq. 2 ) then
             M4_IFELSE_CF({
              do i = 1, buf%numslot
-                val(i) = atan2(aimag(buf%cdata(p,i)),dble(buf%cdata(p,i)))
+                val(i) = atan2(dimag(buf%cdata(p,i)),dble(buf%cdata(p,i)))
              end do
             },{
                val = 0.0

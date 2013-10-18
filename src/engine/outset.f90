@@ -163,7 +163,7 @@ contains
     M4_WRITE_DBG({"write header ",TRIM(out%filename)})
     
     write(out%funit,"(A)") "(SET"
-    write(out%funit,*) reg%is,reg%ie,reg%di,reg%js,reg%je,reg%dj,reg%ks,reg%ke,reg%dk
+    write(out%funit,"(9I8)") reg%is,reg%ie,reg%di,reg%js,reg%je,reg%dj,reg%ks,reg%ke,reg%dk
 
   end subroutine WriteHeaderOutsetObj
 

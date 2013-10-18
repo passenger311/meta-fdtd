@@ -111,10 +111,10 @@ contains
          if ( out%mode .ne. 'S' ) then
  
             if ( reg%isbox ) then
-               write(out%funit,"(4E15.6E3)") real(val1,8), real(val2,8), real(val3,8), real(val4,8)
+               write(out%funit,"(4E15.6E3)") dble(val1), dble(val2), dble(val3), dble(val4)
             else
-               write(out%funit,"(M4_SDIM({I5}),(4E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}), real(val1,8), &
-                    real(val2,8),real(val3,8),real(val4,8)
+               write(out%funit,"(M4_SDIM({I5}),(4E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}), dble(val1), &
+                    dble(val2), dble(val3), dble(val4)
             endif
          
          else
@@ -136,11 +136,11 @@ contains
          if ( out%mode .ne. 'S' ) then
 
             if ( reg%isbox ) then
-               write(out%funit,"(6E15.6E3)") real(val1,8), real(val2,8), real(val3,8), real(val4,8), &
-                    real(val5,8),real(val6,8)
+               write(out%funit,"(6E15.6E3)") dble(val1), dble(val2), dble(val3), dble(val4), &
+                    dble(val5), dble(val6)
            else
-               write(out%funit,"(M4_SDIM({I5}),(6E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}),real(val1,8), &
-                    real(val2,8), real(val3,8), real(val4,8), real(val5,8), real(val6,8)
+               write(out%funit,"(M4_SDIM({I5}),(6E15.6E3))") M4_DIM123({i},{i,j},{i,j,k}),dble(val1), &
+                    dble(val2), dble(val3), dble(val4), dble(val5), dble(val6)
             endif
 
          else
@@ -160,9 +160,9 @@ contains
    
       if ( out%mode .eq. 'S' ) then
          if ( mode == 1 ) then
-            write(out%funit,"(4E15.6E3)") real(sum(1:4),8)/c
+            write(out%funit,"(4E15.6E3)") dble(sum(1:4))/c
          else
-            write(out%funit,"(6E15.6E3)") real(sum,8)/c  
+            write(out%funit,"(6E15.6E3)") dble(sum)/c  
          endif
       endif
 

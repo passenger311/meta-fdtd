@@ -400,11 +400,11 @@ M4_IFELSE_TE({}, {
             - mat%gamma13 * rho13
        k23(1) = IMAG*( -rho23*om23 + ra23*(rho22-rho33) - conjg(ra12)*rho13 + ra13*conjg(rho12) ) &
             - mat%gamma23 * rho23
-       k11(1) = - 2*aimag(rho12*conjg(ra12)) - 2*aimag(rho13*conjg(ra13)) &
+       k11(1) = - 2*dimag(rho12*conjg(ra12)) - 2*dimag(rho13*conjg(ra13)) &
             + mat%sigma12 * rho22 + mat%sigma13 * rho33
-       k22(1) = 2*aimag(rho12*conjg(ra12))  - 2*aimag(rho23*conjg(ra23)) &
+       k22(1) = 2*dimag(rho12*conjg(ra12))  - 2*dimag(rho23*conjg(ra23)) &
             - mat%sigma12 * rho22 + mat%sigma23 * rho33
-       k33(1) = 2*aimag(rho13*conjg(ra13)) + 2*aimag(rho23*conjg(ra23)) &
+       k33(1) = 2*dimag(rho13*conjg(ra13)) + 2*dimag(rho23*conjg(ra23)) &
             - (mat%sigma13 + mat%sigma23) * rho33
 
 
@@ -444,11 +444,11 @@ M4_IFELSE_TE({}, {
             - mat%gamma13 * rho13
        k23(2) = IMAG*( -rho23*om23 + ra23*(rho22-rho33) - conjg(ra12)*rho13 + ra13*conjg(rho12) ) &
             - mat%gamma23 * rho23
-       k11(2) = - 2*aimag(rho12*conjg(ra12)) - 2*aimag(rho13*conjg(ra13)) &
+       k11(2) = - 2*dimag(rho12*conjg(ra12)) - 2*dimag(rho13*conjg(ra13)) &
             + mat%sigma12 * rho22 + mat%sigma13 * rho33
-       k22(2) = 2*aimag(rho12*conjg(ra12))  - 2*aimag(rho23*conjg(ra23)) &
+       k22(2) = 2*dimag(rho12*conjg(ra12))  - 2*dimag(rho23*conjg(ra23)) &
             - mat%sigma12 * rho22 + mat%sigma23 * rho33
-       k33(2) = 2*aimag(rho13*conjg(ra13)) + 2*aimag(rho23*conjg(ra23)) &
+       k33(2) = 2*dimag(rho13*conjg(ra13)) + 2*dimag(rho23*conjg(ra23)) &
             - (mat%sigma13 + mat%sigma23) * rho33
 
 
@@ -485,11 +485,11 @@ M4_IFELSE_TE({}, {
             - mat%gamma13 * rho13
        k23(3) = IMAG*( -rho23*om23 + ra23*(rho22-rho33) - conjg(ra12)*rho13 + ra13*conjg(rho12) ) &
             - mat%gamma23 * rho23
-       k11(3) = - 2*aimag(rho12*conjg(ra12)) - 2*aimag(rho13*conjg(ra13)) &
+       k11(3) = - 2*dimag(rho12*conjg(ra12)) - 2*dimag(rho13*conjg(ra13)) &
             + mat%sigma12 * rho22 + mat%sigma13 * rho33
-       k22(3) = 2*aimag(rho12*conjg(ra12))  - 2*aimag(rho23*conjg(ra23)) &
+       k22(3) = 2*dimag(rho12*conjg(ra12))  - 2*dimag(rho23*conjg(ra23)) &
             - mat%sigma12 * rho22 + mat%sigma23 * rho33
-       k33(3) = 2*aimag(rho13*conjg(ra13)) + 2*aimag(rho23*conjg(ra23)) &
+       k33(3) = 2*dimag(rho13*conjg(ra13)) + 2*dimag(rho23*conjg(ra23)) &
             - (mat%sigma13 + mat%sigma23) * rho33
 
 
@@ -528,11 +528,11 @@ M4_IFELSE_TE({}, {
             - mat%gamma13 * rho13
        k23(4) = IMAG*( -rho23*om23 + ra23*(rho22-rho33) - conjg(ra12)*rho13 + ra13*conjg(rho12) ) &
             - mat%gamma23 * rho23
-       k11(4) = - 2*aimag(rho12*conjg(ra12)) - 2*aimag(rho13*conjg(ra13)) &
+       k11(4) = - 2*dimag(rho12*conjg(ra12)) - 2*dimag(rho13*conjg(ra13)) &
             + mat%sigma12 * rho22 + mat%sigma13 * rho33
-       k22(4) = 2*aimag(rho12*conjg(ra12))  - 2*aimag(rho23*conjg(ra23)) &
+       k22(4) = 2*dimag(rho12*conjg(ra12))  - 2*dimag(rho23*conjg(ra23)) &
             - mat%sigma12 * rho22 + mat%sigma23 * rho33
-       k33(4) = 2*aimag(rho13*conjg(ra13)) + 2*aimag(rho23*conjg(ra23)) &
+       k33(4) = 2*dimag(rho13*conjg(ra13)) + 2*dimag(rho23*conjg(ra23)) &
             - (mat%sigma13 + mat%sigma23) * rho33
 
        

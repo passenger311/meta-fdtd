@@ -136,8 +136,8 @@ contains
       reg = regobj(out%regidx)
       
       M4_REGLOOP_WRITE(reg,p,i,j,k,w,   
-      out%funit,6E15.6E3, { real(Ex(i,j,k)),real(Ey(i,j,k)),real(Ez(i,j,k)), &
-           real(Hx(i,j,k)),real(Hy(i,j,k)),real(Hz(i,j,k)) }
+      out%funit,6E15.6E3, { dble(Ex(i,j,k)),dble(Ey(i,j,k)),dble(Ez(i,j,k)), &
+           dble(Hx(i,j,k)),dble(Hy(i,j,k)),dble(Hz(i,j,k)) }
       )
       
     end subroutine WriteEH
@@ -160,7 +160,7 @@ contains
       reg = regobj(out%regidx)
 
        M4_REGLOOP_WRITE(reg,p,i,j,k,w,   
-       out%funit,M4_IFELSE_CF({2})E15.6E3, { M4_IFELSE_CF({real(field(i,j,k)),aimag(field(i,j,k))},{field(i,j,k)}) }
+       out%funit,M4_IFELSE_CF({2})E15.6E3, { M4_IFELSE_CF({dble(field(i,j,k)),dimag(field(i,j,k))},{field(i,j,k)}) }
        )
 
     end subroutine WriteField
@@ -209,10 +209,10 @@ contains
          M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
          sum = sum + buf%data(p,1)
          })
-         write(out%funit,"(M4_IFELSE_CF({2})E15.6E3)") M4_IFELSE_CF({real(sum),aimag(sum)},sum)
+         write(out%funit,"(M4_IFELSE_CF({2})E15.6E3)") M4_IFELSE_CF({dble(sum),dimag(sum)},sum)
       else
          M4_REGLOOP_WRITE(reg,p,i,j,k,w,
-         out%funit, M4_IFELSE_CF({2})E15.6E3, { M4_IFELSE_CF({real(buf%data(p,1)),aimag(buf%data(p,1))},buf%data(p,1)) }
+         out%funit, M4_IFELSE_CF({2})E15.6E3, { M4_IFELSE_CF({dble(buf%data(p,1)),dimag(buf%data(p,1))},buf%data(p,1)) }
          )
       endif
       ! clear buffer data after write
