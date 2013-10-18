@@ -128,7 +128,7 @@ contains
        ! It is Sig = Sig[SI] / (!c*eps0)
        CPMLMAX = 8
        potcpml = 3.2
-       sigmamax = (real(POTCPML)+1.0)*0.8/(3.0*DT)
+       sigmamax = (dble(POTCPML)+1.0)*0.8/(3.0*DT)
        kappamax = 1.1
        alphamax = 0.0
        alphapot = 1.0
@@ -323,14 +323,14 @@ M4_IFELSE_3D({
          
          ! points on the grid corners
          
-         x = real(l) / real(CPMLMAX-1)
+         x = dble(l) / dble(CPMLMAX-1)
          sigma(l) = sigmamax*x**potcpml
          kappa(l) = 1.0+(kappamax-1.0)*x**potcpml
          alpha(l) = alphamax*(1.0-x)**alphapot
 
          ! points in the grid center
          
-         x = (real(l)+0.5) / real(CPMLMAX-1)
+         x = (dble(l)+0.5) / dble(CPMLMAX-1)
          sigmap(l) = sigmamax*x**potcpml
          kappap(l) = 1.0+(kappamax-1.0)*x**potcpml
          if (x<1.0) then

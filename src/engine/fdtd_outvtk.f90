@@ -195,7 +195,7 @@ contains
 
       if ( out%mode .ne. 'S' ) then
  
-         write(out%funit,"(E14.6E2)") real(val,4)
+         write(out%funit,"(E15.6E3)") dble(val)
          
       else
          sum = sum + val
@@ -206,7 +206,7 @@ contains
 
       if ( out%mode .eq. 'S' ) then
          write(out%funit,"(A)") "FIELD FieldSum 1"
-         write(out%funit,"(E14.6E2)") real(sum,4)
+         write(out%funit,"(E15.6E3)") dble(sum)
       endif
 
     end subroutine WriteScalar
@@ -242,7 +242,7 @@ contains
       call PaVector(pa,fx(i,j,k),fy(i,j,k),fz(i,j,k),vx,vy,vz)
 
       if ( out%mode .ne. 'S' ) then
-         write(out%funit,"(3E14.6E2)") real(vx,4),real(vy,4),real(vz,4)
+         write(out%funit,"(3E15.6E3)") dble(vx),dble(vy),dble(vz)
       else
          sx = sx + vx
          sy = sy + vy
@@ -253,7 +253,7 @@ contains
 
       if ( out%mode .eq. 'S' ) then
          write(out%funit,*) "FIELD FieldSum 3"
-         write(out%funit,"(3E14.6E2)") real(sx,4), real(sy,4), real(sz,4)
+         write(out%funit,"(3E15.6E3)") dble(sx), dble(sy), dble(sz)
       endif
    
     end subroutine WriteVector
@@ -296,7 +296,7 @@ contains
       call PaBuffer(pa, buf, p, val)
 
       if ( out%mode .ne. 'S' ) then
-         write(out%funit,*) (real(val(l),4), l=1, buf%numslot,1)
+         write(out%funit,*) (dble(val(l)), l=1, buf%numslot,1)
       else
          sum = sum + val
       endif
@@ -306,7 +306,7 @@ contains
 
       if ( out%mode .eq. 'S' ) then
          write(out%funit,*) "FIELD FieldSum ", buf%numslot
-         write(out%funit,*) (real(sum(l),4), l=1, buf%numslot,1)
+         write(out%funit,*) (dble(sum(l)), l=1, buf%numslot,1)
       endif
 
       deallocate(val,sum)
@@ -339,7 +339,7 @@ contains
            1./epsinvy(M4_COORD(i,j,k))+1./epsinvy(M4_COORD(i,j-1,k)) + &
            1./epsinvz(M4_COORD(i,j,k))+1./epsinvz(M4_COORD(i,j,k-1))
 
-      write(out%funit,"(E14.6E2)") real(val/6.,4)
+      write(out%funit,"(E15.6E3)") dble(val/6.)
       
       },{}, {} )
 
@@ -367,7 +367,7 @@ contains
 
       val = 1./epsinvx(i,j,k)
 
-      write(out%funit,"(E14.6E2)") real(val,4)
+      write(out%funit,"(E15.6E3)") dble(val)
       
       },{}, {} )
 
@@ -393,7 +393,7 @@ contains
 
       val = 1./epsinvy(i,j,k)
 
-      write(out%funit,"(E14.6E2)") real(val,4)
+      write(out%funit,"(E15.6E3)") dble(val)
       
       },{}, {} )
 
@@ -420,7 +420,7 @@ contains
 
       val = 1./epsinvz(i,j,k)
 
-      write(out%funit,"(E14.6E2)") real(val,4)
+      write(out%funit,"(E15.6E3)") dble(val)
       
       },{}, {} )
 
@@ -448,7 +448,7 @@ contains
       val = 1./M4_MUINVX(i,j,k)+1./M4_MUINVX(i-1,j,k)+1./M4_MUINVY(i,j,k)+1./M4_MUINVY(i,j-1,k)+ &
            1./M4_MUINVZ(i,j,k) + 1./M4_MUINVZ(i,j,k-1)
 
-      write(out%funit,"(3E14.6E2)") real(val/6.,4)
+      write(out%funit,"(3E15.6E3)") dble(val/6.)
 
       },{}, {} )
 
