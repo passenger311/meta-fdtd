@@ -416,14 +416,17 @@ M4_IFELSE_WMU({
     M4_FTYPE :: Exh,Eyh,Ezh
     integer :: i, j, k
 
-!$OMP PARALLEL DO SHARED(Hx,Hy,Hz,Ex,Ey,Ez,epsinvx,epsinvy,epsinvz) PRIVATE(Exh,Eyh,Ezh) COLLAPSE(M4_DIM)
-M4_IFELSE_3D({!!$OMP PARALLEL DO SHARED(Hx,Hy,Hz,Ex,Ey,Ez,epsinvx,epsinvy,epsinvz) PRIVATE(Exh,Eyh,Ezh)})
+! !$OMP PARALLEL DO SHARED(Hx,Hy,Hz,Ex,Ey,Ez,epsinvx,epsinvy,epsinvz) PRIVATE(Exh,Eyh,Ezh) COLLAPSE(3)
+! M4_DIM)
+M4_IFELSE_3D({!$OMP PARALLEL DO SHARED(Hx,Hy,Hz,Ex,Ey,Ez,epsinvx,epsinvy,epsinvz) &
+!$OMP& PRIVATE(Exh,Eyh,Ezh,i,j,k) COLLAPSE(3)})
     do k=KBIG, KEIG
 
-M4_IFELSE_2D({!!$OMP PARALLEL DO SHARED(Hx,Hy,Hz,Ex,Ey,Ez,epsinvx,epsinvy,epsinvz) PRIVATE(Exh,Eyh,Ezh)})
+M4_IFELSE_2D({!$OMP PARALLEL DO SHARED(Hx,Hy,Hz,Ex,Ey,Ez,epsinvx,epsinvy,epsinvz) &
+!$OMP& PRIVATE(Exh,Eyh,Ezh,i,j) COLLAPSE(2)})
        do j=JBIG, JEIG
 
-M4_IFELSE_1D({!!$OMP PARALLEL DO SHARED(Hx,Hy,Hz,Ex,Ey,Ez,epsinvx,epsinvy,epsinvz) PRIVATE(Exh,Eyh,Ezh)})
+M4_IFELSE_1D({!$OMP PARALLEL DO SHARED(Hx,Hy,Hz,Ex,Ey,Ez,epsinvx,epsinvy,epsinvz) PRIVATE(Exh,Eyh,Ezh)})
           do i=IBIG, IEIG
 
 M4_IFELSE_TM({
@@ -454,14 +457,14 @@ M4_IFELSE_1D({},{   + DT/M4_HSY(i,j,k)*( Ex(i,j+1,k) - Exh ) &      })
 
 
           enddo
-M4_IFELSE_1D({ !!$OMP END PARALLEL DO })     
+M4_IFELSE_1D({ !$OMP END PARALLEL DO })     
 
        enddo
-M4_IFELSE_2D({ !!$OMP END PARALLEL DO })     
+M4_IFELSE_2D({ !$OMP END PARALLEL DO })     
 
     enddo
-M4_IFELSE_3D({ !!$OMP END PARALLEL DO })     
-!$OMP END PARALLEL DO
+M4_IFELSE_3D({ !$OMP END PARALLEL DO })     
+!!$OMP END PARALLEL DO
 
   end subroutine StepH
 
@@ -474,14 +477,17 @@ M4_IFELSE_3D({ !!$OMP END PARALLEL DO })
     M4_FTYPE :: Hxh, Hyh, Hzh
     integer :: i, j, k
 
-!$OMP PARALLEL DO SHARED(Hx,Hy,Hz,Ex,Ey,Ez,epsinvx,epsinvy,epsinvz) PRIVATE(Hxh,Hyh,Hzh) COLLAPSE(M4_DIM)
-M4_IFELSE_3D({!!$OMP PARALLEL DO SHARED(Hx,Hy,Hz,Ex,Ey,Ez,epsinvx,epsinvy,epsinvz) PRIVATE(Hxh,Hyh,Hzh)})
+!!$OMP PARALLEL DO SHARED(Hx,Hy,Hz,Ex,Ey,Ez,epsinvx,epsinvy,epsinvz) PRIVATE(Hxh,Hyh,Hzh) COLLAPSE(3)
+! M4_DIM)
+M4_IFELSE_3D({!$OMP PARALLEL DO SHARED(Hx,Hy,Hz,Ex,Ey,Ez,epsinvx,epsinvy,epsinvz) &
+!$OMP& PRIVATE(Hxh,Hyh,Hzh,i,j,k) COLLAPSE(3)})
    do k=KBIG, KEIG
    
-M4_IFELSE_2D({!!$OMP PARALLEL DO SHARED(Hx,Hy,Hz,Ex,Ey,Ez,epsinvx,epsinvy,epsinvz) PRIVATE(Hxh,Hyh,Hzh)})
+M4_IFELSE_2D({!$OMP PARALLEL DO SHARED(Hx,Hy,Hz,Ex,Ey,Ez,epsinvx,epsinvy,epsinvz) &
+!$OMP& PRIVATE(Hxh,Hyh,Hzh,i,j) COLLAPSE(2)})
        do j=JBIG, JEIG
 
-M4_IFELSE_1D({!!$OMP PARALLEL DO SHARED(Hx,Hy,Hz,Ex,Ey,Ez,epsinvx,epsinvy,epsinvz) PRIVATE(Hxh,Hyh,Hzh)})
+M4_IFELSE_1D({!$OMP PARALLEL DO SHARED(Hx,Hy,Hz,Ex,Ey,Ez,epsinvx,epsinvy,epsinvz) PRIVATE(Hxh,Hyh,Hzh)})
           do i=IBIG, IEIG
 
 M4_IFELSE_TE({
@@ -513,14 +519,14 @@ M4_IFELSE_1D({},{    - DT/M4_SY(i,j,k)*( Hxh - Hx(i,j-1,k) )  &            })
 })
 
           enddo
-M4_IFELSE_1D({!!$OMP END PARALLEL DO })     
+M4_IFELSE_1D({!$OMP END PARALLEL DO })     
 
        enddo
-M4_IFELSE_2D({!!$OMP END PARALLEL DO })     
+M4_IFELSE_2D({!$OMP END PARALLEL DO })     
 
     enddo
-M4_IFELSE_3D({!!$OMP END PARALLEL DO })     
-!$OMP END PARALLEL DO
+M4_IFELSE_3D({!$OMP END PARALLEL DO })     
+!!$OMP END PARALLEL DO
 
   end subroutine StepE
 
