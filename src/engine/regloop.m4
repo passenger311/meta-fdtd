@@ -24,7 +24,7 @@ define({M4_REGLOOP_EXPR},{
 
 if ( $1%numnodes .gt. 0 ) then
 
-if ( $1%isbox ) then
+if ( $1%isbox ) then ! box-mode
 $2 = 0
 do $5 = $1%ks, $1%ke, $1%dk
 do $4 = $1%js, $1%je, $1%dj
@@ -47,7 +47,7 @@ enddo !j
 M4_IFELSE_3D({$9})
 enddo !k
 
-else !isbox
+else if ( $1%ismask ) then ! mask-mode
 
 do $5 = $1%ks, $1%ke, $1%dk ! -> k
 do $4 = $1%js, $1%je, $1%dj ! -> j
@@ -70,7 +70,19 @@ enddo ! i
 enddo ! j
 enddo ! k
 
-endif !isbox
+else if (  reg%islist ) then
+
+do $2 = 1, $1%numnodes
+
+  $3 = $1%list(1,$2)
+  $4 = $1%list(2,$2)
+  $5 = $1%list(3,$2)
+
+  $7
+
+enddo
+
+endif
 
 endif !numnodes > 0
 

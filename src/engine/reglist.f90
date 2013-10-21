@@ -127,11 +127,11 @@ module reglist
      integer :: ks = 0, ke = 0, dk = 0
      integer :: numnodes                        ! number of points in region
      integer, pointer, dimension(:,:,:) :: mask ! mark set points
- !    integer, pointer, dimension(:,:) :: list  
+     integer, pointer, dimension(:,:) :: list  
      integer :: numval                          ! number of values
      real(kind=8),pointer,dimension(:,:) :: val ! values field 
- !    logical :: islist = .false.
- !    logical :: ismask = .false.
+     logical :: islist = .false.
+     logical :: ismask = .false.
      logical :: compressval
      integer, pointer,dimension(:) :: valptr
      logical :: isref = .false.
@@ -507,6 +507,8 @@ contains
           allocate(reg%mask(reg%is:reg%ie,reg%js:reg%je,reg%ks:reg%ke),stat = err ) ! allocate mask
           M4_ALLOC_ERROR(err, {"CreateRegObjEnd"})
           
+          reg%isbox = .false.
+          reg%ismask = .true.
           reg%mask = 0 
 
           num = 0
@@ -537,11 +539,12 @@ contains
     else
 
        reg%isbox = .false. ! TODO: better create seperate box/ref loop in regloop.m4 to avoid if-statement in loop
-
+       
        M4_WRITE_DBG({"setting up reg as reference mask", numnodes})
 
        allocate(reg%mask(reg%is:reg%ie,reg%js:reg%je,reg%ks:reg%ke),stat = err ) ! allocate mask
        M4_ALLOC_ERROR(err, {"CreateRegObjEnd"})
+       reg%ismask = .true.
 
        reg%mask = 0
 
@@ -590,6 +593,35 @@ contains
 
   end subroutine CreateRegObjEnd
 
+!----------------------------------------------------------------------
+
+  subroutine TransformToRegList(reg)
+
+    M4_REGLOOP_DECL(reg,p,i,j,k,w(3))
+
+    integer:: err
+
+    if ( reg%islist ) return
+
+    allocate(reg%list(3, reg%numnodes ),stat = err ) ! allocate list
+    M4_ALLOC_ERROR(err, {"CreateRegObjEnd"})
+    reg%islist = .true.
+
+    M4_REGLOOP_EXPR(reg,p,i,j,k,w,{
+    
+        reg%list(1,p) = i
+        reg%list(2,p) = j
+        reg%list(3,p) = k
+        
+    })
+
+    if ( reg%ismask ) then
+       deallocate(reg%mask)
+    end if
+    reg%ismask = .false.
+    reg%isbox = .false.
+
+  end subroutine TransformToRegList
 
 !----------------------------------------------------------------------
 
@@ -679,9 +711,14 @@ contains
        deallocate(reg%valptr)
     end if
 
-    if ( .not. reg%isbox ) then
+    if ( reg%ismask ) then
        M4_WRITE_DBG("deallocating reg%mask")
        deallocate(reg%mask)
+    end if
+
+    if ( reg%islist ) then
+       M4_WRITE_DBG("deallocating reg%list")
+       deallocate(reg%list)
     end if
     
     reg%idx = -1
