@@ -1,0 +1,14 @@
+The example is a semiconductor ZnO wire on top of a metal sheet, i.e. the case of a nanowire plasmonic laser. 
+It can be used to calculate reflection coefficients at the wire end.
+
+First, the geometry is set up also writing geo files for the injection plane. These are used to solve for a mode close to the given neff guess value. The mode solver returns the solver for neff value in neff.lua and additionaly writes the injection fields into tfsfex_re.in, tfsfex_im.in, tfsfey_re.in and tfsfey_im.in.
+The setup can be used in forward direction but also for a finite wire where reflection measurements can be made. Unfortunately, for this example of a plasmonic wire, the wave injection is poor and strong interference between the reflected fields and the injection errors is observed. This should not be the case in a dielectric setting or for very high resolution.
+
+The reflected power flow can be studied in a number of defined planes Sz0 to Sz4 and the profile of the power flow can be mapped onto the waveguide modes using mode_overlap.m. This matlab file loads a chosen FDTD F_*_*.set file and the mode files Emode*_re.set, Emode*_im.set, Hmode*_re.set and Hmode*_im.set from the mode solver. The result is an overlap percentage.
+The following parameters are required to run the matlab file:
+mode_overlap(file,file_mode,freqnumber,fig_on);
+with 
+  file: 'xy1', use FDTD files F_xy1_*.set
+  file_mode: '1.58', use mode files Emode1.58_re.set, etc.
+  freqnumber: 1, use FDTD files F_*_1.set
+  fig_on: 1, figures on; 0, figures off

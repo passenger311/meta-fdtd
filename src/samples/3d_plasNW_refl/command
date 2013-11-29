@@ -1,0 +1,7 @@
+luacfg run_config.lua 80 1 1 2.8 20
+# 80: cylinder radius
+# 1: reflection setup, 0: forward setup
+# 1: run mode solver, 0: skip mode solver
+# 2.8: n_eff guess value
+# 20: position of injection plane in z direction
+      (end of wire at 30)
