@@ -1,0 +1,3 @@
+luacfg run_config.lua 25 1.4;
+# 25: cylinder radius
+# 1.4: n_eff guess 
