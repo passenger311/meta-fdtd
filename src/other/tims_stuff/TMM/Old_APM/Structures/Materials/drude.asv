@@ -1,0 +1,31 @@
+%function output = drude(w)
+clear all
+close all
+c = 299792458;
+loop=0;
+for lambda = 500:1:2500
+    loop = loop+1;
+    w = (2*pi*c)/(lambda*1e-9);
+wp          =   0.29e16;
+gamma       =   16e13;
+eps_inf     =   4;
+eps         =   eps_inf-((wp^2)/((w^2)+complex(0,gamma*w)));
+eps_mat(loop) = eps;
+lambda_mat(loop) = lambda;
+end
+figure(1)
+
+plot(lambda_mat,real(eps_mat));
+hold on
+plot([500 2500],[0 0]);
+hold on
+plot([1550 1550],[-6 4]);
+axis([500 2500 -6 4])
+figure(2)
+plot(lambda_mat,imag(eps_mat));
+hold on
+plot([1550 1550],[0 7]);
+hold on
+plot([2250 1550],[0 7]);
+axis([500 2500 0 7])
+%output = eps;

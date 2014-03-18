@@ -1,0 +1,65 @@
+#!/bin/sh
+
+#PBS -N TimFDTD
+#PBS -l walltime=30:00:00
+#PBS -l mem=1gb
+#PBS -m abe
+#PBS -e /data/users/twp11/Log/${PBS_JOBID}.e
+#PBS -o /data/users/twp11/Log/${PBS_JOBID}.o
+
+
+export PATH=${PATH}:/common/ubuntu/share/matlab/matlab-R2011b/bin
+
+# Print the time and date
+echo -n 'Start Time: '
+date
+
+# Create RUN directory
+tmp=/data/users/twp11/Running
+mkdir $tmp
+
+# Res name
+Res=Final_Results
+
+# Rename WORK directory.
+cp -r $WORKDIR $tmp/$PBS_JOBID && rm -r $WORKDIR
+WORKDIR=$tmp/$PBS_JOBID
+
+# Change to Work directory.
+cd $WORKDIR
+
+# Set run1 name
+Mag=`cat Mag.txt`
+FolderName=Rough"$Mag"nm_stats_cor2
+Num=`cat Num.txt`
+RunName=Run"$Num"
+value=`cat Angle.txt`
+AngleName="$value"_degrees	
+echo $AngleName	
+# Make job directory
+mkdir $HOMEDIR/Output/$Res
+mkdir $HOMEDIR/Output/$Res/$FolderName
+mkdir $HOMEDIR/Output/$Res/$FolderName/$RunName
+mkdir $HOMEDIR/Output/$Res/$FolderName/$RunName/$AngleName
+# Make data directory
+Run_Name=$HOMEDIR/Output/$Res/$FolderName/$RunName/$AngleName
+
+mkdir $Run_Name/Data
+# Make Input directory
+mkdir $Run_Name/Input
+# Run Matlab in work directory.
+#./luacfg config.lua	2>&1 | tee $Run_Name/Output1.log
+./meta	2>&1 | tee $Run_Name/Output2.log
+# Copy data to home directory.
+cp *.in *.txt *.vtk *.gpl *.set *.m $Run_Name/Data
+# Copy Inputs to home directory
+cp config.0.in *.lua *.qscript *.sh $Run_Name/Input
+# Copy Results to home directory 
+#cp -r Results $Run_Name
+
+# Remove work directory
+rm -rf $WORKDIR
+
+# Print the time and date again
+echo -n '\nEnd Time: '
+date

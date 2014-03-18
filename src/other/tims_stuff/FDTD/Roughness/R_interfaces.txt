@@ -1,0 +1,7 @@
+prism	10	1	1	1
+layer1	-50	3	11.68	4
+gap	0	2	4	1
+layer2	-79	4	4	11.68
+filling_gap_interface	0	2	1	0
+filling_layer1_interface	-50	3	0	1
+filling_layer2_interface	-79	4	1	0

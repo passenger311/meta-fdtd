@@ -1,0 +1,10 @@
+Width = 20726
+x noise min = 1
+x noise max = 2
+y noise = 2
+x type = 1
+y type = 2
+n_max = 3.417601498127
+Lambda = 1.5475
+dx = 0.01
+x width = 10

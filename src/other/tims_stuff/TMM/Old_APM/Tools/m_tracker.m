@@ -1,0 +1,440 @@
+function out_mat = m_tracker(in_par,run_n,run,z_mat_in,cl,root_n,group_vel,meth)
+global R                            % Coefficient used in mapping
+global S                            % Coefficient used in mapping
+global s_par                        % Free space wavenumber
+global p_par                        % Layer thickness array
+global pola                         % Mode polarisation
+
+% Read structure name
+name    =   in_par{1};
+
+% Read other parameters
+par     =   in_par{2};
+
+% Read initial photon parameters
+lambda  =   par(1);                 % Free space wavelength (m)
+omega   =   par(2);                 % Free space angular frequency (rad/s)
+freq    =   par(3);                 % Free space frequency (1/s)
+k0      =   par(4);                 % Free space wavevector (1/m)
+E       =   par(5);                 % Free space photon energy (eV)
+
+% Other parameters
+pola    =   par(16);                % Mode polarisation (TE or TM)
+nrs     =   par(17);                % Number of Newton Raphson steps
+
+% Save parameters
+prec    =   par(10);            % Number of significant figures to print
+
+
+% Read variable parameters
+
+var_in      =   m_scan_in(run);
+
+num_var     =   var_in{1};                  % Number of varaiables (1 or 2);
+
+
+var1        =   var_in{3};
+
+var1_name   =   var1{1};            % First variable (Any photon or layer parameter, or incident angle)
+var1_min    =   var1{2};            % Min value of variable 1
+var1_max    =   var1{3};            % Max value of variable 1
+var1_inc    =   var1{4};            % Increment type of var 1 (Linear, Logarithmic or Custom)
+lin_inc1    =   var1{5};            % Linear increment (define either inc or res)
+lin_res1    =   var1{6};            % Linear resolution (number of points)
+log_res1    =   var1{7};            % Log increment (number of points per decade)
+custom_inc1 =   var1{8};            % Custom increment (define array of values)
+
+var2        =   var_in{4};
+
+var2_name   =   var2{1};            % Second variable (Any photon or layer parameter, or incident angle)
+var2_min    =   var2{2};            % Min value of variable 2
+var2_max    =   var2{3};            % Max value of variable 2
+var2_inc    =   var2{4};            % Increment type of var 2 (Linear, Logarithmic or Custom)
+lin_inc2    =   var2{5};            % Linear increment (define either inc or res)
+lin_res2    =   var2{6};            % Linear resolution (number of points)
+log_res2    =   var2{7};            % Log increment (number of points per decade)
+custom_inc2 =   var2{8};            % Custom increment (define array of values)
+
+
+% ------------------------ Section 2: Calculations ------------------------
+c   =   299792458;
+
+% Evaluate increment type
+
+var1_inc    =   inc_type(var1_inc);
+var2_inc    =   inc_type(var2_inc);
+
+
+% Evaluate variable name type
+
+ind1    =   var_type(var1_name);
+ind2    =   var_type(var2_name);
+
+
+% Calculate other photon parameters
+
+p_par   =   [lambda,omega,freq,k0,E]; %    Photon parameters
+
+% Calculate loop start and end values and increments
+
+s1  =   scale(var1_min,var1_max,var1_inc,lin_inc1,lin_res1,log_res1,custom_inc1,2);
+s2  =   scale(var2_min,var2_max,var2_inc,lin_inc2,lin_res2,log_res2,custom_inc2,num_var);
+
+
+% Calculate structure parameters
+
+s_par   =   struc(name,p_par);          % Structure parameter calculation
+
+
+% Find current values of variables
+var1    =   cur_var(var1_name,ind1,s_par,p_par);
+
+if num_var == 2
+    var2    =   cur_var(var2_name,ind2,s_par,p_par);
+end
+
+% Find closest value in scale set
+
+var1_s  =   close_var(var1,var1_min,var1_inc,log_res1,custom_inc1,s1);
+
+if num_var == 2
+    var2_s  =   close_var(var2,var2_min,var2_inc,log_res2,custom_inc2,s2);
+end
+
+% Find value of root at closest value of variable 1
+z_mat_out   =   zeros(1,length(z_mat_in));
+
+if var1 ~= var1_s(2)
+    
+    for loop = 1:length(z_mat_in)
+        z_in = z_mat_in(loop);
+        inc = (var1_s(2)-var1)/10;
+        z   =   z_in;
+        for loop1 = var1:inc:var1_s(2)
+            
+            par1    =   var(loop1,1,1,1,[],var1_name,ind1,s_par,p_par,0,name,0);
+            
+            % Update other parameters
+            k0      =   par1(1,2);
+            s_par   =   par1(3:end,:);
+            
+            eps_struc   =   s_par(1,:);
+            mu_struc    =   s_par(2,:);
+            n_struc     =   s_par(3,:);
+            d_struc     =   s_par(5,3:end);
+            
+            nc          =   n_struc(1);
+            ns          =   n_struc(end);
+            R           =   ((ns^2) - (nc^2))/4;        % Coefficient used in mapping
+            S           =   ((ns^2) + (nc^2))/2;        % Coefficient used in mapping
+            
+            if pola == 1
+                m_struc = s_par(2,:);
+            elseif pola == 0;
+                m_struc = s_par(1,:);
+            end
+            
+            z = NR(eps_struc,d_struc,m_struc,mu_struc,R,S,z,k0,nrs);
+            
+            
+            
+        end
+        z_mat_out(loop) = z;
+    end
+    
+else
+    z_mat_out = z_mat_in;
+end
+z_mat_in = z_mat_out;
+
+
+% Find value of root at closest value of variable 2
+if num_var == 2
+    if var2 ~= var2_s(2)
+        for loop = 1:length(z_mat_in)
+            z_in = z_mat_in(loop);
+            inc = (var2_s(2)-var2)/10;
+            z   =   z_in;
+            for loop1 = var2:inc:var2_s(2)
+                
+                par2    =   var(loop1,1,1,1,[],var2_name,ind2,s_par,p_par,0,name,0);
+                
+                % Update other parameters
+                k0      =   par2(1,2);
+                s_par   =   par2(3:end,:);
+                
+                eps_struc   =   s_par(1,:);
+                mu_struc    =   s_par(2,:);
+                n_struc     =   s_par(3,:);
+                d_struc     =   s_par(5,3:end);
+                
+                nc          =   n_struc(1);
+                ns          =   n_struc(end);
+                R           =   ((ns^2) - (nc^2))/4;        % Coefficient used in mapping
+                S           =   ((ns^2) + (nc^2))/2;        % Coefficient used in mapping
+                
+                if pola == 1
+                    m_struc = s_par(2,:);
+                elseif pola == 0;
+                    m_struc = s_par(1,:);
+                end
+                
+                z = NR(eps_struc,d_struc,m_struc,mu_struc,R,S,z,k0,nrs);
+                
+            end
+            z_mat_out(loop) = z;
+        end
+    else
+        z_mat_out = z_mat_in;
+    end
+end
+
+z_mat_in = z_mat_out;
+
+% Track mode over variable 1
+
+if var1_s(2) == var1_min
+    num =   1;
+    st  =   s1(1);
+    en1  =   s1(2);
+    inc1 =   s1(3);
+elseif var1_s(2) == var1_max
+    num =   1;
+    st  =   s1(2);
+    en1  =   s1(1);
+    inc1 =   -s1(3);
+else
+    num =   2;
+    st  =   var1_s(2);
+    en1 =   s1(2);
+    if var1_inc ~= 1
+        st  =   var1_s(1);
+    end
+    en2 =   s1(1);
+    inc1 =  s1(3);
+    inc2 =  -inc1;
+end
+out_mat = [];
+trs = 0;
+
+for loop1 = 1:length(z_mat_in)
+    
+    loop =  0;
+    out_mat = [];
+    
+    for loop2 = 1:num
+        if loop2 == 2
+            inc = inc2;
+            en  =   en2;
+        else
+            inc = inc1;
+            en  =   en1;
+        end
+        z_in = z_mat_in(loop1);
+        z   =   z_in;
+        loop4 = 0;
+        for loop3 = st:inc:en
+            
+            loop4 = loop4+1;
+            var1    =   var(loop3,var1_min,var1_inc,log_res1,custom_inc1,var1_name,ind1,s_par,p_par,0,name,0);
+            par     =   var1(2,1);
+            % Update other parameters
+            k0      =   var1(1,2);
+            s_par   =   var1(3:end,:);
+            
+            eps_struc   =   s_par(1,:);
+            mu_struc    =   s_par(2,:);
+            n_struc     =   s_par(3,:);
+            d_struc     =   s_par(5,3:end);
+            
+            nc          =   n_struc(1);
+            ns          =   n_struc(end);
+            R           =   ((ns^2) - (nc^2))/4;        % Coefficient used in mapping
+            S           =   ((ns^2) + (nc^2))/2;        % Coefficient used in mapping
+            
+            if pola == 1
+                m_struc = s_par(2,:);
+            elseif pola == 0;
+                m_struc = s_par(1,:);
+            end
+            
+            
+            
+            z = NR(eps_struc,d_struc,m_struc,mu_struc,R,S,z,k0,nrs);
+            
+%             if loop4 > 3
+%                 diff = abs(z_old-z);
+%                 
+%                 if diff>0.2
+%                     trs     =   trs+1;
+%                     imz     =   imag(z_old)+0.1;
+%                     rez     =   real(z_old);
+%                     z       =   complex(rez,imz);
+%                     z = NR(eps_struc,d_struc,m_struc,mu_struc,R,S,z,k0,nrs);
+%                 end
+%             end
+            z_old = z;
+            if group_vel == 1
+                %z2  =   exp(2*z)+((R^2)*exp(-2*z))+S;
+                
+                %w   =   (k0*c)/(1e9*2*pi)
+                
+                %b   =   (sqrt(z2)*k0);
+                
+                vg1 =   g_vel(z,s_par,k0,name,pola,R,S,meth,nrs,d_struc);
+                %return
+                %                 a   =   'cf_SL_NRI_no_prism';
+                %                 d_struc
+                %                 vg1 =   real(vg(w,b,pola,c,a,d_struc))
+                %                 return
+            else
+                vg1 = 0;
+            end
+            
+            if loop3 == st
+                if loop2 == 2
+                else
+                    loop    =   loop+1;
+                    out_mat(loop,:)     =   [par,z,R,S,k0,vg1];
+                    
+                end
+            else
+                loop    =   loop+1;
+                out_mat(loop,:)     =   [par,z,R,S,k0,vg1];
+                
+            end
+            
+%             if loop4 > 3
+%  
+%                 z1  =   (out_mat(loop-1,2));
+%                 z2  =   (out_mat(loop,2));
+%                 redz    =   (real(z2)-real(z1))/inc;
+%                 imdz    =   (imag(z2)-imag(z1))/inc;
+%                 rez   =   real(z2)+(redz*inc);
+%                 imz     =   imag(z2)+(imdz*inc);
+%                 z   =   complex(rez,imz);
+%                 
+%             end
+            
+        end
+    end
+    out_mat     =   sortrows(out_mat);
+    
+    
+    
+    % Track over variable 2 if required
+    if num_var == 2
+        
+        if var2_s(2) == var2_min
+            num =   1;
+            st  =   s2(1);
+            en1  =   s2(2);
+            inc1 =   s2(3);
+        elseif var2_s(2) == var2_max
+            num =   1;
+            st  =   s2(2);
+            en1  =   s2(1);
+            inc1 =   -s2(3);
+        else
+            num =   2;
+            st  =   var2_s(2);
+            en1 =   s2(2);
+            if var2_inc ~= 1
+                st  =   var2_s(1);
+            end
+            en2 =   s2(1);
+            inc1 =  s2(3);
+            inc2 =  -inc1;
+        end
+        loop2   =   0;
+        
+        for loop4 = 1:loop
+            
+            
+            
+            
+            for loop5 = 1:num
+                
+                if loop5 == 2
+                    inc = inc2;
+                    en  =   en2;
+                else
+                    inc = inc1;
+                    en  =   en1;
+                end
+                
+                par1    =   out_mat(loop4,1);
+                z       =   out_mat(loop4,2);
+                
+                var1    =   var(par1,1,1,[],[],var1_name,ind1,s_par,p_par,0,name,0);
+                % Update other parameters
+                k0      =   var1(1,2);
+                p_par   =   photon_par([],[],[],k0,[]);
+                s_par   =   var1(3:end,:);
+                for loop6 = st:inc:en
+                    
+                    
+                    var2    =   var(loop6,var2_min,var2_inc,log_res2,custom_inc2,var2_name,ind2,s_par,p_par,0,name,0);
+                    par2    =   var2(2,1);
+                    % Update other parameters
+                    k0      =   var2(1,2);
+                    s_par   =   var2(3:end,:);
+                    
+                    eps_struc   =   s_par(1,:);
+                    mu_struc    =   s_par(2,:);
+                    n_struc     =   s_par(3,:);
+                    d_struc     =   s_par(5,3:end);
+                    
+                    nc          =   n_struc(1);
+                    ns          =   n_struc(end);
+                    R           =   ((ns^2) - (nc^2))/4;        % Coefficient used in mapping
+                    S           =   ((ns^2) + (nc^2))/2;        % Coefficient used in mapping
+                    
+                    if pola == 1
+                        m_struc = s_par(2,:);
+                    elseif pola == 0;
+                        m_struc = s_par(1,:);
+                    end
+                    
+                    z = NR(eps_struc,d_struc,m_struc,mu_struc,R,S,z,k0,nrs);
+                    if group_vel == 1
+                        vg1 = g_vel(z,s_par,k0,name,pola,R,S,meth,nrs);
+                    else
+                        vg1 = 0;
+                    end
+                    %                     w           =   exp(2*z)+((R^2)*exp(-2*z))+S;
+                    %                     neff        =   sqrt(w);
+                    %                     absorp      =   0.02*k0*imag(neff);
+                    if loop5 == 2
+                        if loop6 == st
+                        else
+                            loop2   =   loop2+1;
+                            twoD_out_mat(loop2,:)     =   [par1,par2,z,R,S,k0,vg1];
+                            
+                        end
+                        
+                    else
+                        loop2   =   loop2+1;
+                        twoD_out_mat(loop2,:)     =   [par1,par2,z,R,S,k0,vg1];
+                    end
+                end
+            end
+        end
+        out_mat = sortrows(twoD_out_mat,[1 2]);
+        
+    end
+    out2 = sav_mode(out_mat,prec,cl,name,run_n,run,length(z_mat_in),root_n(loop1),k0,var1_name,var2_name);
+    x1_mat(loop1,:) = out2(1,:);
+    
+end
+%out2
+%size(out2)
+%size(x1_mat)
+figure(2)
+plot(real(out2(1,:)),out2(2,:))
+figure(3)
+plot(imag(out2(1,:)),out2(2,:))
+
+trs
+pause(10)
+out_mat = {x1_mat,out2};

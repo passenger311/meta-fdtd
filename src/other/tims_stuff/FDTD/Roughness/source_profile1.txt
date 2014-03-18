@@ -1,0 +1,8 @@
+xst 100
+length 19800
+yst 18
+yfi 18
+eps 1
+mu 1
+sigma 1975
+num 1

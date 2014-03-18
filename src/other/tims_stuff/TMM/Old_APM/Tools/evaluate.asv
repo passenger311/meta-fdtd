@@ -1,0 +1,176 @@
+
+% -------------------------------------------------------------------------
+% |                                                                       |
+% |                           Function 'evaluate'                         |
+% |                                                                       |
+% |  Once all roots have been isolated the co-ordinates of the contours   |
+% |  are sent to this function which performs a final integral around the |
+% |  contour using the function 'z_value' to get the position of each     |
+% |  root. A simple Newton Raphson (function 'NR') method is then used to |
+% |  improve accuracy. If any of the roots ends up outside their original |
+% |  contour that contour is further subdivided and NR method applied     |
+% |  until the result is inside the contour of integration.               |
+% |                                                                       |
+% |                                   3                                   |
+% |                   (re0,im1)-------<<------(re1,im1)                   |
+% |                       |                       |                       |
+% |   Im ^                |                       |                       |
+% |      |                |           .           |                       |
+% |      |                v                       ^                       |
+% |      |              4 v                       ^ 2                     |
+% |       ------>         |        (root)         |                       |
+% |             Re        |                       |                       |
+% |                       |                       |                       |
+% |                       |                       |                       |
+% |                   (re0,im0)------->>------(re1,im0)                   |
+% |                                   1                                   |
+% |                                                                       |
+% |  Once all roots have been found parameters such as refractive index   |
+% |  and absorption coeficients are calculated. The input for this        |
+% |  function consists of a matirx called roots_mat which has the form    |
+% |  (re0,re1,im0,im1) for each root, the other inputs are Num_R which is |
+% |  the total number of roots and nrs which defines how many Newton      |
+% |  Raphson steps to make in order to ensure high accuracy.              |
+% |  The OUTPUT of this function is a matrix called neff_mat which        |
+% |  the position of each root along with the real and imag part of the   |
+% |  roots refractive index as well as the absorption per cm.  It has the |
+% |  form: (position,Re(neff),Im(neff),absorption).                       |
+% -------------------------------------------------------------------------
+
+function neff_mat = evaluate(roots_mat,Num_R,nrs)
+
+global R                            % Coefficient used in mapping
+global S                            % Coefficient used in mapping
+global s_par                        % Free space wavenumber
+global p_par                        % Layer thickness array
+global pola
+
+k0          =   p_par(4);           % Free space wavevector (1/m)
+eps_val     =   s_par(1,:);
+mu_val      =   s_par(2,:);
+d_val       =   s_par(5,3:end);
+if pola == 1
+    m_val = s_par(2,:);
+elseif pola == 0;
+    m_val = s_par(1,:);
+end
+
+
+
+neff_mat    = [];
+z_mat       = [];
+ind3        = [];
+num         = size(roots_mat,1);
+
+for loop = 1:num
+
+    x0 = roots_mat(loop,1);
+    x1 = roots_mat(loop,2);
+    y0 = roots_mat(loop,3);
+    y1 = roots_mat(loop,4);
+
+    z = z_value(x0,x1,y0,y1);
+
+    z = NR(eps_val,d_val,m_val,mu_val,R,S,z,k0,nrs);
+
+    w       =   exp(2*z)+((R^2)*exp(-2*z))+S;
+    neff    =   sqrt(w);
+    absorp  =   0.02*k0*imag(neff);
+
+    if (real(z)>=x0 && real(z)<=x1)
+
+        if (imag(z)>=y0 && imag(z)<=y1)
+
+            neff_mat = [neff_mat; real(neff) imag(neff) absorp];
+            z_mat = [z_mat; z];
+            ind3 = [ind3 loop];
+
+            clc
+            txt = sprintf('%.0f out of %.0f',size(neff_mat,1),Num_R);
+            fprintf('\nStage 1 Isolating roots  : Complete');
+            fprintf('\nStage 2 Evaluating roots : %s',txt);
+
+        end
+    end
+
+end
+
+roots_mat(ind3,:)=[];
+num = size(roots_mat,1);
+tru = ones(1,num);
+
+if num > 0.5
+    clc
+    fprintf('\n%.0f roots outside integration contour',num);
+    pause(1);
+end
+
+% If any of the roots found lie outside their integration contour
+
+for loop = 1:num
+
+    roots2 = roots_mat(loop,:);
+
+    while (tru(loop) == 1)
+
+        n  = 1;
+        x0 = roots2(1,1);
+        x1 = roots2(1,2);
+        y0 = roots2(1,3);
+        y1 = roots2(1,4);
+
+        roots2  =   Sub_divide(x0,x1,y0,y1,n);
+        ind     =   find(roots2(:,1)>0.9 & roots2(:,1)<1.1);
+        roots2  =   roots2(ind,:);
+
+        z = z_value(x0,x1,y0,y1);
+
+        z = NR(eps_val,d_val,m_val,mu_val,R,S,z,N,k0,nrs);
+
+
+        if (real(z)>=x0 && real(z)<=x1)
+
+            if (imag(z)>=y0 && imag(z)<=y1)
+
+                tru(loop)   =   0;
+                w           =   exp(2*z)+((R^2)*exp(-2*z))+S;
+                neff        =   sqrt(w);
+                absorp      =   0.02*k0*imag(neff);
+                neff_mat    =   [neff_mat; real(neff) imag(neff) absorp];
+                z_mat       =   [z_mat; z];
+
+                clc
+
+                txt = sprintf('%.0f out of %.0f',size(neff_mat,1),Num_R);
+                fprintf('\nStage 1 Isolating roots  : Complete');
+                fprintf('\nStage 2 Evaluating roots : %s',txt);
+                fprintf(txt);
+
+            end
+        end
+
+    end
+
+end
+
+gammac  =   k0.*(exp(z_mat)+R.*exp(-z_mat));
+gammas  =   k0.*(exp(z_mat)-R.*exp(-z_mat));
+
+% Find indicies of bound and unbound roots from sign of gamma's
+
+ind1 = [];
+ind2 = [];
+
+for l = 1:length(gammac)
+    if real(gammac(l)) > 0 && real(gammas(l)) > 0
+        ind1 = [ind1 l];
+    else
+        ind2 = [ind2 l];
+    end
+end
+
+
+b   =   zeros(size(z_mat,1),1);
+b(ind1) = 1;
+
+neff_mat = [z_mat neff_mat b];

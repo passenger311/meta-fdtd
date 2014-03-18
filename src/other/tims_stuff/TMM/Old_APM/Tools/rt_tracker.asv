@@ -1,0 +1,225 @@
+function rt_tracker(in_par,run)
+tic
+% --------------------------- Section 1: Input ----------------------------
+
+
+% Read structure name
+name    =   in_par{1};
+
+% Read other parameters
+par     =   in_par{2};
+
+% Read initial photon parameters
+lambda  =   par(1);                % Free space wavelength (m)
+omega   =   par(2);                 % Free space angular frequency (rad/s)
+freq    =   par(3);                 % Free space frequency (1/s)
+k0      =   par(4);                 % Free space wavevector (1/m)
+E       =   par(5);                 % Free space photon energy (eV)
+
+% Reflection transmission specific parameters
+theta_i =   par(18);                % Initial angle of incidence (degrees)
+
+
+% Read variable parameters
+
+var_in      =   rt_scan_in(run);
+
+num_var     =   var_in{1};                  % Number of varaiables (1 or 2);
+
+
+var1        =   var_in{3};
+
+var1_name   =   var1{1};            % First variable (Any photon or layer parameter, or incident angle)
+var1_min    =   var1{2};            % Min value of variable 1
+var1_max    =   var1{3};            % Max value of variable 1
+var1_inc    =   var1{4};            % Increment type of var 1 (Linear, Logarithmic or Custom)
+lin_inc1    =   var1{5};            % Linear increment (define either inc or res)
+lin_res1    =   var1{6};            % Linear resolution (number of points)
+log_res1    =   var1{7};            % Log increment (number of points per decade)
+custom_inc1 =   var1{8};            % Custom increment (define array of values)
+
+var2        =   var_in{4};
+
+var2_name   =   var2{1};            % Second variable (Any photon or layer parameter, or incident angle)
+var2_min    =   var2{2};            % Min value of variable 2
+var2_max    =   var2{3};            % Max value of variable 2
+var2_inc    =   var2{4};            % Increment type of var 2 (Linear, Logarithmic or Custom)
+lin_inc2    =   var2{5};            % Linear increment (define either inc or res)
+lin_res2    =   var2{6};            % Linear resolution (number of points)
+log_res2    =   var2{7};            % Log increment (number of points per decade)
+custom_inc2 =   var2{8};            % Custom increment (define array of values)
+
+
+
+
+
+% ------------------------ Section 2: Calculations ------------------------
+
+
+% Evaluate increment type
+
+var1_inc    =   inc_type(var1_inc);
+var2_inc    =   inc_type(var2_inc);
+
+
+% Evaluate variable name type
+
+ind1    =   var_type(var1_name);
+ind2    =   var_type(var2_name);
+
+
+% Calculate other photon parameters
+
+p_par   =   [lambda,omega,freq,k0,E]; %    Photon parameters
+
+% Calculate loop start and end values and increments
+
+s1  =   scale(var1_min,var1_max,var1_inc,lin_inc1,lin_res1,log_res1,custom_inc1,2);
+s2  =   scale(var2_min,var2_max,var2_inc,lin_inc2,lin_res2,log_res2,custom_inc2,num_var);
+
+% Calculate structure parameters
+
+s_par   =   struc(name,p_par);          % Structure parameter calculation
+
+
+% Initialize loop1 counter
+
+n1      =   0;
+
+
+% Initialize results arrays
+
+x_size      =   ceil((s1(2)-s1(1))/s1(3))+1;
+y_size      =   ceil((s2(2)-s2(1))/s2(3))+1;
+
+R_par       =   zeros(1,x_size);
+T_par       =   zeros(1,x_size);
+R_per       =   zeros(1,x_size);
+T_per       =   zeros(1,x_size);
+
+R_par_mat   =   zeros(y_size,x_size);
+R_per_mat   =   zeros(y_size,x_size);
+T_par_mat   =   zeros(y_size,x_size);
+T_per_mat   =   zeros(y_size,x_size);
+
+x_var       =   zeros(1,x_size);
+y_var       =   zeros(1,y_size);
+
+
+% Parameters used for caculating percentage of calculation complete
+
+tot         =   x_size*y_size;
+per_old     =   0;
+sym         =   '%';
+
+
+% Loop over variables and calculate coefficients
+
+for loop1 = s2(1):s2(3):s2(2)
+    
+    if num_var == 2
+        
+        % Change order of variables if required and update parameters
+        
+        
+        var1    =   var(loop1,var2_min,var2_inc,log_res2,custom_inc2,var2_name,ind2,s_par,p_par,theta_i,name);
+        
+        
+        % Update other parameters
+        
+        theta_i =   var1(1,1);
+        k0      =   var1(1,2);
+        y       =   var1(2,1);
+        s_par   =   var1(3:end,:);
+        p_par   =   photon_par([],[],[],k0,[]);
+        
+    else
+        y       =   1;
+    end
+    
+    n1      =   n1+1;
+    n2      =   0;
+    
+    for loop2 = s1(1):s1(3):s1(2)
+        
+        n2      =   n2+1;
+        
+        % Change order of variables if required and update parameters
+        
+        
+        var2    =   var(loop2,var1_min,var1_inc,log_res1,custom_inc1,var1_name,ind1,s_par,p_par,theta_i);
+        
+        
+        % Update other parameters
+        
+        theta_i =   var2(1,1);
+        k0      =   var2(1,2);
+        x       =   var2(2,1);
+        s_par   =   var2(3:end,:);
+        
+        
+        n_struc     =   s_par(3,:);
+        z_struc     =   s_par(4,:);
+        d_struc     =   s_par(5,3:end);
+        
+        % Calculate reflection and transmission coefficients
+        
+        co  =   coefficients(n_struc,z_struc,d_struc,theta_i,k0);
+        
+        
+        R_par(n2)   =   co(1,2);
+        T_par(n2)   =   co(1,1);
+        R_per(n2)   =   co(2,2);
+        T_per(n2)   =   co(2,1);
+        
+        x_var(n2)   =   x;
+        
+        
+        % Calculate and print percentage of computation completed
+        
+        per         =   (round(100*(n1*n2)/tot))/1;
+        
+        if per > per_old+1
+            clc
+            fprintf('\nReflection run %g is %0.0f %s complete\n\n',run,per,sym)
+            per_old = per_old+1;
+        end
+        
+    end
+    
+    R_par_mat(n1,:) =   R_par;
+    R_per_mat(n1,:) =   R_per;
+    T_par_mat(n1,:) =   T_par;
+    T_per_mat(n1,:) =   T_per;
+    
+    y_var(n1)   =   y;
+    
+end
+
+% Trim arrays
+
+%R_par       =   R_par(1:n2);
+%T_par       =   T_par(1:n2);
+%R_per       =   R_per(1:n2);
+%T_per       =   T_per(1:n2);
+
+R_par_mat   =   R_par_mat(1:n1,1:n2);
+R_per_mat   =   R_per_mat(1:n1,1:n2);
+T_par_mat   =   T_par_mat(1:n1,1:n2);
+T_per_mat   =   T_per_mat(1:n1,1:n2);
+
+x_var       =   x_var(1:n2);
+y_var       =   y_var(1:n1);
+
+out_mat     =   {R_par_mat,R_per_mat,T_par_mat,T_per_mat,x_var,y_var};
+output      =   {out_mat,prec,cl,struc_name,run_n,run,num,mode,k0,var1_name,var2_name};
+sav_rt(output);
+
+
+t = toc;
+hours = floor(t/3600);
+mins  = floor(t/60)-(hours*60);
+sec   = t - (mins*60)-(hours*3600);
+clc
+fprintf(1,'\nTime taken to run: %.0f hours %.0f mins %.1f secs\n\n',hours,mins,sec)
+

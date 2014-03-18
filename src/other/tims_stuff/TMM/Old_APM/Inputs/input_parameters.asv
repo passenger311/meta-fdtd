@@ -1,0 +1,64 @@
+function in_par = input_parameters
+
+
+% -------------------------- General parameters --------------------------
+
+% Structure parameters
+name    =   'cgd';                  % Name of structure
+
+% Photon parameters
+lambda  =   1590e-9;                % Free space wavelength (m)
+omega   =   [];                     % Free space angular frequency (rad/s)
+freq    =   [];                     % Free space frequency (1/s)
+k0      =   [];                     % Free space wavevector (rad/m)
+E       =   [];                     % Free space photon energy (eV)
+
+% -------------------------- Testing parameters -------------------------- 
+
+% Tests to run
+m_in    =   'No';                   % Perform initial scan for modes (Yes/No)
+rt_in   =   'Yes';                  % Perform initial reflection calculation (Yes/No)
+m_scan  =   0;                      % Track modes (number of runs)
+rt_scan =   1;                      % Track reflection trans (number of runs)
+
+% Save parameters
+prec    =   10;                     % Output significant figures
+save_i  =   'Yes';                  % Save initial results to file (Yes/No)
+
+% Modal analysis specific parameters
+
+% Contour parameters
+re0     =   -4;                     % Min real val of complex plane
+re1     =   4;                      % Max real val of complex plane
+im0     =   -1.1*pi;                % Min imag val of complex plane
+im1     =   1.2*pi;                 % Max imag val of complex plane
+
+% Other parameters
+pola    =   'TM';                   % Mode polarisation (TE or TM)
+nrs     =   10;                     % Number of Newton Raphson steps
+
+% Reflection transmission specific parameters
+
+theta_i =   45;                     % Initial angle of incidence (degrees)
+
+
+% Bundle parameters and output
+
+% Calculate other photon parameters and bundle
+p_par   =   photon_par(lambda,omega,freq,k0,E);
+
+% Bundle contour parameters
+cont    =   [re0 re1 im0 im1];
+
+% Digitise other parameters
+m_in    =   strcmpi(m_in(1),'y');   % Digitise m_in
+rt_in   =   strcmpi(rt_in(1),'y');  % Digitise rt_in
+save_i  =   strcmpi(save_i(1),'y'); % Digitise save choice
+pola    =   strcmpi(pola(end),'e'); % Digitise polarisation choice
+
+% Bundle other parameters
+other   =   [m_in rt_in m_scan rt_scan prec save_i]; 
+
+% Create output array
+in_par = [p_par other cont pola nrs theta_i];
+in_par = {name in_par};
