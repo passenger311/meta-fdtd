@@ -1,0 +1,4 @@
+luacfg run_config.lua 60 380;
+# Guess value is saved in neff.lua
+# 60: cylinder radius
+# 380: wavelength

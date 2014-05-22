@@ -1,0 +1,8 @@
+The mode solver has been changed to read in and solve for complex permittivity.
+Also, the code has been optimized to run faster in matlab.
+
+In addition, this example supports PMLs at the edges of the domain. This way leaky modes can be found
+
+The example is a dielectric wire on top of a metal, i.e. the case of a nanowire plasmonic laser.
+
+
