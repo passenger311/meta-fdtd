@@ -29,27 +29,6 @@ sj = rj(2)-rj(1)+1; % length j
 
 sl = si*sj;
 
-%leps = zeros(sl,3);
-%
-%l = 0;
-%while feof(fid) == 0
-%   tline = fgetl(fid);
-%   %if (length(tline)==0)
-%   %  continue;
-%   %end
-%   if (tline(1)==')')
-%     continue;
-%   end
-%   l = l + 1;
-%   tmp = sscanf(tline,'%e %e %e');
-%   leps(l,1) = tmp(1);
-%   leps(l,2) = tmp(2);
-%   leps(l,3) = tmp(3);
-%end 
-%if ( l ~= sl )
-% error('error')
-%end
-%fclose(fid);
 tmp = textscan(fid, '%n %n %n');
 fclose(fid);
 leps = zeros(size(tmp{1},1),size(tmp,2));
@@ -74,25 +53,6 @@ while feof(fid) == 0
     break;
 end
 
-%l = 0;
-%while feof(fid) == 0
-%   tline = fgetl(fid);
-%   %if (length(tline)==0)
-%   %  continue;
-%   %end
-%   if (tline(1)==')')
-%     continue;
-%   end
-%   l = l + 1;
-%   tmp = sscanf(tline,'%e %e %e');
-%   leps(l,1) = leps(l,1)+i*tmp(1);
-%   leps(l,2) = leps(l,2)+i*tmp(2);
-%   leps(l,3) = leps(l,3)+i*tmp(3);
-%end 
-%if ( l ~= sl )
-% error('error')
-%end
-%fclose(fid);
 tmp = textscan(fid, '%n %n %n');
 fclose(fid);
 for j = 1 : size(tmp,2)
@@ -106,28 +66,13 @@ leps(sl+1:sl+si,3) = leps(sl,3); % add a row
 
 fprintf('plotting epsilon ...\n');
 
-eps = zeros(sj,si);
-
-nmax = 0;
-eps=conj(reshape(leps(1:sl),si,sj)');
 for j=1:3;
   eps2(:,:,j)=conj(reshape(leps(1:sl,j),si,sj)');
 end
 nmax = max(max(abs(sqrt(leps))));
-%for j=2:sj
-%    for ii=2:si
-%        l=(j-1)*si+ii;
-%        eps(j,ii) = leps(l,3); %0.25*(leps(l,1)+leps(l-1,1)+leps(l,2)+leps(l-si,2));
-%        if abs(sqrt(eps(j,ii))) > nmax 
-%           nmax = abs(sqrt(eps(j,ii)));
-%        end
-%    end
-%end
+
 
 fprintf(' -> nmax = %f\n', nmax);
-
-eps(1,:) = eps(2,:);
-eps(:,1) = eps(:,2);
 
 % --- calculate diagonals A,B,C,D,E,F for 4 BLOCKS
 
@@ -160,33 +105,28 @@ G = zeros(4,sl); % G -> i,j+1
 %  1 2 
 %  4 3
 
-%for j=1:sj
-%    for ii=1:si
-%        l=(j-1)*si+ii;   
-        % --- block 1 (Hx-Hx)
-        A(1,:) = leps(1:sl,2)./leps(1:sl,3)/(hy*hy);
-        C(1,:) = 1./(hx*hx);
-        D(1,:) = -2./(hx*hx) + leps(1:sl,2).*om.*om - leps(1:sl,2)./(hy*hy).*(1./leps(si+1:sl+si,3)+1./leps(1:sl,3));
-        E(1,:) = 1./(hx*hx);
-        G(1,:) = leps(1:sl,2)./leps(si+1:sl+si,3)/(hy*hy); 
-        % --- block 2 (Hx-Hy)
-        C(2,:) = 1./(hx*hy).*(1-leps(1:sl,2)./leps(1:sl,3));
-        D(2,:) = -C(2,:);
-        F(2,:) = -1./(hx*hy).*(1-leps(1:sl,2)./leps(si+1:sl+si,3));
-        G(2,:) = -F(2,:);
-        % --- block 3 (Hy-Hy)
-        A(3,:) = 1./(hy*hy);
-        C(3,:) = leps(1:sl,1)./leps(1:sl,3)/(hx*hx);
-        D(3,:) = -2./(hy*hy) + leps(1:sl,1)*om*om - leps(1:sl,1)./(hx*hx).*(1./leps(2:sl+1,3)+1./leps(1:sl,3));
-        E(3,:) = leps(1:sl,1)./leps(2:sl+1,3)/(hx*hx);
-        G(3,:) = 1./(hy*hy);
-        % --- block 4 (Hy-Hx)
-        A(4,:) = 1./(hx*hy).*(1-leps(1:sl,1)./leps(1:sl,3));
-        B(4,:) = -1./(hx*hy).*(1-leps(1:sl,1)./leps(2:sl+1,3));
-        D(4,:) = -A(4,:);
-        E(4,:) = -B(4,:);       
-%    end
-%end
+% --- block 1 (Hx-Hx)
+A(1,:) = leps(1:sl,2)./leps(1:sl,3)/(hy*hy);
+C(1,:) = 1./(hx*hx);
+D(1,:) = -2./(hx*hx) + leps(1:sl,2).*om.*om - leps(1:sl,2)./(hy*hy).*(1./leps(si+1:sl+si,3)+1./leps(1:sl,3));
+E(1,:) = 1./(hx*hx);
+G(1,:) = leps(1:sl,2)./leps(si+1:sl+si,3)/(hy*hy); 
+% --- block 2 (Hx-Hy)
+C(2,:) = 1./(hx*hy).*(1-leps(1:sl,2)./leps(1:sl,3));
+D(2,:) = -C(2,:);
+F(2,:) = -1./(hx*hy).*(1-leps(1:sl,2)./leps(si+1:sl+si,3));
+G(2,:) = -F(2,:);
+% --- block 3 (Hy-Hy)
+A(3,:) = 1./(hy*hy);
+C(3,:) = leps(1:sl,1)./leps(1:sl,3)/(hx*hx);
+D(3,:) = -2./(hy*hy) + leps(1:sl,1)*om*om - leps(1:sl,1)./(hx*hx).*(1./leps(2:sl+1,3)+1./leps(1:sl,3));
+E(3,:) = leps(1:sl,1)./leps(2:sl+1,3)/(hx*hx);
+G(3,:) = 1./(hy*hy);
+% --- block 4 (Hy-Hx)
+A(4,:) = 1./(hx*hy).*(1-leps(1:sl,1)./leps(1:sl,3));
+B(4,:) = -1./(hx*hy).*(1-leps(1:sl,1)./leps(2:sl+1,3));
+D(4,:) = -A(4,:);
+E(4,:) = -B(4,:);       
 
 
 % --- assume zero derivative boundary condition
@@ -248,30 +188,9 @@ for b=1:4
     Vt = [ Vt, A(b,:),B(b,:),C(b,:),D(b,:),E(b,:),F(b,:),G(b,:) ];
 end
 
-%c = 0;
-%for k = 1:length(Vt) % cleanup matrix
-%    v = Vt(k);
-%    if v ~= 0 
-%        c = c+1;
-%    end
-%end
-%
-%L = zeros(1,c);
-%M = zeros(1,c);
-%V = zeros(1,c);
 
 fprintf('wiping out zero values ...\n');
 
-%c = 0;
-%for k = 1:length(Vt) % cleanup matrix
-%    v = Vt(k);
-%    if v ~= 0
-%        c = c + 1;
-%        L(1,c) = Lt(k);
-%        M(1,c) = Mt(k);
-%        V(1,c) = v;
-%    end
-%end
 L=Lt(Vt~=0);
 M=Mt(Vt~=0);
 V=Vt(Vt~=0);
@@ -304,15 +223,6 @@ fprintf(f_out,'nrefr = %f\n',neff);
 fprintf(f_out,'nrefr_im = %f\n',imag(neff));
 fclose(f_out);
 
-%Hx = zeros(sj,si);
-%Hy = zeros(sj,si);
-%for j=1:sj
-%    for ii=1:si
-%        l=(j-1)*si+ii;
-%        Hx(j,ii) = EVec(l,1);
-%        Hy(j,ii) = EVec(l+sl,1);
-%    end
-%end
 Hx = conj(reshape(EVec(1:sl,1),si,sj)');
 Hy = conj(reshape(EVec(sl+1:2*sl,1),si,sj)');
 
@@ -320,34 +230,11 @@ Hy = conj(reshape(EVec(sl+1:2*sl,1),si,sj)');
 
 fprintf('calculating E field components ...\n');
 
-%Hz = zeros(sj,si);
-%Ex = zeros(sj,si);
-%Ey = zeros(sj,si);
-%for j=1:sj-1
-%    for ii=1:si-1
-%        Hz(j,ii) = -i/keff*( (Hx(j,ii+1)-Hx(j,ii))/hx + (Hy(j+1,ii)-Hy(j,ii))/hy); % = Hz / ii
-%    end
-%end
 Hz(1:sj-1,1:si-1) = -i./keff.*( (Hx(1:sj-1,2:si)-Hx(1:sj-1,1:si-1))./hx + (Hy(2:sj,1:si-1)-Hy(1:sj-1,1:si-1))./hy); % = Hz / ii
 
 Hz(sj,:) = Hz(sj-1,:);
 Hz(:,si) = Hz(:,si-1);
 
-%emax = 0;
-%for j=2:sj
-%    for ii=2:si
-%        l=(j-1)*si+ii;
-%        Ex(j,ii) = 1./(leps(l,1)*om) * ( -i*(Hz(j,ii)-Hz(j-1,ii))/hy + keff*Hy(j,ii) );
-%        Ey(j,ii) = - 1./(leps(l,2)*om) * ( -i*(Hz(j,ii)-Hz(j,ii-1))/hx + keff*Hx(j,ii) );
-%        Ez(j,ii) = i./(leps(l,3)*om) * ( (Hx(j,ii)-Hx(j-1,ii))/hy - (Hy(j,ii)-Hy(j,ii-1))/hx );
-%        if abs(Ex(j,ii)) > abs(emax)
-%            emax = Ex(j,ii);
-%        end
-%        if abs(Ey(j,ii)) > abs(emax)
-%            emax = Ey(j,ii);
-%        end
-%    end
-%end
 Ex(2:sj,2:si) = 1./(eps2(2:sj,2:si,1).*om) .* ( -i.*(Hz(2:sj,2:si)-Hz(1:sj-1,2:si))./hy + keff.*Hy(2:sj,2:si) );
 Ey(2:sj,2:si) = - 1./(eps2(2:sj,2:si,2).*om) .* ( -i.*(Hz(2:sj,2:si)-Hz(2:sj,1:si-1))./hx + keff.*Hx(2:sj,2:si) );
 Ez(2:sj,2:si) = i./(eps2(2:sj,2:si,3).*om) .* ( (Hx(2:sj,2:si)-Hx(1:sj-1,2:si))./hy - (Hy(2:sj,2:si)-Hy(2:sj,1:si-1))./hx );
@@ -367,32 +254,6 @@ Hx = Hx/emax;
 Hy = Hy/emax;
 Hz = Hz/emax;
 
-%for j=2:sj
-%    for ii=2:si
-%        l=(j-1)*si+ii;
-%        Ex(j,ii) = 1./(leps(l,1)*om) * ( (Hz(j,ii)-Hz(j-1,ii))/hy + keff*Hy(j,ii) ); 
-%        Ey(j,ii) = - 1./(leps(l,2)*om) * ( (Hz(j,ii)-Hz(j,ii-1))/hx + keff*Hx(j,ii) );
-%        Ez(j,ii) = 1./(leps(l,3)*om) * ( (Hx(j,ii)-Hx(j-1,ii))/hy - (Hy(j,ii)-Hy(j,ii-1))/hx );
-%    end
-%end
-%
-%Ex(1,:) = Ex(2,:);
-%Ex(:,1) = Ex(:,2);
-%Ey(1,:) = Ey(2,:);
-%Ey(:,1) = Ey(:,2);
-%Ez(1,:) = Ez(2,:);
-%Ez(:,1) = Ez(:,2);
-%
-%emax = sqrt(max(max((Ex.*Ex)'+(Ey.*Ey)'+(Ez.*Ez)')));%max(max(abs([Ex Ey Ez])))
-%hmax = sqrt(max(max((Hx.*Hx)'+(Hy.*Hy)'+(Hz.*Hz)')));%max(max(abs([Hx Hy Hz])));
-%
-%Ex = Ex/emax;
-%Ey = Ey/emax;
-%Ez = Ez/emax;
-%Hx = Hx/hmax;
-%Hy = Hy/hmax;
-%Hz = Hz/hmax;
-
 % --- plot fields
 
 if (fig_on==1);
@@ -409,7 +270,7 @@ hold on;
 title('Refractive index profile n(x,z)')
 xlabel('x [a.u.]')
 ylabel('z [a.u.]')
-pcolor(real(eps));
+pcolor(real(eps2(:,:,1)));
 axis tight;
 shading interp;
 colorbar;
@@ -529,139 +390,7 @@ filename=sprintf('mode%i_%5.3f_i%5.3f_re.png',cyl_rad,real(neff),imag(neff));
 print(gcf, '-dpng', '-r300', filename);
 close(figure);
 end
-%{
-figure(2)
-scrsz = get(0,'ScreenSize');
-%figure('Position',[100 1 scrsz(3)/3 scrsz(4)-249])
-%set(gcf,'Position',[100 1 scrsz(3)-200 scrsz(4)-249])
-%set(gcf,'Position',[0 0 scrsz(3) scrsz(4)])
-set(gcf,'Position',[0 0 1000 600])
-subplot(3,3,1)
-hold on;
-title('Refractive index profile n(x,z)')
-xlabel('x [a.u.]')
-ylabel('z [a.u.]')
-pcolor(real(eps));
-axis tight;
-shading interp;
-colorbar;
-%view(0,9);
-hold off;
 
-subplot(3,3,2);
-hold on;
-%contour(Ex',25);
-title(sprintf('El. field intensity @ neff = %5.3f',neff));
-ylabel('x [a.u.]')
-xlabel('z [a.u.]')
-pcolor((Ex.*conj(Ex))'+(Ey.*conj(Ey))'+(Ez.*conj(Ez))');
-axis tight;
-shading interp;
-colorbar;
-view(90,-90);
-hold off;
-
-subplot(3,3,4);
-hold on;
-%contour(Ex',25);
-title(sprintf('Ex component'));
-ylabel('x [a.u.]')
-xlabel('z [a.u.]')
-pcolor(imag(Ex)');
-axis tight;
-shading interp;
-colorbar;
-view(90,-90);
-hold off;
-
-subplot(3,3,5);
-hold on;
-%contour(Ey',25);
-title(sprintf('Ey component'));
-ylabel('x [a.u.]')
-xlabel('z [a.u.]')
-pcolor(imag(Ey)');
-axis tight;
-shading interp;
-colorbar;
-view(90,-90);
-hold off;
-
-subplot(3,3,6);
-hold on;
-%contour(Ey',25);
-title(sprintf('Ez component'));
-ylabel('x [a.u.]')
-xlabel('z [a.u.]')
-pcolor(imag(Ez)');
-axis tight;
-shading interp;
-colorbar;
-view(90,-90);
-hold off;
-
-subplot(3,3,3);
-hold on;
-%contour(Hx',25);
-title(sprintf('Mag. field intensity @ neff = %5.3f',neff));
-ylabel('x [a.u.]')
-xlabel('z [a.u.]')
-pcolor((Hx.*conj(Hx))'+(Hy.*conj(Hy))'+(Hz.*conj(Hz))');
-axis tight;
-shading interp;
-colorbar;
-view(90,-90);
-hold off;
-
-subplot(3,3,7);
-hold on;
-%contour(Hx',25);
-title(sprintf('Hx component'));
-ylabel('x [a.u.]')
-xlabel('z [a.u.]')
-pcolor(imag(Hx)');
-axis tight;
-shading interp;
-colorbar;
-view(90,-90);
-hold off;
-
-subplot(3,3,8);
-hold on;
-title(sprintf('Hy component'));
-ylabel('x [a.u.]')
-xlabel('z [a.u.]')
-%contour(Hy',25);
-pcolor(imag(Hy)');
-axis tight;
-shading interp;
-colorbar;
-view(90,-90);
-hold off;
-
-subplot(3,3,9);
-hold on;
-title(sprintf('Hz component'));
-ylabel('x [a.u.]')
-xlabel('z [a.u.]')
-%contour(Hy',25);
-pcolor(imag(Hz)');
-axis tight;
-shading interp;
-colorbar;
-view(90,-90);
-hold off;
-
-colormap jet(512);
-
-filename=sprintf('mode_%5.3f_i%5.3f_im.png',real(neff),imag(neff));
-%filename2=sprintf('mode_%5.3f.fig',neff);
-%saveas(figure(1), filename2);
-print(gcf, '-dpng', '-r300', filename);
-
-close(figure);
-end
-%}
 fprintf('done.\n');
 
 
