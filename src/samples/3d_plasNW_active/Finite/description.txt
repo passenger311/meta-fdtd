@@ -1,0 +1,11 @@
+The setup simulates the above-threshold field dynamics in a ZnO semiconductor nanowire plasmonic laser. 
+The gain material is modelled as a 4lvl system with an initial inversion of 0.7, which is continously pumped with a spatially homogeneous pump rate.
+After initial relaxation oscillations a steady state is reached.
+
+The FDTD resolution of this active run is 10nm.
+
+To create the input files, type
+> luacfg run_config.lua 140
+where 140 is the nanowire diameter in nm.
+
+To use qscript, first execute the luacfg command.

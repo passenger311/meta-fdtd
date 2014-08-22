@@ -1,0 +1,10 @@
+Calculation of the local density of optical states (LDOS) in 3d for the stopped light plasmonic heterostructure for wavelengths around 1550nm (f=193THz).
+
+Type the following to generate the FDTD config files
+> luacfg config.lua 0
+with 0 being the distance of the dipole from the substrate. The dipole polarization can be changed in config.lua.
+
+After calculating the time-series of the field strength at the position of the dipole, greens_function.m can be used to determine the LDOS at this point.
+Make sure that the %%%Setup parameters in the matlab file match those in SRCHARDJ in config.0.in.
+
+Careful, in 3D the PML boundary conditions are problematic in this setup and lead to exponentially increasing fields at late times.

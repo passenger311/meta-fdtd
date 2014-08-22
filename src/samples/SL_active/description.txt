@@ -1,0 +1,4 @@
+Active 2d stopped light plasmonic ITO heterostructure for emission around 1550nm.
+Here, for a gain section of 1000nm width.
+
+Tim's setup

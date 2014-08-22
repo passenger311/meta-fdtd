@@ -1,0 +1,11 @@
+This calculates the mode profile of a mode with complex index close to the one give in neff.lua using FDFD.
+The example file is that of a dielectric nanowire on top of a flat silver half-plane.
+
+To start the calculation type
+> luacfg run_config.lua 70 380 2000
+with 60: cylinder radius
+     380: wavelength
+     5000: distance to sides (this must be large enough, so that PMLs can be added in wgmode3k.m)
+
+Lua will automatically start the matlab script.
+Careful, it will use a lot of RAM 

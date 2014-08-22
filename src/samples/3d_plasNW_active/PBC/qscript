@@ -1,0 +1,71 @@
+#!/bin/bash
+
+#PBS -N job_meta
+#PBS -q batch
+#PBS -l walltime=48:00:00
+#PBS -l mem=4000mb
+# #PBS -l ncpus=1
+# #PBS -m abe
+
+#PBS -l nodes=1:sse41
+
+# Set Num cores/threads for JCMwave.
+#export OMP_NUM_THREADS=$(wc -l $PBS_NODEFILE | awk '{print 2*$1}')
+
+#print the time and date
+echo -n 'Start Time:' 
+date
+
+touch ~/jobs/$PBS_JOBID-$HOSTNAME
+
+# Load required module
+
+
+# Load JCMsuite
+#export JCMROOT=/common/ubuntu/share/jcm-suite/jcm-suite-2.6.3/
+
+# Create a local directory to run in.
+#mkdir /data/$USER
+scratch=/workspace/smw410/$PBS_JOBID
+mkdir $scratch
+
+# Change to the directory it was submitted from.
+cd $PBS_O_WORKDIR
+
+# Copy input file to the directory job will run in.
+cp *.lua *.in $scratch
+
+# Change directory to the directory job will run in.
+cd $scratch
+
+#~/fdtd3d-par/trunk/src/build-gcc/luacfg run_config.lua 80 1
+time ~/fdtd3d-par/trunk/src/build-gcc/meta3/meta
+
+# Copy back to home directory.
+#rm *.jcm* *.m
+#matlab -nodisplay -r greens_function3d
+rm geo*in prev*vtk
+gzip *gpl *set 
+tar --remove-files -czf E.tar.gz E*.vtk
+#tar --remove-files -czf E_xy0.tar.gz E_xy0_*.vtk
+#tar --remove-files -czf E_xy1.tar.gz E_xy1_*.vtk
+#tar --remove-files -czf E_xy2.tar.gz E_xy2_*.vtk
+#tar --remove-files -czf E_xy3.tar.gz E_xy3_*.vtk
+#tar --remove-files -czf E_xy4.tar.gz E_xy4_*.vtk
+#tar --remove-files -czf E_yz.tar.gz E_yz_*.vtk
+#tar --remove-files -czf E_xz.tar.gz E_xz_*.vtk
+#gzip E*vtk
+#tar --remove-files -czf dens.tar.gz dens_*.vtk
+
+#mv checkpoint.in ../
+cp * $PBS_O_WORKDIR
+
+# Clean up.
+cd $HOME
+rm -rf $scratch
+
+mv ~/jobs/$PBS_JOBID-$HOSTNAME ~/jobs/executed/
+
+#print the time and date again
+echo -n '\nEnd Time:' 
+date

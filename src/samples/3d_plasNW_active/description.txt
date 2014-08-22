@@ -1,0 +1,5 @@
+These setups simulate the above-threshold field dynamics in a ZnO semiconductor nanowire plasmonic laser for different boundary conditions.
+
+Finite: Finite (i.e. full) wire
+PBC: Periodic boundary conditions -> often this leads to a propagating wave in one or the other direction along the wire
+PEC: Perfect electrical conductor -> standing wave pattern similar to that of finite wire

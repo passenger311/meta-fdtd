@@ -1,0 +1,61 @@
+#!/bin/bash
+
+#PBS -N job_meta
+#PBS -l walltime=43:00:00
+# #PBS -l mem=1000mb
+# #PBS -l ncpus=1
+# #PBS -m abe
+
+#PBS -l nodes=1:ppn=1
+
+# Set Num cores/threads for JCMwave.
+#export OMP_NUM_THREADS=$(wc -l $PBS_NODEFILE | awk '{print 2*$1}')
+
+#print the time and date
+echo -n 'Start Time:' 
+date
+
+#touch ~/jobs/$PBS_JOBID-$HOSTNAME
+
+# Load required module
+
+
+# Load JCMsuite
+#export JCMROOT=/common/ubuntu/share/jcm-suite/jcm-suite-2.6.3/
+
+# Create a local directory to run in.
+#mkdir /data/$USER
+#scratch=/workspace/smw410/$PBS_JOBID
+mkdir $TMPDIR/$USER
+scratch=$TMPDIR/$USER/$PBS_JOBID
+mkdir $scratch
+
+# Change to the directory it was submitted from.
+cd $PBS_O_WORKDIR
+
+# Copy input file to the directory job will run in.
+cp ../luacfg ../meta checkpoint.in config.lua $scratch
+
+# Change directory to the directory job will run in.
+cd $scratch
+
+./luacfg config.lua
+time ./meta
+
+# Copy back to home directory.
+#rm *.jcm* *.m
+#matlab -nodisplay -r fft_n
+tar --remove-files -czf E2.tar.gz E2_*vtk; tar --remove-files -czf Ex.tar.gz Ex_*vtk; tar --remove-files -czf dens.tar.gz dens_*.vtk; 
+rm meta luacfg geo*in prev*vtk
+gzip *gpl *set
+cp * $PBS_O_WORKDIR
+
+# Clean up.
+cd $HOME
+rm -rf $scratch
+
+#mv ~/jobs/$PBS_JOBID-$HOSTNAME ~/jobs/executed/
+
+#print the time and date again
+echo -n '\nEnd Time:' 
+date
